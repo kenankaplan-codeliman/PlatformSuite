@@ -1,5 +1,5 @@
 import axios from 'axios';
-import { API_BASE_URL, API_ENDPOINTS } from '@/config/apiConfig';
+import { EndPointPaths } from '@/constants/endpoint.paths';
 import type{ User } from '@/stores/auth.store';
 
 export interface LoginResponse {
@@ -22,7 +22,7 @@ class AuthService {
   async login(email: string, password: string): Promise<LoginResponse> {
     try {
       const response = await axios.post<LoginResponse>(
-        `${API_BASE_URL}${API_ENDPOINTS.AUTH.LOGIN}`,
+        `${EndPointPaths.Auth.Login}`,
         { email, password }
       );
       
@@ -43,7 +43,7 @@ class AuthService {
   async microsoftCallback(msalToken: string): Promise<LoginResponse> {
     try {
       const response = await axios.post<LoginResponse>(
-        `${API_BASE_URL}${API_ENDPOINTS.AUTH.MICROSOFT_CALLBACK}`,
+        `${EndPointPaths.Auth.MicrosoftCallback}`,
         { token: msalToken }
       );
       
@@ -60,7 +60,7 @@ class AuthService {
   async refreshAccessToken(refreshToken: string): Promise<LoginResponse> {
     try {
       const response = await axios.post<LoginResponse>(
-        `${API_BASE_URL}${API_ENDPOINTS.AUTH.REFRESH_TOKEN}`,
+        `${EndPointPaths.Auth.RefreshToken}`,
         { refreshToken }
       );
       
@@ -78,7 +78,7 @@ class AuthService {
   async logout(accessToken: string): Promise<void> {
     try {
       await axios.post(
-        `${API_BASE_URL}${API_ENDPOINTS.AUTH.LOGOUT}`,
+        `${EndPointPaths.Auth.Logout}`,
         {},
         {
           headers: {

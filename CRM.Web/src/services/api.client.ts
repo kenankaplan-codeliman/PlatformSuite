@@ -1,6 +1,6 @@
 import axios, { AxiosError } from 'axios';
 import type { InternalAxiosRequestConfig } from 'axios';
-import { API_BASE_URL } from '@/config/apiConfig';
+import { EndpointBasePath } from '@/constants/endpoint.paths';
 import { useAuthState } from '@/stores/auth.store';
 import { authService } from '@/services/auth.sevice';
 
@@ -10,7 +10,7 @@ import { authService } from '@/services/auth.sevice';
  * Handles token refresh on 401 errors
  */
 const apiClient = axios.create({
-  baseURL: API_BASE_URL,
+  baseURL: EndpointBasePath,
   timeout: 30000,
   headers: {
     'Content-Type': 'application/json',

@@ -1,5 +1,5 @@
-import apiClient from "@/services/apiClient";
-import { API_ENDPOINTS } from '@/config/apiConfig';
+import apiClient from "@/services/api.client";
+import { EndPointPaths } from '@/constants/endpoint.paths';
 
 /* ===== TYPES ===== */
 
@@ -17,7 +17,7 @@ export function useSearchService() {
 
   const searchFraud = (payload: FraudSearchRequest) => {
     return apiClient.post<FraudSearchResponse>(
-      API_ENDPOINTS.LEAD.BASE,
+      EndPointPaths.Lead.List,
       payload
     );
   };

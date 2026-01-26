@@ -1,6 +1,6 @@
-import type { Lead, LeadListFilters, LeadListResponse, LeadStatusValue } from '@/types/lead.types';
-import apiClient from "@/services/apiClient";
-import { API_ENDPOINTS } from '@/config/apiConfig';
+import type { Lead, LeadListRequest,LeadListFilters, LeadListResponse, LeadStatusValue } from '@/types/lead.types';
+import apiClient from "@/services/api.client";
+import { EndPointPaths } from '@/constants/endpoint.paths';
 
 
 export const leadService = {
@@ -10,20 +10,17 @@ export const leadService = {
     pageSize: number = 10,
     filters?: LeadListFilters
   ): Promise<LeadListResponse> => {
-    const params = new URLSearchParams({
-      page: page.toString(),
-      pageSize: pageSize.toString(),
-    });
+    
+    const request : LeadListRequest = {
+      page: page,
+      pageSize: pageSize,
+      filters: filters,
+    };
 
-    if (filters) {
-      Object.entries(filters).forEach(([key, value]) => {
-        if (value !== undefined && value !== null && value !== '') {
-          params.append(key, String(value));
-        }
-      });
-    }
+    const response = await apiClient.post<LeadListResponse>(
+      EndPointPaths.Lead.List, 
+      request);
 
-    const response = await apiClient.get<LeadListResponse>(`?${params.toString()}`);
     return response.data;
   },
 

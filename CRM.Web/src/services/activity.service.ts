@@ -5,7 +5,7 @@ import type {
   ActivityTypeValue,
   ActivityStatusValue,
 } from '@/types/activity.types';
-import apiClient from '@/services/apiClient';
+import apiClient from '@/services/api.client';
 
 const ACTIVITY_API_BASE = '/activities';
 

@@ -78,6 +78,12 @@ export interface LeadListFilters {
   isActive?: boolean;
 }
 
+export interface LeadListRequest {
+  page: number;
+  pageSize: number;
+  filters?: LeadListFilters;
+}
+
 export interface LeadListResponse {
   data: Lead[];
   total: number;

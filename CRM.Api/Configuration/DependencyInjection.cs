@@ -30,6 +30,9 @@ public static class DependencyInjection
         
 
         services.AddScoped<AuthenticationCommandHandler>();
+        services.AddScoped<LeadCommandHandler>();
+
+        
 
         return services;
     }

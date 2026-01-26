@@ -522,8 +522,8 @@ const LeadDetail: React.FC<LeadDetailProps> = (props) => {
                 </Form.Item>
               </Col>
               <Col span={8}>
-                <Form.Item name="jobTitle" label="Ünvan">
-                  <Input placeholder="Ünvan girin" />
+                <Form.Item name="phone" label="Telefon">
+                  <Input prefix={<PhoneOutlined />} placeholder="Telefon girin" />
                 </Form.Item>
               </Col>
               <Col span={8}>
@@ -536,8 +536,8 @@ const LeadDetail: React.FC<LeadDetailProps> = (props) => {
                 </Form.Item>
               </Col>
               <Col span={8}>
-                <Form.Item name="phone" label="Telefon">
-                  <Input prefix={<PhoneOutlined />} placeholder="Telefon girin" />
+                <Form.Item name="jobTitle" label="Ünvan">
+                  <Input placeholder="Ünvan girin" />
                 </Form.Item>
               </Col>
               <Col span={8}>
