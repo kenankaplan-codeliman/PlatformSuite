@@ -1,0 +1,7 @@
+namespace CRM.Domain.Enums;
+
+public enum CallDirection
+{
+    Incoming = 0,
+    Outgoing = 1
+}
