@@ -1,5 +1,5 @@
 ﻿using CRM.Application.Authentication.Interfaces;
-using CRM.Application.Models;
+using CRM.Application.Modals;
 using CRM.Domain.Entities.Identity;
 using System;
 using System.Collections.Generic;

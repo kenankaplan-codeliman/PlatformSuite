@@ -1,6 +1,6 @@
 using CRM.Application.Interfaces;
 
-namespace CRM.Application.Models;
+namespace CRM.Application.Modals;
 
 public class AuthenticationToken
 {

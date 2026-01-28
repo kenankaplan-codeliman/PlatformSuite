@@ -32,7 +32,18 @@ export const LeadRating = {
 
 export type LeadRatingValue = (typeof LeadRating)[keyof typeof LeadRating];
 
-export interface Lead {
+
+
+export interface LeadListItem {
+  id: string;
+  companyName: string;
+  firstName: string;
+  lastName: string;
+  email?: string;
+  mobilePhone?: string;
+}
+
+export interface LeadDetailItem {
   id: string;
   companyName: string;
   firstName: string;
@@ -42,29 +53,25 @@ export interface Lead {
   phone?: string;
   mobilePhone?: string;
   website?: string;
+  address?: string;
+
+  description?: string;
+
+  industry?: string;
+  numberOfEmployees?: number;
+
   leadSource: LeadSourceValue;
   leadStatus: LeadStatusValue;
   leadRating: LeadRatingValue;
-  industry?: string;
-  numberOfEmployees?: number;
+
   annualRevenue?: number;
   estimatedValue?: number;
-  description?: string;
-  address?: string;
-  convertedDate?: string;
-  convertedAccountId?: string;
-  convertedContactId?: string;
-  convertedOpportunityId?: string;
+
+  createdAt?: Date;
+  updatedAt?: Date;
+  convertedDate?: Date;
+
   isActive: boolean;
-  createdBy: string;
-  createdAt: string;
-  updatedBy?: string;
-  updatedAt?: string;
-  isDeleted: boolean;
-  deletedBy?: string;
-  deletedAt?: string;
-  ownerId: string;
-  organizationId: string;
 }
 
 export interface LeadListFilters {
@@ -85,8 +92,8 @@ export interface LeadListRequest {
 }
 
 export interface LeadListResponse {
-  data: Lead[];
-  total: number;
+  data: LeadListItem[];
+  hasMore: boolean;
   page: number;
   pageSize: number;
 }

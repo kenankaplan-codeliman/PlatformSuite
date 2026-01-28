@@ -1,4 +1,4 @@
-﻿using CRM.Application.Models;
+﻿using CRM.Application.Modals;
 using System;
 using System.Collections.Generic;
 using System.Text;

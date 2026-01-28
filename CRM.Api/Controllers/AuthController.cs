@@ -3,7 +3,7 @@ using CRM.Api.Contracts.Responses;
 using CRM.Api.Extensions;
 using CRM.Application.CommandHandler;
 using CRM.Application.Interfaces;
-using CRM.Application.Models;
+using CRM.Application.Modals;
 using Microsoft.AspNetCore.Mvc;
 
 namespace CRM.Api.Controllers

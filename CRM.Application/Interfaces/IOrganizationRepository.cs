@@ -5,7 +5,7 @@ using System.Text;
 
 namespace CRM.Application.Interfaces
 {
-    public interface IOrganizationRepository : IRepository<AppOrganization>
+    public interface IOrganizationRepository : IEntityRepository<AppOrganization>
     {
         Task<AppOrganization?> GetDefaultAsync();
         Task<List<Guid>> GetOrganizationHierarchy(Guid organizationId);

@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace CRM.Application.Models
+namespace CRM.Application.Modals
 {
     public class SessionInfo
     {

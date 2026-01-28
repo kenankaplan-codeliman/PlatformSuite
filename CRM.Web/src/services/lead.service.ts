@@ -1,4 +1,4 @@
-import type { Lead, LeadListRequest,LeadListFilters, LeadListResponse, LeadStatusValue } from '@/types/lead.types';
+import type { LeadListItem, LeadDetailItem, LeadListRequest,LeadListFilters, LeadListResponse, LeadStatusValue } from '@/types/lead.types';
 import apiClient from "@/services/api.client";
 import { EndPointPaths } from '@/constants/endpoint.paths';
 
@@ -25,20 +25,20 @@ export const leadService = {
   },
 
   // Get single lead by ID
-  getLeadById: async (id: string): Promise<Lead> => {
-    const response = await apiClient.get<Lead>(`/${id}`);
+  getLeadById: async (id: string): Promise<LeadDetailItem> => {
+    const response = await apiClient.get<LeadDetailItem>(`/${id}`);
     return response.data;
   },
 
   // Create new lead
-  createLead: async (lead: Omit<Lead, 'id' | 'createdAt' | 'createdBy'>): Promise<Lead> => {
-    const response = await apiClient.post<Lead>('', lead);
+  createLead: async (lead: Omit<LeadDetailItem, 'id' | 'createdAt' | 'createdBy'>): Promise<LeadDetailItem> => {
+    const response = await apiClient.post<LeadDetailItem>('', lead);
     return response.data;
   },
 
   // Update existing lead
-  updateLead: async (id: string, lead: Partial<Lead>): Promise<Lead> => {
-    const response = await apiClient.put<Lead>(`/${id}`, lead);
+  updateLead: async (id: string, lead: Partial<LeadDetailItem>): Promise<LeadDetailItem> => {
+    const response = await apiClient.put<LeadDetailItem>(`/${id}`, lead);
     return response.data;
   },
 

@@ -1,4 +1,4 @@
-import { useEffect, useState, useCallback } from 'react';
+import { useEffect, useState, useCallback, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { RoutePaths } from '@/constants/route.paths';
 import {
@@ -36,7 +36,7 @@ import {
   PhoneOutlined,
   MailOutlined,
 } from '@ant-design/icons';
-import type { Lead, LeadStatusValue, LeadRatingValue, LeadSourceValue } from '@/types/lead.types';
+import type { LeadListItem, LeadStatusValue, LeadRatingValue, LeadSourceValue } from '@/types/lead.types';
 import {
   LeadStatus,
   getLeadStatusLabel,
@@ -52,6 +52,7 @@ import {
 } from '@/types/lead.types';
 import { useLeadStore } from '@/stores/lead.store';
 import leadService from '@/services/lead.service';
+import CustomPagination from '@/components/CustomPagination';
 
 const { Title, Text } = Typography;
 const { Search } = Input;
@@ -64,7 +65,7 @@ const LeadList: React.FC = () => {
   // Store state and actions
   const {
     leads,
-    total,
+    hasMore,
     page,
     pageSize,
     loading,
@@ -72,8 +73,7 @@ const LeadList: React.FC = () => {
     filters,
     selectedRowKeys,
     fetchLeads,
-    setPage,
-    setPageSize,
+    setPagination,
     setFilters,
     resetFilters,
     setSelectedRowKeys,
@@ -82,9 +82,14 @@ const LeadList: React.FC = () => {
     bulkUpdateStatus,
   } = useLeadStore();
 
-  // Fetch leads on mount
+
+  const isFirstRender = useRef(true);
+  
   useEffect(() => {
-    fetchLeads();
+    if (isFirstRender.current) {
+      isFirstRender.current = false;
+      fetchLeads();
+    }
   }, [fetchLeads]);
 
   // Show error message
@@ -96,7 +101,7 @@ const LeadList: React.FC = () => {
 
   // Handle row click - navigate to detail/edit page
   const handleRowClick = useCallback(
-    (record: Lead) => {
+    (record: LeadListItem) => {
       navigate(RoutePaths.Lead.Edit(record.id));
     },
     [navigate]
@@ -104,7 +109,7 @@ const LeadList: React.FC = () => {
 
   // Handle view (read mode)
   const handleView = useCallback(
-    (record: Lead) => {
+    (record: LeadListItem) => {
       navigate(RoutePaths.Lead.View(record.id));
     },
     [navigate]
@@ -186,6 +191,22 @@ const LeadList: React.FC = () => {
     }
   }, [filters]);
 
+  // Handle page change (for CustomPagination)
+  const handlePageChange = useCallback(
+    (newPage: number) => {
+      setPagination({ page: newPage });
+    },
+    [setPagination]
+  );
+
+  // Handle page size change (for CustomPagination)
+  const handlePageSizeChange = useCallback(
+    (newPageSize: number) => {
+      setPagination({ pageSize: newPageSize });
+    },
+    [setPagination]
+  );
+
   // Bulk action menu items
   const bulkActionItems: MenuProps['items'] = [
     {
@@ -226,7 +247,7 @@ const LeadList: React.FC = () => {
   ];
 
   // Row action menu
-  const getRowActionItems = (record: Lead): MenuProps['items'] => [
+  const getRowActionItems = (record: LeadListItem): MenuProps['items'] => [
     {
       key: 'view',
       label: 'Görüntüle',
@@ -267,15 +288,15 @@ const LeadList: React.FC = () => {
   ];
 
   // Table columns
-  const columns: ColumnsType<Lead> = [
+  const columns: ColumnsType<LeadListItem> = [
     {
       title: 'Şirket Adı',
       dataIndex: 'companyName',
       key: 'companyName',
       sorter: true,
       width: 200,
-      render: (text: string, record: Lead) => (
-        <Space orientation="vertical" size={0}>
+      render: (text: string, record: LeadListItem) => (
+        <Space direction="vertical" size={0}>
           <Text strong style={{ cursor: 'pointer', color: '#1890ff' }}>
             {text}
           </Text>
@@ -287,20 +308,21 @@ const LeadList: React.FC = () => {
     },
     {
       title: 'İletişim',
+      dataIndex: 'email',
       key: 'contact',
-      width: 200,
-      render: (_: unknown, record: Lead) => (
-        <Space orientation="vertical" size={0}>
+      width: 220,
+      render: (_: unknown, record: LeadListItem) => (
+        <Space direction="vertical" size={2}>
           {record.email && (
             <Space size={4}>
               <MailOutlined style={{ color: '#8c8c8c', fontSize: 12 }} />
               <Text style={{ fontSize: 13 }}>{record.email}</Text>
             </Space>
           )}
-          {record.phone && (
+          {record.mobilePhone && (
             <Space size={4}>
               <PhoneOutlined style={{ color: '#8c8c8c', fontSize: 12 }} />
-              <Text style={{ fontSize: 13 }}>{record.phone}</Text>
+              <Text style={{ fontSize: 13 }}>{record.mobilePhone}</Text>
             </Space>
           )}
         </Space>
@@ -369,7 +391,7 @@ const LeadList: React.FC = () => {
       key: 'actions',
       width: 60,
       fixed: 'right',
-      render: (_: unknown, record: Lead) => (
+      render: (_: unknown, record: LeadListItem) => (
         <Dropdown menu={{ items: getRowActionItems(record) }} trigger={['click']}>
           <Button type="text" icon={<MoreOutlined />} onClick={(e) => e.stopPropagation()} />
         </Dropdown>
@@ -378,32 +400,34 @@ const LeadList: React.FC = () => {
   ];
 
   // Row selection config
-  const rowSelection: TableRowSelection<Lead> = {
+  const rowSelection: TableRowSelection<LeadListItem> = {
     selectedRowKeys,
     onChange: (keys) => setSelectedRowKeys(keys as string[]),
     preserveSelectedRowKeys: true,
   };
 
-  // Table change handler
-  const handleTableChange: TableProps<Lead>['onChange'] = (pagination, tableFilters) => {
-    if (pagination.current !== page) {
-      setPage(pagination.current || 1);
-    }
-    if (pagination.pageSize !== pageSize) {
-      setPageSize(pagination.pageSize || 10);
-    }
-
-    // Handle column filters
+  // Table change handler - sadece filter değişikliklerini handle ediyor
+  const handleTableChange: TableProps<LeadListItem>['onChange'] = (_pagination, tableFilters) => {
     const newFilters = { ...filters };
+    
     if (tableFilters.leadStatus) {
       newFilters.leadStatus = tableFilters.leadStatus[0] as LeadStatusValue;
+    } else {
+      newFilters.leadStatus = undefined;
     }
+    
     if (tableFilters.leadRating) {
       newFilters.leadRating = tableFilters.leadRating[0] as LeadRatingValue;
+    } else {
+      newFilters.leadRating = undefined;
     }
-    if (tableFilters.isActive !== undefined && tableFilters.isActive !== null) {
+    
+    if (tableFilters.isActive !== undefined && tableFilters.isActive !== null && tableFilters.isActive.length > 0) {
       newFilters.isActive = tableFilters.isActive[0] as boolean;
+    } else {
+      newFilters.isActive = undefined;
     }
+    
     setFilters(newFilters);
   };
 
@@ -547,21 +571,13 @@ const LeadList: React.FC = () => {
 
       {/* Data Table */}
       <Card styles={{ body: { padding: 0 } }}>
-        <Table<Lead>
+        <Table<LeadListItem>
           rowKey="id"
           columns={columns}
           dataSource={leads}
           loading={loading}
           rowSelection={rowSelection}
-          pagination={{
-            current: page,
-            pageSize: pageSize,
-            total: total,
-            showSizeChanger: true,
-            showQuickJumper: true,
-            showTotal: (total, range) => `${range[0]}-${range[1]} / ${total} kayıt`,
-            pageSizeOptions: ['10', '20', '50', '100'],
-          }}
+          pagination={false}
           onChange={handleTableChange}
           onRow={(record) => ({
             onClick: () => handleRowClick(record),
@@ -569,6 +585,18 @@ const LeadList: React.FC = () => {
           })}
           scroll={{ x: 1300 }}
           size="middle"
+        />
+        
+        {/* Custom Pagination */}
+        <CustomPagination
+          current={page}
+          pageSize={pageSize}
+          hasMore={hasMore}
+          loading={loading}
+          totalItems={leads?.length ?? 0}
+          pageSizeOptions={[10, 20, 50, 100]}
+          onPageChange={handlePageChange}
+          onPageSizeChange={handlePageSizeChange}
         />
       </Card>
     </div>

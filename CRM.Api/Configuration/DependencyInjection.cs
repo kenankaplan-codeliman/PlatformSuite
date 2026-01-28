@@ -16,19 +16,22 @@ public static class DependencyInjection
     {
         services.AddMemoryCache();//Redis Kullandığın da bunu kaldır
         services.AddScoped<ICacheService, MemoryCacheService>();
+        services.AddScoped<ISessionService, SessionService>();
 
-        services.AddScoped<IUserRepository, UserRepository>();
-        services.AddScoped<IOrganizationRepository, OrganizationRepository>();
-        services.AddScoped<IRoleRepository, RoleRepository>();
-
+        //Auth
         services.AddScoped<ICurrentUserContext, CurrentUserContext>();
         services.AddScoped<ITokenService, JwtTokenService>();
         services.AddScoped<IUnitOfWork, EfUnitOfWork>();
         services.AddScoped<IMicrosoftGraphService, MicrosoftGraphService>();
-        
-        services.AddScoped<ISessionService, SessionService>();
-        
 
+        // Entity Repository
+        services.AddScoped<IUserRepository, UserRepository>();
+        services.AddScoped<IOrganizationRepository, OrganizationRepository>();
+        services.AddScoped<IRoleRepository, RoleRepository>();
+        services.AddScoped<ILeadRepository, LeadRepository>();
+
+
+        //Command Handler
         services.AddScoped<AuthenticationCommandHandler>();
         services.AddScoped<LeadCommandHandler>();
 

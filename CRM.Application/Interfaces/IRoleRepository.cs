@@ -6,7 +6,7 @@ using System.Text;
 
 namespace CRM.Application.Interfaces
 {
-    public interface IRoleRepository : IRepository<AppRole>
+    public interface IRoleRepository : IEntityRepository<AppRole>
     {
         Task<AppRole?> GetDefaultAsync();
 

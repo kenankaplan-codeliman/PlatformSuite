@@ -6,7 +6,7 @@ using System.Text;
 
 namespace CRM.Application.Interfaces
 {
-    public interface IUserRepository : IRepository<AppUser>
+    public interface IUserRepository : IEntityRepository<AppUser>
     {
         Task<AppUser?> GetByEmailAsync(string email);
         Task<AppUser?> GetByAzureUserIdAsync(string microsoft365Id);

@@ -1,7 +1,7 @@
 ﻿using Azure.Core;
 using CRM.Application.Exceptions;
 using CRM.Application.Interfaces;
-using CRM.Application.Models;
+using CRM.Application.Modals;
 using Microsoft.Extensions.Logging;
 using Microsoft.Graph;
 using System;

@@ -1,12 +1,17 @@
 import { create } from 'zustand';
 import { devtools } from 'zustand/middleware';
-import type { Lead, LeadListFilters, LeadStatusValue } from '@/types/lead.types';
+import type { LeadListItem, LeadDetailItem, LeadListFilters, LeadStatusValue } from '@/types/lead.types';
 import leadService from '@/services/lead.service';
+
+interface PaginationParams {
+  page?: number;
+  pageSize?: number;
+}
 
 interface LeadState {
   // List state
-  leads: Lead[];
-  total: number;
+  leads: LeadListItem[];
+  hasMore: boolean;
   page: number;
   pageSize: number;
   loading: boolean;
@@ -15,25 +20,24 @@ interface LeadState {
   selectedRowKeys: string[];
 
   // Detail state
-  currentLead: Lead | null;
+  currentLead: LeadDetailItem | null;
   detailLoading: boolean;
   detailError: string | null;
 
   // Actions
   fetchLeads: () => Promise<void>;
   fetchLeadById: (id: string) => Promise<void>;
-  setPage: (page: number) => void;
-  setPageSize: (pageSize: number) => void;
+  setPagination: (params: PaginationParams) => void;
   setFilters: (filters: LeadListFilters) => void;
   resetFilters: () => void;
   setSelectedRowKeys: (keys: string[]) => void;
   clearSelectedRowKeys: () => void;
-  createLead: (lead: Omit<Lead, 'id' | 'createdAt' | 'createdBy'>) => Promise<Lead>;
-  updateLead: (id: string, lead: Partial<Lead>) => Promise<Lead>;
+  createLead: (lead: Omit<LeadDetailItem, 'id' | 'createdAt' | 'createdBy'>) => Promise<LeadDetailItem>;
+  updateLead: (id: string, lead: Partial<LeadDetailItem>) => Promise<LeadDetailItem>;
   deleteLead: (id: string) => Promise<void>;
   bulkDeleteLeads: () => Promise<void>;
   bulkUpdateStatus: (status: LeadStatusValue) => Promise<void>;
-  setCurrentLead: (lead: Lead | null) => void;
+  setCurrentLead: (lead: LeadDetailItem | null) => void;
   clearError: () => void;
 }
 
@@ -53,7 +57,7 @@ export const useLeadStore = create<LeadState>()(
     (set, get) => ({
       // Initial state
       leads: [],
-      total: 0,
+      hasMore: false,
       page: 1,
       pageSize: 10,
       loading: false,
@@ -73,7 +77,7 @@ export const useLeadStore = create<LeadState>()(
           const response = await leadService.getLeads(page, pageSize, filters);
           set({
             leads: response.data,
-            total: response.total,
+            hasMore: response.hasMore,
             loading: false,
           });
         } catch (error) {
@@ -102,14 +106,23 @@ export const useLeadStore = create<LeadState>()(
         }
       },
 
-      // Pagination
-      setPage: (page: number) => {
-        set({ page });
-        get().fetchLeads();
-      },
+      // Pagination - tek metod ile page ve pageSize güncelleme
+      setPagination: (params: PaginationParams) => {
+        const currentState = get();
+        const newPage = params.page ?? currentState.page;
+        const newPageSize = params.pageSize ?? currentState.pageSize;
+        
+        // pageSize değiştiyse sayfa 1'e dön
+        const finalPage = params.pageSize !== undefined && params.pageSize !== currentState.pageSize 
+          ? 1 
+          : newPage;
 
-      setPageSize: (pageSize: number) => {
-        set({ pageSize, page: 1 });
+        set({ 
+          page: finalPage, 
+          pageSize: newPageSize 
+        });
+        
+        // Tek bir fetchLeads çağrısı
         get().fetchLeads();
       },
 
@@ -149,7 +162,7 @@ export const useLeadStore = create<LeadState>()(
         }
       },
 
-      updateLead: async (id: string, leadData: Partial<Lead>) => {
+      updateLead: async (id: string, leadData: Partial<LeadDetailItem>) => {
         set({ detailLoading: true, detailError: null });
         try {
           const updatedLead = await leadService.updateLead(id, leadData);
@@ -215,7 +228,7 @@ export const useLeadStore = create<LeadState>()(
         }
       },
 
-      setCurrentLead: (lead: Lead | null) => {
+      setCurrentLead: (lead: LeadDetailItem | null) => {
         set({ currentLead: lead });
       },
 

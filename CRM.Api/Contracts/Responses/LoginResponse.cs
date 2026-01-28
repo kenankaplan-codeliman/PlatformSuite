@@ -1,5 +1,5 @@
 using CRM.Api.Contracts.Dto;
-using CRM.Application.Models;
+using CRM.Application.Modals;
 using CRM.Domain.Entities.Identity;
 
 namespace CRM.Api.Contracts.Responses;

@@ -1,14 +1,12 @@
 using CRM.Application.Authentication.Interfaces;
 using CRM.Application.Exceptions;
 using CRM.Application.Interfaces;
-using CRM.Application.Models;
+using CRM.Application.Modals;
 using CRM.Domain.Entities.Identity;
 using CRM.Domain.Enums;
 using CRM.Infrastructure.Model;
 using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
-using Microsoft.IdentityModel.Tokens.Experimental;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;

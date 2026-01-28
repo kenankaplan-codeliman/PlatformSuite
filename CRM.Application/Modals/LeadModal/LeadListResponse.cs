@@ -3,17 +3,14 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 
-namespace CRM.Application.Models
+namespace CRM.Application.Modals.LeadModal
 {
     public class LeadListResponse
     {
-        public LeadListResponse() { 
-            this.Data = new List<Lead>();   
-        }
-
-        public List<Lead> Data { get; set; }
-        public int Total { get; set; }
+        public List<LeadListItem> Data { get; set; } = new List<LeadListItem>();
+        public bool HasMore { get; set; }
         public int Page { get; set; }
         public int PageSize { get; set; }
+
     }
 }

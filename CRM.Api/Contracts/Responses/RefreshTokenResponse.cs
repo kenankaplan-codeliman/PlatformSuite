@@ -1,4 +1,4 @@
-﻿using CRM.Application.Models;
+﻿using CRM.Application.Modals;
 
 namespace CRM.Api.Contracts.Responses
 {

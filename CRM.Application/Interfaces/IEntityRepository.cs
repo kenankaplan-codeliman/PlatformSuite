@@ -5,7 +5,7 @@ using System.Text;
 
 namespace CRM.Application.Interfaces
 {
-    public interface IRepository<T>
+    public interface IEntityRepository<T>
     {
         Task<T?> GetAsync(Guid Id);
         Task UpdateAsync(T entity);

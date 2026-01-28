@@ -1,15 +1,20 @@
-﻿using CRM.Application.Models;
+﻿
+using CRM.Application.Interfaces;
+using CRM.Application.Modals.LeadModal;
 
 namespace CRM.Application.CommandHandler
 {
     public class LeadCommandHandler
     {
-        public LeadCommandHandler() { 
-
+        private readonly ILeadRepository leadRepository;
+        public LeadCommandHandler(ILeadRepository leadRepository) {
+            this.leadRepository = leadRepository;
         }
         public async Task<LeadListResponse> List(LeadListFilter? filter, int page, int pageSize)
         {
-            return new LeadListResponse();
+            var list= await leadRepository.ListAsync(filter, page, pageSize);
+
+            return list;
         }
     }
 }

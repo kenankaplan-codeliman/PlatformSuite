@@ -42,7 +42,7 @@ import {
   CheckCircleOutlined,
   ClockCircleOutlined,
 } from '@ant-design/icons';
-import type { Lead } from '@/types/lead.types';
+import type { LeadDetailItem } from '@/types/lead.types';
 import {
   LeadStatus,
   LeadRating,
@@ -69,7 +69,7 @@ export interface LeadDetailProps {
   mode?: LeadDetailMode;
   leadId?: string;
   onModeChange?: (mode: LeadDetailMode) => void;
-  onSave?: (lead: Lead) => void;
+  onSave?: (lead: LeadDetailItem) => void;
   onCancel?: () => void;
 }
 
