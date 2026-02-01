@@ -24,26 +24,26 @@ namespace CRM.Infrastructure.Repositories
             return await dbContext.AppRole.FirstOrDefaultAsync(x => x.Id == Id);
         }
 
-        public async Task<AppRole?> GetDefaultAsync()
+        public async Task<AppRole?> GetDefaultRoleAsync()
         {
             return await dbContext.AppRole.FirstOrDefaultAsync(x => x.IsDefault);
         }
 
-        public async Task CreateAsync(AppRole entity)
+        public async Task<AppRole> CreateAsync(AppRole entity)
         {
-            await dbContext.AppRole.AddAsync(entity);
-            await dbContext.SaveChangesAsync();
+            var entry = await dbContext.AppRole.AddAsync(entity);
+            return entry.Entity;
         }
-        public async Task UpdateAsync(AppRole entity)
+        public async Task<AppRole> UpdateAsync(AppRole entity)
         {
-            dbContext.AppRole.Update(entity);
-            await dbContext.SaveChangesAsync();
+            var entry = dbContext.AppRole.Update(entity);
+            return entry.Entity;
         }
 
-        public async Task DeleteAsync(AppRole entity)
+        public async Task<AppRole> DeleteAsync(AppRole entity)
         {
-            dbContext.AppRole.Remove(entity);
-            await dbContext.SaveChangesAsync();
+            var entry = dbContext.AppRole.Remove(entity);
+            return entry.Entity;
         }
 
         public async Task<List<AppRole>> GetUserRoleAsync(Guid userId)

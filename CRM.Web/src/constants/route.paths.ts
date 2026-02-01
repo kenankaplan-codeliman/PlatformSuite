@@ -5,6 +5,7 @@ import type { ActivityTypeValue } from '@/types/activity.types';
 
 export const BasePaths = {
   DashboardPath: '/',
+  Login: '/login',
   LeadPath: '/lead',
   ActivityPath: '/activity',
   AccountPath: '/account',

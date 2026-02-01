@@ -8,7 +8,7 @@ namespace CRM.Application.Interfaces
 {
     public interface IRoleRepository : IEntityRepository<AppRole>
     {
-        Task<AppRole?> GetDefaultAsync();
+        Task<AppRole?> GetDefaultRoleAsync();
 
         //User Role
         Task<List<AppRole>> GetUserRoleAsync(Guid userId);

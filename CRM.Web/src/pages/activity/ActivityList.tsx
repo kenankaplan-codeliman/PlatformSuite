@@ -473,7 +473,7 @@ const ActivityList: React.FC = () => {
         width: 300,
         ellipsis: true,
         render: (text: string, record: ActivityBase) => (
-          <Space direction="vertical" size={0}>
+          <Space orientation="vertical" size={0}>
             <Text strong style={{ cursor: 'pointer', color: '#1890ff' }}>
               {text}
             </Text>

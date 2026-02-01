@@ -11,7 +11,6 @@ namespace CRM.Application.Authentication.Interfaces
         string Email { get; }
         string DisplayName { get; }
         Guid OrganizationId { get; }
-        string AccessTokenId { get; }
         AccessLevel AccessLevel { get; }
         List<Guid> AccessibleOrganizationList { get; }
         

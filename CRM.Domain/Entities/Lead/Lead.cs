@@ -10,9 +10,9 @@ namespace CRM.Domain.Entities.Lead
     public class Lead : IBaseEntity, ISoftDeleteEntity, IAuditableEntity, IOwnedEntity
     {
         public Guid Id { get; set; }
-        public required string CompanyName { get; set; }
-        public required string FirstName { get; set; }
-        public required string LastName { get; set; }
+        public string CompanyName { get; set; } = string.Empty;
+        public string FirstName { get; set; } = string.Empty;
+        public string LastName { get; set; } = string.Empty;
         public string? JobTitle { get; set; }
         public string? Email { get; set; }
         public string? Phone { get; set; }
@@ -39,12 +39,8 @@ namespace CRM.Domain.Entities.Lead
         public bool IsDeleted { get; set; }
         public Guid? DeletedBy { get; set; }
         public DateTime? DeletedAt { get; set; }
-        public Guid OwnerId { get; }
+        public Guid OwnerId { get; set; }
         public Guid OrganizationId { get; set; }
-
-        public void SetOwner(Guid ownerId)
-        {
-            throw new NotImplementedException();
-        }
+        
     }
 }

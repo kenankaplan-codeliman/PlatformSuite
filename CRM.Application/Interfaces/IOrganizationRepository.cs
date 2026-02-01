@@ -7,7 +7,7 @@ namespace CRM.Application.Interfaces
 {
     public interface IOrganizationRepository : IEntityRepository<AppOrganization>
     {
-        Task<AppOrganization?> GetDefaultAsync();
+        Task<AppOrganization?> GetDefaultOrganizationAsync();
         Task<List<Guid>> GetOrganizationHierarchy(Guid organizationId);
     }
 

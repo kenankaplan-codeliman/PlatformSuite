@@ -1,8 +1,13 @@
-﻿using CRM.Application.Interfaces;
+﻿using Azure;
+using CRM.Application.Interfaces;
+using CRM.Application.Modals.Common;
 using CRM.Application.Modals.LeadModal;
+using CRM.Domain.Entities.Identity;
 using CRM.Domain.Entities.Lead;
 using CRM.Infrastructure.Data;
 using Microsoft.Build.Tasks.Deployment.ManifestUtilities;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Graph.Models;
 using System;
 using System.Collections.Generic;
 using System.Text;
@@ -18,11 +23,37 @@ namespace CRM.Infrastructure.Repositories
             this.dbContext = dbContext;
         }
 
-        public async Task<LeadListResponse> ListAsync(LeadListFilter? filter, int page, int pageSize) {
+        public async Task<Lead> CreateAsync(Lead entity)
+        {
+            var entry = this.dbContext.Lead.Add(entity);
+            return entry.Entity;
+        }
+
+        public async Task<Lead> UpdateAsync(Lead entity)
+        {
+            var entry = this.dbContext.Lead.Update(entity);
+            return entry.Entity;
+        }
+
+        public async Task<Lead> DeleteAsync(Lead entity)
+        {
+            var entry = this.dbContext.Lead.Remove(entity);
+            return entry.Entity;
+        }
+
+        public async Task<Lead?> GetAsync(Guid Id)
+        {
+            var entity = await this.dbContext.Lead.FirstOrDefaultAsync(e => e.Id == Id);
+            return entity;
+        }
+
+        public async Task<PaginationResult<Lead>> ListAsync(LeadListFilter? filter, PaginationInfo? paginationInfo)
+        {
 
             var query = this.dbContext.Lead.AsQueryable();
 
-            if (filter != null) {
+            if (filter != null)
+            {
 
                 if (!string.IsNullOrEmpty(filter.CompanyName))
                     query = query.Where(e => e.CompanyName.Contains(filter.CompanyName));
@@ -45,41 +76,52 @@ namespace CRM.Infrastructure.Repositories
                 if (!string.IsNullOrEmpty(filter.Industry))
                     query = query.Where(e => e.Industry != null && e.Industry.Contains(e.Industry));
 
-                if (filter.IsActive!=null)
+                if (filter.IsActive != null)
                     query = query.Where(e => e.IsActive.Equals(filter.IsActive));
             }
 
-            var skipVal = page * pageSize;
 
-            query = query.Skip(skipVal).Take(pageSize+1); // +1 for hasMore
+            if (paginationInfo != null && paginationInfo.isValid())
+            {
+                var pageIndex = (paginationInfo.Page - 1) >= 0 ? paginationInfo.Page - 1 : 0;
 
-            var entityList = query.ToList();
+                var skipVal = pageIndex * paginationInfo.PageSize;
 
-            var hasMore = entityList.Count > pageSize;
+                query = query.Skip(skipVal).Take(paginationInfo.PageSize + 1); // +1 for hasMore
 
-            var modalList = entityList.Select(e => LeadListItem.fromEntity(e)).Take(pageSize).ToList();
+                var entityList = query.ToList();
 
-            return new LeadListResponse() { 
-                Data = modalList,
-                HasMore = hasMore, 
-                Page = page,
-                PageSize = pageSize,
-            };
+                var hasMore = entityList.Count > paginationInfo.PageSize;
+
+                var modalList = entityList.Take(paginationInfo.PageSize).ToList();
+
+                return new PaginationResult<Lead>()
+                {
+                    Data = modalList,
+                    HasMore = hasMore,
+                    Page = paginationInfo.Page,
+                    PageSize = paginationInfo.PageSize,
+                };
+            }
+            else
+            {
+
+                var entityList = query.ToList();
+
+                return new PaginationResult<Lead>()
+                {
+                    Data = entityList,
+                    HasMore = false,
+                    Page = 0,
+                    PageSize = 0,
+                };
+            }
+
+
         }
 
-        public async Task<Lead?> GetAsync(Guid Id) { 
-            throw new NotImplementedException();    
-        }
-        public async Task UpdateAsync(Lead entity) {
-            throw new NotImplementedException();
-        }
-        public async Task CreateAsync(Lead entity) {
-            throw new NotImplementedException();
-        }
-        public async Task DeleteAsync(Lead entity) {
-            throw new NotImplementedException();
-        }
+
     }
 
- 
+
 }

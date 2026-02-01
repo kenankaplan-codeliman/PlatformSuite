@@ -9,12 +9,13 @@ namespace CRM.Application.Interfaces
 {
     public interface ISessionService
     {
-        Task<Guid> CreateSessionAsync(AppUser user, AuthenticationToken authenticationToken, ClientInfo? clientInfo = null);
-        Task<Guid> RefreshSessionAsync(AppUser user, AuthenticationToken authenticationToken, ClientInfo? clientInfo = null);
-        Task<bool> IsSessionValidAsync(string accessTokenId);
-        Task<ICurrentUserContext?> GetSessionValue(string accessTokenId);
+        Task<AuthenticationToken> CreateSessionAsync(AppUser user, ClientInfo? clientInfo = null);
+        Task<AuthenticationToken> RefreshSessionAsync(string refreshToken, ClientInfo? clientInfo);
+        Task RevokeSessionAsync(string accessToken, ClientInfo? clientInfo);
 
-        Task RevokeSessionAsync(AppUser user, string accessTokenId);
+        Task<ICurrentUserContext?> GetSessionUser(string accessToken);
+
+        
         Task RevokeAllUserSessionsAsync(Guid userId);
         Task<List<SessionInfo>> GetUserActiveSessionsAsync(Guid userId);
     }

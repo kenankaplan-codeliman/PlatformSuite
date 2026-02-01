@@ -7,7 +7,7 @@ namespace CRM.Api.Contracts.Validators
     {
         public RefreshTokenRequestValidator()
         {
-            RuleFor(x => x.RefreshToken).NotEmpty().MaximumLength(200);
+            RuleFor(x => x.RefreshToken).NotEmpty().MaximumLength(500);
         }
     }
 }

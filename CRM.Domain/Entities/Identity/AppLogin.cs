@@ -5,7 +5,7 @@ using System.Text;
 
 namespace CRM.Domain.Entities.Identity
 {
-    public class AppLoginHistory : IBaseEntity
+    public class AppLogin : IBaseEntity
     {
         public Guid Id { get; set; } = Guid.NewGuid();
         public Guid UserId { get; set; }
@@ -13,7 +13,7 @@ namespace CRM.Domain.Entities.Identity
         public DateTime? LogoutDate { get; set; }
         public required string AccessTokenId { get; set; }
         public DateTime AccessTokenExpiresAt { get; set; }
-        public required string RefreshToken { get; set; }
+        public required string RefreshTokenId { get; set; }
         public DateTime RefreshTokenExpiresAt { get; set; }
         public int RefreshCount { get; set; }
         public string? IpAddress { get; set; }

@@ -6,6 +6,6 @@ namespace CRM.Application.Interfaces;
 
 public interface ITokenService
 {
-    AuthenticationToken GenerateToken(AppUser user, DateTime accessTokenExpiration, DateTime? refreshTokenExpiration= null, string? refreshToken= null);
-    ICurrentUserContext ValidateAccessToken(string accessToken);
+    string GenerateToken(string accessTokenId, DateTime accessTokenExpiration);
+    string ValidateAccessToken(string accessToken, bool validateLifetime = true);
 }

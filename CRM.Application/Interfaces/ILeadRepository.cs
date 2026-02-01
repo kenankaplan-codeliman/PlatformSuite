@@ -1,4 +1,5 @@
-﻿using CRM.Application.Modals.LeadModal;
+﻿using CRM.Application.Modals.Common;
+using CRM.Application.Modals.LeadModal;
 using CRM.Domain.Entities.Identity;
 using CRM.Domain.Entities.Lead;
 using System;
@@ -9,6 +10,6 @@ namespace CRM.Application.Interfaces
 {
     public interface ILeadRepository : IEntityRepository<Lead>
     {
-        Task<LeadListResponse> ListAsync(LeadListFilter? filter, int page, int pageSize);
+        Task<PaginationResult<Lead>> ListAsync(LeadListFilter? filter, PaginationInfo? paginationInfo);
     }
 }

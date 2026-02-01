@@ -3,11 +3,11 @@ using FluentValidation;
 
 namespace CRM.Api.Contracts.Validators
 {
-    public class MicrosoftCallbackRequestValidator : AbstractValidator<MicrosoftCallbackRequest>
+    public class MicrosoftCallbackRequestValidator : AbstractValidator<MsalRequest>
     {
             public MicrosoftCallbackRequestValidator()
             {
-                RuleFor(x => x.Token).NotEmpty().MaximumLength(5000);
+                RuleFor(x => x.MsalToken).NotEmpty().MaximumLength(5000);
             }
     }
 }

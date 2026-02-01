@@ -3,6 +3,9 @@ import { devtools } from 'zustand/middleware';
 import type { LeadListItem, LeadDetailItem, LeadListFilters, LeadStatusValue } from '@/types/lead.types';
 import leadService from '@/services/lead.service';
 
+import { handleError } from '@/util/useHandleError';
+import { StateType, useProcessState } from "@/stores/process.state.store";
+
 interface PaginationParams {
   page?: number;
   pageSize?: number;
@@ -14,15 +17,12 @@ interface LeadState {
   hasMore: boolean;
   page: number;
   pageSize: number;
-  loading: boolean;
-  error: string | null;
   filters: LeadListFilters;
   selectedRowKeys: string[];
 
   // Detail state
   currentLead: LeadDetailItem | null;
-  detailLoading: boolean;
-  detailError: string | null;
+  
 
   // Actions
   fetchLeads: () => Promise<void>;
@@ -38,7 +38,6 @@ interface LeadState {
   bulkDeleteLeads: () => Promise<void>;
   bulkUpdateStatus: (status: LeadStatusValue) => Promise<void>;
   setCurrentLead: (lead: LeadDetailItem | null) => void;
-  clearError: () => void;
 }
 
 const initialFilters: LeadListFilters = {
@@ -71,38 +70,42 @@ export const useLeadStore = create<LeadState>()(
       // Fetch leads list
       fetchLeads: async () => {
         const { page, pageSize, filters } = get();
-        set({ loading: true, error: null });
+        const { setState, clearState } = useProcessState.getState();
 
         try {
+          setState(StateType.Loading, "Lead listesi yükleniyor...", "Lütfen bekleyiniz...");
+
           const response = await leadService.getLeads(page, pageSize, filters);
           set({
             leads: response.data,
             hasMore: response.hasMore,
-            loading: false,
           });
+
+          clearState();
+
         } catch (error) {
-          set({
-            error: error instanceof Error ? error.message : 'Lead listesi yüklenirken hata oluştu',
-            loading: false,
-          });
+          const errorMessage = handleError(error);
+          setState(StateType.Error, "Lead listesi yüklenemedi", errorMessage);
         }
       },
 
       // Fetch single lead
       fetchLeadById: async (id: string) => {
-        set({ detailLoading: true, detailError: null });
+        const { setState, clearState } = useProcessState.getState();
 
         try {
+          setState(StateType.Loading, "Lead detayı yükleniyor...", "Lütfen bekleyiniz...");
+
           const lead = await leadService.getLeadById(id);
+
           set({
             currentLead: lead,
-            detailLoading: false,
           });
+
+          clearState();
         } catch (error) {
-          set({
-            detailError: error instanceof Error ? error.message : 'Lead detayı yüklenirken hata oluştu',
-            detailLoading: false,
-          });
+          const errorMessage = handleError(error);
+          setState(StateType.Error, "Lead detayı yüklenemedi", errorMessage);
         }
       },
 
@@ -148,46 +151,48 @@ export const useLeadStore = create<LeadState>()(
 
       // CRUD operations
       createLead: async (leadData) => {
-        set({ loading: true, error: null });
+        const { setState, clearState } = useProcessState.getState();
+
         try {
+          setState(StateType.Loading, "Lead oluşturuluyor...", "Lütfen bekleyiniz...");
           const newLead = await leadService.createLead(leadData);
-          await get().fetchLeads();
+          //await get().fetchLeads();
+          set({ currentLead: newLead });
+          clearState();
           return newLead;
         } catch (error) {
-          set({
-            error: error instanceof Error ? error.message : 'Lead oluşturulurken hata oluştu',
-            loading: false,
-          });
+          const errorMessage = handleError(error);
+          setState(StateType.Error, "Lead oluşturulamadı", errorMessage);
           throw error;
         }
       },
 
       updateLead: async (id: string, leadData: Partial<LeadDetailItem>) => {
-        set({ detailLoading: true, detailError: null });
+        const { setState, clearState } = useProcessState.getState();
+
         try {
+          setState(StateType.Loading, "Lead güncelleniyor...", "Lütfen bekleyiniz...");
           const updatedLead = await leadService.updateLead(id, leadData);
-          set({ currentLead: updatedLead, detailLoading: false });
-          return updatedLead;
+          set({ currentLead: updatedLead });
+          clearState();
+          
         } catch (error) {
-          set({
-            detailError: error instanceof Error ? error.message : 'Lead güncellenirken hata oluştu',
-            detailLoading: false,
-          });
+          const errorMessage = handleError(error);
+          setState(StateType.Error, "Lead güncellenemedi", errorMessage);
           throw error;
         }
       },
 
       deleteLead: async (id: string) => {
-        set({ loading: true, error: null });
+        const { setState } = useProcessState.getState();
         try {
+          setState(StateType.Loading, "Lead siliniyor...", "Lütfen bekleyiniz...");
           await leadService.deleteLead(id);
           await get().fetchLeads();
           get().clearSelectedRowKeys();
         } catch (error) {
-          set({
-            error: error instanceof Error ? error.message : 'Lead silinirken hata oluştu',
-            loading: false,
-          });
+          const errorMessage = handleError(error);
+          setState(StateType.Error, "Lead silinemedi", errorMessage);
           throw error;
         }
       },
@@ -196,34 +201,36 @@ export const useLeadStore = create<LeadState>()(
         const { selectedRowKeys } = get();
         if (selectedRowKeys.length === 0) return;
 
-        set({ loading: true, error: null });
+        const { setState } = useProcessState.getState();
         try {
+          setState(StateType.Loading, "Lead\'ler siliniyor...", "Lütfen bekleyiniz...");
           await leadService.bulkDeleteLeads(selectedRowKeys);
           await get().fetchLeads();
           get().clearSelectedRowKeys();
         } catch (error) {
-          set({
-            error: error instanceof Error ? error.message : 'Lead\'ler silinirken hata oluştu',
-            loading: false,
-          });
-          throw error;
+          const errorMessage = handleError(error);
+          setState(StateType.Error, "Lead\'ler silinemedi", errorMessage);
+          //throw error;
         }
       },
 
       bulkUpdateStatus: async (status: LeadStatusValue) => {
+        
+        const { setState } = useProcessState.getState();
+
         const { selectedRowKeys } = get();
+
         if (selectedRowKeys.length === 0) return;
 
-        set({ loading: true, error: null });
+        
         try {
+          setState(StateType.Loading, "Lead\'ler güncelleniyor...", "Lütfen bekleyiniz...");
           await leadService.bulkUpdateStatus(selectedRowKeys, status);
           await get().fetchLeads();
           get().clearSelectedRowKeys();
         } catch (error) {
-          set({
-            error: error instanceof Error ? error.message : 'Lead durumları güncellenirken hata oluştu',
-            loading: false,
-          });
+          const errorMessage = handleError(error);
+          setState(StateType.Error, "Lead\'ler güncellenemedi", errorMessage);
           throw error;
         }
       },
@@ -231,10 +238,7 @@ export const useLeadStore = create<LeadState>()(
       setCurrentLead: (lead: LeadDetailItem | null) => {
         set({ currentLead: lead });
       },
-
-      clearError: () => {
-        set({ error: null, detailError: null });
-      },
+      
     }),
     { name: 'lead-store' }
   )

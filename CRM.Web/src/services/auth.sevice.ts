@@ -1,37 +1,30 @@
 import axios from 'axios';
-import { EndPointPaths } from '@/constants/endpoint.paths';
-import type{ User } from '@/stores/auth.store';
+import { ServicePath } from '@/constants/service.paths';
+import type { LoginRequest, LoginResponse, MsalRequest, RefreshTokenRequest, AccessTokenRequest, User } from '@/types/auth.types';
 
-export interface LoginResponse {
-  user: User;
-  accessToken: string;
-  accessTokenExpireAt: Date;
-  refreshToken: string;
-  refreshTokenExpireAt: Date;
-}
 
-export interface MicrosoftCallbackRequest {
-  code: string;
-  state: string;
-}
-
-class AuthService {
-  /**
+export const authService = {
+    /**
    * Custom Email/Password Login
    */
-  async login(email: string, password: string): Promise<LoginResponse> {
-    try {
-      const response = await axios.post<LoginResponse>(
-        `${EndPointPaths.Auth.Login}`,
-        { email, password }
-      );
-      
-      return response.data;
-    } catch (error) {
-      console.error('Login failed:', error);
-      throw error;
-    }
-  }
+
+  login: async (
+    email: string, 
+    password: string
+  ): Promise<LoginResponse> => {
+
+    const request : LoginRequest = {
+      email: email,
+      password: password
+    };
+
+    const response = await axios.post<LoginResponse>(
+      `${ServicePath.Auth.Login}`,
+      request
+    );
+    
+    return response.data;
+  },
 
   /**
    * Microsoft OAuth Callback
@@ -40,45 +33,59 @@ class AuthService {
    * 
    * @param msalToken - MSAL access token from Microsoft
    */
-  async microsoftCallback(msalToken: string): Promise<LoginResponse> {
-    try {
+  loginWithMicrosoft: async (msalToken: string): Promise<LoginResponse> =>{
+
+      const request : MsalRequest = {
+          msalToken: msalToken  
+      };
+
       const response = await axios.post<LoginResponse>(
-        `${EndPointPaths.Auth.MicrosoftCallback}`,
-        { token: msalToken }
+        `${ServicePath.Auth.MicrosoftCallback}`,
+        request
       );
       
       return response.data;
-    } catch (error) {
-      console.error('Microsoft callback failed:', error);
-      throw error;
-    }
-  }
+  },
 
   /**
    * Refresh access token using refresh token
    */
-  async refreshAccessToken(refreshToken: string): Promise<LoginResponse> {
-    try {
-      const response = await axios.post<LoginResponse>(
-        `${EndPointPaths.Auth.RefreshToken}`,
-        { refreshToken }
+  refreshToken: async (refreshToken: string): Promise<LoginResponse> => {
+
+    const request : RefreshTokenRequest = {
+          refreshToken: refreshToken    
+      };
+    
+    const response = await axios.post<LoginResponse>(
+        `${ServicePath.Auth.RefreshToken}`,
+        request
       );
       
-      return response.data;
-    } catch (error) {
-      console.error('Token refresh failed:', error);
-      throw error;
-    }
-  }
-
+    return response.data;
+  },
 
   /**
    * Logout - invalidate tokens
    */
-  async logout(accessToken: string): Promise<void> {
-    try {
-      await axios.post(
-        `${EndPointPaths.Auth.Logout}`,
+  logout: async (accessToken: string): Promise<void> => {
+      
+    const request : AccessTokenRequest = {
+        accessToken: accessToken    
+      };
+
+    await axios.post(
+      `${ServicePath.Auth.Logout}`,
+      request
+    );
+  },
+
+    /**
+   * fetchUser - Get current user info using access token
+   */
+  fetchUser: async (accessToken: string): Promise<User> => {
+      
+      const response = await axios.post(
+        `${ServicePath.Auth.Me}`,
         {},
         {
           headers: {
@@ -86,10 +93,10 @@ class AuthService {
           },
         }
       );
-    } catch (error) {
-      throw error;
-    }
-  }
+
+      return response.data;
+  },
+
 }
 
-export const authService = new AuthService();
+export default authService;

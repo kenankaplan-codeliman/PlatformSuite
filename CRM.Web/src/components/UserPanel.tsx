@@ -1,53 +1,30 @@
 import { Popover, Avatar, Button, Divider } from "antd";
 import { UserOutlined, LogoutOutlined } from "@ant-design/icons";
-import { authService } from "@/services/auth.sevice";
-
 import { useNavigate } from "react-router-dom";
 import { useAuthState } from '@/stores/auth.store';
-import { useHandleError } from '@/util/useHandleError';
-import { useLoadingModal } from '@/components/LoadingModal';
+import RoutePaths from "@/constants/route.paths";
+import { useEffect } from "react";
 
 const UserPanel = () => {
 
     const navigate = useNavigate();
-    const { isAuthenticated, accessToken, user, logout } = useAuthState();
-    const { handleError } = useHandleError();
+    const { isAuthenticated, accessToken, user, logout, loadUser } = useAuthState();
 
-    const {
-        showLoading,
-        showError,
-        closeLoading,
-    } = useLoadingModal();
+    useEffect(() => {
+        if (isAuthenticated && !user){
+            loadUser();
+        }
+    }, [isAuthenticated]);
 
-    const handleLogout = () => {
-
-        showLoading({
-            title: 'Logging out',
-            description: 'Please wait...',
-        });
+    const handleLogout = async () => {
 
         if (accessToken) {
-
-            authService.logout(accessToken)
-                .then(() => {
-                    setTimeout(() => {
-                        closeLoading();
-                        navigate('/', { replace: true });
-                    }, 1000);
-                })
-                .catch((error) => {
-                    showError('Logout Error', handleError(error, { showMessage: false }));
-                    setTimeout(() => {
-                        closeLoading();
-                    }, 3000);
-                });
-        }
-        else {
-            closeLoading();
+           await logout()
         }
 
-        logout();
-
+        setTimeout(() => {
+            navigate(RoutePaths.Login, { replace: true });
+        }, 1000);
     };
 
     const content = (

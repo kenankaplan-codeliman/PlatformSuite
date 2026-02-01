@@ -1,5 +1,6 @@
-import { useEffect, useState, useCallback } from 'react';
+import { useEffect, useState, useCallback, useRef } from 'react';
 import { useParams, useNavigate, useSearchParams } from 'react-router-dom';
+import { RoutePaths } from '@/constants/route.paths';
 import {
   Card,
   Form,
@@ -12,9 +13,6 @@ import {
   Col,
   Typography,
   Divider,
-  message,
-  Spin,
-  Alert,
   Descriptions,
   Tag,
   Tooltip,
@@ -57,6 +55,7 @@ import {
   leadRatingOptions,
 } from '@/types/lead.types';
 import { useLeadStore } from '@/stores/lead.store';
+import { StateType, useProcessState } from "@/stores/process.state.store";
 
 const { Title, Text, Paragraph } = Typography;
 const { TextArea } = Input;
@@ -74,10 +73,15 @@ export interface LeadDetailProps {
 }
 
 const LeadDetail: React.FC<LeadDetailProps> = (props) => {
-  const params = useParams<{ id: string }>();
-  const navigate = useNavigate();
-  const [searchParams, setSearchParams] = useSearchParams();
-  const [form] = Form.useForm();
+
+  // Router hooks
+const params = useParams<{ id: string }>();
+const navigate = useNavigate();
+const [searchParams, setSearchParams] = useSearchParams();
+const [form] = Form.useForm();
+
+const { state } = useProcessState.getState();
+  
 
   // Determine mode from props, URL params, or default
   const urlMode = searchParams.get('mode') as LeadDetailMode | null;
@@ -91,8 +95,6 @@ const LeadDetail: React.FC<LeadDetailProps> = (props) => {
   // Store state and actions
   const {
     currentLead,
-    detailLoading,
-    detailError,
     fetchLeadById,
     createLead,
     updateLead,
@@ -103,6 +105,9 @@ const LeadDetail: React.FC<LeadDetailProps> = (props) => {
   const isViewMode = mode === 'view';
   const isEditMode = mode === 'edit';
   const isCreateMode = mode === 'create' || isNewLead;
+
+  // Ref to prevent double fetch (like LeadList)
+  const isFirstRender = useRef(true);
 
   // Sync mode with URL
   const updateMode = useCallback(
@@ -116,15 +121,27 @@ const LeadDetail: React.FC<LeadDetailProps> = (props) => {
     [props, setSearchParams]
   );
 
-  // Fetch lead data on mount
+  // Fetch lead data on mount (only once)
   useEffect(() => {
-    if (!isNewLead && leadId) {
-      fetchLeadById(leadId);
-    } else {
-      setCurrentLead(null);
-      setMode('create');
+    if (isFirstRender.current) {
+      isFirstRender.current = false;
+      
+      if (!isNewLead && leadId) {
+        fetchLeadById(leadId);
+      } else {
+        setCurrentLead(null);
+        setMode('create');
+      }
     }
   }, [leadId, isNewLead, fetchLeadById, setCurrentLead]);
+
+  useEffect(() => {
+  const urlMode = searchParams.get('mode') as LeadDetailMode | null;
+  if (urlMode && urlMode !== mode && !isNewLead) {
+    setMode(urlMode);
+  }
+}, [searchParams, isNewLead]);
+
 
   // Populate form when lead data changes
   useEffect(() => {
@@ -149,7 +166,7 @@ const LeadDetail: React.FC<LeadDetailProps> = (props) => {
 
   const handleCancelEdit = useCallback(() => {
     if (isNewLead) {
-      navigate('/leads');
+      navigate(RoutePaths.Lead.List);
     } else {
       form.setFieldsValue(currentLead);
       updateMode('view');
@@ -159,91 +176,61 @@ const LeadDetail: React.FC<LeadDetailProps> = (props) => {
 
   // Handle form submission
   const handleSave = useCallback(async () => {
-    try {
+    
       const values = await form.validateFields();
 
       if (isNewLead) {
         const newLead = await createLead(values);
-        message.success('Lead başarıyla oluşturuldu');
+        
         props.onSave?.(newLead);
-        navigate(`/leads/${newLead.id}?mode=view`);
+        navigate(RoutePaths.Lead.View(newLead.id));
+
       } else if (leadId) {
         const updatedLead = await updateLead(leadId, values);
-        message.success('Lead başarıyla güncellendi');
+
         props.onSave?.(updatedLead);
+
         updateMode('view');
       }
-    } catch (error) {
-      if (error instanceof Error) {
-        message.error(error.message);
-      } else {
-        message.error('Kaydetme işlemi sırasında hata oluştu');
-      }
-    }
   }, [form, isNewLead, leadId, createLead, updateLead, navigate, updateMode, props]);
 
   // Handle delete
   const handleDelete = useCallback(async () => {
     if (!leadId || isNewLead) return;
 
-    try {
-      const { deleteLead } = useLeadStore.getState();
+    const { deleteLead } = useLeadStore.getState();
       await deleteLead(leadId);
-      message.success('Lead başarıyla silindi');
-      navigate('/leads');
-    } catch {
-      message.error('Silme işlemi sırasında hata oluştu');
-    }
+      navigate(RoutePaths.Lead.List);
+      
   }, [leadId, isNewLead, navigate]);
 
   // Handle back navigation
   const handleBack = useCallback(() => {
-    navigate('/leads');
+    navigate(RoutePaths.Lead.List);
   }, [navigate]);
 
-  // Loading state
-  if (detailLoading && !isNewLead) {
+  // Not found state (only show if not loading and no error)
+  if (!currentLead && !isNewLead ) {
     return (
-      <div style={{ padding: 24, textAlign: 'center' }}>
-        <Spin size="large" tip="Lead bilgileri yükleniyor..." />
+      <div style={{ padding: 24 }}>
+        <Card>
+          <div style={{ textAlign: 'center', padding: '40px 0' }}>
+            <Title level={4} type="warning">Lead Bulunamadı</Title>
+            <Text type="secondary">Aradığınız lead bulunamadı veya silinmiş olabilir.</Text>
+            <div style={{ marginTop: 24 }}>
+              <Button type="primary" onClick={handleBack}>Listeye Dön</Button>
+            </div>
+          </div>
+        </Card>
       </div>
     );
   }
 
-  // Error state
-  if (detailError && !isNewLead) {
-    return (
-      <div style={{ padding: 24 }}>
-        <Alert
-          type="error"
-          message="Hata"
-          description={detailError}
-          showIcon
-          action={
-            <Button size="small" onClick={() => leadId && fetchLeadById(leadId)}>
-              Tekrar Dene
-            </Button>
-          }
-        />
-      </div>
-    );
-  }
 
-  // Not found state
-  if (!currentLead && !isNewLead && !detailLoading) {
-    return (
-      <div style={{ padding: 24 }}>
-        <Alert
-          type="warning"
-          message="Lead Bulunamadı"
-          description="Aradığınız lead bulunamadı veya silinmiş olabilir."
-          showIcon
-          action={
-            <Button onClick={handleBack}>Listeye Dön</Button>
-          }
-        />
-      </div>
-    );
+
+  // Don't render content while loading (modal handles loading state)
+  if (state === StateType.Loading && !isNewLead) {
+    return null;
   }
 
   // Render View Mode
@@ -415,7 +402,7 @@ const LeadDetail: React.FC<LeadDetailProps> = (props) => {
                           <br />
                           <Text type="secondary">
                             {currentLead?.createdAt
-                              ? new Date(currentLead.createdAt).toLocaleString('tr-TR')
+                              ? currentLead.createdAt.toLocaleString('tr-TR')
                               : '-'}
                           </Text>
                         </>
@@ -431,7 +418,7 @@ const LeadDetail: React.FC<LeadDetailProps> = (props) => {
                                 <Text strong>Son Güncelleme</Text>
                                 <br />
                                 <Text type="secondary">
-                                  {new Date(currentLead.updatedAt).toLocaleString('tr-TR')}
+                                  {currentLead.updatedAt.toLocaleString('tr-TR')}
                                 </Text>
                               </>
                             ),
@@ -448,7 +435,7 @@ const LeadDetail: React.FC<LeadDetailProps> = (props) => {
                                 <Text strong>Dönüştürüldü</Text>
                                 <br />
                                 <Text type="secondary">
-                                  {new Date(currentLead.convertedDate).toLocaleString('tr-TR')}
+                                  {currentLead.convertedDate?.toLocaleString('tr-TR')}
                                 </Text>
                               </>
                             ),

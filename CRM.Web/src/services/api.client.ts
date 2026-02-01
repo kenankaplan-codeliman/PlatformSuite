@@ -1,8 +1,8 @@
 import axios, { AxiosError } from 'axios';
 import type { InternalAxiosRequestConfig } from 'axios';
-import { EndpointBasePath } from '@/constants/endpoint.paths';
+import { ServiceBasePath } from '@/constants/service.paths';
 import { useAuthState } from '@/stores/auth.store';
-import { authService } from '@/services/auth.sevice';
+import { RoutePaths } from '@/constants/route.paths';
 
 /**
  * Axios instance with authentication interceptor
@@ -10,7 +10,7 @@ import { authService } from '@/services/auth.sevice';
  * Handles token refresh on 401 errors
  */
 const apiClient = axios.create({
-  baseURL: EndpointBasePath,
+  baseURL: ServiceBasePath,
   timeout: 30000,
   headers: {
     'Content-Type': 'application/json',
@@ -43,7 +43,7 @@ export default apiClient;
  * Response interceptor
  * Handles token refresh on 401 Unauthorized
  */
-/*
+
 let isRefreshing = false;
 let failedQueue: Array<{
   resolve: (value?: any) => void;
@@ -85,37 +85,40 @@ apiClient.interceptors.response.use(
       originalRequest._retry = true;
       isRefreshing = true;
 
-      const { refreshToken, setTokens, logout } = useAuthState();
+      const { refreshToken, accessToken, refreshAuthToken,logout, checkAuth } = useAuthState.getState();
 
       if (!refreshToken) {
         // No refresh token, logout
         logout();
-        window.location.href = '/login';
+        window.location.href = RoutePaths.Login;
         return Promise.reject(error);
       }
 
       try {
         // Try to refresh token
-        const response = await authService.refreshAccessToken(refreshToken);
-        
-        // Update tokens in store
-        setTokens(response.accessToken, response.refreshToken);
+        await refreshAuthToken();
         
         // Update Authorization header
-        if (originalRequest.headers) {
-          originalRequest.headers.Authorization = `Bearer ${response.accessToken}`;
-        }
+        if (checkAuth() && originalRequest.headers) {
+          originalRequest.headers.Authorization = `Bearer ${accessToken}`;
+        } else {
+        // No refresh token, logout
+        logout();
+        window.location.href = RoutePaths.Login;
+        return Promise.reject(error);
+      }
         
         // Process queued requests
         processQueue();
         
         // Retry original request
         return apiClient(originalRequest);
+
       } catch (refreshError) {
         // Refresh failed, logout
         processQueue(refreshError);
         logout();
-        window.location.href = '/login';
+        window.location.href = RoutePaths.Login;
         return Promise.reject(refreshError);
       } finally {
         isRefreshing = false;
@@ -125,6 +128,5 @@ apiClient.interceptors.response.use(
     return Promise.reject(error);
   }
 );
-*/
 
 

@@ -57,7 +57,7 @@ public static class AuthenticationConfiguration
                             return;
                         }
 
-                        var currentUserContextCached = await sessionService.GetSessionValue(accessTokenId);
+                        var currentUserContextCached = await sessionService.GetSessionUser(accessTokenId);
 
                         if (currentUserContextCached == null)
                         {
@@ -71,7 +71,6 @@ public static class AuthenticationConfiguration
                             user.Email = currentUserContextCached.Email;
                             user.DisplayName = currentUserContextCached.DisplayName;
                             user.OrganizationId = currentUserContextCached.OrganizationId;
-                            user.AccessTokenId = currentUserContextCached.AccessTokenId;
                             user.AccessLevel = currentUserContextCached.AccessLevel;
                             user.AccessibleOrganizationList = currentUserContextCached.AccessibleOrganizationList;
                         }
@@ -84,6 +83,7 @@ public static class AuthenticationConfiguration
 
 
                         // Claims ekle
+                        /*
                         var claims = new List<Claim>()
                                         {
                                             new Claim(TokenKeys.userId, currentUserContext.UserId.ToString("N")),
@@ -92,6 +92,7 @@ public static class AuthenticationConfiguration
 
                         var appIdentity = new ClaimsIdentity(claims);
                         context.Principal?.AddIdentity(appIdentity);
+                        */
                     }
                 };
 

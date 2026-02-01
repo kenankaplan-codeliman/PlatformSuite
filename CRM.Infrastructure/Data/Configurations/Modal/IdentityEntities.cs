@@ -307,9 +307,9 @@ public static class IdentityEntities
         // =====================================================
         // app_login_history
         // =====================================================
-        modelBuilder.Entity<AppLoginHistory>(entity =>
+        modelBuilder.Entity<AppLogin>(entity =>
         {
-            entity.ToTable("app_login_history");
+            entity.ToTable("app_user_login");
 
             entity.HasKey(e => e.Id);
             entity.Property(e => e.Id).HasColumnName("id");
@@ -327,16 +327,16 @@ public static class IdentityEntities
 
             entity.Property(e => e.AccessTokenId)
                 .HasColumnName("access_token_id")
-                .HasMaxLength(150)
+                .HasMaxLength(100)
                 .IsRequired();
 
             entity.Property(e => e.AccessTokenExpiresAt)
                 .HasColumnName("access_token_expires_at")
                 .IsRequired();
 
-            entity.Property(e => e.RefreshToken)
-                .HasColumnName("refresh_token")
-                .HasMaxLength(500)
+            entity.Property(e => e.RefreshTokenId)
+                .HasColumnName("refresh_token_id")
+                .HasMaxLength(100)
                 .IsRequired();
 
             entity.Property(e => e.RefreshTokenExpiresAt)

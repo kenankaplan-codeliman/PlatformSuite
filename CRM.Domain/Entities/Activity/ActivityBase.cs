@@ -92,13 +92,8 @@ public abstract class ActivityBase : IBaseEntity, ISoftDeleteEntity, IAuditableE
     #endregion
 
     #region IOwnedEntity
-    public Guid OwnerId { get; private set; }
+    public Guid OwnerId { get; set; }
     public Guid OrganizationId { get; set; }
-
-    public void SetOwner(Guid ownerId)
-    {
-        OwnerId = ownerId;
-    }
     #endregion
 
     #region Domain Methods

@@ -1,4 +1,5 @@
 ﻿using CRM.Application.Interfaces;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Storage;
 using System;
 using System.Collections.Generic;
@@ -23,7 +24,18 @@ namespace CRM.Infrastructure.Data
 
         public async Task CommitAsync()
         {
-            await _context.SaveChangesAsync();
+            var hasChanges = _context.ChangeTracker
+                               .Entries()
+                               .Any(e =>
+                                   e.State == EntityState.Added ||
+                                   e.State == EntityState.Modified ||
+                                   e.State == EntityState.Deleted);
+
+            if (hasChanges)
+            {
+                await _context.SaveChangesAsync();
+            }
+
             await _transaction!.CommitAsync();
         }
 

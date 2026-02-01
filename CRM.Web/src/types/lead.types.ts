@@ -41,6 +41,12 @@ export interface LeadListItem {
   lastName: string;
   email?: string;
   mobilePhone?: string;
+  leadStatus: LeadStatusValue;
+  leadSource: LeadSourceValue;
+  leadRating: LeadRatingValue;
+  industry: string;
+  estimatedValue: number;
+  isActive: boolean;
 }
 
 export interface LeadDetailItem {
@@ -96,6 +102,28 @@ export interface LeadListResponse {
   hasMore: boolean;
   page: number;
   pageSize: number;
+}
+
+export interface LeadGetRequest {
+  id: string;
+}
+
+export interface LeadUpdateRequest {
+  id: string;
+  data: Partial<LeadDetailItem>;
+}
+
+export interface LeadDeleteRequest {
+  id: string;
+}
+
+export interface LeadBulkDeleteRequest {
+  ids: string[];
+}
+
+export interface LeadBulkUpdateStatusRequest {
+  ids: string[];
+  status: LeadStatusValue;
 }
 
 // Label maps

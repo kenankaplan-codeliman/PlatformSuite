@@ -167,7 +167,7 @@ create table if not exists app_role_privilege (
 -- app_login_history  
 -- =============================================
 
-create table if not exists app_login_history (
+create table if not exists app_user_login (
     -- IBaseEntity
     id                          uuid primary key default gen_random_uuid(),
 
@@ -178,10 +178,10 @@ create table if not exists app_login_history (
     login_date                  timestamptz not null,
     logout_date                 timestamptz,
 
-    access_token_id             varchar(150) not null,
+    access_token_id             varchar(100) not null,
     access_token_expires_at     timestamptz not null,
 
-    refresh_token               varchar(500) not null,
+    refresh_token_id               varchar(100) not null,
     refresh_token_expires_at    timestamptz not null,
     refresh_count               int not null default 0,
 

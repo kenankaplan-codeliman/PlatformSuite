@@ -13,7 +13,6 @@ import {
   Col,
   Dropdown,
   Modal,
-  message,
   Tooltip,
   Badge,
   Typography,
@@ -53,6 +52,8 @@ import {
 import { useLeadStore } from '@/stores/lead.store';
 import leadService from '@/services/lead.service';
 import CustomPagination from '@/components/CustomPagination';
+import { handleError } from '@/util/useHandleError';
+import { StateType, useProcessState } from "@/stores/process.state.store";
 
 const { Title, Text } = Typography;
 const { Search } = Input;
@@ -62,14 +63,14 @@ const LeadList: React.FC = () => {
   const [filterVisible, setFilterVisible] = useState(false);
   const [searchText, setSearchText] = useState('');
 
+  
+
   // Store state and actions
   const {
     leads,
     hasMore,
     page,
     pageSize,
-    loading,
-    error,
     filters,
     selectedRowKeys,
     fetchLeads,
@@ -82,9 +83,8 @@ const LeadList: React.FC = () => {
     bulkUpdateStatus,
   } = useLeadStore();
 
-
   const isFirstRender = useRef(true);
-  
+
   useEffect(() => {
     if (isFirstRender.current) {
       isFirstRender.current = false;
@@ -92,12 +92,6 @@ const LeadList: React.FC = () => {
     }
   }, [fetchLeads]);
 
-  // Show error message
-  useEffect(() => {
-    if (error) {
-      message.error(error);
-    }
-  }, [error]);
 
   // Handle row click - navigate to detail/edit page
   const handleRowClick = useCallback(
@@ -152,12 +146,8 @@ const LeadList: React.FC = () => {
       okType: 'danger',
       cancelText: 'İptal',
       onOk: async () => {
-        try {
+         
           await bulkDeleteLeads();
-          message.success(`${selectedRowKeys.length} lead başarıyla silindi`);
-        } catch {
-          message.error('Silme işlemi sırasında hata oluştu');
-        }
       },
     });
   }, [selectedRowKeys.length, bulkDeleteLeads]);
@@ -165,19 +155,20 @@ const LeadList: React.FC = () => {
   // Handle bulk status update
   const handleBulkStatusUpdate = useCallback(
     async (status: LeadStatusValue) => {
-      try {
+        
         await bulkUpdateStatus(status);
-        message.success(`${selectedRowKeys.length} lead durumu güncellendi`);
-      } catch {
-        message.error('Durum güncelleme sırasında hata oluştu');
-      }
     },
     [selectedRowKeys.length, bulkUpdateStatus]
   );
 
   // Handle export
   const handleExport = useCallback(async () => {
+    
+    const { setState } = useProcessState.getState();
+
     try {
+      setState(StateType.Loading, "Dışa Aktarılıyor", "Lead listesi hazırlanıyor...");
+    
       const blob = await leadService.exportLeads(filters);
       const url = window.URL.createObjectURL(blob);
       const link = document.createElement('a');
@@ -185,10 +176,13 @@ const LeadList: React.FC = () => {
       link.download = `leads_${new Date().toISOString().split('T')[0]}.xlsx`;
       link.click();
       window.URL.revokeObjectURL(url);
-      message.success('Lead listesi dışa aktarıldı');
-    } catch {
-      message.error('Dışa aktarma sırasında hata oluştu');
-    }
+      
+      setState(StateType.Success, "Dışa Aktarıldı", "Lead listesi dışa aktarıldı");
+      
+   } catch (error) {
+          const errorMessage = handleError(error);
+          setState(StateType.Error, "Lead listesi dışa aktarılamadı", errorMessage);
+  }
   }, [filters]);
 
   // Handle page change (for CustomPagination)
@@ -252,13 +246,19 @@ const LeadList: React.FC = () => {
       key: 'view',
       label: 'Görüntüle',
       icon: <UserOutlined />,
-      onClick: () => handleView(record),
+      onClick: (info) => {
+        info.domEvent.stopPropagation();
+        handleView(record);
+      },
     },
     {
       key: 'edit',
       label: 'Düzenle',
       icon: <EditOutlined />,
-      onClick: () => handleRowClick(record),
+      onClick: (info) => {
+        info.domEvent.stopPropagation();
+        handleRowClick(record);
+      },
     },
     { type: 'divider' },
     {
@@ -266,7 +266,11 @@ const LeadList: React.FC = () => {
       label: 'Sil',
       icon: <DeleteOutlined />,
       danger: true,
-      onClick: () => {
+      onClick: (info) => {
+        info.domEvent.stopPropagation();
+
+      const { setState } = useProcessState.getState();
+
         Modal.confirm({
           title: 'Lead Silme',
           content: `"${record.companyName}" lead'i silinecek. Onaylıyor musunuz?`,
@@ -275,11 +279,12 @@ const LeadList: React.FC = () => {
           cancelText: 'İptal',
           onOk: async () => {
             try {
+             
               await leadService.deleteLead(record.id);
-              message.success('Lead başarıyla silindi');
-              fetchLeads();
-            } catch {
-              message.error('Silme işlemi sırasında hata oluştu');
+             
+            } catch (error) {
+              const errorMessage = handleError(error);
+              setState(StateType.Error, "Silme Başarısız", errorMessage);
             }
           },
         });
@@ -296,7 +301,7 @@ const LeadList: React.FC = () => {
       sorter: true,
       width: 200,
       render: (text: string, record: LeadListItem) => (
-        <Space direction="vertical" size={0}>
+        <Space orientation="vertical" size={0}>
           <Text strong style={{ cursor: 'pointer', color: '#1890ff' }}>
             {text}
           </Text>
@@ -312,7 +317,7 @@ const LeadList: React.FC = () => {
       key: 'contact',
       width: 220,
       render: (_: unknown, record: LeadListItem) => (
-        <Space direction="vertical" size={2}>
+        <Space orientation="vertical" size={2}>
           {record.email && (
             <Space size={4}>
               <MailOutlined style={{ color: '#8c8c8c', fontSize: 12 }} />
@@ -409,25 +414,25 @@ const LeadList: React.FC = () => {
   // Table change handler - sadece filter değişikliklerini handle ediyor
   const handleTableChange: TableProps<LeadListItem>['onChange'] = (_pagination, tableFilters) => {
     const newFilters = { ...filters };
-    
+
     if (tableFilters.leadStatus) {
       newFilters.leadStatus = tableFilters.leadStatus[0] as LeadStatusValue;
     } else {
       newFilters.leadStatus = undefined;
     }
-    
+
     if (tableFilters.leadRating) {
       newFilters.leadRating = tableFilters.leadRating[0] as LeadRatingValue;
     } else {
       newFilters.leadRating = undefined;
     }
-    
+
     if (tableFilters.isActive !== undefined && tableFilters.isActive !== null && tableFilters.isActive.length > 0) {
       newFilters.isActive = tableFilters.isActive[0] as boolean;
     } else {
       newFilters.isActive = undefined;
     }
-    
+
     setFilters(newFilters);
   };
 
@@ -534,7 +539,7 @@ const LeadList: React.FC = () => {
               )}
 
               <Tooltip title="Yenile">
-                <Button icon={<ReloadOutlined />} onClick={() => fetchLeads()} loading={loading} />
+                <Button icon={<ReloadOutlined />} onClick={() => fetchLeads()} />
               </Tooltip>
             </Space>
           </Col>
@@ -575,7 +580,7 @@ const LeadList: React.FC = () => {
           rowKey="id"
           columns={columns}
           dataSource={leads}
-          loading={loading}
+          loading={false}
           rowSelection={rowSelection}
           pagination={false}
           onChange={handleTableChange}
@@ -586,13 +591,12 @@ const LeadList: React.FC = () => {
           scroll={{ x: 1300 }}
           size="middle"
         />
-        
+
         {/* Custom Pagination */}
         <CustomPagination
           current={page}
           pageSize={pageSize}
           hasMore={hasMore}
-          loading={loading}
           totalItems={leads?.length ?? 0}
           pageSizeOptions={[10, 20, 50, 100]}
           onPageChange={handlePageChange}

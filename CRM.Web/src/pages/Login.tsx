@@ -1,86 +1,47 @@
 import { useNavigate } from "react-router-dom";
 import { Button, Form, Input, Card, Divider } from "antd";
-import { authService } from "@/services/auth.sevice";
 import { useAuthState } from "@/stores/auth.store";
-import { useHandleError } from '@/util/useHandleError';
-import { useLoadingModal } from '@/components/LoadingModal';
 import { loginRequest, msalInstance } from "@/util/msalInstance";
 import MicrosoftOutlined from '@/components/MicrosoftIcon';
+import { useEffect } from "react";
+import RoutePaths from "@/constants/route.paths";
+import { StateType, useProcessState } from "@/stores/process.state.store";
 
 const Login = () => {
 
-  const { login } = useAuthState();
+  const { login, loginWithMicrosoft } = useAuthState();
   const navigate = useNavigate();
-  const { handleError } = useHandleError();
+  const { state } = useProcessState();
   
-  const {
-    showLoading,
-    showSuccess,
-    showError,
-    closeLoading,
-    showStep
-  } = useLoadingModal();
+
+
+useEffect(() => {
+    if (state === StateType.Success) { 
+      setTimeout(() => {
+        navigate(RoutePaths.DashboardPath, { replace: true });
+      }, 1000);
+    }
+  }, [state]);
 
 
   // ========================================
   // MICROSOFT 365 LOGIN
   // ========================================
   const handleMicrosoftLogin = async () => {
-    try {
 
-      // 2. Show loading modal
-      showLoading({
-        title: 'Authenticating with Microsoft',
-        description: 'Please complete the login in the popup window...',
-      });
-
-      // 3. Microsoft login
       const loginResponse = await msalInstance.loginPopup(loginRequest);
 
       console.log('Microsoft login successful:', loginResponse.account.username);
 
       msalInstance.setActiveAccount(loginResponse.account);
 
-      // 4. Update modal - backend step
-      showStep(
-        'processing',
-        'Validating with Backend',
-        'Creating your session...'
-      );
-
-      // 5. Ms Token acquire
       const msTokenResponse = await msalInstance.acquireTokenSilent({
         account: loginResponse.account,
         scopes: ['User.Read', 'openid', 'profile', 'email'],
       });
 
-      // 6. Api loging
-      const apiResponse = await authService.microsoftCallback(
-        msTokenResponse.accessToken
-      );
+      loginWithMicrosoft(msTokenResponse.accessToken);
 
-      // 7. Store'a kaydet
-      login(
-        apiResponse.user,
-        apiResponse.accessToken,
-        apiResponse.accessTokenExpireAt,
-        apiResponse.refreshToken,
-      );
-
-      // 6. Success modal
-      showSuccess('Login Successful', 'You have been logged in successfully.');
-
-      setTimeout(() => {
-        closeLoading();
-        navigate('/', { replace: true });
-      }, 1000);
-
-    } catch (error: any) {
-      showError('Microsoft Login Error', handleError(error, { showMessage: false }));
-      setTimeout(() => {
-        closeLoading();
-      }, 3000);
-    }
   };
 
   // ========================================
@@ -92,40 +53,8 @@ const Login = () => {
     password: string;
   }) => {
 
-    try {
+      await login(values.email, values.password);
 
-      // 1. Show Loading
-      showLoading({
-        title: 'Authenticating...',
-        description: 'Please wait...',
-      });
-      
-      // 2. Api login
-      const apiResponse = await authService.login(
-        values.email,
-        values.password
-      );
-
-      // 3. Store'a kaydet
-      login(
-        apiResponse.user,
-        apiResponse.accessToken,
-        apiResponse.accessTokenExpireAt,
-        apiResponse.refreshToken,
-      );
-
-      showSuccess('Login Successful', 'You have been logged in successfully.');
-      setTimeout(() => {
-        closeLoading();
-        navigate('/', { replace: true });
-      }, 1000);
-
-    } catch (error) {
-      showError('Login Error', handleError(error, { showMessage: false }));
-      setTimeout(() => {
-        closeLoading();
-      }, 3000);
-    }
   };
 
   return (

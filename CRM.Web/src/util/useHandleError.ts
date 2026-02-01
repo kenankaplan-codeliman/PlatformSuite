@@ -1,91 +1,63 @@
 import axios from "axios";
-import { useLoadingModal } from '@/components/LoadingModal';
-
-interface HandleErrorOptions {
-  showMessage?: boolean;
-}
 
 interface FieldError {
   field: string;
   errors: string[];
 }
 
-export function useHandleError() {
+export function handleError(error: unknown): string {
 
-  const { showError } = useLoadingModal();
+  let errorMessage: string | null = null;
 
-  function handleError(
-    error: unknown,
-    options: HandleErrorOptions = { showMessage: true }
-  ): string {
+  if (axios.isAxiosError(error)) {
 
-    let errorMessage: string | null = null;
+    // Server Side Errors
+    if (error.response) {
+      const status = error.response.status;
 
-    if (axios.isAxiosError(error)) {
-
-      // Server Side Errors
-      if (error.response) {
-        const status = error.response.status;
-
-        switch (status) {
-          case 400:
-            errorMessage = "Geçersiz istek";
-            break;
-          case 401:
-            errorMessage = "Kullanıcı adı veya şifre hatalı";
-            break;
-          case 403:
-            errorMessage = "Yetkiniz yok";
-            break;
-          case 404:
-            errorMessage = "Kaynak bulunamadı";
-            break;
-          case 500:
-            errorMessage = "Sunucu hatası. Lütfen daha sonra deneyin";
-            break;
-          default:
-            errorMessage = "Beklenmeyen bir hata oluştu";
-        }
-
-        //Server Error Detail Message
-        const backendMessage = (error.response.data as any)?.detail;
-        if (backendMessage) {
-          errorMessage = backendMessage;
-        }
-
-        const validationErrors = error.response.data.errors as FieldError[];
-
-        if (validationErrors && validationErrors.length > 0) {
-          
-          const validationMessages = validationErrors
-            .flatMap(fe => fe.errors)
-            .join(", ");
-
-          if (validationMessages) {
-            errorMessage = validationMessages;
-          }
-        }
-
+      switch (status) {
+        case 400:
+          errorMessage = "Geçersiz istek";
+          break;
+        case 401:
+          errorMessage = "Kullanıcı adı veya şifre hatalı";
+          break;
+        case 403:
+          errorMessage = "Yetkiniz yok";
+          break;
+        case 404:
+          errorMessage = "Kaynak bulunamadı";
+          break;
+        case 500:
+          errorMessage = "Sunucu hatası. Lütfen daha sonra deneyin";
+          break;
+        default:
+          errorMessage = "Beklenmeyen bir hata oluştu";
       }
 
-      // Network / Cors / Timeout Error
-      else if (error.request) {
-        errorMessage = "Sunucuya ulaşılamıyor. İnternet bağlantınızı kontrol edin";
+      // Backend detail message
+      const backendMessage = (error.response.data as any)?.detail;
+      if (backendMessage) {
+        errorMessage = backendMessage;
       }
 
+      // Validation errors
+      const validationErrors = (error.response.data as any)?.errors as FieldError[];
+
+      if (validationErrors?.length) {
+        errorMessage = validationErrors
+          .flatMap(fe => fe.errors)
+          .join(", ");
+      }
     }
 
-    // Client Side Errors
-    if (!errorMessage) {
-      errorMessage = "Beklenmeyen bir hata oluştu";
+    // Network / CORS / Timeout
+    else if (error.request) {
+      errorMessage = "Sunucuya ulaşılamıyor. İnternet bağlantınızı kontrol edin";
     }
-
-    if (options.showMessage) {
-      showError('Error', errorMessage);
-    }
-
-    return errorMessage;
   }
 
-  return { handleError };
+  return errorMessage ?? "Beklenmeyen bir hata oluştu";
 }
+
+export default handleError;

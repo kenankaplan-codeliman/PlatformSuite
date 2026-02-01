@@ -7,57 +7,76 @@ using CRM.Domain.Entities.Identity;
 using CRM.Domain.Enums;
 using CRM.Infrastructure.Data;
 using CRM.Infrastructure.Model;
-using CRM.Infrastructure.Repositories;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
 
 
 namespace CRM.Infrastructure.Authentication
 {
     public class SessionService : ISessionService
     {
+        private readonly IConfiguration config;
         private readonly ICacheService cache;
+        private readonly IUserRepository userRepository;
         private readonly IOrganizationRepository organizationRepository;
+        private readonly IRoleRepository roleRepository;
+        private readonly ITokenService tokenService;
+        private readonly IUnitOfWork unitOfWork;
         private readonly DatabaseContext dbContext;
         private const string SESSION_PREFIX = "session:";
 
+
+
         public SessionService(
+            IConfiguration config,
             ICacheService cache,
+            IUserRepository userRepository,
             IOrganizationRepository organizationRepository,
+            IRoleRepository roleRepository,
+            ITokenService tokenService,
+            IUnitOfWork unitOfWork,
             DatabaseContext dbContext)
         {
+            this.config = config;
             this.cache = cache;
-            this.dbContext = dbContext;
+            this.userRepository = userRepository;
             this.organizationRepository = organizationRepository;
+            this.roleRepository = roleRepository;
+            this.tokenService = tokenService;
+            this.unitOfWork = unitOfWork;
+            this.dbContext = dbContext;
         }
 
-        public async Task<Guid> CreateSessionAsync(
-            AppUser user,
-            AuthenticationToken authenticationToken,
-            ClientInfo? clientInfo = null)
+        public async Task<AuthenticationToken> CreateSessionAsync(AppUser user, ClientInfo? clientInfo = null)
         {
+            string accessTokenId = generateTokenId();
+            DateTime accessTokenExp = getAccessTokenExpire();
 
-            Guid sessionId = Guid.NewGuid();
+            var accessToken = tokenService.GenerateToken(accessTokenId, accessTokenExp);
+
+            string refreshTokenId = generateTokenId();
+            DateTime refreshTokenExp = getRefreshTokenExpire();
+
+            var refreshToken = tokenService.GenerateToken(refreshTokenId, refreshTokenExp);
+
+            var authenticationToken = AuthenticationToken.Create(accessToken, accessTokenExp, refreshToken, refreshTokenExp);
 
             // LoginHistory'ye kaydet
-            var loginHistory = new AppLoginHistory
+            var loginHistory = new AppLogin
             {
-                Id = sessionId,
                 UserId = user.Id,
                 LoginDate = DateTime.UtcNow,
-                AccessTokenId = authenticationToken.AccessTokenId,
-                AccessTokenExpiresAt = authenticationToken.AccessTokenExpiration,
-                RefreshToken = authenticationToken.RefreshToken ?? string.Empty,
-                RefreshTokenExpiresAt = authenticationToken.RefreshTokenExpiration ?? DateTime.MinValue,
+                AccessTokenId = accessTokenId,
+                AccessTokenExpiresAt = accessTokenExp,
+                RefreshTokenId = refreshTokenId,
+                RefreshTokenExpiresAt = refreshTokenExp,
                 RefreshCount = 0,
                 IpAddress = clientInfo?.IpAddress,
                 UserAgent = clientInfo?.UserAgent,
                 IsActive = true
             };
 
-            dbContext.AppLoginHistory.Add(loginHistory);
-            await dbContext.SaveChangesAsync();
-
-            var cacheKey = generateKey(authenticationToken.AccessTokenId);
+            dbContext.AppLogin.Add(loginHistory);
 
             var orgIds = await organizationRepository.GetOrganizationHierarchy(user.OrganizationId);
 
@@ -67,71 +86,75 @@ namespace CRM.Infrastructure.Authentication
                 Email = user.Email,
                 DisplayName = $"{user.FirstName} {user.LastName}",
                 OrganizationId = user.OrganizationId,
-                AccessTokenId = authenticationToken.AccessTokenId,
                 AccessLevel = AccessLevel.None,
                 AccessibleOrganizationList = orgIds
             };
 
-            await cache.SetAsync(cacheKey, currentUserContext, authenticationToken.AccessTokenExpiration);
+            await SetSessionUser(accessTokenId, currentUserContext, authenticationToken.RefreshTokenExpiration);
 
-            return sessionId;
+            return authenticationToken;
+
         }
 
-        public async Task<bool> IsSessionValidAsync(string accessTokenId)
-        {
-            var cacheKey = generateKey(accessTokenId);
-            return await cache.ExistsAsync(cacheKey);
-        }
-
-        public async Task<ICurrentUserContext?> GetSessionValue(string accessTokenId)
-        {
-            var cacheKey = generateKey(accessTokenId);
-            return await cache.GetAsync<CurrentUserContext>(cacheKey);
-        }
-
-        public async Task<Guid> RefreshSessionAsync(AppUser user, AuthenticationToken authenticationToken, ClientInfo? clientInfo = null)
+        public async Task<AuthenticationToken> RefreshSessionAsync(string refreshToken, ClientInfo? clientInfo)
         {
 
-            var loginHistory = await dbContext.AppLoginHistory.FirstOrDefaultAsync(lh => lh.UserId == user.Id && lh.RefreshToken == authenticationToken.RefreshToken && lh.IsActive);
+            string refreshTokenId = tokenService.ValidateAccessToken(refreshToken);
 
-            if (loginHistory == null)
-                throw new BusinessException($"Login history not fount for User:{user.Id}");
 
-            if (loginHistory.RefreshTokenExpiresAt < DateTime.Now)
-                throw new UnAuthorizedException($"Refresh token expired.");
+            var appLogin = await dbContext.AppLogin.FirstOrDefaultAsync(lh => lh.RefreshTokenId == refreshTokenId && lh.IsActive);
 
-            //Old Session Remove
-            var oldCacheKey = generateKey(loginHistory.AccessTokenId);
-            await cache.RemoveAsync(oldCacheKey);
+            if (appLogin == null)
+                throw new UnAuthenticatedException("User Login not fount.");
+
+
+            //Generate New Token
+            string newAccessTokenId = generateTokenId();
+            DateTime accessTokenExp = getAccessTokenExpire();
+
+            var accessToken = tokenService.GenerateToken(newAccessTokenId, accessTokenExp);
+
+            //Renew Session Value
+
+            ICurrentUserContext? currentUserContext = await GetSessionUser(appLogin.AccessTokenId);
+
+            if (currentUserContext is CurrentUserContext user)
+            {
+                await SetSessionUser(newAccessTokenId, user, appLogin.RefreshTokenExpiresAt);
+                await RemoveSessionUser(appLogin.AccessTokenId);
+            }
+            else
+            {
+                throw new UnAuthenticatedException("Session user not fount.");
+            }
 
             //Update History with new Token
-            loginHistory.AccessTokenId = authenticationToken.AccessTokenId;
-            loginHistory.AccessTokenExpiresAt = authenticationToken.AccessTokenExpiration;
-            loginHistory.RefreshCount++;
-            loginHistory.IpAddress = clientInfo?.IpAddress;
-            loginHistory.UserAgent = clientInfo?.UserAgent;
+            appLogin.AccessTokenId = newAccessTokenId;
+            appLogin.AccessTokenExpiresAt = accessTokenExp;
+            appLogin.RefreshCount++;
+            appLogin.IpAddress = clientInfo?.IpAddress;
+            appLogin.UserAgent = clientInfo?.UserAgent;
 
-            await dbContext.SaveChangesAsync();
+            dbContext.AppLogin.Update(appLogin);
 
-            var newCacheKey = generateKey(authenticationToken.AccessTokenId);
-            await cache.SetAsync(newCacheKey, true, authenticationToken.AccessTokenExpiration);
+            var authenticationToken = AuthenticationToken.Create(accessToken, accessTokenExp, refreshToken, appLogin.RefreshTokenExpiresAt);
 
-            return loginHistory.Id;
+            return authenticationToken;
         }
 
-        public async Task RevokeSessionAsync(AppUser user, string accessTokenId)
+        public async Task RevokeSessionAsync(string accessToken, ClientInfo? clientInfo)
         {
-            var cacheKey = generateKey(accessTokenId);
-            await cache.RemoveAsync(cacheKey);
+            string accessTokenId = tokenService.ValidateAccessToken(accessToken, false);
 
+            await RemoveSessionUser(accessTokenId);
 
-            var loginHistory = await dbContext.AppLoginHistory.FirstOrDefaultAsync(lh => lh.UserId == user.Id && lh.AccessTokenId == accessTokenId && lh.IsActive);
+            var appLogin = await dbContext.AppLogin.FirstOrDefaultAsync(lh => lh.AccessTokenId == accessTokenId && lh.IsActive);
 
-            if (loginHistory != null)
+            if (appLogin != null)
             {
-                loginHistory.IsActive = false;
-                loginHistory.LogoutDate = DateTime.UtcNow;
-                await dbContext.SaveChangesAsync();
+                appLogin.IsActive = false;
+                appLogin.LogoutDate = DateTime.UtcNow;
+                dbContext.AppLogin.Update(appLogin);
             }
         }
 
@@ -139,7 +162,7 @@ namespace CRM.Infrastructure.Authentication
         {
 
             // DB'den kullanıcının tüm aktif session'larını al
-            var sessions = await dbContext.AppLoginHistory
+            var sessions = await dbContext.AppLogin
                    .Where(lh => lh.UserId == userId && lh.IsActive)
                    .Select(lh => new SessionInfo()
                    {
@@ -147,7 +170,7 @@ namespace CRM.Infrastructure.Authentication
                        AccessTokenId = lh.AccessTokenId,
                        LoginDate = lh.LoginDate,
                        AccessTokenExpiresAt = lh.AccessTokenExpiresAt,
-                       RefreshToken = lh.RefreshToken,
+                       RefreshTokenId = lh.RefreshTokenId,
                        RefreshTokenExpiresAt = lh.RefreshTokenExpiresAt
 
                    })
@@ -155,6 +178,25 @@ namespace CRM.Infrastructure.Authentication
 
             return sessions;
         }
+
+        public async Task<ICurrentUserContext?> GetSessionUser(string accessTokenId)
+        {
+            var cacheKey = generateKey(accessTokenId);
+            return await cache.GetAsync<CurrentUserContext>(cacheKey);
+        }
+
+        private async Task SetSessionUser(string accessTokenId, CurrentUserContext currentUserContext, DateTime expiration)
+        {
+            var cacheKey = generateKey(accessTokenId);
+            await cache.SetAsync(cacheKey, currentUserContext, expiration);
+        }
+
+        private async Task RemoveSessionUser(string accessTokenId)
+        {
+            var cacheKey = generateKey(accessTokenId);
+            await cache.RemoveAsync(cacheKey);
+        }
+
 
         public async Task RevokeAllUserSessionsAsync(Guid userId)
         {
@@ -164,7 +206,7 @@ namespace CRM.Infrastructure.Authentication
             await cache.RemoveAsync(cacheKeys);
 
             // DB update
-            await dbContext.AppLoginHistory
+            await dbContext.AppLogin
                 .Where(lh => lh.UserId == userId && lh.IsActive)
                 .ExecuteUpdateAsync(s => s
                     .SetProperty(lh => lh.IsActive, false)
@@ -173,10 +215,23 @@ namespace CRM.Infrastructure.Authentication
 
         private string generateKey(string accessTokenId)
         {
-
             return $"{SESSION_PREFIX}{accessTokenId}";
         }
 
+        private string generateTokenId()
+        {
+            return Guid.NewGuid().ToString("N");
+        }
+
+        private DateTime getRefreshTokenExpire()
+        {
+            return DateTime.Now.AddMinutes(int.Parse(config["Jwt:RefreshExpireMin"]!));
+        }
+
+        private DateTime getAccessTokenExpire()
+        {
+            return DateTime.Now.AddMinutes(int.Parse(config["Jwt:AccessExpireMin"]!));
+        }
 
     }
 }

@@ -7,20 +7,20 @@ namespace CRM.Api.HostedServices;
 
 public sealed class DbInitializerHostedService : IHostedService
 {
-    private readonly IServiceProvider _serviceProvider;
+    
     private readonly IWebHostEnvironment _env;
 
-    public DbInitializerHostedService(
-        IServiceProvider serviceProvider,
-        IWebHostEnvironment env)
+    private readonly IServiceScopeFactory _scopeFactory;
+
+    public DbInitializerHostedService(IServiceScopeFactory scopeFactory, IWebHostEnvironment env)
     {
-        _serviceProvider = serviceProvider;
-        _env = env;
+        _scopeFactory = scopeFactory;
     }
 
     public async Task StartAsync(CancellationToken cancellationToken)
     {
-        using var scope = _serviceProvider.CreateScope();
+        using var scope = _scopeFactory.CreateScope();
+
         var dbContext = scope.ServiceProvider.GetRequiredService<DatabaseContext>();
 
         //Privileges

@@ -10,7 +10,7 @@ namespace CRM.Application.Modals
         public required string AccessTokenId { get; set; }
         public DateTime LoginDate { get; set; }
         public DateTime AccessTokenExpiresAt { get; set; }
-        public required string RefreshToken { get; set; }
+        public required string RefreshTokenId { get; set; }
         public DateTime RefreshTokenExpiresAt { get; set; }
     }
 }

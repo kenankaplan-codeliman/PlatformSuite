@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.Text;
+using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace CRM.Application.Modals.LeadModal
 {
@@ -14,6 +15,6 @@ namespace CRM.Application.Modals.LeadModal
         public LeadSource? LeadSource { get; set; }
         public LeadRating? LeadRating { get; set; }
         public string? Industry { get; set; }
-        public string? IsActive { get; set; }
+        public bool? IsActive { get; set; }
     }
 }

@@ -19,13 +19,10 @@ export const leadRoutes: RouteObject[] = [
     element: <LeadDetail />,
   },
   {
-    path: RoutePaths.Lead.View(':id'),
+    path: RoutePaths.Lead.Detail(':id'),
     element: <LeadDetail />,
   },
-  {
-    path: RoutePaths.Lead.Edit(':id'),
-    element: <LeadDetail />,
-  },
+  
 ];
 
 export default leadRoutes;

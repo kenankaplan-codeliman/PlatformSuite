@@ -34,6 +34,7 @@ public class GlobalExceptionMiddleware
         var statusCode = exception switch
         {
             BusinessException => StatusCodes.Status400BadRequest,
+            UnAuthenticatedException => StatusCodes.Status401Unauthorized,
             UnauthorizedAccessException => StatusCodes.Status401Unauthorized,
             KeyNotFoundException => StatusCodes.Status404NotFound,
             _ => StatusCodes.Status500InternalServerError

@@ -1,12 +1,12 @@
 import React from 'react';
 import { Button, Select, Space } from 'antd';
 import { LeftOutlined, RightOutlined } from '@ant-design/icons';
+import { StateType, useProcessState } from "@/stores/process.state.store";
 
 export interface CustomPaginationProps {
   current: number;
   pageSize: number;
   hasMore: boolean;
-  loading?: boolean;
   totalItems?: number;
   pageSizeOptions?: number[];
   showPageSizeChanger?: boolean;
@@ -18,7 +18,6 @@ const CustomPagination: React.FC<CustomPaginationProps> = ({
   current,
   pageSize,
   hasMore,
-  loading = false,
   totalItems = 0,
   pageSizeOptions = [10, 20, 50, 100],
   showPageSizeChanger = true,
@@ -39,6 +38,8 @@ const CustomPagination: React.FC<CustomPaginationProps> = ({
       onPageChange(current + 1);
     }
   };
+
+  const { state } = useProcessState.getState();
 
   return (
     <div
@@ -66,7 +67,7 @@ const CustomPagination: React.FC<CustomPaginationProps> = ({
           <Select
             value={pageSize}
             onChange={onPageSizeChange}
-            disabled={loading}
+            disabled={state === StateType.Loading}
             style={{ width: 120 }}
             options={pageSizeOptions.map((size) => ({
               value: size,
@@ -79,7 +80,7 @@ const CustomPagination: React.FC<CustomPaginationProps> = ({
           <Button
             size="small"
             icon={<LeftOutlined />}
-            disabled={current === 1 || loading}
+            disabled={current === 1 || state === StateType.Loading}
             onClick={handlePrevious}
           />
           <span
@@ -95,7 +96,7 @@ const CustomPagination: React.FC<CustomPaginationProps> = ({
           <Button
             size="small"
             icon={<RightOutlined />}
-            disabled={!hasMore || loading}
+            disabled={!hasMore || state === StateType.Loading}
             onClick={handleNext}
           />
         </Space>

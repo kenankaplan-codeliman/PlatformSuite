@@ -1,11 +1,48 @@
+import { useEffect } from "react";
 import { Layout, Typography } from "antd";
 import { Outlet } from "react-router-dom";
 import UserPanel from "./UserPanel";
+import { useLoadingModal } from '@/components/LoadingModal';
+import { StateType, useProcessState } from "@/stores/process.state.store";
+
 
 const { Header, Content } = Layout;
 const { Text } = Typography;
 
 const GlobalLayout = () => {
+
+    const { state, title, message } = useProcessState();
+
+      const {
+        showLoading,
+        showSuccess,
+        showError,
+        closeLoading,
+      } = useLoadingModal();
+    
+    useEffect(() => {
+        if (state === StateType.Loading) {
+          showLoading(
+            title || 'Loading',
+            message || 'Please wait...',
+          );
+    
+        } else if (state === StateType.Success) { 
+          showSuccess(
+            title || 'Success',
+            message || 'Operation completed successfully.',
+          );
+    
+        } else if (state === StateType.Error) {
+        showError(  
+          title || 'Error',
+          message || 'An error occurred.'
+         );
+        }
+        else {
+          closeLoading();
+        }
+      }, [state]);
 
     return (
         <Layout style={{ minHeight: "100vh" }}>

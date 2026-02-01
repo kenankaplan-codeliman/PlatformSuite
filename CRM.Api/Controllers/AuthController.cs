@@ -27,77 +27,83 @@ namespace CRM.Api.Controllers
         [ProducesResponseType(typeof(LoginResponse), 200)]
         public async Task<IActionResult> Login([FromBody] LoginRequest request)
         {
-            var authenticatedUser = await this.authenticationCommandHandler.LoginAsync(request.Email
-                , request.Password
-                , new ClientInfo()
+            var authToken = await this.authenticationCommandHandler.LoginAsync(request.Email,
+                request.Password,
+                new ClientInfo()
                 {
                     IpAddress = HttpContext.GetIpAddress(),
                     UserAgent = HttpContext.GetUserAgent()
                 });
 
 
-            return Ok(LoginResponse.fromAuthToken(authenticatedUser.Token, authenticatedUser.User, authenticatedUser.Organization));
+            return Ok(LoginResponse.fromAuthToken(authToken));
         }
 
         [HttpPost("microsoft/callback")]
         [ProducesResponseType(typeof(LoginResponse), 200)]
-        public async Task<IActionResult> MicrosoftCallback([FromBody] MicrosoftCallbackRequest request)
+        public async Task<IActionResult> MicrosoftCallback([FromBody] MsalRequest request)
         {
-            var authenticatedUser = await this.authenticationCommandHandler.LoginMicrosoftAsync(request.Token
-                 , new ClientInfo()
+            var authToken = await this.authenticationCommandHandler.LoginMicrosoftAsync(request.MsalToken,
+                 new ClientInfo()
                  {
                      IpAddress = HttpContext.GetIpAddress(),
                      UserAgent = HttpContext.GetUserAgent()
                  });
 
 
-            return Ok(LoginResponse.fromAuthToken(authenticatedUser.Token, authenticatedUser.User, authenticatedUser.Organization));
+            return Ok(LoginResponse.fromAuthToken(authToken));
         }
 
         /// <summary>
         /// Logout - Revoke refresh token
         /// </summary>
         [HttpPost("logout")]
-        [ProducesResponseType(200)]
-        [ProducesResponseType(401)]
-        public async Task<IActionResult> Logout()
+        public async Task<IActionResult> Logout([FromBody] AccessTokenRequest request)
         {
-            if (HttpContext.User.Identity?.IsAuthenticated ?? false)
-            {
-                await this.authenticationCommandHandler.Logout();
-                return Ok(new { message = "Logged out successfully" });
-            }
-            else
-            {
-                return Unauthorized(new { message = "Logged out error. Unauthenticated user." });
-
-            }
-
-        }
-
-        [HttpPost("refreshtoken")]
-        [ProducesResponseType(typeof(RefreshTokenResponse), 200)]
-        public async Task<IActionResult> RefreshToken([FromBody] RefreshTokenRequest request)
-        {
-            if (HttpContext.User.Identity?.IsAuthenticated ?? false)
-            {
-                var authResult = await this.authenticationCommandHandler.RefreshToken(
-                    request.RefreshToken,
+                await this.authenticationCommandHandler.Logout(
+                    request.AccessToken,
                     new ClientInfo()
                     {
                         IpAddress = HttpContext.GetIpAddress(),
                         UserAgent = HttpContext.GetUserAgent()
                     });
 
-                return Ok(RefreshTokenResponse.fromAuthToken(authResult));
+                return Ok(new { message = "Logged out successfully" });
+        }
+
+        [HttpPost("refresh")]
+        [ProducesResponseType(typeof(LoginResponse), 200)]
+        public async Task<IActionResult> RefreshToken([FromBody] RefreshTokenRequest request)
+        {
+            var authResult = await this.authenticationCommandHandler.RefreshToken(
+                request.RefreshToken,
+                new ClientInfo()
+                {
+                    IpAddress = HttpContext.GetIpAddress(),
+                    UserAgent = HttpContext.GetUserAgent()
+                });
+
+            return Ok(RefreshTokenResponse.fromAuthToken(authResult));
+        }
+
+        [HttpPost("me")]
+        [ProducesResponseType(typeof(AuthenticatedUser), 200)]
+        public async Task<IActionResult> Me()
+        {
+            if (HttpContext.User.Identity?.IsAuthenticated ?? false)
+            {
+                var user = await this.authenticationCommandHandler.CurrentUser();
+
+                return Ok(user);
             }
             else
             {
-                return Unauthorized(new { message = "Logged out error. Unauthenticated user." });
+                return Unauthorized(new { message = "Unauthenticated user not found." });
 
             }
 
         }
+
 
         [HttpGet("health")]
         public IActionResult Health() => Ok();

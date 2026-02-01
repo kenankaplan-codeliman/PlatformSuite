@@ -2,6 +2,7 @@
 using CRM.Domain.Entities.Identity;
 using CRM.Infrastructure.Data;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Graph.Models;
 using System;
 using System.Collections.Generic;
 using System.Text;
@@ -22,27 +23,28 @@ namespace CRM.Infrastructure.Repositories
             return await dbContext.AppOrganization.FirstOrDefaultAsync(x => x.Id == Id);
         }
 
-        public async Task<AppOrganization?> GetDefaultAsync()
+        public async Task<AppOrganization?> GetDefaultOrganizationAsync()
         {
             return await dbContext.AppOrganization.FirstOrDefaultAsync(x => x.IsDefault );
         }
 
-        public async Task CreateAsync(AppOrganization entity)
+        public async Task<AppOrganization> CreateAsync(AppOrganization entity)
         {
-            await dbContext.AppOrganization.AddAsync(entity);
-            await dbContext.SaveChangesAsync();
+            var entry = await dbContext.AppOrganization.AddAsync(entity);
+            return entry.Entity;
+            
         }
 
-        public async Task UpdateAsync(AppOrganization entity)
+        public async Task<AppOrganization> UpdateAsync(AppOrganization entity)
         {
-            dbContext.AppOrganization.Update(entity);
-            await dbContext.SaveChangesAsync();
+            var entry = dbContext.AppOrganization.Update(entity);
+            return entry.Entity;
         }
 
-        public async Task DeleteAsync(AppOrganization entity)
+        public async Task<AppOrganization> DeleteAsync(AppOrganization entity)
         {
-            dbContext.AppOrganization.Remove(entity);
-            await dbContext.SaveChangesAsync();
+            var entry = dbContext.AppOrganization.Remove(entity);
+            return entry.Entity;
         }
 
 

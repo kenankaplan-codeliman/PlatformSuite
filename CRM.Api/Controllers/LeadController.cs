@@ -6,6 +6,7 @@ using CRM.Application.Authentication.Interfaces;
 using CRM.Application.CommandHandler;
 using CRM.Application.Exceptions;
 using CRM.Application.Modals;
+using CRM.Application.Modals.Common;
 using CRM.Application.Modals.LeadModal;
 using CRM.Domain.Authorization;
 using Microsoft.AspNetCore.Authorization;
@@ -28,26 +29,64 @@ public class LeadController : ControllerBase
     
     [HttpPost("list")]
     [ProducesResponseType(typeof(LeadListResponse), 200)]
-    [PrivilegeAuthorize(PrivilegeCodes.Lead.Read)]
+    [PrivilegeAuthorize(PrivilegeCodes.LeadPrivilegeCodes.Read)]
     public async Task<IActionResult> List(LeadListRequest request)
     {
-       var response =  leadCommandHandler.List(request.filters, request.page, request.pageSize);
+       var response =  await leadCommandHandler.List(request.filters, new PaginationInfo(request.page, request.pageSize));
         return Ok(response);
     }
 
-    /*
-    [HttpPost("create")]
-    [PrivilegeAuthorize(PrivilegeCodes.Lead.Create)]
-    public async Task<IActionResult> create(LeadListRequest request)
+    [HttpPost("get")]
+    [ProducesResponseType(typeof(LeadDetailItem), 200)]
+    [PrivilegeAuthorize(PrivilegeCodes.LeadPrivilegeCodes.Read)]
+    public async Task<IActionResult> get(LeadGetRequest leadDetail)
     {
-        return Ok($"Create. {currentUserContext.UserId}");
+        var lead = await leadCommandHandler.Get(leadDetail.Id);
+        return Ok(lead);
     }
 
-    [HttpPost("update")]
-    [PrivilegeAuthorize(PrivilegeCodes.Lead.Create)]
-    public async Task<IActionResult> update(LeadListRequest request)
+
+    [HttpPost("create")]
+    [ProducesResponseType(typeof(LeadDetailItem), 200)]
+    [PrivilegeAuthorize(PrivilegeCodes.LeadPrivilegeCodes.Create)]
+    public async Task<IActionResult> create(LeadDetailItem leadDetail)
     {
-        return Ok($"Update. {currentUserContext.UserId}");
+        var lead = await leadCommandHandler.Create(leadDetail);
+        return Ok(lead);
     }
-    */
+
+    
+    [HttpPost("update")]
+    [PrivilegeAuthorize(PrivilegeCodes.LeadPrivilegeCodes.Update)]
+    public async Task<IActionResult> update(LeadUpdateRequest request)
+    {
+        var lead = await leadCommandHandler.Update(request.Id, request.Data);
+        return Ok(lead);
+    }
+
+    [HttpPost("delete")]
+    [PrivilegeAuthorize(PrivilegeCodes.LeadPrivilegeCodes.Delete)]
+    public async Task<IActionResult> delete(LeadDeleteRequest request)
+    {
+        await leadCommandHandler.Delete(request.Id);
+        return Ok();
+    }
+
+    [HttpPost("bulk-delete")]
+    [PrivilegeAuthorize(PrivilegeCodes.LeadPrivilegeCodes.Delete)]
+    public async Task<IActionResult> bulkdelete(LeadBulkDeleteRequest request)
+    {
+        await leadCommandHandler.BulkDelete(request.Ids);
+        return Ok();
+    }
+
+    [HttpPost("bulk-update-status")]
+    [PrivilegeAuthorize(PrivilegeCodes.LeadPrivilegeCodes.Delete)]
+    public async Task<IActionResult> bulkUpdateStatus(LeadBulkUpdateStatusRequest request)
+    {
+        await leadCommandHandler.BulkUpdateStatus(request.Ids, request.Status);
+        return Ok();
+    }
+
+    
 }

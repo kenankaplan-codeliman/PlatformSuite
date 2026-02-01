@@ -1,5 +1,6 @@
 ﻿
 using CRM.Application.Authentication.Interfaces;
+using CRM.Application.Interfaces;
 using CRM.Domain.Entities.Activity;
 using CRM.Domain.Entities.Common;
 using CRM.Domain.Entities.Identity;
@@ -27,7 +28,7 @@ public class DatabaseContext : DbContext
     public DbSet<AppPrivilege> AppPrivilege { get; set; }
     public DbSet<AppUserRole> AppUserRole { get; set; }
     public DbSet<AppRolePrivilege> AppRolePrivilege { get; set; }
-    public DbSet<AppLoginHistory> AppLoginHistory { get; set; }
+    public DbSet<AppLogin> AppLogin { get; set; }
 
     // ======= Activity =======
     public DbSet<ActivityBase> Activities { get; set; }
@@ -84,53 +85,50 @@ public class DatabaseContext : DbContext
         foreach (var entry in ChangeTracker.Entries())
         {
             // ======= Audit =======
-            if (entry.Entity is IAuditableEntity audit)
+            if (currentUserContext != null && entry.Entity is IAuditableEntity audit)
             {
-                if (entry.Property(nameof(IAuditableEntity.CreatedBy)).IsModified
-                 || entry.Property(nameof(IAuditableEntity.CreatedAt)).IsModified
-                 || entry.Property(nameof(IAuditableEntity.UpdatedAt)).IsModified
-                 || entry.Property(nameof(IAuditableEntity.UpdatedBy)).IsModified
-                    )
-                {
-                    throw new SecurityException("Createdi, Updated and IsDeleted fields cannot be set manually.");
-                }
-
                 // ======= Create =======
                 if (entry.State == EntityState.Added)
                 {
                     audit.CreatedAt = now;
                     audit.CreatedBy = currentUserContext.UserId;
+
                 }
 
                 // ======= Update =======
                 if (entry.State == EntityState.Modified)
                 {
-                    //Exception Iptal edilirse burasi acilacak
-                    //entry.Property(nameof(IAuditableEntity.CreatedAt)).IsModified = false;
-
                     audit.UpdatedAt = now;
                     audit.UpdatedBy = currentUserContext.UserId;
                 }
             }
 
-            // ======= Soft Delete =======
-            if (entry.Entity is ISoftDeleteEntity softDelete)
+            // ======= Owned Entity =======
+            if (currentUserContext != null && entry.Entity is IOwnedEntity ownedEntity)
             {
-                if (entry.Property(nameof(ISoftDeleteEntity.IsDeleted)).IsModified)
+                if (entry.State == EntityState.Added && 
+                    ownedEntity.OwnerId==Guid.Empty && 
+                    ownedEntity.OrganizationId == Guid.Empty)
                 {
-                    throw new SecurityException("Createdi, Updated and IsDeleted fields cannot be set manually.");
+                    ownedEntity.OwnerId = currentUserContext.UserId;
+                    ownedEntity.OrganizationId = currentUserContext.OrganizationId;
                 }
+            }
+
+
+            // ======= Soft Delete =======
+            if (currentUserContext != null && entry.Entity is ISoftDeleteEntity softDelete)
+            {
+                entry.Property(nameof(ISoftDeleteEntity.IsDeleted)).IsModified = false;
+                entry.Property(nameof(ISoftDeleteEntity.DeletedBy)).IsModified = false;
+                entry.Property(nameof(ISoftDeleteEntity.DeletedAt)).IsModified = false;
 
                 if (entry.State == EntityState.Deleted)
                 {
                     entry.State = EntityState.Modified;
                     softDelete.IsDeleted = true;
-
-                    if (entry.Entity is IAuditableEntity deleteAudit)
-                    {
-                        deleteAudit.UpdatedAt = now;
-                        deleteAudit.UpdatedBy = currentUserContext.UserId;
-                    }
+                    softDelete.DeletedAt = now;
+                    softDelete.DeletedBy = currentUserContext.UserId;
                 }
             }
         }

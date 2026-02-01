@@ -5,20 +5,12 @@ import { CheckCircleOutlined, CloseCircleOutlined } from '@ant-design/icons';
 
 const { Title, Text } = Typography;
 
-export type LoadingModalStep = 'processing' | 'success' | 'error';
-
-interface LoadingModalOptions {
-  title?: string;
-  description?: string;
-  step?: LoadingModalStep;
-}
 
 interface LoadingModalContextType {
-  showLoading: (options?: LoadingModalOptions) => void;
+  showLoading: (title?: string, description?: string) => void;
   showSuccess: (title?: string, description?: string) => void;
   showError: (title?: string, description?: string) => void;
   closeLoading: (delayTime?: number) => void;
-  showStep: (step: LoadingModalStep, title?: string, description?: string) => void;
 }
 
 const LoadingModalContext = createContext<LoadingModalContextType | undefined>(undefined);
@@ -37,24 +29,26 @@ interface LoadingModalProviderProps {
 
 export const LoadingModalProvider: React.FC<LoadingModalProviderProps> = ({ children }) => {
   const [visible, setVisible] = useState(false);
-  const [step, setStep] = useState<LoadingModalStep>('processing');
+  const [step, setStep] = useState('processing');
   const [title, setTitle] = useState<string>('Processing...');
   const [description, setDescription] = useState<string>('Please wait...');
 
-  const showLoading = (options?: LoadingModalOptions) => {
+  const showLoading = (successTitle?: string, successDescription?: string) => {
     setVisible(true);
-    setStep(options?.step || 'processing');
-    setTitle(options?.title || 'Processing...');
-    setDescription(options?.description || 'Please wait...');
+    setStep('processing');
+    setTitle(successTitle || 'Processing...');
+    setDescription(successDescription || 'Please wait...');
   };
 
   const showSuccess = (successTitle?: string, successDescription?: string) => {
+    setVisible(true);
     setStep('success');
     setTitle(successTitle || 'Success!');
     setDescription(successDescription || 'Operation completed successfully');
   };
 
   const showError = (errorTitle?: string, errorDescription?: string) => {
+    setVisible(true);
     setStep('error');
     setTitle(errorTitle || 'Error');
     setDescription(errorDescription || 'Something went wrong');
@@ -71,16 +65,6 @@ export const LoadingModalProvider: React.FC<LoadingModalProviderProps> = ({ chil
       }, 300);
       
     }, delayTime ?? 100);
-  };
-
-  const showStep = (
-    newStep: LoadingModalStep,
-    newTitle?: string,
-    newDescription?: string
-  ) => {
-    setStep(newStep);
-    if (newTitle) setTitle(newTitle);
-    if (newDescription) setDescription(newDescription);
   };
 
   const getIcon = () => {
@@ -112,7 +96,6 @@ export const LoadingModalProvider: React.FC<LoadingModalProviderProps> = ({ chil
         showSuccess,
         showError,
         closeLoading,
-        showStep,
       }}
     >
       {children}

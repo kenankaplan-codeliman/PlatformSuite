@@ -36,21 +36,21 @@ public class UserRepository : IUserRepository
         return await dbContext.AppUser.FirstOrDefaultAsync(x => x.Microsoft365Id == microsoft365Id);
     }
 
-    public async Task CreateAsync(AppUser user)
+    public async Task<AppUser> CreateAsync(AppUser user)
     {
-        await dbContext.AppUser.AddAsync(user);
-        await dbContext.SaveChangesAsync();
+        var entry = dbContext.AppUser.Add(user);
+        return entry.Entity;
     }
-    public async Task UpdateAsync(AppUser user)
+    public async Task<AppUser> UpdateAsync(AppUser user)
     {
-        dbContext.AppUser.Update(user);
-        await dbContext.SaveChangesAsync();
+        var entry = dbContext.AppUser.Update(user);
+        return entry.Entity;
     }
 
-    public async Task DeleteAsync(AppUser user)
+    public async Task<AppUser> DeleteAsync(AppUser user)
     {
-        dbContext.Remove(user);
-        await dbContext.SaveChangesAsync();
+        var entry = dbContext.Remove(user);
+        return entry.Entity;
     }
 
     public async Task<Dictionary<string, AccessLevel>> GetPrivileges(Guid userId)
