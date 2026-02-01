@@ -28,7 +28,6 @@ builder.Services
     .AddHostedService<DbInitializerHostedService>()
     .AddHostedService<ElasticIndexTemplateHostedService>();
 
-
 var app = builder.Build();
 
 if (app.Environment.IsDevelopment())

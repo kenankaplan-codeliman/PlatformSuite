@@ -1,5 +1,6 @@
-import { useEffect, useState, useCallback, useMemo } from 'react';
+import { useEffect, useState, useCallback, useMemo, useRef } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
+import { RoutePaths } from '@/constants/route.paths';
 import {
   Table,
   Card,
@@ -12,7 +13,6 @@ import {
   Col,
   Dropdown,
   Modal,
-  message,
   Tooltip,
   Badge,
   Typography,
@@ -78,6 +78,9 @@ import {
 } from '@/types/activity.types';
 import { useActivityStore, type ActivityViewMode } from '@/stores/activity.store';
 import activityService from '@/services/activity.service';
+import CustomPagination from '@/components/CustomPagination';
+import { handleError } from '@/util/useHandleError';
+import { StateType, useProcessState } from '@/stores/process.state.store';
 
 const { Title, Text } = Typography;
 const { Search } = Input;
@@ -93,18 +96,6 @@ const getActivityTypeIcon = (type: ActivityTypeValue): React.ReactNode => {
   return icons[type];
 };
 
-// Get detail route path based on activity type - OUTSIDE COMPONENT
-const getActivityDetailPath = (activityType: ActivityTypeValue, id?: string): string => {
-  const typeRoutes: Record<ActivityTypeValue, string> = {
-    [ActivityType.Email]: 'email',
-    [ActivityType.PhoneCall]: 'phonecall',
-    [ActivityType.Task]: 'task',
-    [ActivityType.Appointment]: 'appointment',
-  };
-  const route = typeRoutes[activityType];
-  return id ? `/activity/${route}/${id}` : `/activity/${route}/new`;
-};
-
 const ActivityList: React.FC = () => {
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
@@ -117,55 +108,49 @@ const ActivityList: React.FC = () => {
   const initialViewMode: ActivityViewMode = urlViewMode === 'calendar' ? 'calendar' : 'list';
 
   // Store state and actions
-  const viewMode = useActivityStore((state) => state.viewMode);
-  const setViewMode = useActivityStore((state) => state.setViewMode);
-  const activities = useActivityStore((state) => state.activities);
-  const total = useActivityStore((state) => state.total);
-  const page = useActivityStore((state) => state.page);
-  const pageSize = useActivityStore((state) => state.pageSize);
-  const loading = useActivityStore((state) => state.loading);
-  const error = useActivityStore((state) => state.error);
-  const filters = useActivityStore((state) => state.filters);
-  const selectedRowKeys = useActivityStore((state) => state.selectedRowKeys);
-  const calendarActivities = useActivityStore((state) => state.calendarActivities);
-  const calendarLoading = useActivityStore((state) => state.calendarLoading);
-  const calendarDate = useActivityStore((state) => state.calendarDate);
-  const fetchActivities = useActivityStore((state) => state.fetchActivities);
-  const fetchCalendarActivities = useActivityStore((state) => state.fetchCalendarActivities);
-  const setPage = useActivityStore((state) => state.setPage);
-  const setPageSize = useActivityStore((state) => state.setPageSize);
-  const setFilters = useActivityStore((state) => state.setFilters);
-  const resetFilters = useActivityStore((state) => state.resetFilters);
-  const setSelectedRowKeys = useActivityStore((state) => state.setSelectedRowKeys);
-  const clearSelectedRowKeys = useActivityStore((state) => state.clearSelectedRowKeys);
-  const bulkDeleteActivities = useActivityStore((state) => state.bulkDeleteActivities);
-  const bulkUpdateStatus = useActivityStore((state) => state.bulkUpdateStatus);
-  const completeActivity = useActivityStore((state) => state.completeActivity);
-  const cancelActivity = useActivityStore((state) => state.cancelActivity);
-  const setCalendarDate = useActivityStore((state) => state.setCalendarDate);
+  const {
+    viewMode,
+    setViewMode,
+    activities,
+    hasMore,
+    page,
+    pageSize,
+    filters,
+    selectedRowKeys,
+    calendarActivities,
+    calendarDate,
+    fetchActivities,
+    fetchCalendarActivities,
+    setPagination,
+    setFilters,
+    resetFilters,
+    setSelectedRowKeys,
+    clearSelectedRowKeys,
+    bulkDeleteActivities,
+    bulkUpdateStatus,
+    completeActivity,
+    cancelActivity,
+    setCalendarDate,
+  } = useActivityStore();
 
-  // Initialize view mode from URL
-  useEffect(() => {
-    setViewMode(initialViewMode);
-  }, [initialViewMode, setViewMode]);
+  // Ref to prevent double fetch (Lead store ile aynı)
+  const isFirstRender = useRef(true);
 
-  // Fetch data based on view mode
+  // Initialize view mode from URL (only once)
   useEffect(() => {
-    if (viewMode === 'list') {
-      fetchActivities();
-    } else {
-      const startOfMonth = dayjs(calendarDate).startOf('month').format('YYYY-MM-DD');
-      const endOfMonth = dayjs(calendarDate).endOf('month').format('YYYY-MM-DD');
-      fetchCalendarActivities(startOfMonth, endOfMonth);
+    if (isFirstRender.current) {
+      isFirstRender.current = false;
+      setViewMode(initialViewMode);
+
+      if (initialViewMode === 'list') {
+        fetchActivities();
+      } else {
+        const startOfMonth = dayjs(calendarDate).startOf('month').format('YYYY-MM-DD');
+        const endOfMonth = dayjs(calendarDate).endOf('month').format('YYYY-MM-DD');
+        fetchCalendarActivities(startOfMonth, endOfMonth);
+      }
     }
-  }, [viewMode, calendarDate, fetchActivities, fetchCalendarActivities]);
-
-  // Show error message
-  useEffect(() => {
-    if (error) {
-      message.error(error);
-    }
-  }, [error]);
+  }, [initialViewMode, setViewMode, fetchActivities, fetchCalendarActivities, calendarDate]);
 
   // Handle view mode change
   const handleViewModeChange = useCallback(
@@ -173,22 +158,33 @@ const ActivityList: React.FC = () => {
       const mode = value as ActivityViewMode;
       setViewMode(mode);
       setSearchParams({ view: mode }, { replace: true });
+
+      // Fetch data based on new view mode
+      if (mode === 'list') {
+        fetchActivities();
+      } else {
+        const startOfMonth = dayjs(calendarDate).startOf('month').format('YYYY-MM-DD');
+        const endOfMonth = dayjs(calendarDate).endOf('month').format('YYYY-MM-DD');
+        fetchCalendarActivities(startOfMonth, endOfMonth);
+      }
     },
-    [setViewMode, setSearchParams]
+    [setViewMode, setSearchParams, calendarDate, fetchActivities, fetchCalendarActivities]
   );
 
-  // Handle row click
+  // Handle row click - navigate to edit page
   const handleRowClick = useCallback(
     (record: ActivityBase) => {
-      navigate(`${getActivityDetailPath(record.activityType, record.id)}?mode=edit`);
+      const path = getActivityDetailPath(record.activityType, record.id, 'edit');
+      navigate(path);
     },
     [navigate]
   );
 
-  // Handle view
+  // Handle view (read mode)
   const handleView = useCallback(
     (record: ActivityBase) => {
-      navigate(`${getActivityDetailPath(record.activityType, record.id)}?mode=view`);
+      const path = getActivityDetailPath(record.activityType, record.id, 'view');
+      navigate(path);
     },
     [navigate]
   );
@@ -197,7 +193,8 @@ const ActivityList: React.FC = () => {
   const handleCreateActivity = useCallback(
     (type: ActivityTypeValue) => {
       setNewActivityDropdownOpen(false);
-      navigate(getActivityDetailPath(type));
+      const path = getActivityNewPath(type);
+      navigate(path);
     },
     [navigate]
   );
@@ -234,12 +231,7 @@ const ActivityList: React.FC = () => {
       okType: 'danger',
       cancelText: 'İptal',
       onOk: async () => {
-        try {
-          await bulkDeleteActivities();
-          message.success(`${selectedRowKeys.length} aktivite başarıyla silindi`);
-        } catch {
-          message.error('Silme işlemi sırasında hata oluştu');
-        }
+        await bulkDeleteActivities();
       },
     });
   }, [selectedRowKeys.length, bulkDeleteActivities]);
@@ -247,25 +239,15 @@ const ActivityList: React.FC = () => {
   // Handle bulk status update
   const handleBulkStatusUpdate = useCallback(
     async (status: ActivityStatusValue) => {
-      try {
-        await bulkUpdateStatus(status);
-        message.success(`${selectedRowKeys.length} aktivite durumu güncellendi`);
-      } catch {
-        message.error('Durum güncelleme sırasında hata oluştu');
-      }
+      await bulkUpdateStatus(status);
     },
-    [selectedRowKeys.length, bulkUpdateStatus]
+    [bulkUpdateStatus]
   );
 
   // Handle complete activity
   const handleComplete = useCallback(
     async (record: ActivityBase) => {
-      try {
-        await completeActivity(record.id);
-        message.success('Aktivite tamamlandı');
-      } catch {
-        message.error('Aktivite tamamlanırken hata oluştu');
-      }
+      await completeActivity(record.id);
     },
     [completeActivity]
   );
@@ -273,19 +255,18 @@ const ActivityList: React.FC = () => {
   // Handle cancel activity
   const handleCancel = useCallback(
     async (record: ActivityBase) => {
-      try {
-        await cancelActivity(record.id);
-        message.success('Aktivite iptal edildi');
-      } catch {
-        message.error('Aktivite iptal edilirken hata oluştu');
-      }
+      await cancelActivity(record.id);
     },
     [cancelActivity]
   );
 
   // Handle export
   const handleExport = useCallback(async () => {
+    const { setState } = useProcessState.getState();
+
     try {
+      setState(StateType.Loading, 'Dışa Aktarılıyor', 'Aktivite listesi hazırlanıyor...');
+
       const blob = await activityService.exportActivities(filters);
       const url = window.URL.createObjectURL(blob);
       const link = document.createElement('a');
@@ -293,9 +274,11 @@ const ActivityList: React.FC = () => {
       link.download = `activities_${new Date().toISOString().split('T')[0]}.xlsx`;
       link.click();
       window.URL.revokeObjectURL(url);
-      message.success('Aktivite listesi dışa aktarıldı');
-    } catch {
-      message.error('Dışa aktarma sırasında hata oluştu');
+
+      setState(StateType.Success, 'Dışa Aktarıldı', 'Aktivite listesi dışa aktarıldı');
+    } catch (error) {
+      const errorMessage = handleError(error);
+      setState(StateType.Error, 'Aktivite listesi dışa aktarılamadı', errorMessage);
     }
   }, [filters]);
 
@@ -309,6 +292,22 @@ const ActivityList: React.FC = () => {
       fetchCalendarActivities(startOfMonth, endOfMonth);
     }
   }, [viewMode, calendarDate, fetchActivities, fetchCalendarActivities]);
+
+  // Handle page change (for CustomPagination)
+  const handlePageChange = useCallback(
+    (newPage: number) => {
+      setPagination({ page: newPage });
+    },
+    [setPagination]
+  );
+
+  // Handle page size change (for CustomPagination)
+  const handlePageSizeChange = useCallback(
+    (newPageSize: number) => {
+      setPagination({ pageSize: newPageSize });
+    },
+    [setPagination]
+  );
 
   // New activity dropdown menu items
   const newActivityMenuItems: MenuProps['items'] = useMemo(
@@ -390,13 +389,19 @@ const ActivityList: React.FC = () => {
         key: 'view',
         label: 'Görüntüle',
         icon: <EyeOutlined />,
-        onClick: () => handleView(record),
+        onClick: (info) => {
+          info.domEvent.stopPropagation();
+          handleView(record);
+        },
       },
       {
         key: 'edit',
         label: 'Düzenle',
         icon: <EditOutlined />,
-        onClick: () => handleRowClick(record),
+        onClick: (info) => {
+          info.domEvent.stopPropagation();
+          handleRowClick(record);
+        },
       },
       { type: 'divider' as const },
       {
@@ -404,14 +409,20 @@ const ActivityList: React.FC = () => {
         label: 'Tamamla',
         icon: <CheckCircleOutlined />,
         disabled: record.status === ActivityStatus.Completed,
-        onClick: () => handleComplete(record),
+        onClick: (info) => {
+          info.domEvent.stopPropagation();
+          handleComplete(record);
+        },
       },
       {
         key: 'cancel',
         label: 'İptal Et',
         icon: <CloseCircleOutlined />,
         disabled: record.status === ActivityStatus.Cancelled,
-        onClick: () => handleCancel(record),
+        onClick: (info) => {
+          info.domEvent.stopPropagation();
+          handleCancel(record);
+        },
       },
       { type: 'divider' as const },
       {
@@ -419,7 +430,11 @@ const ActivityList: React.FC = () => {
         label: 'Sil',
         icon: <DeleteOutlined />,
         danger: true,
-        onClick: () => {
+        onClick: (info) => {
+          info.domEvent.stopPropagation();
+
+          const { deleteActivity } = useActivityStore.getState();
+
           Modal.confirm({
             title: 'Aktivite Silme',
             content: `"${record.subject}" aktivitesi silinecek. Onaylıyor musunuz?`,
@@ -427,177 +442,168 @@ const ActivityList: React.FC = () => {
             okType: 'danger',
             cancelText: 'İptal',
             onOk: async () => {
-              try {
-                await activityService.deleteActivity(record.id);
-                message.success('Aktivite başarıyla silindi');
-                fetchActivities();
-              } catch {
-                message.error('Silme işlemi sırasında hata oluştu');
-              }
+              await deleteActivity(record.id);
             },
           });
         },
       },
     ],
-    [handleView, handleRowClick, handleComplete, handleCancel, fetchActivities]
+    [handleView, handleRowClick, handleComplete, handleCancel]
   );
 
   // Table columns
-  const columns: ColumnsType<ActivityBase> = useMemo(
-    () => [
-      {
-        title: 'Tip',
-        dataIndex: 'activityType',
-        key: 'activityType',
-        width: 80,
-        align: 'center',
-        filters: activityTypeFilters,
-        render: (type: ActivityTypeValue) => (
-          <Tooltip title={getActivityTypeLabel(type)}>
-            <Avatar
-              size="small"
-              style={{
-                backgroundColor: getActivityTypeColor(type),
-                fontSize: 14,
-              }}
-              icon={getActivityTypeIcon(type)}
-            />
-          </Tooltip>
-        ),
-      },
-      {
-        title: 'Konu',
-        dataIndex: 'subject',
-        key: 'subject',
-        sorter: true,
-        width: 300,
-        ellipsis: true,
-        render: (text: string, record: ActivityBase) => (
-          <Space orientation="vertical" size={0}>
-            <Text strong style={{ cursor: 'pointer', color: '#1890ff' }}>
-              {text}
+  const columns: ColumnsType<ActivityBase> = [
+    {
+      title: 'Tip',
+      dataIndex: 'activityType',
+      key: 'activityType',
+      width: 80,
+      align: 'center',
+      filters: activityTypeFilters,
+      render: (type: ActivityTypeValue) => (
+        <Tooltip title={getActivityTypeLabel(type)}>
+          <Avatar
+            size="small"
+            style={{
+              backgroundColor: getActivityTypeColor(type),
+              fontSize: 14,
+            }}
+            icon={getActivityTypeIcon(type)}
+          />
+        </Tooltip>
+      ),
+    },
+    {
+      title: 'Konu',
+      dataIndex: 'subject',
+      key: 'subject',
+      sorter: true,
+      width: 300,
+      ellipsis: true,
+      render: (text: string, record: ActivityBase) => (
+        <Space orientation="vertical" size={0}>
+          <Text strong style={{ cursor: 'pointer', color: '#1890ff' }}>
+            {text}
+          </Text>
+          {record.regardingEntityType && (
+            <Text type="secondary" style={{ fontSize: 12 }}>
+              {record.regardingEntityType}: {record.regardingEntityId}
             </Text>
-            {record.regardingEntityType && (
-              <Text type="secondary" style={{ fontSize: 12 }}>
-                {record.regardingEntityType}: {record.regardingEntityId}
-              </Text>
-            )}
+          )}
+        </Space>
+      ),
+    },
+    {
+      title: 'Durum',
+      dataIndex: 'status',
+      key: 'status',
+      width: 130,
+      filters: activityStatusFilters,
+      render: (status: ActivityStatusValue) => (
+        <Tag color={getActivityStatusColor(status)}>{getActivityStatusLabel(status)}</Tag>
+      ),
+    },
+    {
+      title: 'Öncelik',
+      dataIndex: 'priority',
+      key: 'priority',
+      width: 100,
+      filters: activityPriorityFilters,
+      render: (priority: ActivityPriorityValue) => (
+        <Tag color={getActivityPriorityColor(priority)} icon={<FlagOutlined />}>
+          {getActivityPriorityLabel(priority)}
+        </Tag>
+      ),
+    },
+    {
+      title: 'Bitiş Tarihi',
+      dataIndex: 'dueDate',
+      key: 'dueDate',
+      width: 150,
+      sorter: true,
+      render: (date: string) => {
+        if (!date) return '-';
+        const dueDate = dayjs(date);
+        const isOverdue = dueDate.isBefore(dayjs(), 'day');
+        const isToday = dueDate.isSame(dayjs(), 'day');
+        return (
+          <Space>
+            <ClockCircleOutlined
+              style={{
+                color: isOverdue ? '#ff4d4f' : isToday ? '#faad14' : '#8c8c8c',
+              }}
+            />
+            <Text type={isOverdue ? 'danger' : undefined}>
+              {dueDate.format('DD.MM.YYYY HH:mm')}
+            </Text>
           </Space>
-        ),
+        );
       },
-      {
-        title: 'Durum',
-        dataIndex: 'status',
-        key: 'status',
-        width: 130,
-        filters: activityStatusFilters,
-        render: (status: ActivityStatusValue) => (
-          <Tag color={getActivityStatusColor(status)}>{getActivityStatusLabel(status)}</Tag>
-        ),
-      },
-      {
-        title: 'Öncelik',
-        dataIndex: 'priority',
-        key: 'priority',
-        width: 100,
-        filters: activityPriorityFilters,
-        render: (priority: ActivityPriorityValue) => (
-          <Tag color={getActivityPriorityColor(priority)} icon={<FlagOutlined />}>
-            {getActivityPriorityLabel(priority)}
-          </Tag>
-        ),
-      },
-      {
-        title: 'Bitiş Tarihi',
-        dataIndex: 'dueDate',
-        key: 'dueDate',
-        width: 150,
-        sorter: true,
-        render: (date: string) => {
-          if (!date) return '-';
-          const dueDate = dayjs(date);
-          const isOverdue = dueDate.isBefore(dayjs(), 'day');
-          const isToday = dueDate.isSame(dayjs(), 'day');
-          return (
-            <Space>
-              <ClockCircleOutlined
-                style={{
-                  color: isOverdue ? '#ff4d4f' : isToday ? '#faad14' : '#8c8c8c',
-                }}
-              />
-              <Text type={isOverdue ? 'danger' : undefined}>
-                {dueDate.format('DD.MM.YYYY HH:mm')}
-              </Text>
-            </Space>
-          );
-        },
-      },
-      {
-        title: 'Aktif',
-        dataIndex: 'isActive',
-        key: 'isActive',
-        width: 80,
-        align: 'center',
-        filters: [
-          { text: 'Aktif', value: true },
-          { text: 'Pasif', value: false },
-        ],
-        render: (isActive: boolean) => (
-          <Badge status={isActive ? 'success' : 'default'} text={isActive ? 'Evet' : 'Hayır'} />
-        ),
-      },
-      {
-        title: '',
-        key: 'actions',
-        width: 60,
-        fixed: 'right',
-        render: (_: unknown, record: ActivityBase) => (
-          <Dropdown menu={{ items: getRowActionItems(record) }} trigger={['click']}>
-            <Button type="text" icon={<MoreOutlined />} onClick={(e) => e.stopPropagation()} />
-          </Dropdown>
-        ),
-      },
-    ],
-    [getRowActionItems]
-  );
+    },
+    {
+      title: 'Aktif',
+      dataIndex: 'isActive',
+      key: 'isActive',
+      width: 80,
+      align: 'center',
+      filters: [
+        { text: 'Aktif', value: true },
+        { text: 'Pasif', value: false },
+      ],
+      render: (isActive: boolean) => (
+        <Badge status={isActive ? 'success' : 'default'} text={isActive ? 'Evet' : 'Hayır'} />
+      ),
+    },
+    {
+      title: '',
+      key: 'actions',
+      width: 60,
+      fixed: 'right',
+      render: (_: unknown, record: ActivityBase) => (
+        <Dropdown menu={{ items: getRowActionItems(record) }} trigger={['click']}>
+          <Button type="text" icon={<MoreOutlined />} onClick={(e) => e.stopPropagation()} />
+        </Dropdown>
+      ),
+    },
+  ];
 
   // Row selection config
-  const rowSelection: TableRowSelection<ActivityBase> = useMemo(
-    () => ({
-      selectedRowKeys,
-      onChange: (keys) => setSelectedRowKeys(keys as string[]),
-      preserveSelectedRowKeys: true,
-    }),
-    [selectedRowKeys, setSelectedRowKeys]
-  );
+  const rowSelection: TableRowSelection<ActivityBase> = {
+    selectedRowKeys,
+    onChange: (keys) => setSelectedRowKeys(keys as string[]),
+    preserveSelectedRowKeys: true,
+  };
 
-  // Table change handler
-  const handleTableChange: TableProps<ActivityBase>['onChange'] = useCallback(
-    (pagination: any, tableFilters: Record<string, any>) => {
-      if (pagination.current !== page) {
-        setPage(pagination.current || 1);
-      }
-      if (pagination.pageSize !== pageSize) {
-        setPageSize(pagination.pageSize || 10);
-      }
+  // Table change handler - sadece filter değişikliklerini handle ediyor
+  const handleTableChange: TableProps<ActivityBase>['onChange'] = (_pagination, tableFilters) => {
+    const newFilters = { ...filters };
 
-      const newFilters = { ...filters };
-      if (tableFilters.activityType) {
-        newFilters.activityType = tableFilters.activityType[0] as ActivityTypeValue;
-      }
-      if (tableFilters.status) {
-        newFilters.status = tableFilters.status[0] as ActivityStatusValue;
-      }
-      if (tableFilters.priority) {
-        newFilters.priority = tableFilters.priority[0] as ActivityPriorityValue;
-      }
-      if (tableFilters.isActive !== undefined && tableFilters.isActive !== null) {
-        newFilters.isActive = tableFilters.isActive[0] as boolean;
-      }
-      setFilters(newFilters);
-    },
-    [page, pageSize, filters, setPage, setPageSize, setFilters]
-  );
+    if (tableFilters.activityType) {
+      newFilters.activityType = tableFilters.activityType[0] as ActivityTypeValue;
+    } else {
+      newFilters.activityType = undefined;
+    }
+
+    if (tableFilters.status) {
+      newFilters.status = tableFilters.status[0] as ActivityStatusValue;
+    } else {
+      newFilters.status = undefined;
+    }
+
+    if (tableFilters.priority) {
+      newFilters.priority = tableFilters.priority[0] as ActivityPriorityValue;
+    } else {
+      newFilters.priority = undefined;
+    }
+
+    if (tableFilters.isActive !== undefined && tableFilters.isActive !== null && tableFilters.isActive.length > 0) {
+      newFilters.isActive = tableFilters.isActive[0] as boolean;
+    } else {
+      newFilters.isActive = undefined;
+    }
+
+    setFilters(newFilters);
+  };
 
   // Calendar date cell render
   const calendarDateCellRender = useCallback(
@@ -675,25 +681,37 @@ const ActivityList: React.FC = () => {
     [calendarActivities, handleView]
   );
 
-  // Calendar header render - MEMOIZED
+  // Calendar header render
   const calendarHeaderRender = useCallback(
     ({ value, onChange }: { value: Dayjs; onChange: (date: Dayjs) => void }) => {
       const handlePrevMonth = () => {
         const newDate = value.subtract(1, 'month');
         onChange(newDate);
         setCalendarDate(newDate.toDate());
+        // Fetch new month's activities
+        const startOfMonth = newDate.startOf('month').format('YYYY-MM-DD');
+        const endOfMonth = newDate.endOf('month').format('YYYY-MM-DD');
+        fetchCalendarActivities(startOfMonth, endOfMonth);
       };
 
       const handleNextMonth = () => {
         const newDate = value.add(1, 'month');
         onChange(newDate);
         setCalendarDate(newDate.toDate());
+        // Fetch new month's activities
+        const startOfMonth = newDate.startOf('month').format('YYYY-MM-DD');
+        const endOfMonth = newDate.endOf('month').format('YYYY-MM-DD');
+        fetchCalendarActivities(startOfMonth, endOfMonth);
       };
 
       const handleToday = () => {
         const today = dayjs();
         onChange(today);
         setCalendarDate(today.toDate());
+        // Fetch current month's activities
+        const startOfMonth = today.startOf('month').format('YYYY-MM-DD');
+        const endOfMonth = today.endOf('month').format('YYYY-MM-DD');
+        fetchCalendarActivities(startOfMonth, endOfMonth);
       };
 
       return (
@@ -713,6 +731,10 @@ const ActivityList: React.FC = () => {
               if (date) {
                 onChange(date);
                 setCalendarDate(date.toDate());
+                // Fetch selected month's activities
+                const startOfMonth = date.startOf('month').format('YYYY-MM-DD');
+                const endOfMonth = date.endOf('month').format('YYYY-MM-DD');
+                fetchCalendarActivities(startOfMonth, endOfMonth);
               }
             }}
             format="MMMM YYYY"
@@ -721,7 +743,7 @@ const ActivityList: React.FC = () => {
         </Flex>
       );
     },
-    [setCalendarDate]
+    [setCalendarDate, fetchCalendarActivities]
   );
 
   // Render List View
@@ -758,17 +780,9 @@ const ActivityList: React.FC = () => {
           rowKey="id"
           columns={columns}
           dataSource={activities}
-          loading={loading}
+          loading={false}
           rowSelection={rowSelection}
-          pagination={{
-            current: page,
-            pageSize: pageSize,
-            total: total,
-            showSizeChanger: true,
-            showQuickJumper: true,
-            showTotal: (total, range) => `${range[0]}-${range[1]} / ${total} kayıt`,
-            pageSizeOptions: ['10', '20', '50', '100'],
-          }}
+          pagination={false}
           onChange={handleTableChange}
           onRow={(record) => ({
             onClick: () => handleRowClick(record),
@@ -777,13 +791,24 @@ const ActivityList: React.FC = () => {
           scroll={{ x: 1100 }}
           size="middle"
         />
+
+        {/* Custom Pagination */}
+        <CustomPagination
+          current={page}
+          pageSize={pageSize}
+          hasMore={hasMore}
+          totalItems={activities?.length ?? 0}
+          pageSizeOptions={[10, 20, 50, 100]}
+          onPageChange={handlePageChange}
+          onPageSizeChange={handlePageSizeChange}
+        />
       </Card>
     </>
   );
 
   // Render Calendar View
   const renderCalendarView = () => (
-    <Card styles={{ body: { padding: 0 } }} loading={calendarLoading}>
+    <Card styles={{ body: { padding: 0 } }}>
       <ConfigProvider locale={trTR}>
         <Calendar
           cellRender={(current, info) => {
@@ -916,11 +941,7 @@ const ActivityList: React.FC = () => {
                 </Tooltip>
               )}
               <Tooltip title="Yenile">
-                <Button
-                  icon={<ReloadOutlined />}
-                  onClick={handleRefresh}
-                  loading={loading || calendarLoading}
-                />
+                <Button icon={<ReloadOutlined />} onClick={handleRefresh} />
               </Tooltip>
             </Space>
           </Col>
@@ -931,6 +952,44 @@ const ActivityList: React.FC = () => {
       {viewMode === 'list' ? renderListView() : renderCalendarView()}
     </div>
   );
+};
+
+// Helper function to get activity detail path using RoutePaths
+const getActivityDetailPath = (
+  activityType: ActivityTypeValue,
+  id: string,
+  mode: 'view' | 'edit'
+): string => {
+  const modeParam = `?mode=${mode}`;
+
+  switch (activityType) {
+    case ActivityType.Email:
+      return RoutePaths.Activity.Email.Edit(id) + modeParam;
+    case ActivityType.PhoneCall:
+      return RoutePaths.Activity.PhoneCall.Edit(id) + modeParam;
+    case ActivityType.Task:
+      return RoutePaths.Activity.Task.Edit(id) + modeParam;
+    case ActivityType.Appointment:
+      return RoutePaths.Activity.Appointment.Edit(id) + modeParam;
+    default:
+      return RoutePaths.Activity.List;
+  }
+};
+
+// Helper function to get new activity path using RoutePaths
+const getActivityNewPath = (activityType: ActivityTypeValue): string => {
+  switch (activityType) {
+    case ActivityType.Email:
+      return RoutePaths.Activity.Email.New;
+    case ActivityType.PhoneCall:
+      return RoutePaths.Activity.PhoneCall.New;
+    case ActivityType.Task:
+      return RoutePaths.Activity.Task.New;
+    case ActivityType.Appointment:
+      return RoutePaths.Activity.Appointment.New;
+    default:
+      return RoutePaths.Activity.List;
+  }
 };
 
 export default ActivityList;

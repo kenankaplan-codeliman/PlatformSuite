@@ -1,4 +1,4 @@
-using CRM.Api.Contracts.Requests;
+using CRM.Api.Contracts.Requests.Authentication;
 using CRM.Api.Contracts.Responses;
 using CRM.Api.Extensions;
 using CRM.Application.CommandHandler;

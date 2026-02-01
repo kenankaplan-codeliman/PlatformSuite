@@ -1,4 +1,4 @@
-﻿namespace CRM.Api.Contracts.Requests
+﻿namespace CRM.Api.Contracts.Requests.Authentication
 {
     public class RefreshTokenRequest
     {

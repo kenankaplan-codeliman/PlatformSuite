@@ -29,13 +29,13 @@ public static class DependencyInjection
         services.AddScoped<IOrganizationRepository, OrganizationRepository>();
         services.AddScoped<IRoleRepository, RoleRepository>();
         services.AddScoped<ILeadRepository, LeadRepository>();
+        services.AddScoped<IActivityRepository, ActivityRepository>();
 
 
         //Command Handler
         services.AddScoped<AuthenticationCommandHandler>();
         services.AddScoped<LeadCommandHandler>();
-
-        
+        services.AddScoped<ActivityCommandHandler>();
 
         return services;
     }

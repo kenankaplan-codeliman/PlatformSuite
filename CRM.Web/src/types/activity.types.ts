@@ -170,9 +170,44 @@ export interface ActivityListFilters {
   isActive?: boolean;
 }
 
+// ============================================
+// RESPONSE TYPES - Service'den dönen yapılar
+// ============================================
+
+export interface ActivityListRequest {
+  page: number;
+  pageSize: number;
+  filters?: ActivityListFilters;
+}
+
+export interface ActivityGetRequest {
+  id: string;
+}
+
+export interface ActivityUpdateRequest {
+  id: string;
+  data: Partial<ActivityBase>;
+}
+
+export interface ActivityDeleteRequest {
+  id: string;
+}
+
+export interface ActivityBulkDeleteRequest {
+  ids: string[];
+}
+
+export interface ActivityBulkUpdateStatusRequest {
+  ids: string[];
+  status: ActivityStatusValue;
+}
+
+
+
 export interface ActivityListResponse {
   data: ActivityBase[];
-  total: number;
+  total?: number;
+  hasMore?: boolean;
   page: number;
   pageSize: number;
 }

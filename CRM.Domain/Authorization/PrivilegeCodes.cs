@@ -14,10 +14,12 @@ namespace CRM.Domain.Authorization
             public const string Delete = "Lead.Delete";
         }
 
-        public static class CustomerPrivilegeCodes
+        public static class ActivityPrivilegeCodes
         {
-            public const string Read = "Customer.Read";
-            public const string Create = "Customer.Create";
+            public const string Read = "Activity.Read";
+            public const string Create = "Activity.Create";
+            public const string Update = "Activity.Update";
+            public const string Delete = "Activity.Delete";
         }
     }
 

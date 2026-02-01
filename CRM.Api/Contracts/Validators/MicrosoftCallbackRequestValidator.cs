@@ -1,4 +1,4 @@
-﻿using CRM.Api.Contracts.Requests;
+﻿using CRM.Api.Contracts.Requests.Authentication;
 using FluentValidation;
 
 namespace CRM.Api.Contracts.Validators

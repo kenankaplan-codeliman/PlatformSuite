@@ -10,11 +10,4 @@ export const appRoutes: RouteObject[] = [
   ...historyRoutes,
 ];
 
-// Re-export individual routes for selective usage
-// export { activityRoutes };
-// export { leadRoutes };
-
-// Type export for external usage
-// export type { RouteObject };
-
 export default appRoutes;

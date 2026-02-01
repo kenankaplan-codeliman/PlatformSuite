@@ -26,6 +26,7 @@ namespace CRM.Application.CommandHandler
             return new LeadListResponse()
             {
                 Data = modalList,
+                HasMore = result.HasMore,
                 Page = result.Page,
                 PageSize = result.PageSize,
             };

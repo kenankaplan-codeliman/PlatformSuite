@@ -1,6 +1,6 @@
 ﻿using CRM.Application.Modals.LeadModal;
 
-namespace CRM.Api.Contracts.Requests
+namespace CRM.Api.Contracts.Requests.Lead
 {
     public class LeadUpdateRequest
     {

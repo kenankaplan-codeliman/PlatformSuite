@@ -1,6 +1,6 @@
 ﻿using CRM.Domain.Enums;
 
-namespace CRM.Api.Contracts.Requests
+namespace CRM.Api.Contracts.Requests.Lead
 {
     public class LeadBulkUpdateStatusRequest
     {
