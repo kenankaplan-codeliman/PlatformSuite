@@ -285,3 +285,4 @@ Icon
 *.old
 *.tmp
 *.temp
+/CRM.Domain/Entities/Activity/AppointmentActivityModal.cs
