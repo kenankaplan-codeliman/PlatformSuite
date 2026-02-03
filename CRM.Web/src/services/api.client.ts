@@ -4,11 +4,6 @@ import { ServiceBasePath } from '@/constants/service.paths';
 import { useAuthState } from '@/stores/auth.store';
 import { RoutePaths } from '@/constants/route.paths';
 
-/**
- * Axios instance with authentication interceptor
- * Automatically adds Authorization header to all requests
- * Handles token refresh on 401 errors
- */
 const apiClient = axios.create({
   baseURL: ServiceBasePath,
   timeout: 30000,
@@ -17,13 +12,9 @@ const apiClient = axios.create({
   },
 });
 
-/**
- * Request interceptor
- * Adds Authorization header with access token
- */
+// Request interceptor
 apiClient.interceptors.request.use(
   (config: InternalAxiosRequestConfig) => {
-    
     const { accessToken } = useAuthState.getState();
     
     if (accessToken && config.headers) {
@@ -32,18 +23,10 @@ apiClient.interceptors.request.use(
     
     return config;
   },
-  (error) => {
-    return Promise.reject(error);
-  }
+  (error) => Promise.reject(error)
 );
 
-export default apiClient;
-
-/**
- * Response interceptor
- * Handles token refresh on 401 Unauthorized
- */
-
+// Response interceptor
 let isRefreshing = false;
 let failedQueue: Array<{
   resolve: (value?: any) => void;
@@ -58,7 +41,6 @@ const processQueue = (error: any = null) => {
       prom.resolve();
     }
   });
-  
   failedQueue = [];
 };
 
@@ -67,55 +49,43 @@ apiClient.interceptors.response.use(
   async (error: AxiosError) => {
     const originalRequest = error.config as InternalAxiosRequestConfig & { _retry?: boolean };
     
-    // If error is 401 and we haven't retried yet
+    // 401 Unauthorized - Token refresh logic
     if (error.response?.status === 401 && !originalRequest._retry) {
       if (isRefreshing) {
-        // If already refreshing, queue this request
         return new Promise((resolve, reject) => {
           failedQueue.push({ resolve, reject });
         })
-          .then(() => {
-            return apiClient(originalRequest);
-          })
-          .catch((err) => {
-            return Promise.reject(err);
-          });
+          .then(() => apiClient(originalRequest))
+          .catch((err) => Promise.reject(err));
       }
 
       originalRequest._retry = true;
       isRefreshing = true;
 
-      const { refreshToken, accessToken, refreshAuthToken,logout, checkAuth } = useAuthState.getState();
+      const { refreshToken, refreshAuthToken, logout } = useAuthState.getState();
 
       if (!refreshToken) {
-        // No refresh token, logout
         logout();
         window.location.href = RoutePaths.Login;
         return Promise.reject(error);
       }
 
       try {
-        // Try to refresh token
         await refreshAuthToken();
         
-        // Update Authorization header
-        if (checkAuth() && originalRequest.headers) {
-          originalRequest.headers.Authorization = `Bearer ${accessToken}`;
+        // Refresh sonrası güncel token'ı al
+        const { accessToken: newAccessToken } = useAuthState.getState();
+        
+        if (newAccessToken && originalRequest.headers) {
+          originalRequest.headers.Authorization = `Bearer ${newAccessToken}`;
         } else {
-        // No refresh token, logout
-        logout();
-        window.location.href = RoutePaths.Login;
-        return Promise.reject(error);
-      }
+          throw new Error('Token refresh failed');
+        }
         
-        // Process queued requests
         processQueue();
-        
-        // Retry original request
         return apiClient(originalRequest);
 
       } catch (refreshError) {
-        // Refresh failed, logout
         processQueue(refreshError);
         logout();
         window.location.href = RoutePaths.Login;
@@ -125,8 +95,9 @@ apiClient.interceptors.response.use(
       }
     }
 
+    // Diğer tüm hatalar için reject
     return Promise.reject(error);
   }
 );
 
-
+export default apiClient;

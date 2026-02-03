@@ -4,10 +4,12 @@ using CRM.Application.Modals.Common;
 using CRM.Application.Modals.LeadModal;
 using CRM.Domain.Entities.Identity;
 using CRM.Domain.Entities.Lead;
+using CRM.Domain.Enums;
 using CRM.Infrastructure.Data;
 using Microsoft.Build.Tasks.Deployment.ManifestUtilities;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Graph.Models;
+using Microsoft.Extensions.Configuration;
+
 using System;
 using System.Collections.Generic;
 using System.Text;
@@ -16,11 +18,13 @@ namespace CRM.Infrastructure.Repositories
 {
     public class LeadRepository : ILeadRepository
     {
+        private readonly IConfiguration _config;
         private readonly DatabaseContext dbContext;
 
-        public LeadRepository(DatabaseContext dbContext)
+        public LeadRepository(DatabaseContext dbContext, IConfiguration _config)
         {
             this.dbContext = dbContext;
+            this._config = _config;
         }
 
         public async Task<Lead> CreateAsync(Lead entity)
@@ -50,7 +54,7 @@ namespace CRM.Infrastructure.Repositories
         public async Task<PaginationResult<Lead>> ListAsync(LeadListFilter? filter, PaginationInfo? paginationInfo)
         {
 
-            var query = this.dbContext.Lead.AsQueryable();
+            var query = this.dbContext.Lead.AsNoTracking();
 
             if (filter != null)
             {
@@ -105,7 +109,6 @@ namespace CRM.Infrastructure.Repositories
             }
             else
             {
-
                 var entityList = query.ToList();
 
                 return new PaginationResult<Lead>()
@@ -120,6 +123,74 @@ namespace CRM.Infrastructure.Repositories
 
         }
 
+        public async Task<PaginationResult<EntityReference>> Search(string searchText, PaginationInfo? paginationInfo)
+        {
+
+            if (string.IsNullOrEmpty(searchText))
+                return new PaginationResult<EntityReference>()
+                {
+                    Data = new List<EntityReference>(),
+                    HasMore = false,
+                };
+
+
+            int pageSize = int.Parse(_config["Search_Max_Record"]!);
+            int skipCnt = 0;
+
+            if (paginationInfo != null && paginationInfo.isValid())
+            {
+                pageSize = paginationInfo.PageSize;
+
+                var pageIndex = (paginationInfo.Page - 1) >= 0 ? paginationInfo.Page - 1 : 0;
+                skipCnt = pageIndex * paginationInfo.PageSize;
+
+            }
+
+            var query = from lead in this.dbContext.Lead.AsNoTracking()
+                        where
+                        lead.IsActive
+                        && (
+                            EF.Functions.ILike(lead.CompanyName, $"%{searchText}%")
+                           || EF.Functions.ILike((lead.FirstName + " " + lead.LastName), $"%{searchText}%")
+                           )
+                        select new
+                        {
+                            lead.Id,
+                            lead.CompanyName,
+                            lead.FirstName,
+                            lead.LastName,
+                            lead.Email,
+                            lead.Phone,
+                            lead.MobilePhone
+                        };
+
+
+            var entityList = query.Skip(skipCnt).Take(pageSize + 1).ToList();
+
+            var hasMore = entityList.Count > pageSize;
+
+            var modalList = entityList.Take(pageSize)
+                .Select(item => new EntityReference(EntityType.Lead)
+                {
+                    Id = item.Id,
+                    Company = item.CompanyName,
+                    Name = $"{item.FirstName} {item.LastName}",
+                    Email = item.Email,
+                    Phone = item.MobilePhone ?? item.Phone,
+                })
+                .ToList();
+
+            return new PaginationResult<EntityReference>()
+            {
+                Data = modalList,
+                HasMore = hasMore,
+                Page = paginationInfo?.Page ?? 1,
+                PageSize = pageSize,
+            };
+
+
+
+        }
 
     }
 

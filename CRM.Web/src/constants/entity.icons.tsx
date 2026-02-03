@@ -9,6 +9,7 @@ import {
   ClockCircleOutlined,
   // Lead Icons
   UserAddOutlined,
+  RocketOutlined,
   UserOutlined,
   ContactsOutlined,
   FunnelPlotOutlined,
@@ -40,8 +41,9 @@ import {
   BarChartOutlined,
 } from '@ant-design/icons';
 
-import type { ActivityTypeValue, ActivityStatusValue, ActivityPriorityValue, CallDirectionValue } from '@/types/activity.types';
+import type { ActivityTypeValue, ActivityStatusValue, ActivityPriorityValue } from '@/types/activity.types';
 import type { LeadStatusValue, LeadRatingValue, LeadSourceValue } from '@/types/lead.types';
+import type {CallDirectionValue}  from '@/types/activity.types';
 import { ActivityType, ActivityStatus, ActivityPriority, CallDirection } from '@/types/activity.types';
 import { LeadStatus, LeadRating, LeadSource } from '@/types/lead.types';
 
@@ -65,8 +67,6 @@ export const getActivityStatusIcon = (status: ActivityStatusValue): React.ReactN
     [ActivityStatus.InProgress]: <LoadingOutlined />,
     [ActivityStatus.Completed]: <CheckCircleOutlined />,
     [ActivityStatus.Cancelled]: <CloseCircleOutlined />,
-    [ActivityStatus.Scheduled]: <CalendarOutlined />,
-    [ActivityStatus.WaitingOnSomeone]: <PauseCircleOutlined />,
     [ActivityStatus.Deferred]: <ExclamationCircleOutlined />,
   };
   return icons[status] ?? <ClockCircleOutlined />;
@@ -145,22 +145,6 @@ export type MenuIconType =
   | 'settings' 
   | 'reports';
 
-/** Get Menu Icon by key */
-export const getMenuIcon = (key: MenuIconType): React.ReactNode => {
-  const icons: Record<MenuIconType, React.ReactNode> = {
-    dashboard: <DashboardOutlined />,
-    lead: <UserAddOutlined />,
-    leadAlt: <FunnelPlotOutlined />,
-    activity: <ScheduleOutlined />,
-    activityAlt: <ClockCircleOutlined />,
-    account: <BankOutlined />,
-    contact: <ContactsOutlined />,
-    opportunity: <RiseOutlined />,
-    settings: <SettingOutlined />,
-    reports: <BarChartOutlined />,
-  };
-  return icons[key] ?? <EllipsisOutlined />;
-};
 
 // ==================== MENU ICONS OBJECT (Lazy Getter) ====================
 
@@ -170,7 +154,7 @@ export const getMenuIcon = (key: MenuIconType): React.ReactNode => {
  */
 export const MenuIcons = {
   get dashboard() { return <DashboardOutlined />; },
-  get lead() { return <UserAddOutlined />; },
+  get lead() { return <RocketOutlined />; },
   get leadAlt() { return <FunnelPlotOutlined />; },
   get activity() { return <ScheduleOutlined />; },
   get activityAlt() { return <ClockCircleOutlined />; },
@@ -180,6 +164,23 @@ export const MenuIcons = {
   get settings() { return <SettingOutlined />; },
   get reports() { return <BarChartOutlined />; },
 } as const;
+
+/** Get Menu Icon by key */
+export const getMenuIcon = (key: MenuIconType): React.ReactNode => {
+  const icons: Record<MenuIconType, React.ReactNode> = {
+    dashboard: MenuIcons.dashboard,
+    lead: MenuIcons.lead,
+    leadAlt: MenuIcons.leadAlt,
+    activity: MenuIcons.activity,
+    activityAlt: MenuIcons.activityAlt,
+    account: MenuIcons.account,
+    contact: MenuIcons.contact,
+    opportunity: MenuIcons.opportunity,
+    settings: MenuIcons.settings,
+    reports: MenuIcons.reports,
+  };
+  return icons[key] ?? <EllipsisOutlined />;
+};
 
 // ==================== ACTIVITY TYPE ICONS OBJECT (Lazy Getter) ====================
 

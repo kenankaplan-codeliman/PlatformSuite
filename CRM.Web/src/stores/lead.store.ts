@@ -5,11 +5,7 @@ import leadService from '@/services/lead.service';
 
 import { handleError } from '@/util/useHandleError';
 import { StateType, useProcessState } from "@/stores/process.state.store";
-
-interface PaginationParams {
-  page?: number;
-  pageSize?: number;
-}
+import type { PaginationParams } from '@/types/common.types';
 
 interface LeadState {
   // List state

@@ -1,17 +1,47 @@
-import type {
-  ActivityBase,
-  ActivityListFilters,
-  ActivityListResponse,
-  ActivityListRequest,
-  ActivityGetRequest,
-  ActivityUpdateRequest,
-  ActivityDeleteRequest,
-  ActivityBulkDeleteRequest,
-  ActivityBulkUpdateStatusRequest,
-  ActivityStatusValue,
+import {
+  type ActivityBase,
+  type ActivityListFilters,
+  type ActivityListResponse,
+  type ActivityListRequest,
+  type ActivityGetRequest,
+  type ActivityUpdateRequest,
+  type ActivityDeleteRequest,
+  type ActivityBulkDeleteRequest,
+  type ActivityBulkUpdateStatusRequest,
+  type ActivityStatusValue,
+  type ActivityCalendarRequest,
+  ActivityType,
+  type ActivityTypeValue,
 } from '@/types/activity.types';
 import apiClient from '@/services/api.client';
 import { ServicePath } from '@/constants/service.paths';
+
+
+
+const activityCreateEndpointMap: Record<ActivityTypeValue, string> = {
+  [ActivityType.Email]: ServicePath.Activity.CreateEmail,
+  [ActivityType.PhoneCall]: ServicePath.Activity.CreatePhoneCall,
+  [ActivityType.Task]: ServicePath.Activity.CreateTask,
+  [ActivityType.Appointment]: ServicePath.Activity.CreateAppointment,
+};
+
+const activityUpdateEndpointMap: Record<ActivityTypeValue, string> = {
+  [ActivityType.Email]: ServicePath.Activity.UpdateEmail,
+  [ActivityType.PhoneCall]: ServicePath.Activity.UpdatePhoneCall,
+  [ActivityType.Task]: ServicePath.Activity.UpdateTask,
+  [ActivityType.Appointment]: ServicePath.Activity.UpdateAppointment,
+};
+
+const activityGetEndpointMap: Record<ActivityTypeValue, string> = {
+  [ActivityType.Email]: ServicePath.Activity.GetEmail,
+  [ActivityType.PhoneCall]: ServicePath.Activity.GetPhoneCall,
+  [ActivityType.Task]: ServicePath.Activity.GetTask,
+  [ActivityType.Appointment]: ServicePath.Activity.GetAppointment,
+};
+
+
+
+
 
 export const activityService = {
   // Get paginated list of activities with optional filters
@@ -40,7 +70,7 @@ export const activityService = {
     endDate: string,
     filters?: ActivityListFilters
   ): Promise<ActivityBase[]> => {
-    const request = {
+    const request: ActivityCalendarRequest = {
       startDate,
       endDate,
       filters,
@@ -54,13 +84,15 @@ export const activityService = {
   },
 
   // Get single activity by ID
-  getActivityById: async (id: string): Promise<ActivityBase> => {
+  getActivityById: async (id: string, activityType: ActivityTypeValue): Promise<ActivityBase> => {
     const request: ActivityGetRequest = {
       id: id,
     };
 
+    const endpoint = activityGetEndpointMap[activityType]
+
     const response = await apiClient.post<ActivityBase>(
-      ServicePath.Activity.Get,
+      endpoint,
       request
     );
     return response.data;
@@ -70,29 +102,31 @@ export const activityService = {
   createActivity: async <T extends ActivityBase>(
     activity: Omit<T, 'id' | 'createdAt' | 'createdBy'>
   ): Promise<T> => {
+
+    const endpoint = activityCreateEndpointMap[activity.activityType];
+
     const response = await apiClient.post<T>(
-      ServicePath.Activity.Create,
+      endpoint,
       activity
     );
     return response.data;
   },
 
   // Update existing activity
-  updateActivity: async <T extends ActivityBase>(
-    id: string,
-    activity: Partial<T>
-  ): Promise<T> => {
-    const request: ActivityUpdateRequest = {
-      id: id,
-      data: activity,
-    };
+updateActivity: async <T extends ActivityBase>(
+  id: string,
+  activity: Partial<T> & { activityType: T['activityType'] }
+): Promise<T> => {
+  const request: ActivityUpdateRequest = {
+    id: id,
+    data: activity,
+  };
 
-    const response = await apiClient.post<T>(
-      ServicePath.Activity.Update,
-      request
-    );
-    return response.data;
-  },
+  const endpoint = activityUpdateEndpointMap[activity.activityType];
+
+  const response = await apiClient.post<T>(endpoint, request);
+  return response.data;
+},
 
   // Delete activity (soft delete)
   deleteActivity: async (id: string): Promise<void> => {

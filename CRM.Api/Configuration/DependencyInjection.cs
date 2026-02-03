@@ -36,6 +36,7 @@ public static class DependencyInjection
         services.AddScoped<AuthenticationCommandHandler>();
         services.AddScoped<LeadCommandHandler>();
         services.AddScoped<ActivityCommandHandler>();
+        services.AddScoped<UserCommandHandler>();
 
         return services;
     }

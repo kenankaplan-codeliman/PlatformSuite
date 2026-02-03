@@ -1,4 +1,5 @@
-﻿using CRM.Domain.Entities.Identity;
+﻿using CRM.Application.Modals.Common;
+using CRM.Domain.Entities.Identity;
 using CRM.Domain.Enums;
 using System;
 using System.Collections.Generic;
@@ -12,5 +13,7 @@ namespace CRM.Application.Interfaces
         Task<AppUser?> GetByAzureUserIdAsync(string microsoft365Id);
         Task<Dictionary<string, AccessLevel>> GetPrivileges(Guid userId);
         Task<AccessLevel> GetAccessLevel(Guid userId, string privilegeCode);
+
+        Task<PaginationResult<EntityReference>> Search(string searchText, PaginationInfo? paginationInfo);
     }
 }

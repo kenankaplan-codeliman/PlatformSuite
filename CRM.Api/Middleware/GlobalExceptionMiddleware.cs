@@ -35,7 +35,7 @@ public class GlobalExceptionMiddleware
         {
             BusinessException => StatusCodes.Status400BadRequest,
             UnAuthenticatedException => StatusCodes.Status401Unauthorized,
-            UnauthorizedAccessException => StatusCodes.Status401Unauthorized,
+            UnauthorizedAccessException => StatusCodes.Status403Forbidden,
             KeyNotFoundException => StatusCodes.Status404NotFound,
             _ => StatusCodes.Status500InternalServerError
         };

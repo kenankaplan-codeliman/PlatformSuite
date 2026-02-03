@@ -68,10 +68,10 @@ const CustomPagination: React.FC<CustomPaginationProps> = ({
             value={pageSize}
             onChange={onPageSizeChange}
             disabled={state === StateType.Loading}
-            style={{ width: 120 }}
+            style={{ width: 80 }}
             options={pageSizeOptions.map((size) => ({
               value: size,
-              label: `${size} / sayfa`,
+              label: `${size}`,
             }))}
           />
         )}

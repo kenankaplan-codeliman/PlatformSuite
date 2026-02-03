@@ -32,6 +32,18 @@ namespace CRM.Application.CommandHandler
             };
         }
 
+        public async Task<SearchListResponse> Search(string searchText, PaginationInfo? paginationInfo)
+        {
+            var result = await leadRepository.Search(searchText, paginationInfo);
+
+            return new SearchListResponse() { 
+                Data = result.Data,
+                HasMore = result.HasMore,
+                Page = result.Page,
+                PageSize = result.PageSize,
+            };
+        }
+
         public async Task<LeadDetailItem> Get(Guid Id)
         {
             var result = await leadRepository.GetAsync(Id);
@@ -188,5 +200,6 @@ namespace CRM.Application.CommandHandler
                 throw;
             }
         }
+
     }
 }

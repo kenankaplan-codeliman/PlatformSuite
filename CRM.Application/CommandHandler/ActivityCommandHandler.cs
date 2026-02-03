@@ -17,6 +17,12 @@ public class ActivityCommandHandler
         this.activityRepository = activityRepository;
         this.unitOfWork = unitOfWork;
     }
+
+    public async Task<List<ActivityBaseModal>> Calendar(ActivityListFilters? filters, DateTime startDate, DateTime endDate)
+    {
+        return new List<ActivityBaseModal>();   
+    }
+
     public async Task<ActivityListResponse> List(ActivityListFilters? filter, PaginationInfo? paginationInfo)
     {
         //var result = await activityRepository.ListAsync(filter, paginationInfo);
@@ -31,5 +37,21 @@ public class ActivityCommandHandler
             PageSize =0, //result.PageSize,
         };
     }
+
+
+    #region Appointment
+    public async Task<AppointmentActivityModal> CreateAppointment(AppointmentActivityModal appointment)
+    {
+        return new AppointmentActivityModal();    
+    }
+
+    public async Task<AppointmentActivityModal> ReadAppointment(Guid Id)
+    {
+        return new AppointmentActivityModal();
+    }
+    
+    #endregion
+
+
 
 }

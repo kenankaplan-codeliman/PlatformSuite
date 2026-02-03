@@ -36,9 +36,14 @@ import {
   CalendarOutlined,
   CheckCircleOutlined,
   CloseCircleOutlined,
+  LinkOutlined,
+  BankOutlined,
+  IdcardOutlined,
+  RocketOutlined,
 } from '@ant-design/icons';
 import dayjs from 'dayjs';
 import type { TaskActivity } from '@/types/activity.types';
+import type { EntityReference, EntityType as LookupEntityType } from '@/types/entity.lookup.types';
 import {
   ActivityStatus,
   ActivityPriority,
@@ -52,6 +57,8 @@ import {
 } from '@/types/activity.types';
 import { useActivityStore } from '@/stores/activity.store';
 import { StateType, useProcessState } from '@/stores/process.state.store';
+import EntityLookup, { EntityTypeConfig } from '@/components/EntityLookup';
+import { mockEntitySearch } from '@/services/entity.search.service';
 
 const { Title, Text, Paragraph } = Typography;
 const { TextArea } = Input;
@@ -68,8 +75,19 @@ export interface TaskDetailProps {
   onCancel?: () => void;
 }
 
+// Helper function to get entity icon
+const getEntityIcon = (entityType: LookupEntityType) => {
+  const icons: Record<LookupEntityType, React.ReactNode> = {
+    User: <UserOutlined />,
+    Account: <BankOutlined />,
+    Contact: <IdcardOutlined />,
+    Lead: <RocketOutlined />,
+    Opportunity: <CalendarOutlined />,
+  };
+  return icons[entityType];
+};
+
 const TaskDetail: React.FC<TaskDetailProps> = (props) => {
-  // Router hooks
   const params = useParams<{ id: string }>();
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
@@ -77,16 +95,17 @@ const TaskDetail: React.FC<TaskDetailProps> = (props) => {
 
   const { state } = useProcessState.getState();
 
-  // Determine mode from props, URL params, or default
   const urlMode = searchParams.get('mode') as TaskDetailMode | null;
   const initialMode = props.mode || urlMode || 'view';
   const [mode, setMode] = useState<TaskDetailMode>(initialMode);
 
-  // Determine task ID
+  // Lookup field states - EntityReference tipinde
+  const [assignedTo, setAssignedTo] = useState<EntityReference | null>(null);
+  const [regarding, setRegarding] = useState<EntityReference | null>(null);
+
   const taskId = props.taskId || params.id;
   const isNewTask = taskId === 'new' || !taskId;
 
-  // Store state and actions
   const {
     currentActivity,
     fetchActivityById,
@@ -97,18 +116,14 @@ const TaskDetail: React.FC<TaskDetailProps> = (props) => {
     cancelActivity,
   } = useActivityStore();
 
-  // Cast currentActivity to TaskActivity
   const currentTask = currentActivity as TaskActivity | null;
 
-  // Computed states
   const isViewMode = mode === 'view';
   const isEditMode = mode === 'edit';
   const isCreateMode = mode === 'create' || isNewTask;
 
-  // Ref to prevent double fetch
   const isFirstRender = useRef(true);
 
-  // Sync mode with URL
   const updateMode = useCallback(
     (newMode: TaskDetailMode) => {
       setMode(newMode);
@@ -120,13 +135,12 @@ const TaskDetail: React.FC<TaskDetailProps> = (props) => {
     [props, setSearchParams]
   );
 
-  // Fetch task data on mount (only once)
   useEffect(() => {
     if (isFirstRender.current) {
       isFirstRender.current = false;
 
       if (!isNewTask && taskId) {
-        fetchActivityById(taskId);
+        fetchActivityById(taskId, ActivityType.Task);
       } else {
         setCurrentActivity(null);
         setMode('create');
@@ -134,7 +148,6 @@ const TaskDetail: React.FC<TaskDetailProps> = (props) => {
     }
   }, [taskId, isNewTask, fetchActivityById, setCurrentActivity]);
 
-  // Sync mode with URL changes
   useEffect(() => {
     const urlMode = searchParams.get('mode') as TaskDetailMode | null;
     if (urlMode && urlMode !== mode && !isNewTask) {
@@ -142,7 +155,6 @@ const TaskDetail: React.FC<TaskDetailProps> = (props) => {
     }
   }, [searchParams, isNewTask, mode]);
 
-  // Populate form when task data changes
   useEffect(() => {
     if (currentTask && !isNewTask) {
       form.setFieldsValue({
@@ -151,9 +163,13 @@ const TaskDetail: React.FC<TaskDetailProps> = (props) => {
         startDate: currentTask.startDate ? dayjs(currentTask.startDate) : null,
         reminderDateTime: currentTask.reminderDateTime ? dayjs(currentTask.reminderDateTime) : null,
       });
+
+      setAssignedTo(currentTask.assignedTo || null);
+      setRegarding(currentTask.regarding || null);
     } else if (isNewTask) {
       form.resetFields();
-      // Set default values for new task
+      setAssignedTo(null);
+      setRegarding(null);
       form.setFieldsValue({
         activityType: ActivityType.Task,
         status: ActivityStatus.NotStarted,
@@ -164,10 +180,7 @@ const TaskDetail: React.FC<TaskDetailProps> = (props) => {
     }
   }, [currentTask, form, isNewTask]);
 
-  // Handle mode toggle
-  const handleEdit = useCallback(() => {
-    updateMode('edit');
-  }, [updateMode]);
+  const handleEdit = useCallback(() => updateMode('edit'), [updateMode]);
 
   const handleCancelEdit = useCallback(() => {
     if (isNewTask) {
@@ -179,26 +192,30 @@ const TaskDetail: React.FC<TaskDetailProps> = (props) => {
         startDate: currentTask?.startDate ? dayjs(currentTask.startDate) : null,
         reminderDateTime: currentTask?.reminderDateTime ? dayjs(currentTask.reminderDateTime) : null,
       });
+      setAssignedTo(currentTask?.assignedTo || null);
+      setRegarding(currentTask?.regarding || null);
       updateMode('view');
     }
     props.onCancel?.();
   }, [isNewTask, navigate, form, currentTask, updateMode, props]);
 
-  // Handle form submission
   const handleSave = useCallback(async () => {
     const values = await form.validateFields();
 
-    // Format dates
-    const formattedValues = {
+    const formattedValues: Partial<TaskActivity> = {
       ...values,
       activityType: ActivityType.Task,
       dueDate: values.dueDate?.toISOString(),
       startDate: values.startDate?.toISOString(),
       reminderDateTime: values.reminderDateTime?.toISOString(),
+      assignedTo: assignedTo,
+      regarding: regarding,
+      regardingEntityType: regarding?.entityType || null,
+      regardingEntityId: regarding?.id || null,
     };
 
     if (isNewTask) {
-      const newTask = await createActivity<TaskActivity>(formattedValues);
+      const newTask = await createActivity<TaskActivity>(formattedValues as any);
       props.onSave?.(newTask);
       navigate(RoutePaths.Activity.Task.View(newTask.id));
     } else if (taskId) {
@@ -206,48 +223,54 @@ const TaskDetail: React.FC<TaskDetailProps> = (props) => {
       props.onSave?.(updatedTask);
       updateMode('view');
     }
-  }, [form, isNewTask, taskId, createActivity, updateActivity, navigate, updateMode, props]);
+  }, [form, isNewTask, taskId, createActivity, updateActivity, navigate, updateMode, props, assignedTo, regarding]);
 
-  // Handle delete
   const handleDelete = useCallback(async () => {
     if (!taskId || isNewTask) return;
-
     const { deleteActivity } = useActivityStore.getState();
     await deleteActivity(taskId);
     navigate(RoutePaths.Activity.List);
   }, [taskId, isNewTask, navigate]);
 
-  // Handle complete
   const handleComplete = useCallback(async () => {
     if (!taskId || isNewTask) return;
     await completeActivity(taskId);
   }, [taskId, isNewTask, completeActivity]);
 
-  // Handle cancel activity
   const handleCancelActivity = useCallback(async () => {
     if (!taskId || isNewTask) return;
     await cancelActivity(taskId);
   }, [taskId, isNewTask, cancelActivity]);
 
-  // Handle back navigation
-  const handleBack = useCallback(() => {
-    navigate(RoutePaths.Activity.List);
-  }, [navigate]);
+  const handleBack = useCallback(() => navigate(RoutePaths.Activity.List), [navigate]);
+
+  // Render selected entities for view mode
+  const renderSelectedEntities = (entities: EntityReference[] | EntityReference | null | undefined) => {
+    if (!entities) return '-';
+    const entityList = Array.isArray(entities) ? entities : [entities];
+    if (entityList.length === 0) return '-';
+
+    return (
+      <Space wrap size={[4, 4]}>
+        {entityList.map((entity) => (
+          <Tag key={entity.id} icon={getEntityIcon(entity.entityType)} color={EntityTypeConfig[entity.entityType]?.color}>
+            {entity.name}
+          </Tag>
+        ))}
+      </Space>
+    );
+  };
 
   // Not found state
-  if (!currentTask && !isNewTask) {
+  if (!currentTask && !isNewTask && state !== StateType.Loading) {
     return (
       <div style={{ padding: 24 }}>
         <Card>
           <div style={{ textAlign: 'center', padding: '40px 0' }}>
-            <Title level={4} type="warning">
-              Görev Bulunamadı
-            </Title>
+            <Title level={4} type="warning">Görev Bulunamadı</Title>
             <Text type="secondary">Aradığınız görev bulunamadı veya silinmiş olabilir.</Text>
             <div style={{ marginTop: 24 }}>
-              <Button type="primary" onClick={handleBack}>
-                Listeye Dön
-              </Button>
+              <Button type="primary" onClick={handleBack}>Listeye Dön</Button>
             </div>
           </div>
         </Card>
@@ -255,149 +278,94 @@ const TaskDetail: React.FC<TaskDetailProps> = (props) => {
     );
   }
 
-  // Don't render content while loading
-  if (state === StateType.Loading && !isNewTask) {
-    return null;
-  }
+  if (state === StateType.Loading && !isNewTask) return null;
 
   // Render View Mode
   const renderViewMode = () => (
     <>
-      {/* Header Info */}
       <Card style={{ marginBottom: 16 }}>
         <Row gutter={24} align="middle">
           <Col flex="auto">
-            <Space orientation="vertical" size={4}>
-              <Space align="center">
+            <Space direction="vertical" size={4}>
+              <Space align="center" wrap>
                 <CheckSquareOutlined style={{ fontSize: 24, color: '#faad14' }} />
-                <Title level={3} style={{ margin: 0 }}>
-                  {currentTask?.subject}
-                </Title>
+                <Title level={3} style={{ margin: 0 }}>{currentTask?.subject}</Title>
                 <Tag color={getActivityStatusColor(currentTask?.status ?? ActivityStatus.NotStarted)}>
                   {getActivityStatusLabel(currentTask?.status ?? ActivityStatus.NotStarted)}
                 </Tag>
-                <Tag
-                  color={getActivityPriorityColor(currentTask?.priority ?? ActivityPriority.Normal)}
-                  icon={<FlagOutlined />}
-                >
+                <Tag color={getActivityPriorityColor(currentTask?.priority ?? ActivityPriority.Normal)} icon={<FlagOutlined />}>
                   {getActivityPriorityLabel(currentTask?.priority ?? ActivityPriority.Normal)}
                 </Tag>
-                <Badge
-                  status={currentTask?.isActive ? 'success' : 'default'}
-                  text={currentTask?.isActive ? 'Aktif' : 'Pasif'}
-                />
+                <Badge status={currentTask?.isActive ? 'success' : 'default'} text={currentTask?.isActive ? 'Aktif' : 'Pasif'} />
               </Space>
-              {currentTask?.regardingEntityType && (
-                <Text type="secondary">
-                  İlgili: {currentTask.regardingEntityType} - {currentTask.regardingEntityId}
-                </Text>
-              )}
             </Space>
           </Col>
           <Col>
             <Space>
               {currentTask?.status !== ActivityStatus.Completed && (
-                <Button type="primary" icon={<CheckCircleOutlined />} onClick={handleComplete}>
-                  Tamamla
-                </Button>
+                <Button type="primary" icon={<CheckCircleOutlined />} onClick={handleComplete}>Tamamla</Button>
               )}
               {currentTask?.status !== ActivityStatus.Cancelled && (
-                <Button icon={<CloseCircleOutlined />} onClick={handleCancelActivity}>
-                  İptal Et
-                </Button>
+                <Button icon={<CloseCircleOutlined />} onClick={handleCancelActivity}>İptal Et</Button>
               )}
             </Space>
           </Col>
         </Row>
       </Card>
 
-      {/* Progress */}
-      {currentTask?.percentComplete !== undefined && (
-        <Card style={{ marginBottom: 16 }}>
-          <Row align="middle" gutter={16}>
-            <Col flex="auto">
-              <Text strong>İlerleme Durumu</Text>
-              <Progress
-                percent={currentTask.percentComplete}
-                status={
-                  currentTask.percentComplete === 100
-                    ? 'success'
-                    : currentTask.status === ActivityStatus.Cancelled
-                    ? 'exception'
-                    : 'active'
-                }
-                style={{ marginTop: 8 }}
-              />
-            </Col>
-          </Row>
-        </Card>
-      )}
-
-      {/* Details */}
       <Row gutter={16}>
         <Col span={12}>
-          <Card
-            title={
-              <Space>
-                <ClockCircleOutlined />
-                <span>Tarih Bilgileri</span>
-              </Space>
-            }
-            style={{ marginBottom: 16 }}
-          >
+          <Card title={<Space><FlagOutlined /><span>Durum & İlerleme</span></Space>} style={{ marginBottom: 16 }}>
             <Descriptions column={1} size="small">
-              <Descriptions.Item label="Başlangıç Tarihi">
+              <Descriptions.Item label="Durum">
+                <Tag color={getActivityStatusColor(currentTask?.status ?? ActivityStatus.NotStarted)}>
+                  {getActivityStatusLabel(currentTask?.status ?? ActivityStatus.NotStarted)}
+                </Tag>
+              </Descriptions.Item>
+              <Descriptions.Item label="Öncelik">
+                <Tag color={getActivityPriorityColor(currentTask?.priority ?? ActivityPriority.Normal)}>
+                  {getActivityPriorityLabel(currentTask?.priority ?? ActivityPriority.Normal)}
+                </Tag>
+              </Descriptions.Item>
+              <Descriptions.Item label="Tamamlanma">
+                <Progress percent={currentTask?.percentComplete || 0} size="small" style={{ width: 150 }} />
+              </Descriptions.Item>
+            </Descriptions>
+          </Card>
+        </Col>
+
+        <Col span={12}>
+          <Card title={<Space><CalendarOutlined /><span>Tarih Bilgileri</span></Space>} style={{ marginBottom: 16 }}>
+            <Descriptions column={1} size="small">
+              <Descriptions.Item label="Başlangıç">
                 {currentTask?.startDate ? dayjs(currentTask.startDate).format('DD.MM.YYYY HH:mm') : '-'}
               </Descriptions.Item>
-              <Descriptions.Item label="Bitiş Tarihi">
+              <Descriptions.Item label="Bitiş">
                 {currentTask?.dueDate ? dayjs(currentTask.dueDate).format('DD.MM.YYYY HH:mm') : '-'}
               </Descriptions.Item>
               <Descriptions.Item label="Hatırlatma">
-                {currentTask?.reminderDateTime
-                  ? dayjs(currentTask.reminderDateTime).format('DD.MM.YYYY HH:mm')
-                  : '-'}
+                {currentTask?.reminderDateTime ? dayjs(currentTask.reminderDateTime).format('DD.MM.YYYY HH:mm') : '-'}
               </Descriptions.Item>
             </Descriptions>
           </Card>
         </Col>
 
+        {/* Atanan Kişi */}
         <Col span={12}>
-          <Card
-            title={
-              <Space>
-                <UserOutlined />
-                <span>Atama Bilgileri</span>
-              </Space>
-            }
-            style={{ marginBottom: 16 }}
-          >
-            <Descriptions column={1} size="small">
-              <Descriptions.Item label="Sahip">
-                {currentTask?.ownerId || '-'}
-              </Descriptions.Item>
-              <Descriptions.Item label="Oluşturan">
-                {currentTask?.createdBy || '-'}
-              </Descriptions.Item>
-              <Descriptions.Item label="Oluşturma Tarihi">
-                {currentTask?.createdAt
-                  ? dayjs(currentTask.createdAt).format('DD.MM.YYYY HH:mm')
-                  : '-'}
-              </Descriptions.Item>
-            </Descriptions>
+          <Card title={<Space><UserOutlined /><span>Atanan Kişi</span></Space>} style={{ marginBottom: 16 }}>
+            {renderSelectedEntities(currentTask?.assignedTo)}
           </Card>
         </Col>
 
-        {/* Description */}
+        {/* İlgili Kayıt */}
+        <Col span={12}>
+          <Card title={<Space><LinkOutlined /><span>İlgili Kayıt</span></Space>} style={{ marginBottom: 16 }}>
+            {renderSelectedEntities(currentTask?.regarding)}
+          </Card>
+        </Col>
+
         <Col span={24}>
-          <Card
-            title={
-              <Space>
-                <FileTextOutlined />
-                <span>Açıklama</span>
-              </Space>
-            }
-            style={{ marginBottom: 16 }}
-          >
+          <Card title={<Space><FileTextOutlined /><span>Açıklama</span></Space>} style={{ marginBottom: 16 }}>
             <Paragraph>{currentTask?.description || 'Açıklama girilmemiş.'}</Paragraph>
           </Card>
         </Col>
@@ -409,24 +377,11 @@ const TaskDetail: React.FC<TaskDetailProps> = (props) => {
   const renderEditMode = () => (
     <Form form={form} layout="vertical" initialValues={{ isActive: true, percentComplete: 0 }}>
       <Row gutter={16}>
-        {/* Basic Info */}
         <Col span={24}>
-          <Card
-            title={
-              <Space>
-                <CheckSquareOutlined />
-                <span>Görev Bilgileri</span>
-              </Space>
-            }
-            style={{ marginBottom: 16 }}
-          >
+          <Card title={<Space><CheckSquareOutlined /><span>Görev Bilgileri</span></Space>} style={{ marginBottom: 16 }}>
             <Row gutter={16}>
               <Col span={16}>
-                <Form.Item
-                  name="subject"
-                  label="Konu"
-                  rules={[{ required: true, message: 'Konu gereklidir' }]}
-                >
+                <Form.Item name="subject" label="Konu" rules={[{ required: true, message: 'Konu gereklidir' }]}>
                   <Input placeholder="Görev konusu girin" />
                 </Form.Item>
               </Col>
@@ -439,33 +394,16 @@ const TaskDetail: React.FC<TaskDetailProps> = (props) => {
           </Card>
         </Col>
 
-        {/* Status & Priority */}
         <Col span={12}>
-          <Card
-            title={
-              <Space>
-                <FlagOutlined />
-                <span>Durum & Öncelik</span>
-              </Space>
-            }
-            style={{ marginBottom: 16 }}
-          >
+          <Card title={<Space><FlagOutlined /><span>Durum & Öncelik</span></Space>} style={{ marginBottom: 16 }}>
             <Row gutter={16}>
               <Col span={12}>
-                <Form.Item
-                  name="status"
-                  label="Durum"
-                  rules={[{ required: true, message: 'Durum seçimi gereklidir' }]}
-                >
+                <Form.Item name="status" label="Durum" rules={[{ required: true, message: 'Durum seçimi gereklidir' }]}>
                   <Select options={activityStatusOptions} placeholder="Durum seçin" />
                 </Form.Item>
               </Col>
               <Col span={12}>
-                <Form.Item
-                  name="priority"
-                  label="Öncelik"
-                  rules={[{ required: true, message: 'Öncelik seçimi gereklidir' }]}
-                >
+                <Form.Item name="priority" label="Öncelik" rules={[{ required: true, message: 'Öncelik seçimi gereklidir' }]}>
                   <Select options={activityPriorityOptions} placeholder="Öncelik seçin" />
                 </Form.Item>
               </Col>
@@ -484,98 +422,64 @@ const TaskDetail: React.FC<TaskDetailProps> = (props) => {
           </Card>
         </Col>
 
-        {/* Dates */}
         <Col span={12}>
-          <Card
-            title={
-              <Space>
-                <CalendarOutlined />
-                <span>Tarih Bilgileri</span>
-              </Space>
-            }
-            style={{ marginBottom: 16 }}
-          >
+          <Card title={<Space><CalendarOutlined /><span>Tarih Bilgileri</span></Space>} style={{ marginBottom: 16 }}>
             <Row gutter={16}>
               <Col span={12}>
                 <Form.Item name="startDate" label="Başlangıç Tarihi">
-                  <DatePicker
-                    showTime
-                    format="DD.MM.YYYY HH:mm"
-                    style={{ width: '100%' }}
-                    placeholder="Başlangıç tarihi"
-                  />
+                  <DatePicker showTime format="DD.MM.YYYY HH:mm" style={{ width: '100%' }} placeholder="Başlangıç tarihi" />
                 </Form.Item>
               </Col>
               <Col span={12}>
                 <Form.Item name="dueDate" label="Bitiş Tarihi">
-                  <DatePicker
-                    showTime
-                    format="DD.MM.YYYY HH:mm"
-                    style={{ width: '100%' }}
-                    placeholder="Bitiş tarihi"
-                  />
+                  <DatePicker showTime format="DD.MM.YYYY HH:mm" style={{ width: '100%' }} placeholder="Bitiş tarihi" />
                 </Form.Item>
               </Col>
               <Col span={24}>
                 <Form.Item name="reminderDateTime" label="Hatırlatma">
-                  <DatePicker
-                    showTime
-                    format="DD.MM.YYYY HH:mm"
-                    style={{ width: '100%' }}
-                    placeholder="Hatırlatma tarihi"
-                  />
+                  <DatePicker showTime format="DD.MM.YYYY HH:mm" style={{ width: '100%' }} placeholder="Hatırlatma tarihi" />
                 </Form.Item>
               </Col>
             </Row>
           </Card>
         </Col>
 
-        {/* Regarding Entity */}
-        <Col span={24}>
-          <Card
-            title={
-              <Space>
-                <UserOutlined />
-                <span>İlgili Kayıt</span>
-              </Space>
-            }
-            style={{ marginBottom: 16 }}
-          >
-            <Row gutter={16}>
-              <Col span={12}>
-                <Form.Item name="regardingEntityType" label="Kayıt Tipi">
-                  <Select
-                    allowClear
-                    placeholder="Kayıt tipi seçin"
-                    options={[
-                      { label: 'Lead', value: 'Lead' },
-                      { label: 'Müşteri', value: 'Account' },
-                      { label: 'Kişi', value: 'Contact' },
-                      { label: 'Fırsat', value: 'Opportunity' },
-                    ]}
-                  />
-                </Form.Item>
-              </Col>
-              <Col span={12}>
-                <Form.Item name="regardingEntityId" label="Kayıt ID">
-                  <Input placeholder="İlgili kayıt ID" />
-                </Form.Item>
-              </Col>
-            </Row>
+        {/* Atanan Kişi - Tek Seçimli, Sadece User */}
+        <Col span={12}>
+          <Card title={<Space><UserOutlined /><span>Atanan Kişi</span></Space>} style={{ marginBottom: 16 }}>
+            <Form.Item label="Atanacak Kişiyi Seçin">
+              <EntityLookup
+                value={assignedTo}
+                onChange={(value) => setAssignedTo(value as EntityReference | null)}
+                entityTypes={['User']}
+                multiple={false}
+                placeholder="Kişi seçin..."
+                onSearch={mockEntitySearch}
+                modalTitle="Kişi Seç"
+              />
+            </Form.Item>
           </Card>
         </Col>
 
-        {/* Description */}
+        {/* İlgili Kayıt - Tek Seçimli, Lead/Account/Contact */}
+        <Col span={12}>
+          <Card title={<Space><LinkOutlined /><span>İlgili Kayıt</span></Space>} style={{ marginBottom: 16 }}>
+            <Form.Item label="İlgili Kaydı Seçin">
+              <EntityLookup
+                value={regarding}
+                onChange={(value) => setRegarding(value as EntityReference | null)}
+                entityTypes={['Lead', 'Account', 'Contact']}
+                multiple={false}
+                placeholder="İlgili kayıt seçin..."
+                onSearch={mockEntitySearch}
+                modalTitle="İlgili Kayıt Seç"
+              />
+            </Form.Item>
+          </Card>
+        </Col>
+
         <Col span={24}>
-          <Card
-            title={
-              <Space>
-                <FileTextOutlined />
-                <span>Açıklama</span>
-              </Space>
-            }
-            style={{ marginBottom: 16 }}
-          >
+          <Card title={<Space><FileTextOutlined /><span>Açıklama</span></Space>} style={{ marginBottom: 16 }}>
             <Form.Item name="description" label="Açıklama">
               <TextArea rows={4} placeholder="Görev hakkında notlar..." />
             </Form.Item>
@@ -587,7 +491,6 @@ const TaskDetail: React.FC<TaskDetailProps> = (props) => {
 
   return (
     <div style={{ padding: 24 }}>
-      {/* Page Header */}
       <Card style={{ marginBottom: 16 }}>
         <Row justify="space-between" align="middle">
           <Col>
@@ -613,21 +516,15 @@ const TaskDetail: React.FC<TaskDetailProps> = (props) => {
                     cancelText="İptal"
                     okButtonProps={{ danger: true }}
                   >
-                    <Button danger icon={<DeleteOutlined />}>
-                      Sil
-                    </Button>
+                    <Button danger icon={<DeleteOutlined />}>Sil</Button>
                   </Popconfirm>
-                  <Button type="primary" icon={<EditOutlined />} onClick={handleEdit}>
-                    Düzenle
-                  </Button>
+                  <Button type="primary" icon={<EditOutlined />} onClick={handleEdit}>Düzenle</Button>
                 </>
               )}
 
               {(isEditMode || isCreateMode) && (
                 <>
-                  <Button icon={<CloseOutlined />} onClick={handleCancelEdit}>
-                    İptal
-                  </Button>
+                  <Button icon={<CloseOutlined />} onClick={handleCancelEdit}>İptal</Button>
                   <Button type="primary" icon={<SaveOutlined />} onClick={handleSave}>
                     {isNewTask ? 'Oluştur' : 'Kaydet'}
                   </Button>
@@ -638,7 +535,6 @@ const TaskDetail: React.FC<TaskDetailProps> = (props) => {
         </Row>
       </Card>
 
-      {/* Content */}
       {isViewMode ? renderViewMode() : renderEditMode()}
     </div>
   );

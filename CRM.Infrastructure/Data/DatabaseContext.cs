@@ -31,12 +31,12 @@ public class DatabaseContext : DbContext
     public DbSet<AppLogin> AppLogin { get; set; }
 
     // ======= Activity =======
-    public DbSet<ActivityBase> Activities { get; set; }
-    public DbSet<ActivityParty> ActivityParties { get; set; }
-    public DbSet<EmailActivity> EmailActivities { get; set; }
-    public DbSet<PhoneCallActivity> PhoneCallActivities { get; set; }
-    public DbSet<TaskActivity> TaskActivities { get; set; }
-    public DbSet<AppointmentActivity> AppointmentActivities { get; set; }
+    public DbSet<ActivityBase> Activity { get; set; }
+    public DbSet<ActivityParty> ActivityParty{ get; set; }
+    public DbSet<EmailActivity> EmailActivity { get; set; }
+    public DbSet<PhoneCallActivity> PhoneCallActivity{ get; set; }
+    public DbSet<TaskActivity> TaskActivity{ get; set; }
+    public DbSet<AppointmentActivity> AppointmentActivity { get; set; }
 
     // ======= Lead =======
     public DbSet<Lead> Lead { get; set; }

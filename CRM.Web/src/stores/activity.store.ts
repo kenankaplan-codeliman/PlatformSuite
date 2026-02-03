@@ -9,14 +9,10 @@ import type {
 import activityService from '@/services/activity.service';
 import { handleError } from '@/util/useHandleError';
 import { StateType, useProcessState } from '@/stores/process.state.store';
+import type { PaginationParams } from '@/types/common.types';
 
 // View Mode Type
 export type ActivityViewMode = 'list' | 'calendar';
-
-interface PaginationParams {
-  page?: number;
-  pageSize?: number;
-}
 
 interface ActivityState {
   // View state
@@ -41,7 +37,7 @@ interface ActivityState {
   setViewMode: (mode: ActivityViewMode) => void;
   fetchActivities: () => Promise<void>;
   fetchCalendarActivities: (startDate: string, endDate: string) => Promise<void>;
-  fetchActivityById: (id: string) => Promise<void>;
+  fetchActivityById: (id: string, activityType: ActivityTypeValue) => Promise<void>;
   setPagination: (params: PaginationParams) => void;
   setFilters: (filters: ActivityListFilters) => void;
   resetFilters: () => void;
@@ -139,13 +135,13 @@ export const useActivityStore = create<ActivityState>()(
       },
 
       // Fetch single activity
-      fetchActivityById: async (id: string) => {
+      fetchActivityById: async (id: string, activityType: ActivityTypeValue) => {
         const { setState, clearState } = useProcessState.getState();
 
         try {
           setState(StateType.Loading, 'Aktivite detayı yükleniyor...', 'Lütfen bekleyiniz...');
 
-          const activity = await activityService.getActivityById(id);
+          const activity = await activityService.getActivityById(id, activityType);
           set({
             currentActivity: activity,
           });
@@ -222,7 +218,10 @@ export const useActivityStore = create<ActivityState>()(
         }
       },
 
-      updateActivity: async <T extends ActivityBase>(id: string, activityData: Partial<T>) => {
+      updateActivity: async <T extends ActivityBase>(
+        id: string, 
+        activityData: Partial<T>  & { activityType: T['activityType'] }
+      ) => {
         const { setState, clearState } = useProcessState.getState();
 
         try {

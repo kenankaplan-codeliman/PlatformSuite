@@ -32,9 +32,15 @@ import {
   FileTextOutlined,
   UserOutlined,
   SendOutlined,
+  LinkOutlined,
+  BankOutlined,
+  IdcardOutlined,
+  RocketOutlined,
+  CalendarOutlined,
 } from '@ant-design/icons';
 import dayjs from 'dayjs';
 import type { EmailActivity } from '@/types/activity.types';
+import type { EntityReference, EntityType as LookupEntityType } from '@/types/entity.lookup.types';
 import {
   ActivityStatus,
   ActivityPriority,
@@ -48,6 +54,8 @@ import {
 } from '@/types/activity.types';
 import { useActivityStore } from '@/stores/activity.store';
 import { StateType, useProcessState } from '@/stores/process.state.store';
+import EntityLookup, { EntityTypeConfig } from '@/components/EntityLookup';
+import { mockEntitySearch } from '@/services/entity.search.service';
 
 const { Title, Text, Paragraph } = Typography;
 const { TextArea } = Input;
@@ -64,6 +72,18 @@ export interface EmailDetailProps {
   onCancel?: () => void;
 }
 
+// Helper function to get entity icon
+const getEntityIcon = (entityType: LookupEntityType) => {
+  const icons: Record<LookupEntityType, React.ReactNode> = {
+    User: <UserOutlined />,
+    Account: <BankOutlined />,
+    Contact: <IdcardOutlined />,
+    Lead: <RocketOutlined />,
+    Opportunity: <CalendarOutlined />,
+  };
+  return icons[entityType];
+};
+
 const EmailDetail: React.FC<EmailDetailProps> = (props) => {
   // Router hooks
   const params = useParams<{ id: string }>();
@@ -77,6 +97,13 @@ const EmailDetail: React.FC<EmailDetailProps> = (props) => {
   const urlMode = searchParams.get('mode') as EmailDetailMode | null;
   const initialMode = props.mode || urlMode || 'view';
   const [mode, setMode] = useState<EmailDetailMode>(initialMode);
+
+  // Lookup field states - EntityReference tipinde
+  const [fromEntity, setFromEntity] = useState<EntityReference | null>(null);
+  const [toEntities, setToEntities] = useState<EntityReference[]>([]);
+  const [ccEntities, setCcEntities] = useState<EntityReference[]>([]);
+  const [bccEntities, setBccEntities] = useState<EntityReference[]>([]);
+  const [regarding, setRegarding] = useState<EntityReference | null>(null);
 
   // Determine email ID
   const emailId = props.emailId || params.id;
@@ -120,7 +147,7 @@ const EmailDetail: React.FC<EmailDetailProps> = (props) => {
       isFirstRender.current = false;
 
       if (!isNewEmail && emailId) {
-        fetchActivityById(emailId);
+        fetchActivityById(emailId, ActivityType.Email);
       } else {
         setCurrentActivity(null);
         setMode('create');
@@ -144,8 +171,20 @@ const EmailDetail: React.FC<EmailDetailProps> = (props) => {
         dueDate: currentEmail.dueDate ? dayjs(currentEmail.dueDate) : null,
         sentDateTime: currentEmail.sentDateTime ? dayjs(currentEmail.sentDateTime) : null,
       });
+
+      // Set EntityReference fields directly
+      setFromEntity(currentEmail.from || null);
+      setToEntities(currentEmail.to || []);
+      setCcEntities(currentEmail.cc || []);
+      setBccEntities(currentEmail.bcc || []);
+      setRegarding(currentEmail.regarding || null);
     } else if (isNewEmail) {
       form.resetFields();
+      setFromEntity(null);
+      setToEntities([]);
+      setCcEntities([]);
+      setBccEntities([]);
+      setRegarding(null);
       // Set default values for new email
       form.setFieldsValue({
         activityType: ActivityType.Email,
@@ -171,6 +210,11 @@ const EmailDetail: React.FC<EmailDetailProps> = (props) => {
         dueDate: currentEmail?.dueDate ? dayjs(currentEmail.dueDate) : null,
         sentDateTime: currentEmail?.sentDateTime ? dayjs(currentEmail.sentDateTime) : null,
       });
+      setFromEntity(currentEmail?.from || null);
+      setToEntities(currentEmail?.to || []);
+      setCcEntities(currentEmail?.cc || []);
+      setBccEntities(currentEmail?.bcc || []);
+      setRegarding(currentEmail?.regarding || null);
       updateMode('view');
     }
     props.onCancel?.();
@@ -180,16 +224,23 @@ const EmailDetail: React.FC<EmailDetailProps> = (props) => {
   const handleSave = useCallback(async () => {
     const values = await form.validateFields();
 
-    // Format dates
-    const formattedValues = {
+    // EntityReference alanları doğrudan gönderiliyor
+    const formattedValues: Partial<EmailActivity> = {
       ...values,
       activityType: ActivityType.Email,
       dueDate: values.dueDate?.toISOString(),
       sentDateTime: values.sentDateTime?.toISOString(),
+      from: fromEntity,
+      to: toEntities,
+      cc: ccEntities,
+      bcc: bccEntities,
+      regarding: regarding,
+      regardingEntityType: regarding?.entityType || null,
+      regardingEntityId: regarding?.id || null,
     };
 
     if (isNewEmail) {
-      const newEmail = await createActivity<EmailActivity>(formattedValues);
+      const newEmail = await createActivity<EmailActivity>(formattedValues as any);
       props.onSave?.(newEmail);
       navigate(RoutePaths.Activity.Email.View(newEmail.id));
     } else if (emailId) {
@@ -197,7 +248,7 @@ const EmailDetail: React.FC<EmailDetailProps> = (props) => {
       props.onSave?.(updatedEmail);
       updateMode('view');
     }
-  }, [form, isNewEmail, emailId, createActivity, updateActivity, navigate, updateMode, props]);
+  }, [form, isNewEmail, emailId, createActivity, updateActivity, navigate, updateMode, props, fromEntity, toEntities, ccEntities, bccEntities, regarding]);
 
   // Handle delete
   const handleDelete = useCallback(async () => {
@@ -213,8 +264,25 @@ const EmailDetail: React.FC<EmailDetailProps> = (props) => {
     navigate(RoutePaths.Activity.List);
   }, [navigate]);
 
+  // Render selected entities for view mode
+  const renderSelectedEntities = (entities: EntityReference[] | EntityReference | null | undefined) => {
+    if (!entities) return '-';
+    const entityList = Array.isArray(entities) ? entities : [entities];
+    if (entityList.length === 0) return '-';
+
+    return (
+      <Space wrap size={[4, 4]}>
+        {entityList.map((entity) => (
+          <Tag key={entity.id} icon={getEntityIcon(entity.entityType)} color={EntityTypeConfig[entity.entityType]?.color}>
+            {entity.name}
+          </Tag>
+        ))}
+      </Space>
+    );
+  };
+
   // Not found state
-  if (!currentEmail && !isNewEmail) {
+  if (!currentEmail && !isNewEmail && state !== StateType.Loading) {
     return (
       <div style={{ padding: 24 }}>
         <Card>
@@ -246,8 +314,8 @@ const EmailDetail: React.FC<EmailDetailProps> = (props) => {
       <Card style={{ marginBottom: 16 }}>
         <Row gutter={24} align="middle">
           <Col flex="auto">
-            <Space orientation="vertical" size={4}>
-              <Space align="center">
+            <Space direction="vertical" size={4}>
+              <Space align="center" wrap>
                 <MailOutlined style={{ fontSize: 24, color: '#1890ff' }} />
                 <Title level={3} style={{ margin: 0 }}>
                   {currentEmail?.subject}
@@ -261,16 +329,14 @@ const EmailDetail: React.FC<EmailDetailProps> = (props) => {
                 >
                   {getActivityPriorityLabel(currentEmail?.priority ?? ActivityPriority.Normal)}
                 </Tag>
+                <Tag color={currentEmail?.direction === 'Incoming' ? 'blue' : 'green'}>
+                  {currentEmail?.direction === 'Incoming' ? 'Gelen' : 'Giden'}
+                </Tag>
                 <Badge
                   status={currentEmail?.isActive ? 'success' : 'default'}
                   text={currentEmail?.isActive ? 'Aktif' : 'Pasif'}
                 />
               </Space>
-              {currentEmail?.regardingEntityType && (
-                <Text type="secondary">
-                  İlgili: {currentEmail.regardingEntityType} - {currentEmail.regardingEntityId}
-                </Text>
-              )}
             </Space>
           </Col>
         </Row>
@@ -280,36 +346,21 @@ const EmailDetail: React.FC<EmailDetailProps> = (props) => {
       <Row gutter={16}>
         <Col span={12}>
           <Card
-            title={
-              <Space>
-                <SendOutlined />
-                <span>E-posta Bilgileri</span>
-              </Space>
-            }
+            title={<Space><SendOutlined /><span>Gönderen / Alıcılar</span></Space>}
             style={{ marginBottom: 16 }}
           >
             <Descriptions column={1} size="small">
-              <Descriptions.Item label="Kimden">{currentEmail?.from || '-'}</Descriptions.Item>
-              <Descriptions.Item label="Kime">{currentEmail?.to || '-'}</Descriptions.Item>
-              <Descriptions.Item label="CC">{currentEmail?.cc || '-'}</Descriptions.Item>
-              <Descriptions.Item label="BCC">{currentEmail?.bcc || '-'}</Descriptions.Item>
-              <Descriptions.Item label="Yön">
-                <Tag color={currentEmail?.direction === 'Incoming' ? 'blue' : 'green'}>
-                  {currentEmail?.direction === 'Incoming' ? 'Gelen' : 'Giden'}
-                </Tag>
-              </Descriptions.Item>
+              <Descriptions.Item label="Kimden">{renderSelectedEntities(currentEmail?.from)}</Descriptions.Item>
+              <Descriptions.Item label="Kime">{renderSelectedEntities(currentEmail?.to)}</Descriptions.Item>
+              <Descriptions.Item label="CC">{renderSelectedEntities(currentEmail?.cc)}</Descriptions.Item>
+              <Descriptions.Item label="BCC">{renderSelectedEntities(currentEmail?.bcc)}</Descriptions.Item>
             </Descriptions>
           </Card>
         </Col>
 
         <Col span={12}>
           <Card
-            title={
-              <Space>
-                <ClockCircleOutlined />
-                <span>Tarih Bilgileri</span>
-              </Space>
-            }
+            title={<Space><ClockCircleOutlined /><span>Tarih Bilgileri</span></Space>}
             style={{ marginBottom: 16 }}
           >
             <Descriptions column={1} size="small">
@@ -323,20 +374,24 @@ const EmailDetail: React.FC<EmailDetailProps> = (props) => {
                   ? dayjs(currentEmail.createdAt).format('DD.MM.YYYY HH:mm')
                   : '-'}
               </Descriptions.Item>
-              <Descriptions.Item label="Oluşturan">{currentEmail?.createdBy || '-'}</Descriptions.Item>
             </Descriptions>
+          </Card>
+        </Col>
+
+        {/* Regarding Entity */}
+        <Col span={24}>
+          <Card
+            title={<Space><LinkOutlined /><span>İlgili Kayıt</span></Space>}
+            style={{ marginBottom: 16 }}
+          >
+            {renderSelectedEntities(currentEmail?.regarding)}
           </Card>
         </Col>
 
         {/* Email Body */}
         <Col span={24}>
           <Card
-            title={
-              <Space>
-                <FileTextOutlined />
-                <span>E-posta İçeriği</span>
-              </Space>
-            }
+            title={<Space><FileTextOutlined /><span>E-posta İçeriği</span></Space>}
             style={{ marginBottom: 16 }}
           >
             <div
@@ -356,12 +411,7 @@ const EmailDetail: React.FC<EmailDetailProps> = (props) => {
         {/* Description */}
         <Col span={24}>
           <Card
-            title={
-              <Space>
-                <FileTextOutlined />
-                <span>Açıklama</span>
-              </Space>
-            }
+            title={<Space><FileTextOutlined /><span>Açıklama</span></Space>}
             style={{ marginBottom: 16 }}
           >
             <Paragraph>{currentEmail?.description || 'Açıklama girilmemiş.'}</Paragraph>
@@ -378,12 +428,7 @@ const EmailDetail: React.FC<EmailDetailProps> = (props) => {
         {/* Basic Info */}
         <Col span={24}>
           <Card
-            title={
-              <Space>
-                <MailOutlined />
-                <span>E-posta Bilgileri</span>
-              </Space>
-            }
+            title={<Space><MailOutlined /><span>E-posta Bilgileri</span></Space>}
             style={{ marginBottom: 16 }}
           >
             <Row gutter={16}>
@@ -404,50 +449,64 @@ const EmailDetail: React.FC<EmailDetailProps> = (props) => {
             </Row>
           </Card>
         </Col>
-
-        {/* Recipients */}
-        <Col span={12}>
+        {/* From & To & CC & BCC */}
+        <Col span={24}>
           <Card
-            title={
-              <Space>
-                <SendOutlined />
-                <span>Alıcı Bilgileri</span>
-              </Space>
-            }
+            title={<Space><UserOutlined /><span>Gönderen & Alıcılar</span></Space>}
             style={{ marginBottom: 16 }}
           >
-            <Row gutter={16}>
-              <Col span={24}>
-                <Form.Item
-                  name="from"
-                  label="Kimden"
-                  rules={[{ type: 'email', message: 'Geçerli bir e-posta girin' }]}
-                >
-                  <Input placeholder="gonderen@example.com" />
-                </Form.Item>
-              </Col>
-              <Col span={24}>
-                <Form.Item
-                  name="to"
-                  label="Kime"
-                  rules={[
-                    { required: true, message: 'Alıcı gereklidir' },
-                    { type: 'email', message: 'Geçerli bir e-posta girin' },
-                  ]}
-                >
-                  <Input placeholder="alici@example.com" />
-                </Form.Item>
-              </Col>
-              <Col span={12}>
-                <Form.Item name="cc" label="CC">
-                  <Input placeholder="cc@example.com" />
-                </Form.Item>
-              </Col>
-              <Col span={12}>
-                <Form.Item name="bcc" label="BCC">
-                  <Input placeholder="bcc@example.com" />
-                </Form.Item>
-              </Col>
+            <Row>
+            <Col span={12}>
+            <Form.Item label="Gönderen Seçin">
+              <EntityLookup
+                value={fromEntity}
+                onChange={(value) => setFromEntity(value as EntityReference | null)}
+                entityTypes={['User']}
+                multiple={false}
+                placeholder="Gönderen seçin..."
+                onSearch={mockEntitySearch}
+                modalTitle="Gönderen Seç"
+              />
+            </Form.Item>
+             <Form.Item label="Alıcıları Seçin">
+              <EntityLookup
+                value={toEntities}
+                onChange={(value) => setToEntities((value as EntityReference[]) || [])}
+                entityTypes={['User', 'Contact', 'Account']}
+                multiple={true}
+                placeholder="Alıcı ekleyin..."
+                onSearch={mockEntitySearch}
+                modalTitle="Alıcı Seç"
+                maxSelections={50}
+              />
+            </Form.Item>
+            </Col>
+            <Col span={12} style={{ paddingLeft: 10 }}>
+            <Form.Item label="CC Alıcılarını Seçin">
+              <EntityLookup
+                value={ccEntities}
+                onChange={(value) => setCcEntities((value as EntityReference[]) || [])}
+                entityTypes={['User', 'Contact', 'Account']}
+                multiple={true}
+                placeholder="CC ekleyin..."
+                onSearch={mockEntitySearch}
+                modalTitle="CC Seç"
+                maxSelections={50}
+              />
+            </Form.Item>
+            <Form.Item label="BCC Alıcılarını Seçin">
+              <EntityLookup
+                value={bccEntities}
+                onChange={(value) => setBccEntities((value as EntityReference[]) || [])}
+                entityTypes={['User', 'Contact', 'Account']}
+                multiple={true}
+                placeholder="BCC ekleyin..."
+                onSearch={mockEntitySearch}
+                modalTitle="BCC Seç"
+                maxSelections={50}
+              />
+            </Form.Item>
+            </Col>
             </Row>
           </Card>
         </Col>
@@ -455,12 +514,7 @@ const EmailDetail: React.FC<EmailDetailProps> = (props) => {
         {/* Status & Direction */}
         <Col span={12}>
           <Card
-            title={
-              <Space>
-                <FlagOutlined />
-                <span>Durum & Yön</span>
-              </Space>
-            }
+            title={<Space><FlagOutlined /><span>Durum & Yön</span></Space>}
             style={{ marginBottom: 16 }}
           >
             <Row gutter={16}>
@@ -507,50 +561,30 @@ const EmailDetail: React.FC<EmailDetailProps> = (props) => {
           </Card>
         </Col>
 
-        {/* Regarding Entity */}
-        <Col span={24}>
+        {/* İlgili Kayıt - Tek Seçimli, Lead/Account/Contact */}
+        <Col span={12}>
           <Card
-            title={
-              <Space>
-                <UserOutlined />
-                <span>İlgili Kayıt</span>
-              </Space>
-            }
+            title={<Space><LinkOutlined /><span>İlgili Kayıt</span></Space>}
             style={{ marginBottom: 16 }}
           >
-            <Row gutter={16}>
-              <Col span={12}>
-                <Form.Item name="regardingEntityType" label="Kayıt Tipi">
-                  <Select
-                    allowClear
-                    placeholder="Kayıt tipi seçin"
-                    options={[
-                      { label: 'Lead', value: 'Lead' },
-                      { label: 'Müşteri', value: 'Account' },
-                      { label: 'Kişi', value: 'Contact' },
-                      { label: 'Fırsat', value: 'Opportunity' },
-                    ]}
-                  />
-                </Form.Item>
-              </Col>
-              <Col span={12}>
-                <Form.Item name="regardingEntityId" label="Kayıt ID">
-                  <Input placeholder="İlgili kayıt ID" />
-                </Form.Item>
-              </Col>
-            </Row>
+            <Form.Item label="İlgili Kaydı Seçin">
+              <EntityLookup
+                value={regarding}
+                onChange={(value) => setRegarding(value as EntityReference | null)}
+                entityTypes={['Lead', 'Account', 'Contact']}
+                multiple={false}
+                placeholder="İlgili kayıt seçin..."
+                onSearch={mockEntitySearch}
+                modalTitle="İlgili Kayıt Seç"
+              />
+            </Form.Item>
           </Card>
         </Col>
 
         {/* Email Body */}
         <Col span={24}>
           <Card
-            title={
-              <Space>
-                <FileTextOutlined />
-                <span>E-posta İçeriği</span>
-              </Space>
-            }
+            title={<Space><FileTextOutlined /><span>E-posta İçeriği</span></Space>}
             style={{ marginBottom: 16 }}
           >
             <Form.Item name="body" label="İçerik">
@@ -562,12 +596,7 @@ const EmailDetail: React.FC<EmailDetailProps> = (props) => {
         {/* Description */}
         <Col span={24}>
           <Card
-            title={
-              <Space>
-                <FileTextOutlined />
-                <span>Açıklama</span>
-              </Space>
-            }
+            title={<Space><FileTextOutlined /><span>Açıklama</span></Space>}
             style={{ marginBottom: 16 }}
           >
             <Form.Item name="description" label="Açıklama">

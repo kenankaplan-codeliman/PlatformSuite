@@ -7,11 +7,15 @@ namespace CRM.Application.Modals.ActivityModal
 {
     public class ActivityBaseModal
     {
+        public ActivityBaseModal(ActivityType activityType) { 
+            this.ActivityType = activityType;
+        }
+
         public Guid Id { get; set; } = default!;
         public string Subject { get; set; } = default!;
         public string? Description { get; set; }
 
-        public ActivityType ActivityType { get; set; }
+        public ActivityType ActivityType { get; private set; }
         public ActivityStatus Status { get; set; }
         public ActivityPriority Priority { get; set; }
         public DateTime? DueDate { get; set; }

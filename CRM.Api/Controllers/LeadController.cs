@@ -1,4 +1,5 @@
 using CRM.Api.Authorization;
+using CRM.Api.Contracts.Requests.Common;
 using CRM.Api.Contracts.Requests.Lead;
 using CRM.Api.Contracts.Responses;
 using CRM.Api.Extensions;
@@ -32,7 +33,16 @@ public class LeadController : ControllerBase
     [PrivilegeAuthorize(PrivilegeCodes.LeadPrivilegeCodes.Read)]
     public async Task<IActionResult> List(LeadListRequest request)
     {
-       var response =  await leadCommandHandler.List(request.filters, new PaginationInfo(request.page, request.pageSize));
+       var response =  await leadCommandHandler.List(request.filters, new PaginationInfo(request.Page, request.PageSize));
+        return Ok(response);
+    }
+
+    [HttpPost("search")]
+    [ProducesResponseType(typeof(SearchListResponse), 200)]
+    [PrivilegeAuthorize(PrivilegeCodes.LeadPrivilegeCodes.Read)]
+    public async Task<IActionResult> bulkUpdateStatus(SearchRequest request)
+    {
+        var response = await leadCommandHandler.Search(request.SearchText, new PaginationInfo(request.Page, request.PageSize));
         return Ok(response);
     }
 
@@ -88,5 +98,4 @@ public class LeadController : ControllerBase
         return Ok();
     }
 
-    
 }

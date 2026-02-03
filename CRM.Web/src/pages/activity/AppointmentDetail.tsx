@@ -19,6 +19,7 @@ import {
   Badge,
   Switch,
   DatePicker,
+  InputNumber,
 } from 'antd';
 import {
   ArrowLeftOutlined,
@@ -36,9 +37,14 @@ import {
   TeamOutlined,
   CheckCircleOutlined,
   CloseCircleOutlined,
+  BankOutlined,
+  IdcardOutlined,
+  RocketOutlined,
+  GlobalOutlined,
 } from '@ant-design/icons';
 import dayjs from 'dayjs';
 import type { AppointmentActivity } from '@/types/activity.types';
+import type { EntityReference } from '@/types/entity.lookup.types';
 import {
   ActivityStatus,
   ActivityPriority,
@@ -52,6 +58,9 @@ import {
 } from '@/types/activity.types';
 import { useActivityStore } from '@/stores/activity.store';
 import { StateType, useProcessState } from '@/stores/process.state.store';
+import EntityLookup, { EntityTypeConfig } from '@/components/EntityLookup';
+import type { EntityType as LookupEntityType } from '@/types/entity.lookup.types';
+import { entitySearchService } from '@/services/entity.search.service';
 
 const { Title, Text, Paragraph } = Typography;
 const { TextArea } = Input;
@@ -59,7 +68,7 @@ const { TextArea } = Input;
 // Page mode type
 export type AppointmentDetailMode = 'view' | 'edit' | 'create';
 
-// Props interface for component reuse
+// Props interface
 export interface AppointmentDetailProps {
   mode?: AppointmentDetailMode;
   appointmentId?: string;
@@ -68,25 +77,37 @@ export interface AppointmentDetailProps {
   onCancel?: () => void;
 }
 
+// Helper function to get entity icon
+const getEntityIcon = (entityType: LookupEntityType) => {
+  const icons: Record<LookupEntityType, React.ReactNode> = {
+    User: <UserOutlined />,
+    Account: <BankOutlined />,
+    Contact: <IdcardOutlined />,
+    Lead: <RocketOutlined />,
+    Opportunity: <CalendarOutlined />,
+  };
+  return icons[entityType];
+};
+
 const AppointmentDetail: React.FC<AppointmentDetailProps> = (props) => {
-  // Router hooks
   const params = useParams<{ id: string }>();
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
   const [form] = Form.useForm();
-
   const { state } = useProcessState.getState();
 
-  // Determine mode from props, URL params, or default
   const urlMode = searchParams.get('mode') as AppointmentDetailMode | null;
   const initialMode = props.mode || urlMode || 'view';
   const [mode, setMode] = useState<AppointmentDetailMode>(initialMode);
 
-  // Determine appointment ID
+  // Lookup field states - EntityReference tipinde
+  const [organizer, setOrganizer] = useState<EntityReference | null>(null);
+  const [attendees, setAttendees] = useState<EntityReference[]>([]);
+  const [regarding, setRegarding] = useState<EntityReference | null>(null);
+
   const appointmentId = props.appointmentId || params.id;
   const isNewAppointment = appointmentId === 'new' || !appointmentId;
 
-  // Store state and actions
   const {
     currentActivity,
     fetchActivityById,
@@ -97,18 +118,14 @@ const AppointmentDetail: React.FC<AppointmentDetailProps> = (props) => {
     cancelActivity,
   } = useActivityStore();
 
-  // Cast currentActivity to AppointmentActivity
   const currentAppointment = currentActivity as AppointmentActivity | null;
 
-  // Computed states
   const isViewMode = mode === 'view';
   const isEditMode = mode === 'edit';
   const isCreateMode = mode === 'create' || isNewAppointment;
 
-  // Ref to prevent double fetch
   const isFirstRender = useRef(true);
 
-  // Sync mode with URL
   const updateMode = useCallback(
     (newMode: AppointmentDetailMode) => {
       setMode(newMode);
@@ -120,13 +137,11 @@ const AppointmentDetail: React.FC<AppointmentDetailProps> = (props) => {
     [props, setSearchParams]
   );
 
-  // Fetch appointment data on mount (only once)
   useEffect(() => {
     if (isFirstRender.current) {
       isFirstRender.current = false;
-
       if (!isNewAppointment && appointmentId) {
-        fetchActivityById(appointmentId);
+        fetchActivityById(appointmentId, ActivityType.Appointment);
       } else {
         setCurrentActivity(null);
         setMode('create');
@@ -134,7 +149,6 @@ const AppointmentDetail: React.FC<AppointmentDetailProps> = (props) => {
     }
   }, [appointmentId, isNewAppointment, fetchActivityById, setCurrentActivity]);
 
-  // Sync mode with URL changes
   useEffect(() => {
     const urlMode = searchParams.get('mode') as AppointmentDetailMode | null;
     if (urlMode && urlMode !== mode && !isNewAppointment) {
@@ -147,27 +161,32 @@ const AppointmentDetail: React.FC<AppointmentDetailProps> = (props) => {
     if (currentAppointment && !isNewAppointment) {
       form.setFieldsValue({
         ...currentAppointment,
-        dueDate: currentAppointment.dueDate ? dayjs(currentAppointment.dueDate) : null,
         startTime: currentAppointment.startTime ? dayjs(currentAppointment.startTime) : null,
         endTime: currentAppointment.endTime ? dayjs(currentAppointment.endTime) : null,
       });
+
+      // Set EntityReference fields directly (already correct type from backend)
+      setOrganizer(currentAppointment.organizer || null);
+      setAttendees(currentAppointment.attendees || []);
+      setRegarding(currentAppointment.regarding || null);
     } else if (isNewAppointment) {
       form.resetFields();
-      // Set default values for new appointment
+      setOrganizer(null);
+      setAttendees([]);
+      setRegarding(null);
       form.setFieldsValue({
         activityType: ActivityType.Appointment,
         status: ActivityStatus.NotStarted,
         priority: ActivityPriority.Normal,
         isActive: true,
-        isAllDayEvent: false,
+        isAllDay: false,
+        isOnline: false,
+        isRecurring: false,
       });
     }
   }, [currentAppointment, form, isNewAppointment]);
 
-  // Handle mode toggle
-  const handleEdit = useCallback(() => {
-    updateMode('edit');
-  }, [updateMode]);
+  const handleEdit = useCallback(() => updateMode('edit'), [updateMode]);
 
   const handleCancelEdit = useCallback(() => {
     if (isNewAppointment) {
@@ -175,82 +194,74 @@ const AppointmentDetail: React.FC<AppointmentDetailProps> = (props) => {
     } else {
       form.setFieldsValue({
         ...currentAppointment,
-        dueDate: currentAppointment?.dueDate ? dayjs(currentAppointment.dueDate) : null,
         startTime: currentAppointment?.startTime ? dayjs(currentAppointment.startTime) : null,
         endTime: currentAppointment?.endTime ? dayjs(currentAppointment.endTime) : null,
       });
+      setOrganizer(currentAppointment?.organizer || null);
+      setAttendees(currentAppointment?.attendees || []);
+      setRegarding(currentAppointment?.regarding || null);
       updateMode('view');
     }
     props.onCancel?.();
   }, [isNewAppointment, navigate, form, currentAppointment, updateMode, props]);
 
-  // Handle form submission
   const handleSave = useCallback(async () => {
     const values = await form.validateFields();
 
-    // Format dates
-    const formattedValues = {
+    // EntityReference alanları doğrudan gönderiliyor (serialize etmeye gerek yok)
+    const formattedValues: Partial<AppointmentActivity> = {
       ...values,
       activityType: ActivityType.Appointment,
-      dueDate: values.dueDate?.toISOString(),
       startTime: values.startTime?.toISOString(),
       endTime: values.endTime?.toISOString(),
+      organizer: organizer,
+      attendees: attendees,
+      regarding: regarding,
+      // Ayrıca flat alanlar da güncellenebilir (backend uyumu için)
+      regardingEntityType: regarding?.entityType || null,
+      regardingEntityId: regarding?.id || null,
     };
 
     if (isNewAppointment) {
-      const newAppointment = await createActivity<AppointmentActivity>(formattedValues);
+      const newAppointment = await createActivity<AppointmentActivity>(formattedValues as any);
       props.onSave?.(newAppointment);
       navigate(RoutePaths.Activity.Appointment.View(newAppointment.id));
     } else if (appointmentId) {
-      const updatedAppointment = await updateActivity<AppointmentActivity>(
-        appointmentId,
-        formattedValues
-      );
+      const updatedAppointment = await updateActivity<AppointmentActivity>(appointmentId, formattedValues);
       props.onSave?.(updatedAppointment);
       updateMode('view');
     }
-  }, [form, isNewAppointment, appointmentId, createActivity, updateActivity, navigate, updateMode, props]);
+  }, [form, isNewAppointment, appointmentId, createActivity, updateActivity, navigate, updateMode, props, organizer, attendees, regarding]);
 
-  // Handle delete
   const handleDelete = useCallback(async () => {
     if (!appointmentId || isNewAppointment) return;
-
     const { deleteActivity } = useActivityStore.getState();
     await deleteActivity(appointmentId);
     navigate(RoutePaths.Activity.List);
   }, [appointmentId, isNewAppointment, navigate]);
 
-  // Handle complete
   const handleComplete = useCallback(async () => {
     if (!appointmentId || isNewAppointment) return;
     await completeActivity(appointmentId);
   }, [appointmentId, isNewAppointment, completeActivity]);
 
-  // Handle cancel activity
   const handleCancelActivity = useCallback(async () => {
     if (!appointmentId || isNewAppointment) return;
     await cancelActivity(appointmentId);
   }, [appointmentId, isNewAppointment, cancelActivity]);
 
-  // Handle back navigation
-  const handleBack = useCallback(() => {
-    navigate(RoutePaths.Activity.List);
-  }, [navigate]);
+  const handleBack = useCallback(() => navigate(RoutePaths.Activity.List), [navigate]);
 
   // Not found state
-  if (!currentAppointment && !isNewAppointment) {
+  if (!currentAppointment && !isNewAppointment && state !== StateType.Loading) {
     return (
       <div style={{ padding: 24 }}>
         <Card>
           <div style={{ textAlign: 'center', padding: '40px 0' }}>
-            <Title level={4} type="warning">
-              Randevu Bulunamadı
-            </Title>
+            <Title level={4} type="warning">Randevu Bulunamadı</Title>
             <Text type="secondary">Aradığınız randevu bulunamadı veya silinmiş olabilir.</Text>
             <div style={{ marginTop: 24 }}>
-              <Button type="primary" onClick={handleBack}>
-                Listeye Dön
-              </Button>
+              <Button type="primary" onClick={handleBack}>Listeye Dön</Button>
             </div>
           </div>
         </Card>
@@ -258,158 +269,114 @@ const AppointmentDetail: React.FC<AppointmentDetailProps> = (props) => {
     );
   }
 
-  // Don't render content while loading
-  if (state === StateType.Loading && !isNewAppointment) {
-    return null;
-  }
+  if (state === StateType.Loading && !isNewAppointment) return null;
+
+  // Render selected entities for view mode
+  const renderSelectedEntities = (entities: EntityReference[] | EntityReference | null | undefined) => {
+    if (!entities) return '-';
+    const entityList = Array.isArray(entities) ? entities : [entities];
+    if (entityList.length === 0) return '-';
+
+    return (
+      <Space wrap size={[4, 4]}>
+        {entityList.map((entity) => (
+          <Tag key={entity.id} icon={getEntityIcon(entity.entityType)} color={EntityTypeConfig[entity.entityType]?.color}>
+            {entity.name}
+          </Tag>
+        ))}
+      </Space>
+    );
+  };
 
   // Render View Mode
   const renderViewMode = () => (
     <>
-      {/* Header Info */}
       <Card style={{ marginBottom: 16 }}>
         <Row gutter={24} align="middle">
           <Col flex="auto">
-            <Space orientation="vertical" size={4}>
-              <Space align="center">
+            <Space direction="vertical" size={4}>
+              <Space align="center" wrap>
                 <CalendarOutlined style={{ fontSize: 24, color: '#722ed1' }} />
-                <Title level={3} style={{ margin: 0 }}>
-                  {currentAppointment?.subject}
-                </Title>
-                <Tag
-                  color={getActivityStatusColor(currentAppointment?.status ?? ActivityStatus.NotStarted)}
-                >
+                <Title level={3} style={{ margin: 0 }}>{currentAppointment?.subject}</Title>
+                <Tag color={getActivityStatusColor(currentAppointment?.status ?? ActivityStatus.NotStarted)}>
                   {getActivityStatusLabel(currentAppointment?.status ?? ActivityStatus.NotStarted)}
                 </Tag>
-                <Tag
-                  color={getActivityPriorityColor(currentAppointment?.priority ?? ActivityPriority.Normal)}
-                  icon={<FlagOutlined />}
-                >
+                <Tag color={getActivityPriorityColor(currentAppointment?.priority ?? ActivityPriority.Normal)} icon={<FlagOutlined />}>
                   {getActivityPriorityLabel(currentAppointment?.priority ?? ActivityPriority.Normal)}
                 </Tag>
-                {currentAppointment?.isAllDayEvent && <Tag color="purple">Tüm Gün</Tag>}
-                <Badge
-                  status={currentAppointment?.isActive ? 'success' : 'default'}
-                  text={currentAppointment?.isActive ? 'Aktif' : 'Pasif'}
-                />
+                {currentAppointment?.isAllDay && <Tag color="purple">Tüm Gün</Tag>}
+                {currentAppointment?.isOnline && <Tag color="blue" icon={<GlobalOutlined />}>Online</Tag>}
+                {currentAppointment?.isRecurring && <Tag color="orange">Tekrarlı</Tag>}
+                <Badge status={currentAppointment?.isActive ? 'success' : 'default'} text={currentAppointment?.isActive ? 'Aktif' : 'Pasif'} />
               </Space>
-              {currentAppointment?.regardingEntityType && (
-                <Text type="secondary">
-                  İlgili: {currentAppointment.regardingEntityType} - {currentAppointment.regardingEntityId}
-                </Text>
-              )}
             </Space>
           </Col>
           <Col>
             <Space>
               {currentAppointment?.status !== ActivityStatus.Completed && (
-                <Button type="primary" icon={<CheckCircleOutlined />} onClick={handleComplete}>
-                  Tamamla
-                </Button>
+                <Button type="primary" icon={<CheckCircleOutlined />} onClick={handleComplete}>Tamamla</Button>
               )}
               {currentAppointment?.status !== ActivityStatus.Cancelled && (
-                <Button icon={<CloseCircleOutlined />} onClick={handleCancelActivity}>
-                  İptal Et
-                </Button>
+                <Button icon={<CloseCircleOutlined />} onClick={handleCancelActivity}>İptal Et</Button>
               )}
             </Space>
           </Col>
         </Row>
       </Card>
 
-      {/* Appointment Details */}
       <Row gutter={16}>
         <Col span={12}>
-          <Card
-            title={
-              <Space>
-                <ClockCircleOutlined />
-                <span>Zaman Bilgileri</span>
-              </Space>
-            }
-            style={{ marginBottom: 16 }}
-          >
+          <Card title={<Space><ClockCircleOutlined /><span>Zaman Bilgileri</span></Space>} style={{ marginBottom: 16 }}>
             <Descriptions column={1} size="small">
-              <Descriptions.Item label="Başlangıç">
-                {currentAppointment?.startTime
-                  ? dayjs(currentAppointment.startTime).format('DD.MM.YYYY HH:mm')
-                  : '-'}
-              </Descriptions.Item>
-              <Descriptions.Item label="Bitiş">
-                {currentAppointment?.endTime
-                  ? dayjs(currentAppointment.endTime).format('DD.MM.YYYY HH:mm')
-                  : '-'}
-              </Descriptions.Item>
-              <Descriptions.Item label="Tüm Gün">
-                <Badge
-                  status={currentAppointment?.isAllDayEvent ? 'success' : 'default'}
-                  text={currentAppointment?.isAllDayEvent ? 'Evet' : 'Hayır'}
-                />
+              <Descriptions.Item label="Başlangıç">{currentAppointment?.startTime ? dayjs(currentAppointment.startTime).format('DD.MM.YYYY HH:mm') : '-'}</Descriptions.Item>
+              <Descriptions.Item label="Bitiş">{currentAppointment?.endTime ? dayjs(currentAppointment.endTime).format('DD.MM.YYYY HH:mm') : '-'}</Descriptions.Item>
+              <Descriptions.Item label="Tüm Gün"><Badge status={currentAppointment?.isAllDay ? 'success' : 'default'} text={currentAppointment?.isAllDay ? 'Evet' : 'Hayır'} /></Descriptions.Item>
+              <Descriptions.Item label="Hatırlatma">
+                {currentAppointment?.reminderMinutesBefore ? `${currentAppointment.reminderMinutesBefore} dakika önce` : '-'}
               </Descriptions.Item>
             </Descriptions>
           </Card>
         </Col>
 
         <Col span={12}>
-          <Card
-            title={
-              <Space>
-                <EnvironmentOutlined />
-                <span>Konum & Toplantı</span>
-              </Space>
-            }
-            style={{ marginBottom: 16 }}
-          >
+          <Card title={<Space><EnvironmentOutlined /><span>Konum & Toplantı</span></Space>} style={{ marginBottom: 16 }}>
             <Descriptions column={1} size="small">
-              <Descriptions.Item label="Konum">{currentAppointment?.location || '-'}</Descriptions.Item>
-              <Descriptions.Item label="Organizatör">
-                {currentAppointment?.organizer || '-'}
+              <Descriptions.Item label="Online">
+                <Badge status={currentAppointment?.isOnline ? 'success' : 'default'} text={currentAppointment?.isOnline ? 'Evet' : 'Hayır'} />
               </Descriptions.Item>
+              <Descriptions.Item label="Konum">{currentAppointment?.location || '-'}</Descriptions.Item>
               <Descriptions.Item label="Toplantı Linki">
                 {currentAppointment?.meetingUrl ? (
                   <a href={currentAppointment.meetingUrl} target="_blank" rel="noopener noreferrer">
-                    <Space>
-                      <LinkOutlined />
-                      Toplantıya Katıl
-                    </Space>
+                    <Space><LinkOutlined />Toplantıya Katıl</Space>
                   </a>
-                ) : (
-                  '-'
-                )}
+                ) : '-'}
               </Descriptions.Item>
             </Descriptions>
           </Card>
         </Col>
 
-        {/* Attendees */}
-        <Col span={24}>
-          <Card
-            title={
-              <Space>
-                <TeamOutlined />
-                <span>Katılımcılar</span>
-              </Space>
-            }
-            style={{ marginBottom: 16 }}
-          >
-            <Paragraph>
-              {currentAppointment?.attendees || 'Katılımcı bilgisi girilmemiş.'}
-            </Paragraph>
+        <Col span={12}>
+          <Card title={<Space><UserOutlined /><span>Organizatör</span></Space>} style={{ marginBottom: 16 }}>
+            {renderSelectedEntities(currentAppointment?.organizer)}
           </Card>
         </Col>
 
-        {/* Description */}
+        <Col span={12}>
+          <Card title={<Space><TeamOutlined /><span>Katılımcılar</span></Space>} style={{ marginBottom: 16 }}>
+            {renderSelectedEntities(currentAppointment?.attendees)}
+          </Card>
+        </Col>
+
         <Col span={24}>
-          <Card
-            title={
-              <Space>
-                <FileTextOutlined />
-                <span>Açıklama</span>
-              </Space>
-            }
-            style={{ marginBottom: 16 }}
-          >
-            <Paragraph>{currentAppointment?.description || 'Açıklama girilmemiş.'}</Paragraph>
+          <Card title={<Space><LinkOutlined /><span>İlgili Kayıt</span></Space>} style={{ marginBottom: 16 }}>
+            {renderSelectedEntities(currentAppointment?.regarding)}
+          </Card>
+        </Col>
+
+        <Col span={24}>
+          <Card title={<Space><FileTextOutlined /><span>Toplantı Notları</span></Space>} style={{ marginBottom: 16 }}>
+            <Paragraph>{currentAppointment?.meetingNotes || 'Not girilmemiş.'}</Paragraph>
           </Card>
         </Col>
       </Row>
@@ -418,40 +385,28 @@ const AppointmentDetail: React.FC<AppointmentDetailProps> = (props) => {
 
   // Render Edit/Create Mode
   const renderEditMode = () => (
-    <Form
-      form={form}
-      layout="vertical"
-      initialValues={{ isActive: true, isAllDayEvent: false }}
-    >
+    <Form form={form} layout="vertical" initialValues={{ isActive: true, isAllDay: false, isOnline: false, isRecurring: false }}>
       <Row gutter={16}>
-        {/* Basic Info */}
         <Col span={24}>
-          <Card
-            title={
-              <Space>
-                <CalendarOutlined />
-                <span>Randevu Bilgileri</span>
-              </Space>
-            }
-            style={{ marginBottom: 16 }}
-          >
+          <Card title={<Space><CalendarOutlined /><span>Randevu Bilgileri</span></Space>} style={{ marginBottom: 16 }}>
             <Row gutter={16}>
               <Col span={12}>
-                <Form.Item
-                  name="subject"
-                  label="Konu"
-                  rules={[{ required: true, message: 'Konu gereklidir' }]}
-                >
+                <Form.Item name="subject" label="Konu" rules={[{ required: true, message: 'Konu gereklidir' }]}>
                   <Input placeholder="Randevu konusu girin" />
                 </Form.Item>
               </Col>
-              <Col span={6}>
+              <Col span={4}>
                 <Form.Item name="isActive" label="Aktif" valuePropName="checked">
                   <Switch checkedChildren="Evet" unCheckedChildren="Hayır" />
                 </Form.Item>
               </Col>
-              <Col span={6}>
-                <Form.Item name="isAllDayEvent" label="Tüm Gün" valuePropName="checked">
+              <Col span={4}>
+                <Form.Item name="isAllDay" label="Tüm Gün" valuePropName="checked">
+                  <Switch checkedChildren="Evet" unCheckedChildren="Hayır" />
+                </Form.Item>
+              </Col>
+              <Col span={4}>
+                <Form.Item name="isOnline" label="Online" valuePropName="checked">
                   <Switch checkedChildren="Evet" unCheckedChildren="Hayır" />
                 </Form.Item>
               </Col>
@@ -459,33 +414,16 @@ const AppointmentDetail: React.FC<AppointmentDetailProps> = (props) => {
           </Card>
         </Col>
 
-        {/* Status & Priority */}
         <Col span={12}>
-          <Card
-            title={
-              <Space>
-                <FlagOutlined />
-                <span>Durum & Öncelik</span>
-              </Space>
-            }
-            style={{ marginBottom: 16 }}
-          >
+          <Card title={<Space><FlagOutlined /><span>Durum & Öncelik</span></Space>} style={{ marginBottom: 16 }}>
             <Row gutter={16}>
               <Col span={12}>
-                <Form.Item
-                  name="status"
-                  label="Durum"
-                  rules={[{ required: true, message: 'Durum seçimi gereklidir' }]}
-                >
+                <Form.Item name="status" label="Durum" rules={[{ required: true, message: 'Durum seçimi gereklidir' }]}>
                   <Select options={activityStatusOptions} placeholder="Durum seçin" />
                 </Form.Item>
               </Col>
               <Col span={12}>
-                <Form.Item
-                  name="priority"
-                  label="Öncelik"
-                  rules={[{ required: true, message: 'Öncelik seçimi gereklidir' }]}
-                >
+                <Form.Item name="priority" label="Öncelik" rules={[{ required: true, message: 'Öncelik seçimi gereklidir' }]}>
                   <Select options={activityPriorityOptions} placeholder="Öncelik seçin" />
                 </Form.Item>
               </Col>
@@ -493,53 +431,25 @@ const AppointmentDetail: React.FC<AppointmentDetailProps> = (props) => {
           </Card>
         </Col>
 
-        {/* Time */}
         <Col span={12}>
-          <Card
-            title={
-              <Space>
-                <ClockCircleOutlined />
-                <span>Zaman Bilgileri</span>
-              </Space>
-            }
-            style={{ marginBottom: 16 }}
-          >
+          <Card title={<Space><ClockCircleOutlined /><span>Zaman Bilgileri</span></Space>} style={{ marginBottom: 16 }}>
             <Row gutter={16}>
               <Col span={12}>
-                <Form.Item name="startTime" label="Başlangıç">
-                  <DatePicker
-                    showTime
-                    format="DD.MM.YYYY HH:mm"
-                    style={{ width: '100%' }}
-                    placeholder="Başlangıç zamanı"
-                  />
+                <Form.Item name="startTime" label="Başlangıç" rules={[{ required: true, message: 'Başlangıç zamanı gereklidir' }]}>
+                  <DatePicker showTime format="DD.MM.YYYY HH:mm" style={{ width: '100%' }} placeholder="Başlangıç zamanı" />
                 </Form.Item>
               </Col>
               <Col span={12}>
-                <Form.Item name="endTime" label="Bitiş">
-                  <DatePicker
-                    showTime
-                    format="DD.MM.YYYY HH:mm"
-                    style={{ width: '100%' }}
-                    placeholder="Bitiş zamanı"
-                  />
+                <Form.Item name="endTime" label="Bitiş" rules={[{ required: true, message: 'Bitiş zamanı gereklidir' }]}>
+                  <DatePicker showTime format="DD.MM.YYYY HH:mm" style={{ width: '100%' }} placeholder="Bitiş zamanı" />
                 </Form.Item>
               </Col>
             </Row>
           </Card>
         </Col>
 
-        {/* Location & Meeting */}
         <Col span={24}>
-          <Card
-            title={
-              <Space>
-                <EnvironmentOutlined />
-                <span>Konum & Toplantı</span>
-              </Space>
-            }
-            style={{ marginBottom: 16 }}
-          >
+          <Card title={<Space><EnvironmentOutlined /><span>Konum & Toplantı</span></Space>} style={{ marginBottom: 16 }}>
             <Row gutter={16}>
               <Col span={8}>
                 <Form.Item name="location" label="Konum">
@@ -547,84 +457,78 @@ const AppointmentDetail: React.FC<AppointmentDetailProps> = (props) => {
                 </Form.Item>
               </Col>
               <Col span={8}>
-                <Form.Item name="organizer" label="Organizatör">
-                  <Input prefix={<UserOutlined />} placeholder="Organizatör" />
-                </Form.Item>
-              </Col>
-              <Col span={8}>
                 <Form.Item name="meetingUrl" label="Toplantı Linki">
                   <Input prefix={<LinkOutlined />} placeholder="https://meet.google.com/..." />
                 </Form.Item>
               </Col>
+              <Col span={8}>
+                <Form.Item name="reminderMinutesBefore" label="Hatırlatma (dakika)">
+                  <Space.Compact>
+                    <InputNumber min={0} max={10080} style={{ width: '100%' }} placeholder="Örn: 15" />
+                    <span style={{ padding: '0 8px', lineHeight: '32px' }}>dk</span>
+                  </Space.Compact>
+                </Form.Item>
+              </Col>
             </Row>
           </Card>
         </Col>
 
-        {/* Attendees */}
-        <Col span={24}>
-          <Card
-            title={
-              <Space>
-                <TeamOutlined />
-                <span>Katılımcılar</span>
-              </Space>
-            }
-            style={{ marginBottom: 16 }}
-          >
-            <Form.Item name="attendees" label="Katılımcılar">
-              <TextArea rows={3} placeholder="Katılımcıları virgülle ayırarak girin..." />
+        {/* Organizatör - Tek Seçimli, Sadece User */}
+        <Col span={12}>
+          <Card title={<Space><UserOutlined /><span>Organizatör</span></Space>} style={{ marginBottom: 16 }}>
+            <Form.Item label="Organizatör Seçin">
+              <EntityLookup
+                value={organizer}
+                onChange={(value) => setOrganizer(value as EntityReference | null)}
+                entityTypes={['User']}
+                multiple={false}
+                placeholder="Organizatör seçin..."
+                onSearch={entitySearchService.search}
+                modalTitle="Organizatör Seç"
+              />
             </Form.Item>
           </Card>
         </Col>
 
-        {/* Regarding Entity */}
-        <Col span={24}>
-          <Card
-            title={
-              <Space>
-                <UserOutlined />
-                <span>İlgili Kayıt</span>
-              </Space>
-            }
-            style={{ marginBottom: 16 }}
-          >
-            <Row gutter={16}>
-              <Col span={12}>
-                <Form.Item name="regardingEntityType" label="Kayıt Tipi">
-                  <Select
-                    allowClear
-                    placeholder="Kayıt tipi seçin"
-                    options={[
-                      { label: 'Lead', value: 'Lead' },
-                      { label: 'Müşteri', value: 'Account' },
-                      { label: 'Kişi', value: 'Contact' },
-                      { label: 'Fırsat', value: 'Opportunity' },
-                    ]}
-                  />
-                </Form.Item>
-              </Col>
-              <Col span={12}>
-                <Form.Item name="regardingEntityId" label="Kayıt ID">
-                  <Input placeholder="İlgili kayıt ID" />
-                </Form.Item>
-              </Col>
-            </Row>
+        {/* Katılımcılar - Çoklu Seçimli, User/Account/Contact */}
+        <Col span={12}>
+          <Card title={<Space><TeamOutlined /><span>Katılımcılar</span></Space>} style={{ marginBottom: 16 }}>
+            <Form.Item label="Katılımcıları Seçin">
+              <EntityLookup
+                value={attendees}
+                onChange={(value) => setAttendees((value as EntityReference[]) || [])}
+                entityTypes={['User', 'Account', 'Contact']}
+                multiple={true}
+                placeholder="Katılımcı ekleyin..."
+                onSearch={entitySearchService.search}
+                modalTitle="Katılımcı Seç"
+                maxSelections={50}
+              />
+            </Form.Item>
           </Card>
         </Col>
 
-        {/* Description */}
+        {/* İlgili Kayıt - Tek Seçimli, Lead/Account/Contact */}
         <Col span={24}>
-          <Card
-            title={
-              <Space>
-                <FileTextOutlined />
-                <span>Açıklama</span>
-              </Space>
-            }
-            style={{ marginBottom: 16 }}
-          >
-            <Form.Item name="description" label="Açıklama">
-              <TextArea rows={4} placeholder="Randevu hakkında notlar..." />
+          <Card title={<Space><LinkOutlined /><span>İlgili Kayıt</span></Space>} style={{ marginBottom: 16 }}>
+            <Form.Item label="İlgili Kaydı Seçin">
+              <EntityLookup
+                value={regarding}
+                onChange={(value) => setRegarding(value as EntityReference | null)}
+                entityTypes={['Lead', 'Account', 'Contact']}
+                multiple={false}
+                placeholder="İlgili kayıt seçin..."
+                onSearch={entitySearchService.search}
+                modalTitle="İlgili Kayıt Seç"
+              />
+            </Form.Item>
+          </Card>
+        </Col>
+
+        <Col span={24}>
+          <Card title={<Space><FileTextOutlined /><span>Toplantı Notları</span></Space>} style={{ marginBottom: 16 }}>
+            <Form.Item name="meetingNotes" label="Notlar">
+              <TextArea rows={4} placeholder="Toplantı hakkında notlar..." />
             </Form.Item>
           </Card>
         </Col>
@@ -634,7 +538,6 @@ const AppointmentDetail: React.FC<AppointmentDetailProps> = (props) => {
 
   return (
     <div style={{ padding: 24 }}>
-      {/* Page Header */}
       <Card style={{ marginBottom: 16 }}>
         <Row justify="space-between" align="middle">
           <Col>
@@ -644,11 +547,7 @@ const AppointmentDetail: React.FC<AppointmentDetailProps> = (props) => {
               </Tooltip>
               <Divider type="vertical" />
               <Title level={4} style={{ margin: 0 }}>
-                {isNewAppointment
-                  ? 'Yeni Randevu'
-                  : isViewMode
-                  ? 'Randevu Detayı'
-                  : 'Randevu Düzenle'}
+                {isNewAppointment ? 'Yeni Randevu' : isViewMode ? 'Randevu Detayı' : 'Randevu Düzenle'}
               </Title>
             </Space>
           </Col>
@@ -664,21 +563,15 @@ const AppointmentDetail: React.FC<AppointmentDetailProps> = (props) => {
                     cancelText="İptal"
                     okButtonProps={{ danger: true }}
                   >
-                    <Button danger icon={<DeleteOutlined />}>
-                      Sil
-                    </Button>
+                    <Button danger icon={<DeleteOutlined />}>Sil</Button>
                   </Popconfirm>
-                  <Button type="primary" icon={<EditOutlined />} onClick={handleEdit}>
-                    Düzenle
-                  </Button>
+                  <Button type="primary" icon={<EditOutlined />} onClick={handleEdit}>Düzenle</Button>
                 </>
               )}
 
               {(isEditMode || isCreateMode) && (
                 <>
-                  <Button icon={<CloseOutlined />} onClick={handleCancelEdit}>
-                    İptal
-                  </Button>
+                  <Button icon={<CloseOutlined />} onClick={handleCancelEdit}>İptal</Button>
                   <Button type="primary" icon={<SaveOutlined />} onClick={handleSave}>
                     {isNewAppointment ? 'Oluştur' : 'Kaydet'}
                   </Button>
@@ -689,7 +582,6 @@ const AppointmentDetail: React.FC<AppointmentDetailProps> = (props) => {
         </Row>
       </Card>
 
-      {/* Content */}
       {isViewMode ? renderViewMode() : renderEditMode()}
     </div>
   );

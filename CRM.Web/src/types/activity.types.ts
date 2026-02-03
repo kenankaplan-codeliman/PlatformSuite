@@ -1,27 +1,110 @@
-// Activity Types - Based on ActivityBase.cs and derived entities
+import type { EntityReference } from '@/types/entity.lookup.types';
 
-// ==================== ENUMS ====================
+/**
+ * Activity Types
+ * Lead modülü ile tutarlı request/response yapısı
+ */
+// ============================================
+// ACTIVITY PARTY (Katılımcı bilgisi)
+// ============================================
 
-export const ActivityType = {
-  Email: 1,
-  PhoneCall: 2,
-  Task: 3,
-  Appointment: 4,
+export const PartyType = {
+  Organizer: 0,
+  Attendee: 1,
+  Regarding: 2,
+  Owner: 3,
+  From: 4,
+  To: 5,
+  CC: 6,
+  BCC: 7,
 } as const;
 
-export type ActivityTypeValue = (typeof ActivityType)[keyof typeof ActivityType];
+export type PartyTypeValue = (typeof PartyType)[keyof typeof PartyType];
+
+export interface ActivityParty {
+  id: string;
+  partyType: PartyTypeValue;
+  entityType: string;
+  entityId: string;
+  entityName: string;
+  email?: string;
+  phone?: string;
+  isRequired?: boolean;
+  response?: number; // Appointment için: Accepted, Declined, Tentative
+}
+
+// ============================================
+// ACTIVITY STATUS
+// ============================================
 
 export const ActivityStatus = {
   NotStarted: 0,
   InProgress: 1,
   Completed: 2,
   Cancelled: 3,
-  Scheduled: 4,
-  WaitingOnSomeone: 5,
-  Deferred: 6,
+  Deferred: 4,
 } as const;
 
 export type ActivityStatusValue = (typeof ActivityStatus)[keyof typeof ActivityStatus];
+
+export const getActivityStatusLabel = (status: ActivityStatusValue): string => {
+  const labels: Record<ActivityStatusValue, string> = {
+    [ActivityStatus.NotStarted]: 'Başlamadı',
+    [ActivityStatus.InProgress]: 'Devam Ediyor',
+    [ActivityStatus.Completed]: 'Tamamlandı',
+    [ActivityStatus.Cancelled]: 'İptal Edildi',
+    [ActivityStatus.Deferred]: 'Ertelendi',
+  };
+  return labels[status] || 'Bilinmiyor';
+};
+
+export const getActivityStatusColor = (status: ActivityStatusValue): string => {
+  const colors: Record<ActivityStatusValue, string> = {
+    [ActivityStatus.NotStarted]: 'default',
+    [ActivityStatus.InProgress]: 'processing',
+    [ActivityStatus.Completed]: 'success',
+    [ActivityStatus.Cancelled]: 'error',
+    [ActivityStatus.Deferred]: 'warning',
+  };
+  return colors[status] || 'default';
+};
+
+// ============================================
+// ACTIVITY TYPE
+// ============================================
+
+export const ActivityType = {
+  Email: 0,
+  PhoneCall: 1,
+  Task: 2,
+  Appointment: 3,
+} as const;
+
+export type ActivityTypeValue = (typeof ActivityType)[keyof typeof ActivityType];
+
+export const getActivityTypeLabel = (type: ActivityTypeValue): string => {
+  const labels: Record<ActivityTypeValue, string> = {
+    [ActivityType.Email]: 'E-posta',
+    [ActivityType.PhoneCall]: 'Telefon',
+    [ActivityType.Task]: 'Görev',
+    [ActivityType.Appointment]: 'Randevu',
+  };
+  return labels[type] || 'Bilinmiyor';
+};
+
+export const getActivityTypeColor = (type: ActivityTypeValue): string => {
+  const colors: Record<ActivityTypeValue, string> = {
+    [ActivityType.Email]: '#1890ff',
+    [ActivityType.PhoneCall]: '#52c41a',
+    [ActivityType.Task]: '#faad14',
+    [ActivityType.Appointment]: '#722ed1',
+  };
+  return colors[type] || '#8c8c8c';
+};
+
+// ============================================
+// ACTIVITY PRIORITY
+// ============================================
 
 export const ActivityPriority = {
   Low: 0,
@@ -31,70 +114,52 @@ export const ActivityPriority = {
 
 export type ActivityPriorityValue = (typeof ActivityPriority)[keyof typeof ActivityPriority];
 
-export const ActivityPartyType = {
-  From: 1,
-  To: 2,
-  Cc: 3,
-  Bcc: 4,
-  Caller: 5,
-  Recipient: 6,
-  Organizer: 7,
-  Attendee: 8,
-  Required: 9,
-  Optional: 10,
-  Owner: 11,
-} as const;
+export const getActivityPriorityLabel = (priority: ActivityPriorityValue): string => {
+  const labels: Record<ActivityPriorityValue, string> = {
+    [ActivityPriority.Low]: 'Düşük',
+    [ActivityPriority.Normal]: 'Normal',
+    [ActivityPriority.High]: 'Yüksek',
+  };
+  return labels[priority] || 'Bilinmiyor';
+};
 
-export type ActivityPartyTypeValue = (typeof ActivityPartyType)[keyof typeof ActivityPartyType];
+export const getActivityPriorityColor = (priority: ActivityPriorityValue): string => {
+  const colors: Record<ActivityPriorityValue, string> = {
+    [ActivityPriority.Low]: 'default',
+    [ActivityPriority.Normal]: 'blue',
+    [ActivityPriority.High]: 'red',
+  };
+  return colors[priority] || 'default';
+};
 
-export const ActivityParticipantType = {
-  User: 1,
-  Account: 2,
-  Contact: 3,
-  Lead: 4,
-  External: 5,
-} as const;
-
-export type ActivityParticipantTypeValue = (typeof ActivityParticipantType)[keyof typeof ActivityParticipantType];
-
-export const CallDirection = {
-  Incoming: 0,
-  Outgoing: 1,
-} as const;
-
-export type CallDirectionValue = (typeof CallDirection)[keyof typeof CallDirection];
-
-// ==================== INTERFACES ====================
-
-export interface ActivityParty {
-  id: string;
-  activityId: string;
-  partyType: ActivityPartyTypeValue;
-  participantType: ActivityParticipantTypeValue;
-  participantId?: string;
-  name?: string;
-  email?: string;
-  phoneNumber?: string;
-  sortOrder: number;
-  responseStatus?: string;
-  respondedAt?: string;
-  isActive: boolean;
-}
+// ============================================
+// BASE ACTIVITY INTERFACE
+// ============================================
 
 export interface ActivityBase {
   id: string;
   activityId: string;
   subject: string;
+  description?: string;
   activityType: ActivityTypeValue;
   status: ActivityStatusValue;
   priority: ActivityPriorityValue;
   dueDate?: string;
   completedDate?: string;
   duration?: number;
+  
+  // İlgili kayıt - EntityReference olarak
+  regarding?: EntityReference | null;
+  // Alternatif: Ayrı alanlar (backend uyumu için)
   regardingEntityType?: string;
   regardingEntityId?: string;
+  
+  // Sahip ve organizasyon
   ownerId: string;
+  owner?: EntityReference | null;
   organizationId: string;
+  
+  // Audit alanları
   createdBy: string;
   createdAt: string;
   updatedBy?: string;
@@ -103,59 +168,131 @@ export interface ActivityBase {
   isDeleted: boolean;
   deletedBy?: string;
   deletedAt?: string;
-  parties?: ActivityParty[];
+  
+  // Katılımcılar (generic)
+  //parties?: ActivityParty[];
 }
+
+// ============================================
+// EMAIL ACTIVITY
+// ============================================
 
 export interface EmailActivity extends ActivityBase {
   activityType: typeof ActivityType.Email;
-  emailSubject?: string;
+  
+  // E-posta alanları - EntityReference olarak
+  from?: EntityReference | null;
+  to?: EntityReference[];
+  cc?: EntityReference[];
+  bcc?: EntityReference[];
+  
+  // E-posta içeriği
   body?: string;
-  isHtml: boolean;
-  sentDate?: string;
-  isSent: boolean;
-  isRead: boolean;
-  readDate?: string;
+  bodyType?: 'Text' | 'HTML';
+  
+  // Yön ve durum
+  direction: 'Incoming' | 'Outgoing';
+  sentDateTime?: string;
+  receivedDateTime?: string;
+  
+  // Ekler
+  hasAttachments?: boolean;
+  attachmentCount?: number;
 }
+
+// ============================================
+// PHONE CALL ACTIVITY
+// ============================================
+export const CallDirection = {
+  Incoming: 0,
+  Outgoing: 1,
+} as const;
+
+export type CallDirectionValue = (typeof CallDirection)[keyof typeof CallDirection];
+
+
 
 export interface PhoneCallActivity extends ActivityBase {
   activityType: typeof ActivityType.PhoneCall;
-  callDirection: CallDirectionValue;
+  
+  // Görüşme tarafları - EntityReference olarak
+  caller?: EntityReference | null;
+  recipient?: EntityReference | null;
+  
+  // Telefon bilgileri
   phoneNumber?: string;
-  startedAt?: string;
-  endedAt?: string;
-  recordingUrl?: string;
+  direction: 'Incoming' | 'Outgoing';
+  
+  // Süre ve zaman
+  durationMinutes?: number;
+  actualStart?: string;
+  actualEnd?: string;
+  
+  // Notlar
   callNotes?: string;
   callResult?: string;
 }
 
+// ============================================
+// TASK ACTIVITY
+// ============================================
+
 export interface TaskActivity extends ActivityBase {
   activityType: typeof ActivityType.Task;
-  taskDescription?: string;
-  isCompleted: boolean;
-  taskCompletedAt?: string;
-  reminderAt?: string;
-  isReminderSet: boolean;
-  isReminderSent: boolean;
-  percentComplete: number;
+  
+  // Görev atama - EntityReference olarak
+  assignedTo?: EntityReference | null;
+  
+  // İlerleme
+  percentComplete?: number;
+  
+  // Tarihler
   startDate?: string;
+  
+  // Hatırlatma
+  reminderDateTime?: string;
+  reminderSet?: boolean;
 }
+
+// ============================================
+// APPOINTMENT ACTIVITY
+// ============================================
 
 export interface AppointmentActivity extends ActivityBase {
   activityType: typeof ActivityType.Appointment;
+  
+  // Organizatör - EntityReference olarak (tek seçim)
+  organizer?: EntityReference | null;
+  
+  // Katılımcılar - EntityReference array olarak (çoklu seçim)
+  attendees?: EntityReference[];
+  
+  // Konum bilgileri
   location?: string;
   isOnline: boolean;
   meetingUrl?: string;
+  
+  // Zaman bilgileri
   startTime: string;
   endTime: string;
   isAllDay: boolean;
+  
+  // Hatırlatma
   reminderMinutesBefore?: number;
+  reminderSet?: boolean;
+  
+  // Tekrarlama
   recurrenceRule?: string;
   isRecurring: boolean;
   recurringParentId?: string;
+  
+  // Notlar
   meetingNotes?: string;
 }
 
-export type Activity = EmailActivity | PhoneCallActivity | TaskActivity | AppointmentActivity;
+// ============================================
+// FILTER INTERFACE
+// ============================================
 
 export interface ActivityListFilters {
   subject?: string;
@@ -171,12 +308,18 @@ export interface ActivityListFilters {
 }
 
 // ============================================
-// RESPONSE TYPES - Service'den dönen yapılar
+// REQUEST TYPES
 // ============================================
 
 export interface ActivityListRequest {
   page: number;
   pageSize: number;
+  filters?: ActivityListFilters;
+}
+
+export interface ActivityCalendarRequest {
+  startDate: string;
+  endDate: string;
   filters?: ActivityListFilters;
 }
 
@@ -202,7 +345,9 @@ export interface ActivityBulkUpdateStatusRequest {
   status: ActivityStatusValue;
 }
 
-
+// ============================================
+// RESPONSE TYPES
+// ============================================
 
 export interface ActivityListResponse {
   data: ActivityBase[];
@@ -212,180 +357,46 @@ export interface ActivityListResponse {
   pageSize: number;
 }
 
-// ==================== LABEL MAPS ====================
+// ============================================
+// SELECT OPTIONS
+// ============================================
 
-const ActivityTypeLabels: Record<ActivityTypeValue, string> = {
-  [ActivityType.Email]: 'E-posta',
-  [ActivityType.PhoneCall]: 'Telefon',
-  [ActivityType.Task]: 'Görev',
-  [ActivityType.Appointment]: 'Randevu',
-};
+export const activityStatusOptions = [
+  { label: 'Başlamadı', value: ActivityStatus.NotStarted },
+  { label: 'Devam Ediyor', value: ActivityStatus.InProgress },
+  { label: 'Tamamlandı', value: ActivityStatus.Completed },
+  { label: 'İptal Edildi', value: ActivityStatus.Cancelled },
+  { label: 'Ertelendi', value: ActivityStatus.Deferred },
+];
 
-const ActivityStatusLabels: Record<ActivityStatusValue, string> = {
-  [ActivityStatus.NotStarted]: 'Başlamadı',
-  [ActivityStatus.InProgress]: 'Devam Ediyor',
-  [ActivityStatus.Completed]: 'Tamamlandı',
-  [ActivityStatus.Cancelled]: 'İptal Edildi',
-  [ActivityStatus.Scheduled]: 'Planlandı',
-  [ActivityStatus.WaitingOnSomeone]: 'Beklemede',
-  [ActivityStatus.Deferred]: 'Ertelendi',
-};
+export const activityTypeOptions = [
+  { label: 'E-posta', value: ActivityType.Email },
+  { label: 'Telefon', value: ActivityType.PhoneCall },
+  { label: 'Görev', value: ActivityType.Task },
+  { label: 'Randevu', value: ActivityType.Appointment },
+];
 
-const ActivityPriorityLabels: Record<ActivityPriorityValue, string> = {
-  [ActivityPriority.Low]: 'Düşük',
-  [ActivityPriority.Normal]: 'Normal',
-  [ActivityPriority.High]: 'Yüksek',
-};
+export const activityPriorityOptions = [
+  { label: 'Düşük', value: ActivityPriority.Low },
+  { label: 'Normal', value: ActivityPriority.Normal },
+  { label: 'Yüksek', value: ActivityPriority.High },
+];
 
-const ActivityPartyTypeLabels: Record<ActivityPartyTypeValue, string> = {
-  [ActivityPartyType.From]: 'Gönderen',
-  [ActivityPartyType.To]: 'Alıcı',
-  [ActivityPartyType.Cc]: 'CC',
-  [ActivityPartyType.Bcc]: 'BCC',
-  [ActivityPartyType.Caller]: 'Arayan',
-  [ActivityPartyType.Recipient]: 'Aranan',
-  [ActivityPartyType.Organizer]: 'Organizatör',
-  [ActivityPartyType.Attendee]: 'Katılımcı',
-  [ActivityPartyType.Required]: 'Zorunlu Katılımcı',
-  [ActivityPartyType.Optional]: 'Opsiyonel Katılımcı',
-  [ActivityPartyType.Owner]: 'Sahip',
-};
+// ============================================
+// TABLE FILTER OPTIONS
+// ============================================
 
-const ActivityParticipantTypeLabels: Record<ActivityParticipantTypeValue, string> = {
-  [ActivityParticipantType.User]: 'Kullanıcı',
-  [ActivityParticipantType.Account]: 'Firma',
-  [ActivityParticipantType.Contact]: 'Kişi',
-  [ActivityParticipantType.Lead]: 'Aday Müşteri',
-  [ActivityParticipantType.External]: 'Harici',
-};
-
-const CallDirectionLabels: Record<CallDirectionValue, string> = {
-  [CallDirection.Incoming]: 'Gelen',
-  [CallDirection.Outgoing]: 'Giden',
-};
-
-// ==================== COLOR MAPS ====================
-
-const ActivityTypeColors: Record<ActivityTypeValue, string> = {
-  [ActivityType.Email]: '#1890ff',
-  [ActivityType.PhoneCall]: '#52c41a',
-  [ActivityType.Task]: '#faad14',
-  [ActivityType.Appointment]: '#722ed1',
-};
-
-const ActivityStatusColors: Record<ActivityStatusValue, string> = {
-  [ActivityStatus.NotStarted]: 'default',
-  [ActivityStatus.InProgress]: 'processing',
-  [ActivityStatus.Completed]: 'success',
-  [ActivityStatus.Cancelled]: 'error',
-  [ActivityStatus.Scheduled]: 'purple',
-  [ActivityStatus.WaitingOnSomeone]: 'warning',
-  [ActivityStatus.Deferred]: 'orange',
-};
-
-const ActivityPriorityColors: Record<ActivityPriorityValue, string> = {
-  [ActivityPriority.Low]: 'cyan',
-  [ActivityPriority.Normal]: 'blue',
-  [ActivityPriority.High]: 'red',
-};
-
-const CallDirectionColors: Record<CallDirectionValue, string> = {
-  [CallDirection.Incoming]: 'green',
-  [CallDirection.Outgoing]: 'blue',
-};
-
-// ==================== HELPER FUNCTIONS ====================
-
-export const getActivityTypeLabel = (type: ActivityTypeValue): string => {
-  return ActivityTypeLabels[type] ?? 'Bilinmiyor';
-};
-
-export const getActivityStatusLabel = (status: ActivityStatusValue): string => {
-  return ActivityStatusLabels[status] ?? 'Bilinmiyor';
-};
-
-export const getActivityPriorityLabel = (priority: ActivityPriorityValue): string => {
-  return ActivityPriorityLabels[priority] ?? 'Bilinmiyor';
-};
-
-export const getActivityPartyTypeLabel = (partyType: ActivityPartyTypeValue): string => {
-  return ActivityPartyTypeLabels[partyType] ?? 'Bilinmiyor';
-};
-
-export const getActivityParticipantTypeLabel = (participantType: ActivityParticipantTypeValue): string => {
-  return ActivityParticipantTypeLabels[participantType] ?? 'Bilinmiyor';
-};
-
-export const getCallDirectionLabel = (direction: CallDirectionValue): string => {
-  return CallDirectionLabels[direction] ?? 'Bilinmiyor';
-};
-
-export const getActivityTypeColor = (type: ActivityTypeValue): string => {
-  return ActivityTypeColors[type] ?? '#d9d9d9';
-};
-
-export const getActivityStatusColor = (status: ActivityStatusValue): string => {
-  return ActivityStatusColors[status] ?? 'default';
-};
-
-export const getActivityPriorityColor = (priority: ActivityPriorityValue): string => {
-  return ActivityPriorityColors[priority] ?? 'default';
-};
-
-export const getCallDirectionColor = (direction: CallDirectionValue): string => {
-  return CallDirectionColors[direction] ?? 'default';
-};
-
-// ==================== SELECT OPTIONS ====================
-
-export const activityTypeOptions = Object.entries(ActivityType).map(([, value]) => ({
-  label: ActivityTypeLabels[value as ActivityTypeValue],
-  value: value,
+export const activityStatusFilters = activityStatusOptions.map((opt) => ({
+  text: opt.label,
+  value: opt.value,
 }));
 
-export const activityStatusOptions = Object.entries(ActivityStatus).map(([, value]) => ({
-  label: ActivityStatusLabels[value as ActivityStatusValue],
-  value: value,
+export const activityTypeFilters = activityTypeOptions.map((opt) => ({
+  text: opt.label,
+  value: opt.value,
 }));
 
-export const activityPriorityOptions = Object.entries(ActivityPriority).map(([, value]) => ({
-  label: ActivityPriorityLabels[value as ActivityPriorityValue],
-  value: value,
-}));
-
-export const activityPartyTypeOptions = Object.entries(ActivityPartyType).map(([, value]) => ({
-  label: ActivityPartyTypeLabels[value as ActivityPartyTypeValue],
-  value: value,
-}));
-
-export const activityParticipantTypeOptions = Object.entries(ActivityParticipantType).map(([, value]) => ({
-  label: ActivityParticipantTypeLabels[value as ActivityParticipantTypeValue],
-  value: value,
-}));
-
-export const callDirectionOptions = Object.entries(CallDirection).map(([, value]) => ({
-  label: CallDirectionLabels[value as CallDirectionValue],
-  value: value,
-}));
-
-// ==================== TABLE FILTER OPTIONS ====================
-
-export const activityTypeFilters = Object.entries(ActivityType).map(([, value]) => ({
-  text: ActivityTypeLabels[value as ActivityTypeValue],
-  value: value,
-}));
-
-export const activityStatusFilters = Object.entries(ActivityStatus).map(([, value]) => ({
-  text: ActivityStatusLabels[value as ActivityStatusValue],
-  value: value,
-}));
-
-export const activityPriorityFilters = Object.entries(ActivityPriority).map(([, value]) => ({
-  text: ActivityPriorityLabels[value as ActivityPriorityValue],
-  value: value,
-}));
-
-export const callDirectionFilters = Object.entries(CallDirection).map(([, value]) => ({
-  text: CallDirectionLabels[value as CallDirectionValue],
-  value: value,
+export const activityPriorityFilters = activityPriorityOptions.map((opt) => ({
+  text: opt.label,
+  value: opt.value,
 }));
