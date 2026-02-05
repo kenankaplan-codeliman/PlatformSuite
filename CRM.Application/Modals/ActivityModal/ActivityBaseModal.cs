@@ -18,9 +18,15 @@ namespace CRM.Application.Modals.ActivityModal
         public ActivityType ActivityType { get; private set; }
         public ActivityStatus Status { get; set; }
         public ActivityPriority Priority { get; set; }
+        
+        public DateTime? StartDate { get; set; }
         public DateTime? DueDate { get; set; }
-        public string? RegardingEntityType { get; set; }
-        public string? RegardingEntityId { get; set; }
+
+        public DateTime? CompletedDate { get; set; }
+
+
+        public EntityType? RegardingEntityType { get; set; }
+        public Guid? RegardingEntityId { get; set; }
         public string? OwnerId { get; set; }
         public bool IsActive { get; set; }
         public DateTime? CreatedAt { get; set; }

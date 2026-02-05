@@ -1,8 +1,9 @@
-﻿using CRM.Application.Authentication.Interfaces;
+﻿
+using CRM.Application.Interfaces;
 using CRM.Domain.Entities.Common;
 using CRM.Domain.Entities.Identity;
 using CRM.Domain.Enums;
-using CRM.Infrastructure.Model;
+
 using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
@@ -15,7 +16,8 @@ public static class ConfigureGlobalFilter
 {
     public static void SetGlobalFilter(
         this ModelBuilder modelBuilder,
-        ICurrentUserContext currentUserContext)
+        IContextUser contextUser,
+        IContextAuthorization contextAuthorization)
     {
         foreach (var entity in modelBuilder.Model.GetEntityTypes())
         {
@@ -40,7 +42,7 @@ public static class ConfigureGlobalFilter
                         BindingFlags.NonPublic | BindingFlags.Static)!
                     .MakeGenericMethod(entity.ClrType);
 
-                method.Invoke(null, new object[] { modelBuilder, currentUserContext });
+                method.Invoke(null, new object[] { modelBuilder, contextUser, contextAuthorization });
             }
         }
     }
@@ -57,15 +59,16 @@ public static class ConfigureGlobalFilter
 
     private static void ApplyOwnedEntityFilter<TEntity>(
         ModelBuilder builder,
-        ICurrentUserContext currentUserContext)
+        IContextUser currentUserContext,
+        IContextAuthorization contextAuthorization)
         where TEntity : class, IOwnedEntity
     {
-        if (currentUserContext.AccessLevel == AccessLevel.User)
+        if (contextAuthorization.AccessLevel == AccessLevel.User)
         {
             builder.Entity<TEntity>()
                 .HasQueryFilter(e => e.OwnerId == currentUserContext.UserId);
         }
-        else if (currentUserContext.AccessLevel == AccessLevel.Organization)
+        else if (contextAuthorization.AccessLevel == AccessLevel.Organization)
         {
             builder.Entity<TEntity>()
                 .HasQueryFilter(e =>

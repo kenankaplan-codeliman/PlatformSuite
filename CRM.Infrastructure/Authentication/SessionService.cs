@@ -1,12 +1,9 @@
-﻿using Azure.Core;
-using CRM.Application.Authentication.Interfaces;
-using CRM.Application.Exceptions;
+﻿using CRM.Application.Exceptions;
 using CRM.Application.Interfaces;
 using CRM.Application.Modals;
 using CRM.Domain.Entities.Identity;
 using CRM.Domain.Enums;
 using CRM.Infrastructure.Data;
-using CRM.Infrastructure.Model;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 
@@ -47,7 +44,7 @@ namespace CRM.Infrastructure.Authentication
             this.dbContext = dbContext;
         }
 
-        public async Task<AuthenticationToken> CreateSessionAsync(AppUser user, ClientInfo? clientInfo = null)
+        public AuthenticationToken CreateSession(AppUser user, ClientInfo? clientInfo = null)
         {
             string accessTokenId = generateTokenId();
             DateTime accessTokenExp = getAccessTokenExpire();
@@ -78,31 +75,33 @@ namespace CRM.Infrastructure.Authentication
 
             dbContext.AppLogin.Add(loginHistory);
 
-            var orgIds = await organizationRepository.GetOrganizationHierarchy(user.OrganizationId);
+            var orgMap = organizationRepository.GetOrganizationHierarchy(user.OrganizationId);
+            var usrPrivileges = userRepository.GetPrivileges(user.Id);
 
-            var currentUserContext = new CurrentUserContext()
+            var userContext = new ContextUser()
             {
                 UserId = user.Id,
                 Email = user.Email,
                 DisplayName = $"{user.FirstName} {user.LastName}",
                 OrganizationId = user.OrganizationId,
-                AccessLevel = AccessLevel.None,
-                AccessibleOrganizationList = orgIds
+                OrganizationName = orgMap[user.OrganizationId],
+                AccessibleOrganizationList = orgMap.Keys.ToList(),
+                PrivilegesCodes = usrPrivileges
             };
 
-            await SetSessionUser(accessTokenId, currentUserContext, authenticationToken.RefreshTokenExpiration);
+            SetSessionUser(accessTokenId, userContext, authenticationToken.RefreshTokenExpiration);
 
             return authenticationToken;
 
         }
 
-        public async Task<AuthenticationToken> RefreshSessionAsync(string refreshToken, ClientInfo? clientInfo)
+        public AuthenticationToken RefreshSession(string refreshToken, ClientInfo? clientInfo)
         {
 
             string refreshTokenId = tokenService.ValidateAccessToken(refreshToken);
 
 
-            var appLogin = await dbContext.AppLogin.FirstOrDefaultAsync(lh => lh.RefreshTokenId == refreshTokenId && lh.IsActive);
+            var appLogin = dbContext.AppLogin.FirstOrDefault(lh => lh.RefreshTokenId == refreshTokenId && lh.IsActive);
 
             if (appLogin == null)
                 throw new UnAuthenticatedException("User Login not fount.");
@@ -116,12 +115,12 @@ namespace CRM.Infrastructure.Authentication
 
             //Renew Session Value
 
-            ICurrentUserContext? currentUserContext = await GetSessionUser(appLogin.AccessTokenId);
+            IContextUser? currentUserContext = GetSessionUser(appLogin.AccessTokenId);
 
-            if (currentUserContext is CurrentUserContext user)
+            if (currentUserContext is ContextUser user)
             {
-                await SetSessionUser(newAccessTokenId, user, appLogin.RefreshTokenExpiresAt);
-                await RemoveSessionUser(appLogin.AccessTokenId);
+                SetSessionUser(newAccessTokenId, user, appLogin.RefreshTokenExpiresAt);
+                RemoveSessionUser(appLogin.AccessTokenId);
             }
             else
             {
@@ -142,13 +141,13 @@ namespace CRM.Infrastructure.Authentication
             return authenticationToken;
         }
 
-        public async Task RevokeSessionAsync(string accessToken, ClientInfo? clientInfo)
+        public void RevokeSession(string accessToken, ClientInfo? clientInfo)
         {
             string accessTokenId = tokenService.ValidateAccessToken(accessToken, false);
 
-            await RemoveSessionUser(accessTokenId);
+            RemoveSessionUser(accessTokenId);
 
-            var appLogin = await dbContext.AppLogin.FirstOrDefaultAsync(lh => lh.AccessTokenId == accessTokenId && lh.IsActive);
+            var appLogin = dbContext.AppLogin.FirstOrDefault(lh => lh.AccessTokenId == accessTokenId && lh.IsActive);
 
             if (appLogin != null)
             {
@@ -158,11 +157,16 @@ namespace CRM.Infrastructure.Authentication
             }
         }
 
-        public async Task<List<SessionInfo>> GetUserActiveSessionsAsync(Guid userId)
+        public IContextUser? GetSessionUser(string accessTokenId)
+        {
+            var cacheKey = generateKey(accessTokenId);
+            return cache.Get<IContextUser>(cacheKey);
+        }
+        public List<SessionInfo> GetUserActiveSessions(Guid userId)
         {
 
             // DB'den kullanıcının tüm aktif session'larını al
-            var sessions = await dbContext.AppLogin
+            var sessions = dbContext.AppLogin.AsNoTracking()
                    .Where(lh => lh.UserId == userId && lh.IsActive)
                    .Select(lh => new SessionInfo()
                    {
@@ -174,41 +178,41 @@ namespace CRM.Infrastructure.Authentication
                        RefreshTokenExpiresAt = lh.RefreshTokenExpiresAt
 
                    })
-                   .ToListAsync();
+                   .ToList();
 
             return sessions;
         }
 
-        public async Task<ICurrentUserContext?> GetSessionUser(string accessTokenId)
+
+
+        private void SetSessionUser(string accessTokenId, IContextUser currentUserContext, DateTime expiration)
         {
             var cacheKey = generateKey(accessTokenId);
-            return await cache.GetAsync<CurrentUserContext>(cacheKey);
+            cache.Set(cacheKey, currentUserContext, expiration);
         }
 
-        private async Task SetSessionUser(string accessTokenId, CurrentUserContext currentUserContext, DateTime expiration)
+        private void RemoveSessionUser(string accessTokenId)
         {
             var cacheKey = generateKey(accessTokenId);
-            await cache.SetAsync(cacheKey, currentUserContext, expiration);
-        }
-
-        private async Task RemoveSessionUser(string accessTokenId)
-        {
-            var cacheKey = generateKey(accessTokenId);
-            await cache.RemoveAsync(cacheKey);
+            cache.Remove(cacheKey);
         }
 
 
-        public async Task RevokeAllUserSessionsAsync(Guid userId)
+        public void RevokeAllUserSessions(Guid userId)
         {
-            List<SessionInfo> sessions = await GetUserActiveSessionsAsync(userId);
+            List<SessionInfo> sessions = GetUserActiveSessions(userId);
 
-            var cacheKeys = sessions.Select(session => generateKey(session.AccessTokenId)).ToList();
-            await cache.RemoveAsync(cacheKeys);
+            var sessionKeys = sessions.Select(session => generateKey(session.AccessTokenId)).ToList();
+
+            foreach (var sessionkey in sessionKeys)
+            {
+                cache.Remove(sessionkey);
+            }
 
             // DB update
-            await dbContext.AppLogin
+            dbContext.AppLogin
                 .Where(lh => lh.UserId == userId && lh.IsActive)
-                .ExecuteUpdateAsync(s => s
+                .ExecuteUpdate(s => s
                     .SetProperty(lh => lh.IsActive, false)
                     .SetProperty(lh => lh.LogoutDate, DateTime.UtcNow));
         }
@@ -233,5 +237,9 @@ namespace CRM.Infrastructure.Authentication
             return DateTime.Now.AddMinutes(int.Parse(config["Jwt:AccessExpireMin"]!));
         }
 
+        public void RevokeSessionAsync(string accessToken, ClientInfo? clientInfo)
+        {
+            throw new NotImplementedException();
+        }
     }
 }

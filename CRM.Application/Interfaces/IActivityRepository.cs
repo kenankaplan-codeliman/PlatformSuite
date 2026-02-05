@@ -10,6 +10,9 @@ namespace CRM.Application.Interfaces
 {
     public interface IActivityRepository
     {
-        Task<PaginationResult<ActivityBaseModal>> ListAsync(ActivityListFilters? filter, PaginationInfo? paginationInfo);
+        PaginationResult<ActivityBaseModal> List(ActivityListFilters? filter, PaginationInfo? paginationInfo);
+
+        AppointmentActivityModal CreateAppointment(ActivityListFilters? filter, PaginationInfo? paginationInfo);
+
     }
 }

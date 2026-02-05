@@ -33,7 +33,15 @@ public class EmailActivity : ActivityBase
     /// <summary>
     /// Gönderilme tarihi
     /// </summary>
-    public DateTime? SentDate { get; set; }
+    public virtual DateTime? SentDate 
+    {
+        get {
+            return base.CompletedDate;
+        }
+        set { 
+            base.CompletedDate = value; 
+        } 
+    }
 
     /// <summary>
     /// E-posta gönderildi mi?

@@ -9,11 +9,9 @@ namespace CRM.Application.Interfaces
 {
     public interface IUserRepository : IEntityRepository<AppUser>
     {
-        Task<AppUser?> GetByEmailAsync(string email);
-        Task<AppUser?> GetByAzureUserIdAsync(string microsoft365Id);
-        Task<Dictionary<string, AccessLevel>> GetPrivileges(Guid userId);
-        Task<AccessLevel> GetAccessLevel(Guid userId, string privilegeCode);
-
-        Task<PaginationResult<EntityReference>> Search(string searchText, PaginationInfo? paginationInfo);
+        AppUser? GetByEmail(string email);
+        AppUser? GetByAzureUserId(string microsoftAzureUserId);
+        Dictionary<string, AccessLevel> GetPrivileges(Guid userId);
+        PaginationResult<EntityReference> Search(string searchText, PaginationInfo? paginationInfo);
     }
 }

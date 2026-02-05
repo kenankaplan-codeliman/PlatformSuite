@@ -19,12 +19,6 @@ public static class ActivityEntities
             entity.HasKey(e => e.Id);
             entity.Property(e => e.Id).HasColumnName("id");
 
-            entity.Property(e => e.ActivityId)
-                .HasColumnName("activity_id")
-                .IsRequired();
-
-            entity.HasIndex(e => e.ActivityId).IsUnique();
-
             entity.Property(e => e.Subject)
                 .HasColumnName("subject")
                 .HasMaxLength(200)
@@ -47,6 +41,9 @@ public static class ActivityEntities
                 .HasMaxLength(10)
                 .IsRequired()
                 .HasConversion<EnumToStringConverter<ActivityPriority>>();
+
+            entity.Property(e => e.StartDate)
+                .HasColumnName("start_date");
 
             entity.Property(e => e.DueDate)
                 .HasColumnName("due_date");
@@ -183,9 +180,6 @@ public static class ActivityEntities
                 .HasColumnName("is_html")
                 .IsRequired();
 
-            entity.Property(e => e.SentDate)
-                .HasColumnName("sent_date");
-
             entity.Property(e => e.IsSent)
                 .HasColumnName("is_sent")
                 .IsRequired();
@@ -215,12 +209,6 @@ public static class ActivityEntities
                 .HasColumnName("phone_number")
                 .HasMaxLength(50);
 
-            entity.Property(e => e.StartedAt)
-                .HasColumnName("started_at");
-
-            entity.Property(e => e.EndedAt)
-                .HasColumnName("ended_at");
-
             entity.Property(e => e.RecordingUrl)
                 .HasColumnName("recording_url")
                 .HasMaxLength(500);
@@ -248,9 +236,6 @@ public static class ActivityEntities
             entity.Property(e => e.IsCompleted)
                 .HasColumnName("is_completed")
                 .IsRequired();
-
-            entity.Property(e => e.TaskCompletedAt)
-                .HasColumnName("task_completed_at");
 
             entity.Property(e => e.ReminderAt)
                 .HasColumnName("reminder_at");
@@ -289,14 +274,6 @@ public static class ActivityEntities
             entity.Property(e => e.MeetingUrl)
                 .HasColumnName("meeting_url")
                 .HasMaxLength(500);
-
-            entity.Property(e => e.StartTime)
-                .HasColumnName("start_time")
-                .IsRequired();
-
-            entity.Property(e => e.EndTime)
-                .HasColumnName("end_time")
-                .IsRequired();
 
             entity.Property(e => e.IsAllDay)
                 .HasColumnName("is_all_day")

@@ -8,16 +8,13 @@ namespace CRM.Application.Interfaces
 {
     public interface IRoleRepository : IEntityRepository<AppRole>
     {
-        Task<AppRole?> GetDefaultRoleAsync();
+        AppRole? GetDefaultRole();
 
         //User Role
-        Task<List<AppRole>> GetUserRoleAsync(Guid userId);
-        Task AddUserRoleAsync(Guid userId, List<Guid> roleIds);
-        Task RemoveUserRoleAsync(Guid userId, Guid roleId);
-
+        List<AppRole> GetUserRole(Guid userId);
         //Role Privileges
-        Task<List<AppPrivilege>> GetRolePrivilegesAsync(Guid roleId);
-        Task AddRolePrivilegesAsync(Guid roleId, Guid privilegesId, AccessLevel accessLevel);
-        Task RemoveRolePrivilegesAsync(Guid roleId, Guid privilegesId);
+
+        void AddUserRole(Guid userId, List<Guid> roleIds);
+       
     }
 }

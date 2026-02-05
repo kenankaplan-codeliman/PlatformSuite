@@ -47,6 +47,7 @@ public class ActivityCommandHandler
 
     public async Task<AppointmentActivityModal> ReadAppointment(Guid Id)
     {
+        
         return new AppointmentActivityModal();
     }
     

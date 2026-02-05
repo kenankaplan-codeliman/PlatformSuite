@@ -10,8 +10,8 @@ namespace CRM.Application.Interfaces
 {
     public interface ILeadRepository : IEntityRepository<Lead>
     {
-        Task<PaginationResult<Lead>> ListAsync(LeadListFilter? filter, PaginationInfo? paginationInfo);
+        PaginationResult<Lead> List(LeadListFilter? filter, PaginationInfo? paginationInfo);
 
-        Task<PaginationResult<EntityReference>> Search(string searchText, PaginationInfo? paginationInfo);
+        PaginationResult<EntityReference> Search(string searchText, PaginationInfo? paginationInfo);
     }
 }

@@ -40,9 +40,6 @@ const activityGetEndpointMap: Record<ActivityTypeValue, string> = {
 };
 
 
-
-
-
 export const activityService = {
   // Get paginated list of activities with optional filters
   getActivities: async (

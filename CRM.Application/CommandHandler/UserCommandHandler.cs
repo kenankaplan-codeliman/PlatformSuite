@@ -20,7 +20,7 @@ namespace CRM.Application.CommandHandler
 
         public async Task<SearchListResponse> Search(string searchText, PaginationInfo? paginationInfo)
         {
-            var result = await userRepository.Search(searchText, paginationInfo);
+            var result = userRepository.Search(searchText, paginationInfo);
 
             return new SearchListResponse()
             {

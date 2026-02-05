@@ -3,7 +3,7 @@ using CRM.Api.Contracts.Requests.Common;
 using CRM.Api.Contracts.Requests.Lead;
 using CRM.Api.Contracts.Responses;
 using CRM.Api.Extensions;
-using CRM.Application.Authentication.Interfaces;
+
 using CRM.Application.CommandHandler;
 using CRM.Application.Exceptions;
 using CRM.Application.Modals;

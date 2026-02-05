@@ -17,9 +17,16 @@ namespace CRM.Infrastructure.Repositories
             this.dbContext = dbContext;
         }
 
-        public Task<PaginationResult<ActivityBaseModal>> ListAsync(ActivityListFilters? filter, PaginationInfo? paginationInfo)
+        public AppointmentActivityModal CreateAppointment(ActivityListFilters? filter, PaginationInfo? paginationInfo)
         {
             throw new NotImplementedException();
         }
+
+        public PaginationResult<ActivityBaseModal> List(ActivityListFilters? filter, PaginationInfo? paginationInfo)
+        {
+            throw new NotImplementedException();
+        }
+
+
     }
 }

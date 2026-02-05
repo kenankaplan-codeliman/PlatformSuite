@@ -10,9 +10,9 @@ namespace CRM.Infrastructure.Data
     {
       
 
-        public static async Task CreateAdminUser(DatabaseContext dbContext, Guid defOrganizationId, Guid defaultAdminRoleId)
+        public static void CreateAdminUser(DatabaseContext dbContext, Guid defOrganizationId, Guid defaultAdminRoleId)
         {
-            if (await dbContext.AppUser.AnyAsync())
+            if (dbContext.AppUser.Any())
                 return;
 
             var adminUser = new AppUser
@@ -24,24 +24,24 @@ namespace CRM.Infrastructure.Data
                 PasswordHash = BCrypt.Net.BCrypt.HashPassword("admin")
             };
 
-            await dbContext.AppUser.AddAsync(adminUser);
+            dbContext.AppUser.Add(adminUser);
 
-            await dbContext.AppUserRole.AddAsync(new AppUserRole()
+            dbContext.AppUserRole.Add(new AppUserRole()
             {
                 UserId = adminUser.Id,
                 RoleId = defaultAdminRoleId 
             });
 
-            await dbContext.SaveChangesAsync();
+            dbContext.SaveChanges();
         }
 
-        public static async Task<Guid> validateRole(DatabaseContext dbContext, string roleName, AccessLevel accessLevel, bool isDefault = false)
+        public static Guid validateRole(DatabaseContext dbContext, string roleName, AccessLevel accessLevel, bool isDefault = false)
         {
-            var roleId = await dbContext.AppRole.IgnoreQueryFilters()
+            var roleId = dbContext.AppRole.IgnoreQueryFilters()
                                     .AsNoTracking()
                                     .Where(o => o.IsActive && o.RoleName == roleName)
                                     .Select(o => o.Id)
-                                    .FirstOrDefaultAsync();
+                                    .FirstOrDefault();
 
             if (Guid.Empty.Equals(roleId))
             {
@@ -52,18 +52,18 @@ namespace CRM.Infrastructure.Data
                     IsDefault = isDefault,
                 };
 
-                await dbContext.AppRole.AddAsync(role);
+                dbContext.AppRole.Add(role);
                 roleId = role.Id;
             }
 
-            await createRolePrivileges(dbContext, roleId, accessLevel);
+            createRolePrivileges(dbContext, roleId, accessLevel);
 
-            await dbContext.SaveChangesAsync();
+            dbContext.SaveChanges();
 
             return roleId;
         }
 
-        private async static Task createRolePrivileges(DatabaseContext dbContext, Guid roleId, AccessLevel accessLevel) {
+        private async static void createRolePrivileges(DatabaseContext dbContext, Guid roleId, AccessLevel accessLevel) {
 
             //Temnplate Role Privileges from Constants
             var temlateRolePrivileges = PrivilegeRegistry.All.Select(privCode => new AppRolePrivilege()
@@ -74,15 +74,15 @@ namespace CRM.Infrastructure.Data
             }).ToList();
 
             //Exist Role Privileges
-            var existPrivCodes = await dbContext.AppRolePrivilege.Where(rp => rp.RoleId == roleId).Select(rp => rp.PrivilegeCode).ToListAsync();
+            var existPrivCodes = dbContext.AppRolePrivilege.Where(rp => rp.RoleId == roleId).Select(rp => rp.PrivilegeCode).ToList();
 
 
             var notExistsRolePrivileges = temlateRolePrivileges.Where(rp => !existPrivCodes.Contains(rp.PrivilegeCode)).ToList();
 
-            await dbContext.AddRangeAsync(notExistsRolePrivileges);
+            dbContext.AddRange(notExistsRolePrivileges);
         }
 
-        public async static Task validatePrivileges(DatabaseContext dbContext)
+        public async static void validatePrivileges(DatabaseContext dbContext)
         {
 
             //Temnplate Role Privileges from Constants
@@ -94,23 +94,23 @@ namespace CRM.Infrastructure.Data
             }).ToList();
 
             //Exist Role Privileges
-            var existPrivCodes = await dbContext.AppPrivilege.Select(p=> p.PrivilegeCode).ToListAsync();
+            var existPrivCodes = dbContext.AppPrivilege.Select(p=> p.PrivilegeCode).ToList();
 
 
             var notExistsRolePrivileges = temlateRolePrivileges.Where(rp => !existPrivCodes.Contains(rp.PrivilegeCode)).ToList();
 
-            await dbContext.AddRangeAsync(notExistsRolePrivileges);
-            await dbContext.SaveChangesAsync();
+            dbContext.AddRange(notExistsRolePrivileges);
+            dbContext.SaveChanges();
         }
 
 
-        public static async Task<Guid> validateDefaultOrganization(DatabaseContext dbContext)
+        public static Guid validateDefaultOrganization(DatabaseContext dbContext)
         {
-            var defOrganizationId = await dbContext.AppOrganization.IgnoreQueryFilters()
+            var defOrganizationId = dbContext.AppOrganization.IgnoreQueryFilters()
                                 .AsNoTracking()
                                 .Where(o => o.IsActive && !o.IsDeleted && o.IsDefault)
                                 .Select(o => o.Id)
-                                .FirstOrDefaultAsync();
+                                .FirstOrDefault();
 
             if (Guid.Empty.Equals(defOrganizationId))
             {
@@ -122,8 +122,8 @@ namespace CRM.Infrastructure.Data
                     IsDefault = true
                 };
 
-                await dbContext.AppOrganization.AddAsync(organization);
-                await dbContext.SaveChangesAsync();
+                dbContext.AppOrganization.Add(organization);
+                dbContext.SaveChanges();
 
                 defOrganizationId = organization.Id;
             }

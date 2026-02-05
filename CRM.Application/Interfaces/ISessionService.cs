@@ -1,5 +1,4 @@
-﻿using CRM.Application.Authentication.Interfaces;
-using CRM.Application.Modals;
+﻿using CRM.Application.Modals;
 using CRM.Domain.Entities.Identity;
 using System;
 using System.Collections.Generic;
@@ -9,14 +8,14 @@ namespace CRM.Application.Interfaces
 {
     public interface ISessionService
     {
-        Task<AuthenticationToken> CreateSessionAsync(AppUser user, ClientInfo? clientInfo = null);
-        Task<AuthenticationToken> RefreshSessionAsync(string refreshToken, ClientInfo? clientInfo);
-        Task RevokeSessionAsync(string accessToken, ClientInfo? clientInfo);
+        AuthenticationToken CreateSession(AppUser user, ClientInfo? clientInfo = null);
+        AuthenticationToken RefreshSession(string refreshToken, ClientInfo? clientInfo);
+        void RevokeSessionAsync(string accessToken, ClientInfo? clientInfo);
 
-        Task<ICurrentUserContext?> GetSessionUser(string accessToken);
+        IContextUser? GetSessionUser(string accessToken);
 
         
-        Task RevokeAllUserSessionsAsync(Guid userId);
-        Task<List<SessionInfo>> GetUserActiveSessionsAsync(Guid userId);
+        void RevokeAllUserSessions(Guid userId);
+        List<SessionInfo> GetUserActiveSessions(Guid userId);
     }
 }

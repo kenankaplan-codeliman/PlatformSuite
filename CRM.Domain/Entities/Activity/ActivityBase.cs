@@ -17,16 +17,10 @@ public abstract class ActivityBase : IBaseEntity, ISoftDeleteEntity, IAuditableE
 
 
     #region IBaseEntity
-    public Guid Id { get; set; }
+    public Guid Id { get; set; } = Guid.NewGuid();
     public bool IsActive { get; set; } = true;
     #endregion
-
-    #region Domain Identity
-    /// <summary>
-    /// Domain-level identifier - Entegrasyon ve audit amaçlı immutable domain kimliği
-    /// </summary>
-    public Guid ActivityId { get; private set; } = Guid.NewGuid();
-    #endregion
+    
 
     #region Core Activity Properties
     /// <summary>
@@ -50,6 +44,11 @@ public abstract class ActivityBase : IBaseEntity, ISoftDeleteEntity, IAuditableE
     public ActivityPriority Priority { get; set; } = ActivityPriority.Normal;
 
     /// <summary>
+    /// Baslangic tarihi
+    /// </summary>
+    public DateTime? StartDate { get; set; }
+
+    /// <summary>
     /// Planlanan bitiş tarihi
     /// </summary>
     public DateTime? DueDate { get; set; }
@@ -70,7 +69,7 @@ public abstract class ActivityBase : IBaseEntity, ISoftDeleteEntity, IAuditableE
     /// <summary>
     /// İlgili entity tipi (Lead, Account, Contact, Opportunity vb.)
     /// </summary>
-    public string? RegardingEntityType { get; set; }
+    public EntityType? RegardingEntityType { get; set; }
 
     /// <summary>
     /// İlgili entity ID
@@ -114,14 +113,6 @@ public abstract class ActivityBase : IBaseEntity, ISoftDeleteEntity, IAuditableE
         Status = ActivityStatus.Cancelled;
     }
 
-    /// <summary>
-    /// İlgili entity'yi ayarla
-    /// </summary>
-    public void SetRegardingEntity(string entityType, Guid entityId)
-    {
-        RegardingEntityType = entityType;
-        RegardingEntityId = entityId;
-    }
     #endregion
 
     #region Navigation Properties

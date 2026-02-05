@@ -1,8 +1,9 @@
-using CRM.Application.Authentication.Interfaces;
+
 using CRM.Application.Interfaces;
+using CRM.Application.Modals;
 using CRM.Domain.Enums;
 using CRM.Infrastructure.Authentication;
-using CRM.Infrastructure.Model;
+
 using CRM.Infrastructure.Repositories;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.Extensions.Caching.Memory;
@@ -47,7 +48,7 @@ public static class AuthenticationConfiguration
                     OnTokenValidated = async context =>
                     {
                         var sessionService = context.HttpContext.RequestServices.GetRequiredService<ISessionService>();
-                        var currentUserContext = context.HttpContext.RequestServices.GetRequiredService<ICurrentUserContext>();
+                        var currentUserContext = context.HttpContext.RequestServices.GetRequiredService<IContextUser>();
 
                         var accessTokenId = context.Principal?.FindFirst(TokenKeys.sub)?.Value;
 
@@ -57,23 +58,24 @@ public static class AuthenticationConfiguration
                             return;
                         }
 
-                        var currentUserContextCached = await sessionService.GetSessionUser(accessTokenId);
+                        var cachedSessionUser = sessionService.GetSessionUser(accessTokenId);
 
-                        if (currentUserContextCached == null)
+                        if (cachedSessionUser == null)
                         {
                             context.Fail("Session not found");
                             return;
                         }
 
-                        if (currentUserContext is CurrentUserContext user)
+                        if (currentUserContext is ContextUser user)
                         {
-                            user.UserId = currentUserContextCached.UserId;
-                            user.Email = currentUserContextCached.Email;
-                            user.DisplayName = currentUserContextCached.DisplayName;
-                            user.OrganizationId = currentUserContextCached.OrganizationId;
-                            user.AccessLevel = currentUserContextCached.AccessLevel;
-                            user.AccessibleOrganizationList = currentUserContextCached.AccessibleOrganizationList;
-                        }
+                            user.UserId = cachedSessionUser.UserId;
+                            user.Email = cachedSessionUser.Email;
+                            user.DisplayName = cachedSessionUser.DisplayName;
+                            user.OrganizationId = cachedSessionUser.OrganizationId;
+                            user.OrganizationName = cachedSessionUser.OrganizationName;
+                            user.AccessibleOrganizationList = cachedSessionUser.AccessibleOrganizationList;
+                            user.PrivilegesCodes = cachedSessionUser.PrivilegesCodes;
+}
                         else
                         {
                             context.Fail("Session is not valid");

@@ -1,4 +1,5 @@
 ﻿using Azure;
+using CRM.Application.Exceptions;
 using CRM.Application.Interfaces;
 using CRM.Application.Modals.Common;
 using CRM.Application.Modals.LeadModal;
@@ -27,31 +28,31 @@ namespace CRM.Infrastructure.Repositories
             this._config = _config;
         }
 
-        public async Task<Lead> CreateAsync(Lead entity)
+        public Lead Create(Lead entity)
         {
             var entry = this.dbContext.Lead.Add(entity);
             return entry.Entity;
         }
 
-        public async Task<Lead> UpdateAsync(Lead entity)
+        public Lead Update(Lead entity)
         {
             var entry = this.dbContext.Lead.Update(entity);
             return entry.Entity;
         }
 
-        public async Task<Lead> DeleteAsync(Lead entity)
+        public Lead Delete(Lead entity)
         {
             var entry = this.dbContext.Lead.Remove(entity);
             return entry.Entity;
         }
 
-        public async Task<Lead?> GetAsync(Guid Id)
+        public Lead? Get(Guid Id)
         {
-            var entity = await this.dbContext.Lead.FirstOrDefaultAsync(e => e.Id == Id);
+            var entity = this.dbContext.Lead.FirstOrDefault(e => e.Id == Id) ?? throw new NotFoundException();
             return entity;
         }
 
-        public async Task<PaginationResult<Lead>> ListAsync(LeadListFilter? filter, PaginationInfo? paginationInfo)
+        public PaginationResult<Lead> List(LeadListFilter? filter, PaginationInfo? paginationInfo)
         {
 
             var query = this.dbContext.Lead.AsNoTracking();
@@ -123,7 +124,7 @@ namespace CRM.Infrastructure.Repositories
 
         }
 
-        public async Task<PaginationResult<EntityReference>> Search(string searchText, PaginationInfo? paginationInfo)
+        public PaginationResult<EntityReference> Search(string searchText, PaginationInfo? paginationInfo)
         {
 
             if (string.IsNullOrEmpty(searchText))

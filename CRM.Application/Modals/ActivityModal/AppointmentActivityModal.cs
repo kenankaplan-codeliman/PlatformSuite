@@ -1,15 +1,18 @@
-﻿using CRM.Application.Modals.Common;
+﻿using CRM.Application.Exceptions;
+using CRM.Application.Modals.Common;
 using CRM.Domain.Entities.Activity;
 using CRM.Domain.Enums;
 using System;
 using System.Collections.Generic;
+using System.Runtime.CompilerServices;
 using System.Text;
 
 namespace CRM.Application.Modals.ActivityModal
 {
     public class AppointmentActivityModal : ActivityBaseModal
     {
-        public AppointmentActivityModal() : base(ActivityType.Appointment) {
+        public AppointmentActivityModal() : base(ActivityType.Appointment)
+        {
         }
 
         // Organizatör - tek seçim

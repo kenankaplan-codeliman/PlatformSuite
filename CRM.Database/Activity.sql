@@ -12,15 +12,13 @@ CREATE TABLE IF NOT EXISTS activity (
     -- Primary Key
     id                      UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     
-    -- Domain Identity
-    activity_id             UUID NOT NULL UNIQUE DEFAULT gen_random_uuid(),
-    
     -- Core Activity Properties
     subject                 VARCHAR(200) NOT NULL,
     activity_type           VARCHAR(20) NOT NULL,  -- Email, PhoneCall, Task, Appointment
     status                  VARCHAR(20) NOT NULL DEFAULT 'NotStarted',  -- NotStarted, InProgress, Completed, Cancelled
     priority                VARCHAR(10) NOT NULL DEFAULT 'Normal',  -- Low, Normal, High
     
+    start_date              TIMESTAMPTZ,
     due_date                TIMESTAMPTZ,
     completed_date          TIMESTAMPTZ,
     duration                INTERVAL,
@@ -101,7 +99,6 @@ CREATE TABLE IF NOT EXISTS activity_email (
     email_subject           VARCHAR(500),
     body                    TEXT,
     is_html                 BOOLEAN NOT NULL DEFAULT TRUE,
-    sent_date               TIMESTAMPTZ,
     is_sent                 BOOLEAN NOT NULL DEFAULT FALSE,
     is_read                 BOOLEAN NOT NULL DEFAULT FALSE,
     read_date               TIMESTAMPTZ
@@ -120,8 +117,6 @@ CREATE TABLE IF NOT EXISTS activity_phone_call (
     -- Phone Call Properties
     call_direction          VARCHAR(10) NOT NULL,  -- Incoming, Outgoing
     phone_number            VARCHAR(50),
-    started_at              TIMESTAMPTZ,
-    ended_at                TIMESTAMPTZ,
     recording_url           VARCHAR(500),
     call_notes              TEXT,
     call_result             VARCHAR(100),
@@ -141,7 +136,6 @@ CREATE TABLE IF NOT EXISTS activity_task (
     -- Task Properties
     task_description        TEXT,
     is_completed            BOOLEAN NOT NULL DEFAULT FALSE,
-    task_completed_at       TIMESTAMPTZ,
     reminder_at             TIMESTAMPTZ,
     is_reminder_set         BOOLEAN NOT NULL DEFAULT FALSE,
     is_reminder_sent        BOOLEAN NOT NULL DEFAULT FALSE,

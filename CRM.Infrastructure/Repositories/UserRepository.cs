@@ -1,3 +1,4 @@
+using CRM.Application.Exceptions;
 using CRM.Application.Interfaces;
 using CRM.Application.Modals.Common;
 using CRM.Domain.Entities.Identity;
@@ -10,54 +11,58 @@ namespace CRM.Infrastructure.Repositories;
 
 public class UserRepository : IUserRepository
 {
-    private readonly IConfiguration _config;
     private readonly DatabaseContext dbContext;
+    private readonly IConfiguration configuration;
 
-    public UserRepository(DatabaseContext dbContext, IConfiguration _config)
+    public UserRepository(DatabaseContext dbContext, IConfiguration configuration)
     {
         this.dbContext = dbContext;
-        this._config = _config;
+        this.configuration = configuration;
     }
-
-    public async Task<AppUser?> GetAsync(Guid userId)
+    
+    public AppUser Get(Guid userId)
     {
-        return await dbContext.AppUser.FirstOrDefaultAsync(x => x.Id == userId);
+        var user = dbContext.AppUser.FirstOrDefault(x => x.Id == userId);
+        if (user == null)
+            throw new NotFoundException();
+
+        return user;
     }
 
-    public async Task<AppUser?> GetByEmailAsync(string email)
+    public AppUser? GetByEmail(string email)
     {
         if (email == null)
             throw new ArgumentNullException(nameof(email));
 
-        return await dbContext.AppUser.FirstOrDefaultAsync(x => x.Email.ToLower() == email.ToLower());
+        return dbContext.AppUser.FirstOrDefault(x => x.Email.ToLower() == email.ToLower());
     }
 
-    public async Task<AppUser?> GetByAzureUserIdAsync(string microsoft365Id)
+    public AppUser? GetByAzureUserId(string microsoft365Id)
     {
         if (microsoft365Id == null)
             throw new ArgumentNullException(nameof(microsoft365Id));
 
-        return await dbContext.AppUser.FirstOrDefaultAsync(x => x.Microsoft365Id == microsoft365Id);
+        return dbContext.AppUser.FirstOrDefault(x => x.Microsoft365Id == microsoft365Id);
     }
 
-    public async Task<AppUser> CreateAsync(AppUser user)
+    public AppUser Create(AppUser user)
     {
         var entry = dbContext.AppUser.Add(user);
         return entry.Entity;
     }
-    public async Task<AppUser> UpdateAsync(AppUser user)
+    public AppUser Update(AppUser user)
     {
         var entry = dbContext.AppUser.Update(user);
         return entry.Entity;
     }
 
-    public async Task<AppUser> DeleteAsync(AppUser user)
+    public AppUser Delete(AppUser user)
     {
         var entry = dbContext.Remove(user);
         return entry.Entity;
     }
 
-    public async Task<Dictionary<string, AccessLevel>> GetPrivileges(Guid userId)
+    public Dictionary<string, AccessLevel> GetPrivileges(Guid userId)
     {
 
         var query = from ur in dbContext.AppUserRole
@@ -81,17 +86,8 @@ public class UserRepository : IUserRepository
         return userPrivilegeAccessMap;
     }
 
-    public async Task<AccessLevel> GetAccessLevel(Guid userId, string privilegeCode)
-    {
-        Dictionary<string, AccessLevel> privileges = await GetPrivileges(userId);
 
-        privileges.TryGetValue(privilegeCode, out var accessLevel);
-
-        return accessLevel;
-    }
-
-
-    public async Task<PaginationResult<EntityReference>> Search(string searchText, PaginationInfo? paginationInfo)
+    public PaginationResult<EntityReference> Search(string searchText, PaginationInfo? paginationInfo)
     {
 
         if (string.IsNullOrEmpty(searchText))
@@ -102,7 +98,7 @@ public class UserRepository : IUserRepository
             };
 
 
-        int pageSize = int.Parse(_config["Search_Max_Record"]!);
+        int pageSize = int.Parse(configuration["Search_Max_Record"]!);
         int skipCnt = 0;
 
         if (paginationInfo != null && paginationInfo.isValid())
@@ -154,5 +150,6 @@ public class UserRepository : IUserRepository
 
 
     }
+
 }
 

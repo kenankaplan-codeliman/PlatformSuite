@@ -1,10 +1,10 @@
-﻿using CRM.Application.Authentication.Interfaces;
-using CRM.Application.CommandHandler;
+﻿using CRM.Application.CommandHandler;
 using CRM.Application.Interfaces;
+using CRM.Application.Modals;
+using CRM.Application.Modals.Authentication;
 using CRM.Infrastructure.Authentication;
 using CRM.Infrastructure.Cache;
 using CRM.Infrastructure.Data;
-using CRM.Infrastructure.Model;
 using CRM.Infrastructure.Repositories;
 using System;
 
@@ -19,7 +19,8 @@ public static class DependencyInjection
         services.AddScoped<ISessionService, SessionService>();
 
         //Auth
-        services.AddScoped<ICurrentUserContext, CurrentUserContext>();
+        services.AddScoped<IContextUser, ContextUser>();
+        services.AddScoped<IContextAuthorization, ContextAuthorization>();
         services.AddScoped<ITokenService, JwtTokenService>();
         services.AddScoped<IUnitOfWork, EfUnitOfWork>();
         services.AddScoped<IMicrosoftGraphService, MicrosoftGraphService>();

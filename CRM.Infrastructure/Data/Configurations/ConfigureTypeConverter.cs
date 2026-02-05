@@ -1,14 +1,5 @@
-﻿using CRM.Application.Authentication.Interfaces;
-using CRM.Domain.Entities.Common;
-using CRM.Domain.Entities.Identity;
-using CRM.Domain.Enums;
-using CRM.Infrastructure.Data.Converters;
-using CRM.Infrastructure.Model;
+﻿using CRM.Infrastructure.Data.Converters;
 using Microsoft.EntityFrameworkCore;
-using System;
-using System.Collections.Generic;
-using System.Reflection;
-using System.Text;
 
 namespace CRM.Infrastructure.Data.Configurations;
 

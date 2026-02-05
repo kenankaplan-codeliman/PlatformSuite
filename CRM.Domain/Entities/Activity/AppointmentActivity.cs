@@ -31,12 +31,26 @@ public class AppointmentActivity : ActivityBase
     /// <summary>
     /// Başlangıç zamanı
     /// </summary>
-    public DateTime StartTime { get; set; }
+    public virtual DateTime? StartTime {
+        get {
+            return base.StartDate;
+        }
+        set { 
+            base.StartDate = value;
+        } 
+    }
 
     /// <summary>
     /// Bitiş zamanı
     /// </summary>
-    public DateTime EndTime { get; set; }
+    public virtual DateTime? EndTime {
+        get { 
+            return base.CompletedDate;
+        }
+        set { 
+            base.CompletedDate = value;
+        }
+    }
 
     /// <summary>
     /// Tüm gün etkinliği mi?
@@ -73,7 +87,7 @@ public class AppointmentActivity : ActivityBase
     /// <summary>
     /// Toplantı süresi
     /// </summary>
-    public TimeSpan AppointmentDuration => EndTime - StartTime;
+    public TimeSpan? AppointmentDuration => EndTime - StartTime;
     #endregion
 
     #region Party Helper Properties

@@ -24,18 +24,18 @@ public sealed class DbInitializerHostedService : IHostedService
         var dbContext = scope.ServiceProvider.GetRequiredService<DatabaseContext>();
 
         //Privileges
-        await ValueInitialize.validatePrivileges(dbContext);
+        ValueInitialize.validatePrivileges(dbContext);
 
         //Organization
-        var defOrganizationId = await ValueInitialize.validateDefaultOrganization(dbContext);
+        var defOrganizationId = ValueInitialize.validateDefaultOrganization(dbContext);
 
         //Roles
-        var defaultRoleId = await ValueInitialize.validateRole(dbContext, "Personal", AccessLevel.User, isDefault: true);
-        var defaultManagerRoleId = await ValueInitialize.validateRole(dbContext, "Manager", AccessLevel.Organization);
-        var defaultAdminRoleId = await ValueInitialize.validateRole(dbContext, "Administrator", AccessLevel.All);
+        var defaultRoleId = ValueInitialize.validateRole(dbContext, "Personal", AccessLevel.User, isDefault: true);
+        var defaultManagerRoleId = ValueInitialize.validateRole(dbContext, "Manager", AccessLevel.Organization);
+        var defaultAdminRoleId = ValueInitialize.validateRole(dbContext, "Administrator", AccessLevel.All);
 
         //User
-        await ValueInitialize.CreateAdminUser(dbContext, defOrganizationId, defaultAdminRoleId);
+        ValueInitialize.CreateAdminUser(dbContext, defOrganizationId, defaultAdminRoleId);
     }
 
     public Task StopAsync(CancellationToken cancellationToken) => Task.CompletedTask;

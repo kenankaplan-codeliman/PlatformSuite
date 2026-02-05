@@ -1,4 +1,3 @@
-using CRM.Application.Authentication.Interfaces;
 using CRM.Application.Modals;
 using CRM.Domain.Entities.Identity;
 

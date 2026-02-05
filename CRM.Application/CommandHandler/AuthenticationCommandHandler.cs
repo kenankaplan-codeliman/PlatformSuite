@@ -1,7 +1,7 @@
-﻿using CRM.Application.Authentication.Interfaces;
-using CRM.Application.Exceptions;
+﻿using CRM.Application.Exceptions;
 using CRM.Application.Interfaces;
 using CRM.Application.Modals;
+using CRM.Application.Modals.Authentication;
 using CRM.Domain.Entities.Identity;
 
 namespace CRM.Application.CommandHandler
@@ -15,7 +15,7 @@ namespace CRM.Application.CommandHandler
         private readonly ITokenService tokenService;
         private readonly IUnitOfWork unitOfWork;
         private readonly IMicrosoftGraphService microsoftGraphService;
-        private readonly ICurrentUserContext currentUserContext;
+        private readonly IContextUser contextUser;
 
 
         private readonly IUserRepository userRepository;
@@ -27,7 +27,7 @@ namespace CRM.Application.CommandHandler
             ITokenService tokenService,
             IUserRepository userRepository,
             IUnitOfWork unitOfWork,
-            ICurrentUserContext currentUserContext,
+            IContextUser currentUserContext,
             IMicrosoftGraphService microsoftGraphService,
             IOrganizationRepository organizationRepository,
             IRoleRepository roleRepository
@@ -37,7 +37,7 @@ namespace CRM.Application.CommandHandler
             this.tokenService = tokenService;
             this.unitOfWork = unitOfWork;
             this.microsoftGraphService = microsoftGraphService;
-            this.currentUserContext = currentUserContext;
+            this.contextUser = currentUserContext;
 
             this.userRepository = userRepository;
             this.organizationRepository = organizationRepository;
@@ -47,7 +47,7 @@ namespace CRM.Application.CommandHandler
         public async Task<AuthenticationToken> LoginAsync(string email, string password, ClientInfo? clientInfo = null)
         {
 
-            var user = await userRepository.GetByEmailAsync(email);
+            var user = userRepository.GetByEmail(email);
 
             if (user == null || !user.IsActive)
                 throw new UnAuthenticatedException("User not found or in active");
@@ -67,26 +67,17 @@ namespace CRM.Application.CommandHandler
         {
 
             // Get user info from Microsoft Graph (validates token + gets user data)
-            GraphUser? graphUser;
+            GraphUser graphUser;
             try
             {
-                graphUser = await microsoftGraphService.GetUserInfoAsync(microsoftToken);
-            }
-            catch (UnAuthorizedException)
-            {
-                throw new UnAuthenticatedException("Invalid Microsoft token");
+                graphUser = await microsoftGraphService.GetUserInfoAsync(microsoftToken) ?? throw new Exception();
             }
             catch (Exception)
             {
-                throw new UnAuthenticatedException("Failed to validate Microsoft token");
+                throw new UnAuthenticatedException("Invalid Microsoft token");
             }
 
-            if (graphUser == null)
-            {
-                throw new UnAuthenticatedException("Failed to get user information from Microsoft");
-            }
-
-            AppUser? user = await userRepository.GetByAzureUserIdAsync(graphUser.Id);
+            AppUser? user = userRepository.GetByAzureUserId(graphUser.Id);
 
             if (user != null && !user.IsActive)
             {
@@ -94,21 +85,12 @@ namespace CRM.Application.CommandHandler
             }
             else if (user == null)
             {
-                AppRole? defaultRole = await roleRepository.GetDefaultRoleAsync();
+                AppRole defaultRole = roleRepository.GetDefaultRole() ?? throw new BusinessException("Default Role is not defined.");
 
-                if (defaultRole == null)
-                {
-                    throw new BusinessException("Default Role is not defined.");
-                }
+                AppOrganization? defaultOrg = organizationRepository.GetDefaultOrganization() ?? throw new BusinessException("Default Organization is not defined.");
 
-                AppOrganization? defaultOrg = await organizationRepository.GetDefaultOrganizationAsync();
 
-                if (defaultOrg == null)
-                {
-                    throw new BusinessException("Default Organization is not defined.");
-                }
-
-                await this.unitOfWork.BeginTransactionAsync();
+                unitOfWork.BeginTransaction();
 
                 try
                 {
@@ -122,15 +104,15 @@ namespace CRM.Application.CommandHandler
                         OrganizationId = defaultOrg?.Id ?? Guid.Empty
                     };
 
-                    await userRepository.CreateAsync(user);
+                    userRepository.Create(user);
 
-                    await roleRepository.AddUserRoleAsync(user.Id, new List<Guid>() { defaultRole.Id });
+                    roleRepository.AddUserRole(user.Id, new List<Guid>() { defaultRole.Id });
 
-                    await this.unitOfWork.CommitAsync();
+                    unitOfWork.CommitTransaction();
                 }
                 catch (Exception)
                 {
-                    await this.unitOfWork.RollbackAsync();
+                    unitOfWork.RollbackTransaction();
                     throw;
                 }
 
@@ -144,36 +126,36 @@ namespace CRM.Application.CommandHandler
 
         private async Task<AuthenticationToken> createAuthenticationToken(AppUser user, ClientInfo? clientInfo)
         {
-            await this.unitOfWork.BeginTransactionAsync();
+            unitOfWork.BeginTransaction();
 
             try
             {
-                AuthenticationToken authenticationToken = await sessionService.CreateSessionAsync(user, clientInfo);
-                await this.unitOfWork.CommitAsync();
+                AuthenticationToken authenticationToken = sessionService.CreateSession(user, clientInfo);
+                unitOfWork.CommitTransaction();
 
                 return authenticationToken;
             }
             catch (Exception)
             {
-                await this.unitOfWork.RollbackAsync();
+                unitOfWork.RollbackTransaction();
                 throw;
             }
         }
 
         public async Task<AuthenticationToken> RefreshToken(string refreshToken, ClientInfo? clientInfo)
         {
-            await this.unitOfWork.BeginTransactionAsync();
+            unitOfWork.BeginTransaction();
 
             try
             {
-                AuthenticationToken authenticationToken = await sessionService.RefreshSessionAsync(refreshToken, clientInfo);
-                await this.unitOfWork.CommitAsync();
+                AuthenticationToken authenticationToken = sessionService.RefreshSession(refreshToken, clientInfo);
+                unitOfWork.CommitTransaction();
 
                 return authenticationToken;
             }
             catch (Exception)
             {
-                await this.unitOfWork.RollbackAsync();
+                unitOfWork.RollbackTransaction();
                 throw;
             }
         }
@@ -182,43 +164,32 @@ namespace CRM.Application.CommandHandler
         public async Task Logout(string accessToken, ClientInfo? clientInfo)
         {
 
-            await this.unitOfWork.BeginTransactionAsync();
+            unitOfWork.BeginTransaction();
 
             try
             {
-                await sessionService.RevokeSessionAsync(accessToken, clientInfo);
-                await this.unitOfWork.CommitAsync();
+                sessionService.RevokeSessionAsync(accessToken, clientInfo);
+                unitOfWork.CommitTransaction();
             }
             catch (Exception)
             {
-                await this.unitOfWork.RollbackAsync();
+                unitOfWork.RollbackTransaction();
                 throw;
             }
 
         }
 
-        public async Task<AuthenticatedUser> CurrentUser()
+        public async Task<ClientUserInfo> CurrentUser()
         {
-
-            
-
-            var user = await userRepository.GetAsync(currentUserContext.UserId);
-
-            if (user == null)
-                throw new BusinessException("User not found");
-
-            AppOrganization? organization = await organizationRepository.GetAsync(user.OrganizationId);
-
-
-            return new AuthenticatedUser()
-            {
-                Id = user.Id,
-                Email = user.Email,
-                DisplayName = $"{user.FirstName} {user.LastName}",
-                OrganizationId = organization?.Id,
-                OrganizationName = $"({organization?.OrganizationCode}) {organization?.OrganizationName}"
-            };
+            if (contextUser is ContextUser usr) {
+                return new ClientUserInfo()
+                {
+                    Email = usr.Email,
+                    DisplayName = usr.DisplayName,
+                };
+            }
+            else
+                throw new UnAuthenticatedException("User not found or in active");
         }
-       
     }
 }

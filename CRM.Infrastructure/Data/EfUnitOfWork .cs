@@ -9,22 +9,22 @@ namespace CRM.Infrastructure.Data
 {
     public sealed class EfUnitOfWork : IUnitOfWork
     {
-        private readonly DatabaseContext _context;
-        private IDbContextTransaction? _transaction;
+        private readonly DatabaseContext dbContext;
+        private IDbContextTransaction? transaction;
 
         public EfUnitOfWork(DatabaseContext context)
         {
-            _context = context;
+            dbContext = context;
         }
 
-        public async Task BeginTransactionAsync()
+        public void BeginTransaction()
         {
-            _transaction = await _context.Database.BeginTransactionAsync();
+            transaction = dbContext.Database.BeginTransaction();
         }
 
-        public async Task CommitAsync()
+        public void CommitTransaction()
         {
-            var hasChanges = _context.ChangeTracker
+            var hasChanges = dbContext.ChangeTracker
                                .Entries()
                                .Any(e =>
                                    e.State == EntityState.Added ||
@@ -33,15 +33,15 @@ namespace CRM.Infrastructure.Data
 
             if (hasChanges)
             {
-                await _context.SaveChangesAsync();
+                dbContext.SaveChanges();
             }
 
-            await _transaction!.CommitAsync();
+            transaction!.Commit();
         }
 
-        public async Task RollbackAsync()
+        public void RollbackTransaction()
         {
-            await _transaction!.RollbackAsync();
+            transaction!.Rollback();
         }
     }
 }

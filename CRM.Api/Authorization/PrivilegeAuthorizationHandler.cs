@@ -1,9 +1,11 @@
-using CRM.Application.Authentication.Interfaces;
+
 using CRM.Application.CommandHandler;
 using CRM.Application.Interfaces;
+using CRM.Application.Modals;
+using CRM.Application.Modals.Authentication;
 using CRM.Domain.Authorization;
 using CRM.Domain.Enums;
-using CRM.Infrastructure.Model;
+
 using Microsoft.AspNetCore.Authorization;
 using System;
 
@@ -50,21 +52,29 @@ public class PrivilegeAuthorizationHandler : AuthorizationHandler<PrivilegeAutho
             return;
         }
 
-        var currentUserContext = httpContext.RequestServices.GetRequiredService<ICurrentUserContext>();
-        if (currentUserContext is CurrentUserContext user)
+        try
         {
+            var contextUserSrv = httpContext.RequestServices.GetRequiredService<IContextUser>();
+            var contextAuthSrv = httpContext.RequestServices.GetRequiredService<IContextAuthorization>();
 
-            var accessLevel = await userRepository.GetAccessLevel(user.UserId, requiredPrivilegeCode);
+            contextUserSrv.PrivilegesCodes.TryGetValue(requiredPrivilegeCode, out var accessLevel);
 
             if (AccessLevel.None.Equals(accessLevel))
             {
-                context.Fail(new AuthorizationFailureReason(this, $"Missing privilege: {requiredPrivilegeCode}"));
-                return;
+                throw new Exception();
             }
 
-            user.AccessLevel = accessLevel;
+            if (contextAuthSrv is ContextAuthorization contextAuth)
+            {
+                contextAuth.PrivilegeCode = requiredPrivilegeCode;
+                contextAuth.AccessLevel = accessLevel;
+            }
+            else
+            {
+                throw new Exception();
+            }
         }
-        else
+        catch (Exception ex)
         {
             context.Fail(new AuthorizationFailureReason(this, $"Invalid user context."));
             return;

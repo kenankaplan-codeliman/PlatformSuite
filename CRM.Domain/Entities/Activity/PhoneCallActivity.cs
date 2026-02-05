@@ -26,12 +26,25 @@ public class PhoneCallActivity : ActivityBase
     /// <summary>
     /// Görüşme başlangıç zamanı
     /// </summary>
-    public DateTime? StartedAt { get; set; }
+    public virtual DateTime? StartedAt { get { 
+            return base.StartDate;
+        } 
+        set {
+            base.StartDate = value;
+        } 
+    }
 
     /// <summary>
     /// Görüşme bitiş zamanı
     /// </summary>
-    public DateTime? EndedAt { get; set; }
+    public virtual DateTime? EndedAt { 
+        get {
+            return base.CompletedDate;
+        } 
+        set {
+            base.CompletedDate = value; 
+        } 
+    }
 
     /// <summary>
     /// Görüşme kaydı URL'i

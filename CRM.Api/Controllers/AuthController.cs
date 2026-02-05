@@ -4,6 +4,7 @@ using CRM.Api.Extensions;
 using CRM.Application.CommandHandler;
 using CRM.Application.Interfaces;
 using CRM.Application.Modals;
+using CRM.Application.Modals.Authentication;
 using Microsoft.AspNetCore.Mvc;
 
 namespace CRM.Api.Controllers
@@ -87,7 +88,7 @@ namespace CRM.Api.Controllers
         }
 
         [HttpPost("me")]
-        [ProducesResponseType(typeof(AuthenticatedUser), 200)]
+        [ProducesResponseType(typeof(ClientUserInfo), 200)]
         public async Task<IActionResult> Me()
         {
             if (HttpContext.User.Identity?.IsAuthenticated ?? false)

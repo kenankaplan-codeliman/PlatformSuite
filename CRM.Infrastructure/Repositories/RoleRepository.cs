@@ -1,4 +1,5 @@
-﻿using CRM.Application.Interfaces;
+﻿using CRM.Application.Exceptions;
+using CRM.Application.Interfaces;
 using CRM.Domain.Entities.Identity;
 using CRM.Domain.Enums;
 using CRM.Infrastructure.Data;
@@ -19,47 +20,47 @@ namespace CRM.Infrastructure.Repositories
             this.dbContext = dbContext;
         }
 
-        public async Task<AppRole?> GetAsync(Guid Id)
+        public AppRole Get(Guid Id)
         {
-            return await dbContext.AppRole.FirstOrDefaultAsync(x => x.Id == Id);
+            return dbContext.AppRole.FirstOrDefault(x => x.Id == Id) ?? throw new NotFoundException();
         }
 
-        public async Task<AppRole?> GetDefaultRoleAsync()
+        public AppRole? GetDefaultRole()
         {
-            return await dbContext.AppRole.FirstOrDefaultAsync(x => x.IsDefault);
+            return dbContext.AppRole.FirstOrDefault(x => x.IsDefault);
         }
 
-        public async Task<AppRole> CreateAsync(AppRole entity)
+        public AppRole Create(AppRole entity)
         {
-            var entry = await dbContext.AppRole.AddAsync(entity);
+            var entry = dbContext.AppRole.Add(entity);
             return entry.Entity;
         }
-        public async Task<AppRole> UpdateAsync(AppRole entity)
+        public AppRole Update(AppRole entity)
         {
             var entry = dbContext.AppRole.Update(entity);
             return entry.Entity;
         }
 
-        public async Task<AppRole> DeleteAsync(AppRole entity)
+        public AppRole Delete(AppRole entity)
         {
             var entry = dbContext.AppRole.Remove(entity);
             return entry.Entity;
         }
 
-        public async Task<List<AppRole>> GetUserRoleAsync(Guid userId)
+        public List<AppRole> GetUserRole(Guid userId)
         {
-            var roles = await (
+            var roles = (
                                 from ur in dbContext.AppUserRole
                                 join r in dbContext.AppRole on ur.RoleId equals r.Id
                                 where r.IsActive && ur.IsActive && ur.UserId == userId
                                 select r
-                            ).ToListAsync();
+                            ).ToList();
             return roles;
         }
 
-        public async Task AddUserRoleAsync(Guid userId, List<Guid> roleIds)
+        public void AddUserRole(Guid userId, List<Guid> roleIds)
         {
-            var userRoles = await GetUserRoleAsync(userId);
+            var userRoles = GetUserRole(userId);
 
             var userRolesIds = userRoles.Select(ur => ur.Id);
 
@@ -67,34 +68,15 @@ namespace CRM.Infrastructure.Repositories
 
             foreach (var roleId in newRoleIds)
             {
-                await dbContext.AppUserRole.AddAsync(new AppUserRole()
+                dbContext.AppUserRole.Add(new AppUserRole()
                 {
                     UserId = userId,
                     RoleId = roleId
                 });
             }
 
-            await dbContext.SaveChangesAsync();
+            dbContext.SaveChanges();
         }
-
-        public async Task RemoveUserRoleAsync(Guid userId, Guid roleId)
-        {
-            throw new NotImplementedException();
-        }
-
-        public async Task<List<AppPrivilege>> GetRolePrivilegesAsync(Guid roleId)
-        {
-            throw new NotImplementedException();
-        }
-
-        public async Task AddRolePrivilegesAsync(Guid roleId, Guid privilegesId, AccessLevel accessLevel)
-        {
-            throw new NotImplementedException();
-        }
-
-        public async Task RemoveRolePrivilegesAsync(Guid roleId, Guid privilegesId)
-        {
-            throw new NotImplementedException();
-        }
+        
     }
 }

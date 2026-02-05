@@ -1,25 +1,20 @@
 ﻿
-using CRM.Application.Authentication.Interfaces;
 using CRM.Application.Interfaces;
 using CRM.Domain.Entities.Activity;
 using CRM.Domain.Entities.Common;
 using CRM.Domain.Entities.Identity;
 using CRM.Domain.Entities.Lead;
-using CRM.Domain.Enums;
 using CRM.Infrastructure.Data.Configurations;
 using CRM.Infrastructure.Data.Configurations.Modal;
-using CRM.Infrastructure.Data.Converters;
 using Microsoft.EntityFrameworkCore;
-using System.Reflection;
-using System.Reflection.Emit;
-using System.Security;
 using AppRole = CRM.Domain.Entities.Identity.AppRole;
 
 namespace CRM.Infrastructure.Data;
 
 public class DatabaseContext : DbContext
 {
-    private readonly ICurrentUserContext currentUserContext;
+    private readonly IContextUser contextUser;
+    private readonly IContextAuthorization contextAuthorization;
 
     // ======= Identity =======
     public DbSet<AppOrganization> AppOrganization { get; set; }
@@ -41,10 +36,11 @@ public class DatabaseContext : DbContext
     // ======= Lead =======
     public DbSet<Lead> Lead { get; set; }
 
-    public DatabaseContext(DbContextOptions<DatabaseContext> options, ICurrentUserContext currentUserContext)
+    public DatabaseContext(DbContextOptions<DatabaseContext> options, IContextUser currentUserContext, IContextAuthorization contextAuthorization)
         : base(options)
     {
-        this.currentUserContext = currentUserContext;
+        this.contextUser = currentUserContext;
+        this.contextAuthorization = contextAuthorization;
     }
 
     protected override void ConfigureConventions(ModelConfigurationBuilder builder)
@@ -56,7 +52,7 @@ public class DatabaseContext : DbContext
     {
         base.OnModelCreating(modelBuilder);
 
-        modelBuilder.SetGlobalFilter(currentUserContext);
+        modelBuilder.SetGlobalFilter(contextUser, contextAuthorization);
 
         modelBuilder.ConfigureIdentityEntities();
         modelBuilder.ConfigureActivityEntities();
@@ -85,13 +81,13 @@ public class DatabaseContext : DbContext
         foreach (var entry in ChangeTracker.Entries())
         {
             // ======= Audit =======
-            if (currentUserContext != null && entry.Entity is IAuditableEntity audit)
+            if (contextUser != null && entry.Entity is IAuditableEntity audit)
             {
                 // ======= Create =======
                 if (entry.State == EntityState.Added)
                 {
                     audit.CreatedAt = now;
-                    audit.CreatedBy = currentUserContext.UserId;
+                    audit.CreatedBy = contextUser.UserId;
 
                 }
 
@@ -99,25 +95,25 @@ public class DatabaseContext : DbContext
                 if (entry.State == EntityState.Modified)
                 {
                     audit.UpdatedAt = now;
-                    audit.UpdatedBy = currentUserContext.UserId;
+                    audit.UpdatedBy = contextUser.UserId;
                 }
             }
 
             // ======= Owned Entity =======
-            if (currentUserContext != null && entry.Entity is IOwnedEntity ownedEntity)
+            if (contextUser != null && entry.Entity is IOwnedEntity ownedEntity)
             {
                 if (entry.State == EntityState.Added && 
                     ownedEntity.OwnerId==Guid.Empty && 
                     ownedEntity.OrganizationId == Guid.Empty)
                 {
-                    ownedEntity.OwnerId = currentUserContext.UserId;
-                    ownedEntity.OrganizationId = currentUserContext.OrganizationId;
+                    ownedEntity.OwnerId = contextUser.UserId;
+                    ownedEntity.OrganizationId = contextUser.OrganizationId;
                 }
             }
 
 
             // ======= Soft Delete =======
-            if (currentUserContext != null && entry.Entity is ISoftDeleteEntity softDelete)
+            if (contextUser != null && entry.Entity is ISoftDeleteEntity softDelete)
             {
                 entry.Property(nameof(ISoftDeleteEntity.IsDeleted)).IsModified = false;
                 entry.Property(nameof(ISoftDeleteEntity.DeletedBy)).IsModified = false;
@@ -128,7 +124,7 @@ public class DatabaseContext : DbContext
                     entry.State = EntityState.Modified;
                     softDelete.IsDeleted = true;
                     softDelete.DeletedAt = now;
-                    softDelete.DeletedBy = currentUserContext.UserId;
+                    softDelete.DeletedBy = contextUser.UserId;
                 }
             }
         }

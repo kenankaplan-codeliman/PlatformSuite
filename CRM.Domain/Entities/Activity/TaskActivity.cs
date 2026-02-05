@@ -26,7 +26,14 @@ public class TaskActivity : ActivityBase
     /// <summary>
     /// Tamamlanma tarihi
     /// </summary>
-    public DateTime? TaskCompletedAt { get; set; }
+    public virtual DateTime? TaskCompletedAt {
+        get { 
+            return base.CompletedDate;    
+        }
+        set {
+            base.CompletedDate = value;   
+        } 
+    }
 
     /// <summary>
     /// Hatırlatıcı tarihi

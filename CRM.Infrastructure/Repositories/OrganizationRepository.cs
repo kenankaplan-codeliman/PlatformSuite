@@ -1,4 +1,5 @@
-﻿using CRM.Application.Interfaces;
+﻿using CRM.Application.Exceptions;
+using CRM.Application.Interfaces;
 using CRM.Domain.Entities.Identity;
 using CRM.Infrastructure.Data;
 using Microsoft.EntityFrameworkCore;
@@ -18,61 +19,70 @@ namespace CRM.Infrastructure.Repositories
             this.dbContext = dbContext;
         }
 
-        public async Task<AppOrganization?> GetAsync(Guid Id)
+        public AppOrganization Get(Guid Id)
         {
-            return await dbContext.AppOrganization.FirstOrDefaultAsync(x => x.Id == Id);
+            return dbContext.AppOrganization.FirstOrDefault(x => x.Id == Id) ?? throw new NotFoundException();
         }
 
-        public async Task<AppOrganization?> GetDefaultOrganizationAsync()
+        public AppOrganization? GetDefaultOrganization()
         {
-            return await dbContext.AppOrganization.FirstOrDefaultAsync(x => x.IsDefault );
+            return dbContext.AppOrganization.FirstOrDefault(x => x.IsDefault );
         }
 
-        public async Task<AppOrganization> CreateAsync(AppOrganization entity)
+        public AppOrganization Create(AppOrganization entity)
         {
-            var entry = await dbContext.AppOrganization.AddAsync(entity);
+            var entry = dbContext.AppOrganization.Add(entity);
             return entry.Entity;
             
         }
 
-        public async Task<AppOrganization> UpdateAsync(AppOrganization entity)
+        public AppOrganization Update(AppOrganization entity)
         {
             var entry = dbContext.AppOrganization.Update(entity);
             return entry.Entity;
         }
 
-        public async Task<AppOrganization> DeleteAsync(AppOrganization entity)
+        public AppOrganization Delete(AppOrganization entity)
         {
             var entry = dbContext.AppOrganization.Remove(entity);
             return entry.Entity;
         }
 
 
-        public async Task<List<Guid>> GetOrganizationHierarchy(Guid organizationId)
+        public Dictionary<Guid, string> GetOrganizationHierarchy(Guid organizationId)
         {
-            
-            var organizations = await dbContext.AppOrganization
+            var organizations = dbContext.AppOrganization
                 .IgnoreQueryFilters()
                 .AsNoTracking()
                 .Where(o => !o.IsDeleted && o.IsActive)
                 .Select(o => new
                 {
                     o.Id,
-                    o.ParentOrganizationId
+                    o.ParentOrganizationId,
+                    o.OrganizationName
                 })
-                .ToListAsync();
+                .ToList();
 
             if (!organizations.Any(o => o.Id == organizationId))
             {
-                return new List<Guid>(); 
+                return new Dictionary<Guid, string>();
             }
 
-            var result = new HashSet<Guid>();
+            // Performans için lookup dictionary
+            var orgLookup = organizations.ToDictionary(o => o.Id);
+
+            var result = new Dictionary<Guid, string>();
 
             void Traverse(Guid orgId)
             {
-                if (!result.Add(orgId))
+                if (!orgLookup.ContainsKey(orgId))
                     return;
+
+                if (result.ContainsKey(orgId))
+                    return;
+
+                var org = orgLookup[orgId];
+                result.Add(org.Id, org.OrganizationName);
 
                 var children = organizations
                     .Where(o => o.ParentOrganizationId == orgId)
@@ -86,8 +96,11 @@ namespace CRM.Infrastructure.Repositories
 
             Traverse(organizationId);
 
-            return result.ToList();
+            return result;
         }
+
+
+
 
     }
 }
