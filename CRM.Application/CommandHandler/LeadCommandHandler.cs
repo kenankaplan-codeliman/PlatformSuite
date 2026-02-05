@@ -11,11 +11,16 @@ namespace CRM.Application.CommandHandler
     {
         private readonly IUnitOfWork unitOfWork;
         private readonly ILeadRepository leadRepository;
+        private readonly IReferenceRepository referenceRepository;
 
-        public LeadCommandHandler(ILeadRepository leadRepository, IUnitOfWork unitOfWork)
+        public LeadCommandHandler(
+            IUnitOfWork unitOfWork, 
+            ILeadRepository leadRepository, 
+            IReferenceRepository referenceRepository  )
         {
             this.leadRepository = leadRepository;
             this.unitOfWork = unitOfWork;
+            this.referenceRepository = referenceRepository;
         }
         public async Task<LeadListResponse> List(LeadListFilter? filter, PaginationInfo? paginationInfo)
         {
@@ -32,11 +37,11 @@ namespace CRM.Application.CommandHandler
             };
         }
 
-        public async Task<SearchListResponse> Search(string searchText, PaginationInfo? paginationInfo)
+        public async Task<EntityReferenceList> LookupReference(string searchText, PaginationInfo paginationInfo)
         {
-            var result = leadRepository.Search(searchText, paginationInfo);
+            var result = referenceRepository.LookupReference(EntityType.Lead, searchText, paginationInfo);
 
-            return new SearchListResponse() { 
+            return new EntityReferenceList() { 
                 Data = result.Data,
                 HasMore = result.HasMore,
                 Page = result.Page,
@@ -95,9 +100,6 @@ namespace CRM.Application.CommandHandler
                 unitOfWork.BeginTransaction();
 
                 var entity = leadRepository.Get(Id);
-
-                if (entity == null)
-                    throw new BusinessException("Lead not found.");
 
                 entity = LeadDetailItem.toEntity(leadDetail, entity);
 

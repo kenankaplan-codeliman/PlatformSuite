@@ -9,7 +9,6 @@
 export interface EntityReference {
   id: string;
   name: string;
-  company?: string;
   entityType: 'User' | 'Account' | 'Contact' | 'Lead' | 'Opportunity';
   email?: string;
   phone?: string;

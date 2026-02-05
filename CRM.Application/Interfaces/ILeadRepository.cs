@@ -11,7 +11,5 @@ namespace CRM.Application.Interfaces
     public interface ILeadRepository : IEntityRepository<Lead>
     {
         PaginationResult<Lead> List(LeadListFilter? filter, PaginationInfo? paginationInfo);
-
-        PaginationResult<EntityReference> Search(string searchText, PaginationInfo? paginationInfo);
     }
 }

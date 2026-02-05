@@ -36,12 +36,14 @@ namespace CRM.Infrastructure.Data
                 dbContext.SaveChanges();
             }
 
-            transaction!.Commit();
+            if (transaction != null)
+                transaction!.Commit();
         }
 
         public void RollbackTransaction()
         {
-            transaction!.Rollback();
+            if (transaction!=null)
+                transaction!.Rollback();
         }
     }
 }

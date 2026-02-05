@@ -38,11 +38,11 @@ public class LeadController : ControllerBase
     }
 
     [HttpPost("search")]
-    [ProducesResponseType(typeof(SearchListResponse), 200)]
+    [ProducesResponseType(typeof(EntityReferenceList), 200)]
     [PrivilegeAuthorize(PrivilegeCodes.LeadPrivilegeCodes.Read)]
     public async Task<IActionResult> bulkUpdateStatus(SearchRequest request)
     {
-        var response = await leadCommandHandler.Search(request.SearchText, new PaginationInfo(request.Page, request.PageSize));
+        var response = await leadCommandHandler.LookupReference(request.SearchText, new PaginationInfo(request.Page, request.PageSize));
         return Ok(response);
     }
 

@@ -1,5 +1,6 @@
 ﻿using CRM.Application.Interfaces;
 using CRM.Application.Modals.Common;
+using CRM.Domain.Enums;
 using System;
 using System.Collections.Generic;
 using System.Text;
@@ -10,25 +11,26 @@ namespace CRM.Application.CommandHandler
     {
         private readonly IUnitOfWork unitOfWork;
         private readonly IUserRepository userRepository;
+        private readonly IReferenceRepository referenceRepository;
 
-        public UserCommandHandler(IUserRepository userRepository, IUnitOfWork unitOfWork)
+
+        public UserCommandHandler(
+            IUnitOfWork unitOfWork,
+            IUserRepository userRepository, 
+            IReferenceRepository referenceRepository
+            )
         {
             this.userRepository = userRepository;
             this.unitOfWork = unitOfWork;
+            this.referenceRepository = referenceRepository;
         }
 
 
-        public async Task<SearchListResponse> Search(string searchText, PaginationInfo? paginationInfo)
+        public async Task<EntityReferenceList> LookupReference(string searchText, PaginationInfo paginationInfo)
         {
-            var result = userRepository.Search(searchText, paginationInfo);
+            var result = referenceRepository.LookupReference(EntityType.User, searchText, paginationInfo);
 
-            return new SearchListResponse()
-            {
-                Data = result.Data,
-                HasMore = result.HasMore,
-                Page = result.Page,
-                PageSize = result.PageSize,
-            };
+            return result;
         }
 
     }

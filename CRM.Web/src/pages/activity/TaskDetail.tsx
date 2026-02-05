@@ -165,7 +165,7 @@ const TaskDetail: React.FC<TaskDetailProps> = (props) => {
       });
 
       setAssignedTo(currentTask.assignedTo || null);
-      setRegarding(currentTask.regarding || null);
+      setRegarding(currentTask.regardingEntity || null);
     } else if (isNewTask) {
       form.resetFields();
       setAssignedTo(null);
@@ -193,7 +193,7 @@ const TaskDetail: React.FC<TaskDetailProps> = (props) => {
         reminderDateTime: currentTask?.reminderDateTime ? dayjs(currentTask.reminderDateTime) : null,
       });
       setAssignedTo(currentTask?.assignedTo || null);
-      setRegarding(currentTask?.regarding || null);
+      setRegarding(currentTask?.regardingEntity || null);
       updateMode('view');
     }
     props.onCancel?.();
@@ -209,7 +209,7 @@ const TaskDetail: React.FC<TaskDetailProps> = (props) => {
       startDate: values.startDate?.toISOString(),
       reminderDateTime: values.reminderDateTime?.toISOString(),
       assignedTo: assignedTo,
-      regarding: regarding,
+      regardingEntity: regarding,
       regardingEntityType: regarding?.entityType || null,
       regardingEntityId: regarding?.id || null,
     };
@@ -360,7 +360,7 @@ const TaskDetail: React.FC<TaskDetailProps> = (props) => {
         {/* İlgili Kayıt */}
         <Col span={12}>
           <Card title={<Space><LinkOutlined /><span>İlgili Kayıt</span></Space>} style={{ marginBottom: 16 }}>
-            {renderSelectedEntities(currentTask?.regarding)}
+            {renderSelectedEntities(currentTask?.regardingEntity)}
           </Card>
         </Col>
 

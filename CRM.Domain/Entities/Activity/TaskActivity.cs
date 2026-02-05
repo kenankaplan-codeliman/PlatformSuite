@@ -23,18 +23,7 @@ public class TaskActivity : ActivityBase
     /// </summary>
     public bool IsCompleted { get; set; }
 
-    /// <summary>
-    /// Tamamlanma tarihi
-    /// </summary>
-    public virtual DateTime? TaskCompletedAt {
-        get { 
-            return base.CompletedDate;    
-        }
-        set {
-            base.CompletedDate = value;   
-        } 
-    }
-
+   
     /// <summary>
     /// Hatırlatıcı tarihi
     /// </summary>
@@ -55,10 +44,7 @@ public class TaskActivity : ActivityBase
     /// </summary>
     public int PercentComplete { get; set; } = 0;
 
-    /// <summary>
-    /// Başlangıç tarihi
-    /// </summary>
-    public DateTime? StartDate { get; set; }
+   
     #endregion
 
     #region Domain Methods
@@ -68,7 +54,7 @@ public class TaskActivity : ActivityBase
     public void CompleteTask()
     {
         IsCompleted = true;
-        TaskCompletedAt = DateTime.UtcNow;
+        EndDate= DateTime.UtcNow;
         PercentComplete = 100;
         MarkAsCompleted();
     }
@@ -127,7 +113,6 @@ public class TaskActivity : ActivityBase
     {
         base.MarkAsCompleted();
         IsCompleted = true;
-        TaskCompletedAt = CompletedDate;
         PercentComplete = 100;
     }
     #endregion

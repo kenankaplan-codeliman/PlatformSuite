@@ -20,10 +20,6 @@ public class ActivityParty : IBaseEntity
     /// </summary>
     public Guid ActivityId { get; set; }
 
-    /// <summary>
-    /// İlişkili aktivite
-    /// </summary>
-    public virtual ActivityBase Activity { get; set; } = null!;
     #endregion
 
     #region Party Type (Rol)

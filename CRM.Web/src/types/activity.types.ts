@@ -138,39 +138,26 @@ export const getActivityPriorityColor = (priority: ActivityPriorityValue): strin
 
 export interface ActivityBase {
   id: string;
-  activityId: string;
+
   subject: string;
-  description?: string;
+  
   activityType: ActivityTypeValue;
   status: ActivityStatusValue;
   priority: ActivityPriorityValue;
+
+  startDate?: string;
+  endDate?: string;
   dueDate?: string;
-  completedDate?: string;
-  duration?: number;
+  
   
   // İlgili kayıt - EntityReference olarak
-  regarding?: EntityReference | null;
-  // Alternatif: Ayrı alanlar (backend uyumu için)
-  regardingEntityType?: string;
-  regardingEntityId?: string;
+  regardingEntity?: EntityReference | null;
   
   // Sahip ve organizasyon
-  ownerId: string;
   owner?: EntityReference | null;
-  organizationId: string;
   
-  // Audit alanları
-  createdBy: string;
-  createdAt: string;
-  updatedBy?: string;
-  updatedAt?: string;
   isActive: boolean;
-  isDeleted: boolean;
-  deletedBy?: string;
-  deletedAt?: string;
   
-  // Katılımcılar (generic)
-  //parties?: ActivityParty[];
 }
 
 // ============================================
@@ -188,27 +175,23 @@ export interface EmailActivity extends ActivityBase {
   
   // E-posta içeriği
   body?: string;
-  bodyType?: 'Text' | 'HTML';
-  
-  // Yön ve durum
-  direction: 'Incoming' | 'Outgoing';
-  sentDateTime?: string;
-  receivedDateTime?: string;
-  
-  // Ekler
-  hasAttachments?: boolean;
-  attachmentCount?: number;
+
+  isHtml?: boolean;
+  isSent?: boolean;
+  isRead?: boolean;
+  readDate?: string;
+    
 }
 
 // ============================================
 // PHONE CALL ACTIVITY
 // ============================================
-export const CallDirection = {
-  Incoming: 0,
-  Outgoing: 1,
+export const Direction = {
+  Incoming: 'Incoming',
+  Outgoing: 'Outgoing',
 } as const;
 
-export type CallDirectionValue = (typeof CallDirection)[keyof typeof CallDirection];
+export type DirectionValue = (typeof Direction)[keyof typeof Direction];
 
 
 
@@ -221,16 +204,13 @@ export interface PhoneCallActivity extends ActivityBase {
   
   // Telefon bilgileri
   phoneNumber?: string;
-  direction: 'Incoming' | 'Outgoing';
-  
-  // Süre ve zaman
-  durationMinutes?: number;
-  actualStart?: string;
-  actualEnd?: string;
+  direction: DirectionValue;
   
   // Notlar
   callNotes?: string;
   callResult?: string;
+
+  recordingUrl?: string;  // Arama kaydı URL'si ekranda olmayabilir.
 }
 
 // ============================================
@@ -239,19 +219,19 @@ export interface PhoneCallActivity extends ActivityBase {
 
 export interface TaskActivity extends ActivityBase {
   activityType: typeof ActivityType.Task;
-  
-  // Görev atama - EntityReference olarak
-  assignedTo?: EntityReference | null;
+   
+  taskDescription?: string;
   
   // İlerleme
   percentComplete?: number;
   
-  // Tarihler
-  startDate?: string;
-  
   // Hatırlatma
   reminderDateTime?: string;
-  reminderSet?: boolean;
+  isReminderSet?: boolean;
+  isReminderSent?: boolean;
+
+   isCompleted?: boolean;
+
 }
 
 // ============================================
@@ -273,8 +253,6 @@ export interface AppointmentActivity extends ActivityBase {
   meetingUrl?: string;
   
   // Zaman bilgileri
-  startTime: string;
-  endTime: string;
   isAllDay: boolean;
   
   // Hatırlatma
@@ -288,6 +266,7 @@ export interface AppointmentActivity extends ActivityBase {
   
   // Notlar
   meetingNotes?: string;
+
 }
 
 // ============================================

@@ -6,9 +6,9 @@ namespace CRM.Domain.Entities.Activity;
 /// Randevu / Toplantı Aktivitesi
 /// Katılımcılar (Organizer, Attendees) ActivityParty tablosunda tutulur.
 /// </summary>
-public class AppointmentActivity : ActivityBase
+public class Appointment : ActivityBase
 {
-    public AppointmentActivity() : base(ActivityType.Appointment)
+    public Appointment() : base(ActivityType.Appointment)
     {
     }
 
@@ -27,30 +27,6 @@ public class AppointmentActivity : ActivityBase
     /// Online toplantı linki (Zoom, Teams, Meet vb.)
     /// </summary>
     public string? MeetingUrl { get; set; }
-
-    /// <summary>
-    /// Başlangıç zamanı
-    /// </summary>
-    public virtual DateTime? StartTime {
-        get {
-            return base.StartDate;
-        }
-        set { 
-            base.StartDate = value;
-        } 
-    }
-
-    /// <summary>
-    /// Bitiş zamanı
-    /// </summary>
-    public virtual DateTime? EndTime {
-        get { 
-            return base.CompletedDate;
-        }
-        set { 
-            base.CompletedDate = value;
-        }
-    }
 
     /// <summary>
     /// Tüm gün etkinliği mi?
@@ -81,13 +57,6 @@ public class AppointmentActivity : ActivityBase
     /// Toplantı notları
     /// </summary>
     public string? MeetingNotes { get; set; }
-    #endregion
-
-    #region Computed Properties
-    /// <summary>
-    /// Toplantı süresi
-    /// </summary>
-    public TimeSpan? AppointmentDuration => EndTime - StartTime;
     #endregion
 
     #region Party Helper Properties
@@ -159,63 +128,5 @@ public class AppointmentActivity : ActivityBase
         AddParty(party);
     }
 
-    /// <summary>
-    /// Online toplantı olarak ayarla
-    /// </summary>
-    public void SetAsOnlineMeeting(string meetingUrl)
-    {
-        IsOnline = true;
-        MeetingUrl = meetingUrl;
-    }
-
-    /// <summary>
-    /// Yüz yüze toplantı olarak ayarla
-    /// </summary>
-    public void SetAsInPersonMeeting(string location)
-    {
-        IsOnline = false;
-        Location = location;
-        MeetingUrl = null;
-    }
-
-    /// <summary>
-    /// Randevu zamanını güncelle
-    /// </summary>
-    public void Reschedule(DateTime newStartTime, DateTime newEndTime)
-    {
-        if (newEndTime <= newStartTime)
-        {
-            throw new ArgumentException("Bitiş zamanı başlangıç zamanından sonra olmalıdır.");
-        }
-
-        StartTime = newStartTime;
-        EndTime = newEndTime;
-        Duration = AppointmentDuration;
-    }
-
-    /// <summary>
-    /// Randevuyu başlat
-    /// </summary>
-    public void StartAppointment()
-    {
-        Status = ActivityStatus.InProgress;
-    }
-
-    /// <summary>
-    /// Randevuyu tamamla
-    /// </summary>
-    public override void MarkAsCompleted()
-    {
-        base.MarkAsCompleted();
-        Duration = AppointmentDuration;
-    }
-
-    /// <summary>
-    /// Hatırlatıcı ayarla
-    /// </summary>
-    public void SetReminder(int minutesBefore)
-    {
-        ReminderMinutesBefore = minutesBefore;
-    }
     #endregion
 }

@@ -177,7 +177,7 @@ const EmailDetail: React.FC<EmailDetailProps> = (props) => {
       setToEntities(currentEmail.to || []);
       setCcEntities(currentEmail.cc || []);
       setBccEntities(currentEmail.bcc || []);
-      setRegarding(currentEmail.regarding || null);
+      setRegarding(currentEmail.regardingEntity || null);
     } else if (isNewEmail) {
       form.resetFields();
       setFromEntity(null);
@@ -214,7 +214,7 @@ const EmailDetail: React.FC<EmailDetailProps> = (props) => {
       setToEntities(currentEmail?.to || []);
       setCcEntities(currentEmail?.cc || []);
       setBccEntities(currentEmail?.bcc || []);
-      setRegarding(currentEmail?.regarding || null);
+      setRegarding(currentEmail?.regardingEntity || null);
       updateMode('view');
     }
     props.onCancel?.();
@@ -234,7 +234,7 @@ const EmailDetail: React.FC<EmailDetailProps> = (props) => {
       to: toEntities,
       cc: ccEntities,
       bcc: bccEntities,
-      regarding: regarding,
+      regardingEntity: regarding,
       regardingEntityType: regarding?.entityType || null,
       regardingEntityId: regarding?.id || null,
     };
@@ -384,7 +384,7 @@ const EmailDetail: React.FC<EmailDetailProps> = (props) => {
             title={<Space><LinkOutlined /><span>İlgili Kayıt</span></Space>}
             style={{ marginBottom: 16 }}
           >
-            {renderSelectedEntities(currentEmail?.regarding)}
+            {renderSelectedEntities(currentEmail?.regardingEntity)}
           </Card>
         </Col>
 

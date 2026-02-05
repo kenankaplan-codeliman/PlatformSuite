@@ -65,7 +65,7 @@ public class MemoryCacheService : ICacheService
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error removing key {Key} from memory cache", key);
+            _logger.LogWarning(ex, "Error removing key {Key} from memory cache", key);
         }
     }
 

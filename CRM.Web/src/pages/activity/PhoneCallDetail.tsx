@@ -167,7 +167,7 @@ const PhoneCallDetail: React.FC<PhoneCallDetailProps> = (props) => {
 
       setCaller(currentPhoneCall.caller || null);
       setRecipient(currentPhoneCall.recipient || null);
-      setRegarding(currentPhoneCall.regarding || null);
+      setRegarding(currentPhoneCall.regardingEntity || null);
     } else if (isNewPhoneCall) {
       form.resetFields();
       setCaller(null);
@@ -197,7 +197,7 @@ const PhoneCallDetail: React.FC<PhoneCallDetailProps> = (props) => {
       });
       setCaller(currentPhoneCall?.caller || null);
       setRecipient(currentPhoneCall?.recipient || null);
-      setRegarding(currentPhoneCall?.regarding || null);
+      setRegarding(currentPhoneCall?.regardingEntity || null);
       updateMode('view');
     }
     props.onCancel?.();
@@ -214,7 +214,7 @@ const PhoneCallDetail: React.FC<PhoneCallDetailProps> = (props) => {
       actualEnd: values.actualEnd?.toISOString(),
       caller: caller,
       recipient: recipient,
-      regarding: regarding,
+      regardingEntity: regarding,
       regardingEntityType: regarding?.entityType || null,
       regardingEntityId: regarding?.id || null,
     };
@@ -352,7 +352,7 @@ const PhoneCallDetail: React.FC<PhoneCallDetailProps> = (props) => {
 
         <Col span={24}>
           <Card title={<Space><LinkOutlined /><span>İlgili Kayıt</span></Space>} style={{ marginBottom: 16 }}>
-            {renderSelectedEntities(currentPhoneCall?.regarding)}
+            {renderSelectedEntities(currentPhoneCall?.regardingEntity)}
           </Card>
         </Col>
 

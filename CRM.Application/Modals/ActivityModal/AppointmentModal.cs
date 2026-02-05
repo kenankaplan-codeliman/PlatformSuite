@@ -9,9 +9,9 @@ using System.Text;
 
 namespace CRM.Application.Modals.ActivityModal
 {
-    public class AppointmentActivityModal : ActivityBaseModal
+    public class AppointmentModal : ActivityBaseModal
     {
-        public AppointmentActivityModal() : base(ActivityType.Appointment)
+        public AppointmentModal() : base(ActivityType.Appointment)
         {
         }
 

@@ -21,11 +21,11 @@ public class UserController : ControllerBase
     }
 
     [HttpPost("search")]
-    [ProducesResponseType(typeof(SearchListResponse), 200)]
+    [ProducesResponseType(typeof(EntityReferenceList), 200)]
     [PrivilegeAuthorize(PrivilegeCodes.UserPrivilegeCodes.Read)]
     public async Task<IActionResult> bulkUpdateStatus(SearchRequest request)
     {
-        var response = await userCommandHandler.Search(request.SearchText, new PaginationInfo(request.Page, request.PageSize));
+        var response = await userCommandHandler.LookupReference(request.SearchText, new PaginationInfo(request.Page, request.PageSize));
         return Ok(response);
     }
 }

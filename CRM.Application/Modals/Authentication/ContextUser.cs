@@ -5,9 +5,9 @@ namespace CRM.Application.Modals;
 
 public class ContextUser : IContextUser
 {
-    public required Guid UserId { get; set; }
-    public required string Email { get; set; } = default!;
-    public required string DisplayName { get; set; } = default!;
+    public Guid UserId { get; set; }
+    public string Email { get; set; } = default!;
+    public string DisplayName { get; set; } = default!;
     public Guid OrganizationId { get; set; }
     public string OrganizationName { get; set; } = default!;
     public List<Guid> AccessibleOrganizationList { get; set; } = default!;

@@ -161,14 +161,14 @@ const AppointmentDetail: React.FC<AppointmentDetailProps> = (props) => {
     if (currentAppointment && !isNewAppointment) {
       form.setFieldsValue({
         ...currentAppointment,
-        startTime: currentAppointment.startTime ? dayjs(currentAppointment.startTime) : null,
-        endTime: currentAppointment.endTime ? dayjs(currentAppointment.endTime) : null,
+        startDate: currentAppointment.startDate ? dayjs(currentAppointment.startDate) : null,
+        endDate: currentAppointment.endDate ? dayjs(currentAppointment.endDate) : null,
       });
 
       // Set EntityReference fields directly (already correct type from backend)
       setOrganizer(currentAppointment.organizer || null);
       setAttendees(currentAppointment.attendees || []);
-      setRegarding(currentAppointment.regarding || null);
+      setRegarding(currentAppointment.regardingEntity || null);
     } else if (isNewAppointment) {
       form.resetFields();
       setOrganizer(null);
@@ -194,12 +194,12 @@ const AppointmentDetail: React.FC<AppointmentDetailProps> = (props) => {
     } else {
       form.setFieldsValue({
         ...currentAppointment,
-        startTime: currentAppointment?.startTime ? dayjs(currentAppointment.startTime) : null,
-        endTime: currentAppointment?.endTime ? dayjs(currentAppointment.endTime) : null,
+        startDate: currentAppointment?.startDate ? dayjs(currentAppointment.startDate) : null,
+        endDate: currentAppointment?.endDate ? dayjs(currentAppointment.endDate) : null,
       });
       setOrganizer(currentAppointment?.organizer || null);
       setAttendees(currentAppointment?.attendees || []);
-      setRegarding(currentAppointment?.regarding || null);
+      setRegarding(currentAppointment?.regardingEntity || null);
       updateMode('view');
     }
     props.onCancel?.();
@@ -212,11 +212,11 @@ const AppointmentDetail: React.FC<AppointmentDetailProps> = (props) => {
     const formattedValues: Partial<AppointmentActivity> = {
       ...values,
       activityType: ActivityType.Appointment,
-      startTime: values.startTime?.toISOString(),
-      endTime: values.endTime?.toISOString(),
+      startDate: values.startDate?.toISOString(),
+      endDate: values.endDate?.toISOString(),
       organizer: organizer,
       attendees: attendees,
-      regarding: regarding,
+      regardingEntity: regarding,
       // Ayrıca flat alanlar da güncellenebilir (backend uyumu için)
       regardingEntityType: regarding?.entityType || null,
       regardingEntityId: regarding?.id || null,
@@ -328,8 +328,8 @@ const AppointmentDetail: React.FC<AppointmentDetailProps> = (props) => {
         <Col span={12}>
           <Card title={<Space><ClockCircleOutlined /><span>Zaman Bilgileri</span></Space>} style={{ marginBottom: 16 }}>
             <Descriptions column={1} size="small">
-              <Descriptions.Item label="Başlangıç">{currentAppointment?.startTime ? dayjs(currentAppointment.startTime).format('DD.MM.YYYY HH:mm') : '-'}</Descriptions.Item>
-              <Descriptions.Item label="Bitiş">{currentAppointment?.endTime ? dayjs(currentAppointment.endTime).format('DD.MM.YYYY HH:mm') : '-'}</Descriptions.Item>
+              <Descriptions.Item label="Başlangıç">{currentAppointment?.startDate ? dayjs(currentAppointment.startDate).format('DD.MM.YYYY HH:mm') : '-'}</Descriptions.Item>
+              <Descriptions.Item label="Bitiş">{currentAppointment?.endDate ? dayjs(currentAppointment.endDate).format('DD.MM.YYYY HH:mm') : '-'}</Descriptions.Item>
               <Descriptions.Item label="Tüm Gün"><Badge status={currentAppointment?.isAllDay ? 'success' : 'default'} text={currentAppointment?.isAllDay ? 'Evet' : 'Hayır'} /></Descriptions.Item>
               <Descriptions.Item label="Hatırlatma">
                 {currentAppointment?.reminderMinutesBefore ? `${currentAppointment.reminderMinutesBefore} dakika önce` : '-'}
@@ -370,7 +370,7 @@ const AppointmentDetail: React.FC<AppointmentDetailProps> = (props) => {
 
         <Col span={24}>
           <Card title={<Space><LinkOutlined /><span>İlgili Kayıt</span></Space>} style={{ marginBottom: 16 }}>
-            {renderSelectedEntities(currentAppointment?.regarding)}
+            {renderSelectedEntities(currentAppointment?.regardingEntity)}
           </Card>
         </Col>
 
@@ -435,12 +435,12 @@ const AppointmentDetail: React.FC<AppointmentDetailProps> = (props) => {
           <Card title={<Space><ClockCircleOutlined /><span>Zaman Bilgileri</span></Space>} style={{ marginBottom: 16 }}>
             <Row gutter={16}>
               <Col span={12}>
-                <Form.Item name="startTime" label="Başlangıç" rules={[{ required: true, message: 'Başlangıç zamanı gereklidir' }]}>
+                <Form.Item name="startDate" label="Başlangıç" rules={[{ required: true, message: 'Başlangıç zamanı gereklidir' }]}>
                   <DatePicker showTime format="DD.MM.YYYY HH:mm" style={{ width: '100%' }} placeholder="Başlangıç zamanı" />
                 </Form.Item>
               </Col>
               <Col span={12}>
-                <Form.Item name="endTime" label="Bitiş" rules={[{ required: true, message: 'Bitiş zamanı gereklidir' }]}>
+                <Form.Item name="endDate" label="Bitiş" rules={[{ required: true, message: 'Bitiş zamanı gereklidir' }]}>
                   <DatePicker showTime format="DD.MM.YYYY HH:mm" style={{ width: '100%' }} placeholder="Bitiş zamanı" />
                 </Form.Item>
               </Col>

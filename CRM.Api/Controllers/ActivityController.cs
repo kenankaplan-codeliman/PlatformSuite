@@ -14,12 +14,16 @@ namespace CRM.Api.Controllers;
 public class ActivityController : ControllerBase
 {
     private readonly ActivityCommandHandler activityCommandHandler;
+    private readonly AppointmentCommandHandler appointmentCommandHandler;
     private readonly ILogger<LeadController> logger;
 
-    public ActivityController(ILogger<LeadController> logger, ActivityCommandHandler activityCommandHandler)
+    public ActivityController(ILogger<LeadController> logger, 
+        ActivityCommandHandler activityCommandHandler,
+        AppointmentCommandHandler appointmentCommandHandler)
     {
         this.logger = logger;
         this.activityCommandHandler = activityCommandHandler;
+        this.appointmentCommandHandler = appointmentCommandHandler;
     }
 
     [HttpPost("list")]
@@ -43,21 +47,21 @@ public class ActivityController : ControllerBase
 
     # region Appointment
 
-    [HttpPost("/create/appointment")]
-    [ProducesResponseType(typeof(AppointmentActivityModal), 200)]
+    [HttpPost("create/appointment")]
+    [ProducesResponseType(typeof(AppointmentModal), 200)]
     [PrivilegeAuthorize(PrivilegeCodes.ActivityPrivilegeCodes.AppointmentCreate)]
-    public async Task<IActionResult> AppointmentCreate(AppointmentActivityModal request)
+    public async Task<IActionResult> AppointmentCreate(AppointmentModal request)
     {
-        var response = await activityCommandHandler.CreateAppointment(request);
+        var response = await appointmentCommandHandler.CreateAppointment(request);
         return Ok(response);
     }
 
-    [HttpPost("/get/appointment")]
-    [ProducesResponseType(typeof(AppointmentActivityModal), 200)]
+    [HttpPost("get/appointment")]
+    [ProducesResponseType(typeof(AppointmentModal), 200)]
     [PrivilegeAuthorize(PrivilegeCodes.ActivityPrivilegeCodes.AppointmentRead)]
     public async Task<IActionResult> AppointmentRead(ActivityGetRequest request)
     {
-        var response = await activityCommandHandler.ReadAppointment(request.Id);
+        var response = await appointmentCommandHandler.ReadAppointment(request.Id);
         return Ok(response);
     }
 

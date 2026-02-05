@@ -485,9 +485,9 @@ const ActivityList: React.FC = () => {
           <Text strong style={{ cursor: 'pointer', color: '#1890ff' }}>
             {text}
           </Text>
-          {record.regardingEntityType && (
+          {record.regardingEntity && (
             <Text type="secondary" style={{ fontSize: 12 }}>
-              {record.regardingEntityType}: {record.regardingEntityId}
+              {record.regardingEntity.entityType}: {record.regardingEntity.id}
             </Text>
           )}
         </Space>
@@ -606,81 +606,135 @@ const ActivityList: React.FC = () => {
   };
 
   // Calendar date cell render
-  const calendarDateCellRender = useCallback(
-    (value: Dayjs) => {
-      const dateStr = value.format('YYYY-MM-DD');
-      const dayActivities = calendarActivities.filter((activity) => {
-        const activityDate = activity.dueDate
-          ? dayjs(activity.dueDate).format('YYYY-MM-DD')
-          : null;
-        return activityDate === dateStr;
-      });
+// Calendar date cell render - DÜZELTILMIŞ VERSİYON
+// Bu fonksiyonu mevcut calendarDateCellRender ile değiştirin
 
-      if (dayActivities.length === 0) return null;
+// Calendar date cell render - DÜZELTILMIŞ VERSİYON
+// Bu fonksiyonu mevcut calendarDateCellRender ile değiştirin
+
+// Calendar date cell render - DÜZELTILMIŞ VERSİYON
+// Bu fonksiyonu mevcut calendarDateCellRender ile değiştirin
+
+const calendarDateCellRender = useCallback(
+  (value: Dayjs) => {
+    const dateStr = value.format('YYYY-MM-DD');
+    
+    // Aktiviteyi birden fazla tarih alanına göre filtrele
+    const dayActivities = calendarActivities.filter((activity) => {
+      const activityStartDate = activity.startDate
+        ? dayjs(activity.startDate).format('YYYY-MM-DD')
+        : null;
+      const activityDueDate = activity.dueDate
+        ? dayjs(activity.dueDate).format('YYYY-MM-DD')
+        : null;
+      const activityEndDate = activity.endDate
+        ? dayjs(activity.endDate).format('YYYY-MM-DD')
+        : null;
 
       return (
-        <Popover
-          content={
-            <List
-              size="small"
-              dataSource={dayActivities}
-              renderItem={(item) => (
-                <List.Item
-                  style={{ cursor: 'pointer', padding: '4px 0' }}
-                  onClick={() => handleView(item)}
-                >
-                  <Space>
-                    <Avatar
-                      size="small"
-                      style={{
-                        backgroundColor: getActivityTypeColor(item.activityType),
-                        fontSize: 12,
-                      }}
-                      icon={getActivityTypeIcon(item.activityType)}
-                    />
-                    <div>
-                      <Text ellipsis style={{ maxWidth: 200, display: 'block' }}>
-                        {item.subject}
-                      </Text>
-                      <Text type="secondary" style={{ fontSize: 11 }}>
-                        {dayjs(item.dueDate).format('HH:mm')} - {getActivityStatusLabel(item.status)}
-                      </Text>
-                    </div>
-                  </Space>
-                </List.Item>
-              )}
-            />
-          }
-          title={`${value.format('DD MMMM YYYY')} - ${dayActivities.length} aktivite`}
-          trigger="click"
-        >
-          <ul style={{ listStyle: 'none', padding: 0, margin: 0 }}>
-            {dayActivities.slice(0, 3).map((activity) => (
-              <li key={activity.id} style={{ marginBottom: 2 }}>
-                <Badge
-                  color={getActivityTypeColor(activity.activityType)}
-                  text={
-                    <Text ellipsis style={{ fontSize: 11, maxWidth: 80, display: 'inline-block' }}>
-                      {activity.subject}
-                    </Text>
-                  }
-                />
-              </li>
-            ))}
-            {dayActivities.length > 3 && (
-              <li>
-                <Text type="secondary" style={{ fontSize: 10 }}>
-                  +{dayActivities.length - 3} daha
-                </Text>
-              </li>
-            )}
-          </ul>
-        </Popover>
+        activityStartDate === dateStr ||
+        activityDueDate === dateStr ||
+        activityEndDate === dateStr
       );
-    },
-    [calendarActivities, handleView]
-  );
+    });
 
+    if (dayActivities.length === 0) return null;
+
+    return (
+      <Popover
+        content={
+          <List
+            size="small"
+            dataSource={dayActivities}
+            renderItem={(item) => (
+              <List.Item
+                style={{ cursor: 'pointer', padding: '0 0 0 0' }}
+                onClick={() => handleView(item)}
+              >
+                <Space>
+                  <Avatar
+                    size="small"
+                    style={{
+                      backgroundColor: getActivityTypeColor(item.activityType),
+                      fontSize: 12,
+                    }}
+                    icon={getActivityTypeIcon(item.activityType)}
+                  />
+                  <div>
+                    <Text ellipsis style={{ maxWidth: 220, display: 'block', fontSize: 13 }}>
+                      {item.subject}
+                    </Text>
+                    <Text type="secondary" style={{ fontSize: 12 }}>
+                      {item.startDate
+                        ? dayjs(item.startDate).format('HH:mm')
+                        : item.dueDate
+                          ? dayjs(item.dueDate).format('HH:mm')
+                          : ''}{' '}
+                      - {getActivityStatusLabel(item.status)}
+                    </Text>
+                  </div>
+                </Space>
+              </List.Item>
+            )}
+          />
+        }
+        title={`${value.format('DD MMMM YYYY')} - ${dayActivities.length} aktivite`}
+        trigger="click"
+      >
+        <div
+          style={{
+            margin: 0,
+            padding: '0 0 0 0',
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'stretch',
+            gap: 4,
+          }}
+        >
+          {dayActivities.slice(0, 3).map((activity) => (
+            <div
+              key={activity.id}
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: 6,
+                width: '100%',
+                minWidth: 0,
+              }}
+            >
+              <span
+                style={{
+                  width: 6,
+                  height: 6,
+                  borderRadius: '50%',
+                  backgroundColor: getActivityTypeColor(activity.activityType),
+                  flexShrink: 0,
+                }}
+              />
+              <Text
+                ellipsis
+                style={{
+                  fontSize: 12,
+                  flex: 1,
+                  minWidth: 0,
+                  lineHeight: 1.4,
+                }}
+              >
+                {activity.subject}
+              </Text>
+            </div>
+          ))}
+          {dayActivities.length > 3 && (
+            <Text type="secondary" style={{ fontSize: 11 }}>
+              +{dayActivities.length - 3} daha
+            </Text>
+          )}
+        </div>
+      </Popover>
+    );
+  },
+  [calendarActivities, handleView]
+);
   // Calendar header render
   const calendarHeaderRender = useCallback(
     ({ value, onChange }: { value: Dayjs; onChange: (date: Dayjs) => void }) => {

@@ -26,18 +26,22 @@ public static class DependencyInjection
         services.AddScoped<IMicrosoftGraphService, MicrosoftGraphService>();
 
         // Entity Repository
+        services.AddScoped<IReferenceRepository, ReferenceRepository>();
         services.AddScoped<IUserRepository, UserRepository>();
         services.AddScoped<IOrganizationRepository, OrganizationRepository>();
         services.AddScoped<IRoleRepository, RoleRepository>();
         services.AddScoped<ILeadRepository, LeadRepository>();
         services.AddScoped<IActivityRepository, ActivityRepository>();
-
+        services.AddScoped<IAppointmentRepository, AppointmentRepository>();
 
         //Command Handler
+        services.AddScoped<UserCommandHandler>();
         services.AddScoped<AuthenticationCommandHandler>();
         services.AddScoped<LeadCommandHandler>();
         services.AddScoped<ActivityCommandHandler>();
         services.AddScoped<UserCommandHandler>();
+        services.AddScoped<AppointmentCommandHandler>();
+        
 
         return services;
     }

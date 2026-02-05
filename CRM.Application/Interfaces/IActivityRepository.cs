@@ -1,18 +1,13 @@
 ﻿using CRM.Application.Modals.ActivityModal;
 using CRM.Application.Modals.Common;
-using CRM.Application.Modals.ActivityModal;
-using CRM.Domain.Entities.Lead;
-using System;
-using System.Collections.Generic;
-using System.Text;
 
 namespace CRM.Application.Interfaces
 {
     public interface IActivityRepository
     {
-        PaginationResult<ActivityBaseModal> List(ActivityListFilters? filter, PaginationInfo? paginationInfo);
+        ActivityListResponse List(ActivityListFilters? filter, PaginationInfo? paginationInfo);
+        List<ActivityBaseModal> Calendar(ActivityListFilters? filters, DateTime startDate, DateTime endDate);
 
-        AppointmentActivityModal CreateAppointment(ActivityListFilters? filter, PaginationInfo? paginationInfo);
 
     }
 }

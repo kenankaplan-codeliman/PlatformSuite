@@ -378,7 +378,7 @@ const EntityLookup: React.FC<EntityLookupProps> = ({
       ),
     },
     {
-      title: 'Ad',
+      title: 'Adı /Firma Adı',
       dataIndex: 'name',
       key: 'name',
       render: (name: string, record: EntityReference) => {
@@ -401,14 +401,6 @@ const EntityLookup: React.FC<EntityLookupProps> = ({
           </Space>
         );
       },
-    },
-    {
-      title: 'Firma',
-      dataIndex: 'company',
-      key: 'company',
-      width: 150,
-      ellipsis: true,
-      render: (company: string) => company || '-',
     },
     {
       title: '',

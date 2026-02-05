@@ -11,14 +11,9 @@ public class EmailActivity : ActivityBase
     public EmailActivity() : base(ActivityType.Email)
     {
     }
-       
+
 
     #region Email Properties
-    /// <summary>
-    /// E-posta konusu (Subject property'si ActivityBase'den geliyor)
-    /// Bu alan e-posta spesifik konu için kullanılabilir
-    /// </summary>
-    public string? EmailSubject { get; set; }
 
     /// <summary>
     /// E-posta içeriği
@@ -29,19 +24,6 @@ public class EmailActivity : ActivityBase
     /// HTML formatında mı?
     /// </summary>
     public bool IsHtml { get; set; } = true;
-
-    /// <summary>
-    /// Gönderilme tarihi
-    /// </summary>
-    public virtual DateTime? SentDate 
-    {
-        get {
-            return base.CompletedDate;
-        }
-        set { 
-            base.CompletedDate = value; 
-        } 
-    }
 
     /// <summary>
     /// E-posta gönderildi mi?
@@ -57,6 +39,9 @@ public class EmailActivity : ActivityBase
     /// Okunma tarihi
     /// </summary>
     public DateTime? ReadDate { get; set; }
+
+    
+
     #endregion
 
     #region Party Helper Properties
@@ -131,9 +116,10 @@ public class EmailActivity : ActivityBase
     public void MarkAsSent()
     {
         IsSent = true;
-        SentDate = DateTime.UtcNow;
+        StartDate = DateTime.UtcNow;
+        EndDate = DateTime.UtcNow;
         Status = ActivityStatus.Completed;
-        CompletedDate = DateTime.UtcNow;
+        
     }
 
     /// <summary>

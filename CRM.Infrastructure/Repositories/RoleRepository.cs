@@ -1,5 +1,6 @@
 ﻿using CRM.Application.Exceptions;
 using CRM.Application.Interfaces;
+using CRM.Application.Modals.Common;
 using CRM.Domain.Entities.Identity;
 using CRM.Domain.Enums;
 using CRM.Infrastructure.Data;
@@ -77,6 +78,5 @@ namespace CRM.Infrastructure.Repositories
 
             dbContext.SaveChanges();
         }
-        
     }
 }

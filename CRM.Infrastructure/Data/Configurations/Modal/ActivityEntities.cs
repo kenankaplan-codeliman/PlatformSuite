@@ -10,96 +10,7 @@ public static class ActivityEntities
     public static void ConfigureActivityEntities(this ModelBuilder modelBuilder)
     {
         // =====================================================
-        // activity (BASE)
-        // =====================================================
-        modelBuilder.Entity<ActivityBase>(entity =>
-        {
-            entity.ToTable("activity");
-
-            entity.HasKey(e => e.Id);
-            entity.Property(e => e.Id).HasColumnName("id");
-
-            entity.Property(e => e.Subject)
-                .HasColumnName("subject")
-                .HasMaxLength(200)
-                .IsRequired();
-
-            entity.Property(e => e.ActivityType)
-                .HasColumnName("activity_type")
-                .HasMaxLength(20)
-                .IsRequired()
-                .HasConversion<EnumToStringConverter<ActivityType>>();
-
-            entity.Property(e => e.Status)
-                .HasColumnName("status")
-                .HasMaxLength(20)
-                .IsRequired()
-                .HasConversion<EnumToStringConverter<ActivityStatus>>();
-
-            entity.Property(e => e.Priority)
-                .HasColumnName("priority")
-                .HasMaxLength(10)
-                .IsRequired()
-                .HasConversion<EnumToStringConverter<ActivityPriority>>();
-
-            entity.Property(e => e.StartDate)
-                .HasColumnName("start_date");
-
-            entity.Property(e => e.DueDate)
-                .HasColumnName("due_date");
-
-            entity.Property(e => e.CompletedDate)
-                .HasColumnName("completed_date");
-
-            entity.Property(e => e.Duration)
-                .HasColumnName("duration");
-
-            entity.Property(e => e.RegardingEntityType)
-                .HasColumnName("regarding_entity_type")
-                .HasMaxLength(50);
-
-            entity.Property(e => e.RegardingEntityId)
-                .HasColumnName("regarding_entity_id");
-
-            entity.Property(e => e.IsActive)
-                .HasColumnName("is_active")
-                .IsRequired();
-
-            entity.Property(e => e.CreatedBy)
-                .HasColumnName("created_by")
-                .IsRequired();
-
-            entity.Property(e => e.CreatedAt)
-                .HasColumnName("created_at")
-                .IsRequired();
-
-            entity.Property(e => e.UpdatedBy)
-                .HasColumnName("updated_by");
-
-            entity.Property(e => e.UpdatedAt)
-                .HasColumnName("updated_at");
-
-            entity.Property(e => e.IsDeleted)
-                .HasColumnName("is_deleted")
-                .IsRequired();
-
-            entity.Property(e => e.DeletedBy)
-                .HasColumnName("deleted_by");
-
-            entity.Property(e => e.DeletedAt)
-                .HasColumnName("deleted_at");
-
-            entity.Property(e => e.OwnerId)
-                .HasColumnName("owner_id")
-                .IsRequired();
-
-            entity.Property(e => e.OrganizationId)
-                .HasColumnName("organization_id")
-                .IsRequired();
-        });
-
-        // =====================================================
-        // activity_party
+        // activity_party (İLK ÖNCE - bağımsız entity olarak)
         // =====================================================
         modelBuilder.Entity<ActivityParty>(entity =>
         {
@@ -154,23 +65,120 @@ public static class ActivityEntities
                 .HasColumnName("is_active")
                 .IsRequired();
 
-            entity.HasOne(p => p.Activity)
-                .WithMany(a => a.Parties)
-                .HasForeignKey(p => p.ActivityId)
-                .IsRequired(false)
-                .OnDelete(DeleteBehavior.Cascade);
+            // Index for faster lookups
+            entity.HasIndex(e => e.ActivityId);
+
+            entity.Ignore(e => e.DisplayName);
+            entity.Ignore(e => e.IsExternal);
         });
 
         // =====================================================
-        // activity_email
+        // activity (BASE) - TPT Inheritance Root
+        // =====================================================
+        modelBuilder.Entity<ActivityBase>(entity =>
+        {
+            entity.ToTable("activity");
+
+            entity.HasKey(e => e.Id);
+            entity.Property(e => e.Id).HasColumnName("id");
+
+            // TPT stratejisi
+            entity.UseTptMappingStrategy();
+
+            entity.Property(e => e.Subject)
+                .HasColumnName("subject")
+                .HasMaxLength(200)
+                .IsRequired();
+
+            entity.Property(e => e.ActivityType)
+                .HasColumnName("activity_type")
+                .HasMaxLength(20)
+                .IsRequired()
+                .HasConversion<EnumToStringConverter<ActivityType>>();
+
+            entity.Property(e => e.Status)
+                .HasColumnName("status")
+                .HasMaxLength(20)
+                .IsRequired()
+                .HasConversion<EnumToStringConverter<ActivityStatus>>();
+
+            entity.Property(e => e.Priority)
+                .HasColumnName("priority")
+                .HasMaxLength(10)
+                .IsRequired()
+                .HasConversion<EnumToStringConverter<ActivityPriority>>();
+
+            entity.Property(e => e.StartDate)
+                .HasColumnName("start_date");
+
+            entity.Property(e => e.DueDate)
+                .HasColumnName("due_date");
+
+            entity.Property(e => e.EndDate)
+                .HasColumnName("end_date");
+
+            entity.Property(e => e.Duration)
+                .HasColumnName("duration");
+
+            entity.Property(e => e.RegardingEntityType)
+                .HasColumnName("regarding_entity_type")
+                .HasMaxLength(50)
+                .HasConversion<EnumToStringConverter<EntityType>>();
+
+            entity.Property(e => e.RegardingEntityId)
+                .HasColumnName("regarding_entity_id");
+
+            entity.Property(e => e.IsActive)
+                .HasColumnName("is_active")
+                .IsRequired();
+
+            entity.Property(e => e.CreatedBy)
+                .HasColumnName("created_by")
+                .IsRequired();
+
+            entity.Property(e => e.CreatedAt)
+                .HasColumnName("created_at")
+                .IsRequired();
+
+            entity.Property(e => e.UpdatedBy)
+                .HasColumnName("updated_by");
+
+            entity.Property(e => e.UpdatedAt)
+                .HasColumnName("updated_at");
+
+            entity.Property(e => e.IsDeleted)
+                .HasColumnName("is_deleted")
+                .IsRequired();
+
+            entity.Property(e => e.DeletedBy)
+                .HasColumnName("deleted_by");
+
+            entity.Property(e => e.DeletedAt)
+                .HasColumnName("deleted_at");
+
+            entity.Property(e => e.OwnerId)
+                .HasColumnName("owner_id")
+                .IsRequired();
+
+            entity.Property(e => e.OrganizationId)
+                .HasColumnName("organization_id")
+                .IsRequired();
+
+            // Tek yönlü ilişki: ActivityBase -> ActivityParty (without navigation on ActivityParty side)
+            entity.HasMany(a => a.Parties)
+                .WithOne()  // Navigation property yok ActivityParty tarafında
+                .HasForeignKey(p => p.ActivityId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            entity.Ignore(e => e.Duration);
+        });
+
+        // =====================================================
+        // activity_email (Derived - TPT)
         // =====================================================
         modelBuilder.Entity<EmailActivity>(entity =>
         {
             entity.ToTable("activity_email");
-
-            entity.Property(e => e.EmailSubject)
-                .HasColumnName("email_subject")
-                .HasMaxLength(500);
 
             entity.Property(e => e.Body)
                 .HasColumnName("body")
@@ -190,12 +198,18 @@ public static class ActivityEntities
 
             entity.Property(e => e.ReadDate)
                 .HasColumnName("read_date");
+
+            // Computed/wrapper properties - veritabanında karşılığı yok
+            entity.Ignore(e => e.From);
+            entity.Ignore(e => e.ToRecipients);
+            entity.Ignore(e => e.CcRecipients);
+            entity.Ignore(e => e.BccRecipients);
         });
 
         // =====================================================
-        // activity_phone_call
+        // activity_phone_call (Derived - TPT)
         // =====================================================
-        modelBuilder.Entity<PhoneCallActivity>(entity =>
+        modelBuilder.Entity<PhoneCall>(entity =>
         {
             entity.ToTable("activity_phone_call");
 
@@ -203,7 +217,7 @@ public static class ActivityEntities
                 .HasColumnName("call_direction")
                 .HasMaxLength(10)
                 .IsRequired()
-                .HasConversion<EnumToStringConverter<CallDirection>>();
+                .HasConversion<EnumToStringConverter<Direction>>();
 
             entity.Property(e => e.PhoneNumber)
                 .HasColumnName("phone_number")
@@ -220,10 +234,14 @@ public static class ActivityEntities
             entity.Property(e => e.CallResult)
                 .HasColumnName("call_result")
                 .HasMaxLength(100);
+
+            // Computed/wrapper properties
+            entity.Ignore(e => e.Caller);
+            entity.Ignore(e => e.Recipients);
         });
 
         // =====================================================
-        // activity_task
+        // activity_task (Derived - TPT)
         // =====================================================
         modelBuilder.Entity<TaskActivity>(entity =>
         {
@@ -252,14 +270,12 @@ public static class ActivityEntities
                 .HasColumnName("percent_complete")
                 .IsRequired();
 
-            entity.Property(e => e.StartDate)
-                .HasColumnName("start_date");
         });
 
         // =====================================================
-        // activity_appointment
+        // activity_appointment (Derived - TPT)
         // =====================================================
-        modelBuilder.Entity<AppointmentActivity>(entity =>
+        modelBuilder.Entity<Appointment>(entity =>
         {
             entity.ToTable("activity_appointment");
 
@@ -296,6 +312,12 @@ public static class ActivityEntities
             entity.Property(e => e.MeetingNotes)
                 .HasColumnName("meeting_notes")
                 .HasColumnType("text");
+
+            // Computed/wrapper properties
+            entity.Ignore(e => e.Organizer);
+            entity.Ignore(e => e.Attendees);
+            entity.Ignore(e => e.RequiredAttendees);
+            entity.Ignore(e => e.OptionalAttendees);
         });
     }
 }

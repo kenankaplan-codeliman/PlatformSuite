@@ -168,7 +168,7 @@ namespace CRM.Application.CommandHandler
 
             try
             {
-                sessionService.RevokeSessionAsync(accessToken, clientInfo);
+                sessionService.RevokeSession(accessToken, clientInfo);
                 unitOfWork.CommitTransaction();
             }
             catch (Exception)

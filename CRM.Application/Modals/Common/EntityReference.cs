@@ -9,13 +9,12 @@ namespace CRM.Application.Modals.Common
     {
         public EntityReference(EntityType entityType)
         {
-            EntityType = entityType.ToString();
+            EntityType = entityType;
         }
 
         public Guid Id { get; set; }
         public string Name { get; set; } = string.Empty;
-        public string? Company { get; set; }
-        public string EntityType { get; private set; }
+        public EntityType EntityType { get; private set; }
         public string? Email { get; set; }
         public string? Phone { get; set; }
     }

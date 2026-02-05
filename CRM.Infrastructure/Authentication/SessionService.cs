@@ -16,13 +16,9 @@ namespace CRM.Infrastructure.Authentication
         private readonly ICacheService cache;
         private readonly IUserRepository userRepository;
         private readonly IOrganizationRepository organizationRepository;
-        private readonly IRoleRepository roleRepository;
         private readonly ITokenService tokenService;
-        private readonly IUnitOfWork unitOfWork;
         private readonly DatabaseContext dbContext;
         private const string SESSION_PREFIX = "session:";
-
-
 
         public SessionService(
             IConfiguration config,
@@ -31,16 +27,13 @@ namespace CRM.Infrastructure.Authentication
             IOrganizationRepository organizationRepository,
             IRoleRepository roleRepository,
             ITokenService tokenService,
-            IUnitOfWork unitOfWork,
             DatabaseContext dbContext)
         {
             this.config = config;
             this.cache = cache;
             this.userRepository = userRepository;
             this.organizationRepository = organizationRepository;
-            this.roleRepository = roleRepository;
             this.tokenService = tokenService;
-            this.unitOfWork = unitOfWork;
             this.dbContext = dbContext;
         }
 
@@ -56,7 +49,6 @@ namespace CRM.Infrastructure.Authentication
 
             var refreshToken = tokenService.GenerateToken(refreshTokenId, refreshTokenExp);
 
-            var authenticationToken = AuthenticationToken.Create(accessToken, accessTokenExp, refreshToken, refreshTokenExp);
 
             // LoginHistory'ye kaydet
             var loginHistory = new AppLogin
@@ -73,12 +65,13 @@ namespace CRM.Infrastructure.Authentication
                 IsActive = true
             };
 
+
             dbContext.AppLogin.Add(loginHistory);
 
             var orgMap = organizationRepository.GetOrganizationHierarchy(user.OrganizationId);
             var usrPrivileges = userRepository.GetPrivileges(user.Id);
 
-            var userContext = new ContextUser()
+            var contextUser = new ContextUser()
             {
                 UserId = user.Id,
                 Email = user.Email,
@@ -89,7 +82,10 @@ namespace CRM.Infrastructure.Authentication
                 PrivilegesCodes = usrPrivileges
             };
 
-            SetSessionUser(accessTokenId, userContext, authenticationToken.RefreshTokenExpiration);
+            var authenticationToken = AuthenticationToken.Create(accessToken, accessTokenExp, refreshToken, refreshTokenExp);
+
+            SetSessionUser(accessTokenId, contextUser, authenticationToken.RefreshTokenExpiration);
+
 
             return authenticationToken;
 
@@ -107,36 +103,44 @@ namespace CRM.Infrastructure.Authentication
                 throw new UnAuthenticatedException("User Login not fount.");
 
 
-            //Generate New Token
+            //Remove Old Session 
+            RemoveSessionUser(appLogin.AccessTokenId);
+
+            //New Token
             string newAccessTokenId = generateTokenId();
-            DateTime accessTokenExp = getAccessTokenExpire();
+            DateTime newAccessTokenExp = getAccessTokenExpire();
+            var newAccessToken = tokenService.GenerateToken(newAccessTokenId, newAccessTokenExp);
 
-            var accessToken = tokenService.GenerateToken(newAccessTokenId, accessTokenExp);
 
-            //Renew Session Value
+            //New Context User
+            var user = userRepository.Get(appLogin.UserId);
+            var orgMap = organizationRepository.GetOrganizationHierarchy(user.OrganizationId);
+            var usrPrivileges = userRepository.GetPrivileges(user.Id);
 
-            IContextUser? currentUserContext = GetSessionUser(appLogin.AccessTokenId);
-
-            if (currentUserContext is ContextUser user)
+            var newContextUser = new ContextUser()
             {
-                SetSessionUser(newAccessTokenId, user, appLogin.RefreshTokenExpiresAt);
-                RemoveSessionUser(appLogin.AccessTokenId);
-            }
-            else
-            {
-                throw new UnAuthenticatedException("Session user not fount.");
-            }
+                UserId = user.Id,
+                Email = user.Email,
+                DisplayName = $"{user.FirstName} {user.LastName}",
+                OrganizationId = user.OrganizationId,
+                OrganizationName = orgMap[user.OrganizationId],
+                AccessibleOrganizationList = orgMap.Keys.ToList(),
+                PrivilegesCodes = usrPrivileges
+            };
+
+            SetSessionUser(newAccessTokenId, newContextUser, appLogin.RefreshTokenExpiresAt);
 
             //Update History with new Token
             appLogin.AccessTokenId = newAccessTokenId;
-            appLogin.AccessTokenExpiresAt = accessTokenExp;
+            appLogin.AccessTokenExpiresAt = newAccessTokenExp;
             appLogin.RefreshCount++;
             appLogin.IpAddress = clientInfo?.IpAddress;
             appLogin.UserAgent = clientInfo?.UserAgent;
 
             dbContext.AppLogin.Update(appLogin);
 
-            var authenticationToken = AuthenticationToken.Create(accessToken, accessTokenExp, refreshToken, appLogin.RefreshTokenExpiresAt);
+            var authenticationToken = AuthenticationToken.Create(newAccessToken, newAccessTokenExp, refreshToken, appLogin.RefreshTokenExpiresAt);
+
 
             return authenticationToken;
         }
@@ -197,7 +201,6 @@ namespace CRM.Infrastructure.Authentication
             cache.Remove(cacheKey);
         }
 
-
         public void RevokeAllUserSessions(Guid userId)
         {
             List<SessionInfo> sessions = GetUserActiveSessions(userId);
@@ -237,9 +240,6 @@ namespace CRM.Infrastructure.Authentication
             return DateTime.Now.AddMinutes(int.Parse(config["Jwt:AccessExpireMin"]!));
         }
 
-        public void RevokeSessionAsync(string accessToken, ClientInfo? clientInfo)
-        {
-            throw new NotImplementedException();
-        }
+
     }
 }

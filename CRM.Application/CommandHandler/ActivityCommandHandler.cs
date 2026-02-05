@@ -20,39 +20,17 @@ public class ActivityCommandHandler
 
     public async Task<List<ActivityBaseModal>> Calendar(ActivityListFilters? filters, DateTime startDate, DateTime endDate)
     {
-        return new List<ActivityBaseModal>();   
+        var result = activityRepository.Calendar(filters, startDate, endDate);
+
+        return result;
     }
 
-    public async Task<ActivityListResponse> List(ActivityListFilters? filter, PaginationInfo? paginationInfo)
+    public async Task<ActivityListResponse> List(ActivityListFilters? filters, PaginationInfo? paginationInfo)
     {
-        //var result = await activityRepository.ListAsync(filter, paginationInfo);
+        var result = activityRepository.List(filters, paginationInfo);
 
-        //var modalList = result.Data.Select(e => LeadListItem.fromEntity(e)).ToList();
-
-        return new ActivityListResponse()
-        {
-            Data = new List<ActivityBaseModal>(),
-            HasMore = false,
-            Page = 0,//result.Page,
-            PageSize =0, //result.PageSize,
-        };
+        return result;
     }
-
-
-    #region Appointment
-    public async Task<AppointmentActivityModal> CreateAppointment(AppointmentActivityModal appointment)
-    {
-        return new AppointmentActivityModal();    
-    }
-
-    public async Task<AppointmentActivityModal> ReadAppointment(Guid Id)
-    {
-        
-        return new AppointmentActivityModal();
-    }
-    
-    #endregion
-
 
 
 }

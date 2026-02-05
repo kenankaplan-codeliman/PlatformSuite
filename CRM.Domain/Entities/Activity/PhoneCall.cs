@@ -6,9 +6,9 @@ namespace CRM.Domain.Entities.Activity;
 /// Telefon Görüşmesi Aktivitesi
 /// Katılımcılar (Caller, Recipient) ActivityParty tablosunda tutulur.
 /// </summary>
-public class PhoneCallActivity : ActivityBase
+public class PhoneCall : ActivityBase
 {
-    public PhoneCallActivity() : base(ActivityType.PhoneCall)
+    public PhoneCall() : base(ActivityType.PhoneCall)
     {
     }
 
@@ -16,35 +16,12 @@ public class PhoneCallActivity : ActivityBase
     /// <summary>
     /// Arama yönü (Gelen / Giden)
     /// </summary>
-    public CallDirection CallDirection { get; set; }
+    public Direction CallDirection { get; set; }
 
     /// <summary>
     /// Telefon numarası (hızlı erişim için - ayrıca Party'de de tutulabilir)
     /// </summary>
     public string? PhoneNumber { get; set; }
-
-    /// <summary>
-    /// Görüşme başlangıç zamanı
-    /// </summary>
-    public virtual DateTime? StartedAt { get { 
-            return base.StartDate;
-        } 
-        set {
-            base.StartDate = value;
-        } 
-    }
-
-    /// <summary>
-    /// Görüşme bitiş zamanı
-    /// </summary>
-    public virtual DateTime? EndedAt { 
-        get {
-            return base.CompletedDate;
-        } 
-        set {
-            base.CompletedDate = value; 
-        } 
-    }
 
     /// <summary>
     /// Görüşme kaydı URL'i
@@ -60,23 +37,6 @@ public class PhoneCallActivity : ActivityBase
     /// Arama sonucu (Cevaplandı, Meşgul, Cevapsız vb.)
     /// </summary>
     public string? CallResult { get; set; }
-    #endregion
-
-    #region Computed Properties
-    /// <summary>
-    /// Görüşme süresi (EndedAt - StartedAt)
-    /// </summary>
-    public TimeSpan? CallDuration
-    {
-        get
-        {
-            if (StartedAt.HasValue && EndedAt.HasValue)
-            {
-                return EndedAt.Value - StartedAt.Value;
-            }
-            return null;
-        }
-    }
     #endregion
 
     #region Party Helper Properties
@@ -122,7 +82,7 @@ public class PhoneCallActivity : ActivityBase
     /// </summary>
     public void StartCall()
     {
-        StartedAt = DateTime.UtcNow;
+        StartDate = DateTime.UtcNow;
         Status = ActivityStatus.InProgress;
     }
 
@@ -131,24 +91,9 @@ public class PhoneCallActivity : ActivityBase
     /// </summary>
     public void EndCall(string? result = null)
     {
-        EndedAt = DateTime.UtcNow;
         CallResult = result;
-        Duration = CallDuration;
         MarkAsCompleted();
     }
 
-    /// <summary>
-    /// Aktiviteyi tamamlandı olarak işaretle ve süreyi hesapla
-    /// </summary>
-    public override void MarkAsCompleted()
-    {
-        base.MarkAsCompleted();
-
-        // Süreyi güncelle
-        if (Duration == null && CallDuration.HasValue)
-        {
-            Duration = CallDuration;
-        }
-    }
     #endregion
 }

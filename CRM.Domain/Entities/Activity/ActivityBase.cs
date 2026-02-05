@@ -20,13 +20,13 @@ public abstract class ActivityBase : IBaseEntity, ISoftDeleteEntity, IAuditableE
     public Guid Id { get; set; } = Guid.NewGuid();
     public bool IsActive { get; set; } = true;
     #endregion
-    
+
 
     #region Core Activity Properties
     /// <summary>
     /// Aktivite başlığı
     /// </summary>
-    public required string Subject { get; set; }
+    public string Subject { get; set; } = default!;
 
     /// <summary>
     /// Aktivite tipi - Türetilen sınıf tarafından belirlenir
@@ -49,19 +49,14 @@ public abstract class ActivityBase : IBaseEntity, ISoftDeleteEntity, IAuditableE
     public DateTime? StartDate { get; set; }
 
     /// <summary>
+    /// Bitiş & Tamamlanma tarihi
+    /// </summary>
+    public DateTime? EndDate { get; set; }
+
+    /// <summary>
     /// Planlanan bitiş tarihi
     /// </summary>
     public DateTime? DueDate { get; set; }
-
-    /// <summary>
-    /// Tamamlanma tarihi
-    /// </summary>
-    public DateTime? CompletedDate { get; set; }
-
-    /// <summary>
-    /// Aktivite süresi
-    /// </summary>
-    public TimeSpan? Duration { get; set; }
 
     #endregion
 
@@ -75,6 +70,28 @@ public abstract class ActivityBase : IBaseEntity, ISoftDeleteEntity, IAuditableE
     /// İlgili entity ID
     /// </summary>
     public Guid? RegardingEntityId { get; set; }
+    #endregion
+
+    #region Computed Properties
+
+    #region Computed Properties
+    /// <summary>
+    /// Görüşme süresi (EndedAt - StartedAt)
+    /// </summary>
+    public TimeSpan? Duration
+    {
+        get
+        {
+            if (StartDate.HasValue && EndDate.HasValue)
+            {
+                return EndDate.Value - StartDate.Value;
+            }
+            return null;
+        }
+    }
+
+    #endregion
+
     #endregion
 
     #region IAuditableEntity
@@ -102,7 +119,7 @@ public abstract class ActivityBase : IBaseEntity, ISoftDeleteEntity, IAuditableE
     public virtual void MarkAsCompleted()
     {
         Status = ActivityStatus.Completed;
-        CompletedDate = DateTime.UtcNow;
+        EndDate = DateTime.UtcNow;
     }
 
     /// <summary>
@@ -111,6 +128,23 @@ public abstract class ActivityBase : IBaseEntity, ISoftDeleteEntity, IAuditableE
     public virtual void Cancel()
     {
         Status = ActivityStatus.Cancelled;
+    }
+
+    public virtual void ResolveStatus()
+    {
+        // Manuel set edilen durumlara dokunma
+        if (Status is ActivityStatus.Completed or ActivityStatus.Cancelled)
+            return;
+
+        Status = ActivityStatus.InProgress;
+
+        var now = DateTime.UtcNow;
+
+        if (StartDate.HasValue && now < StartDate)
+            Status = ActivityStatus.NotStarted;
+
+        if (EndDate.HasValue && now > EndDate.Value)
+            Status = ActivityStatus.Completed;
     }
 
     #endregion

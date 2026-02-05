@@ -44,7 +44,7 @@ import {
 import type { ActivityTypeValue, ActivityStatusValue, ActivityPriorityValue } from '@/types/activity.types';
 import type { LeadStatusValue, LeadRatingValue, LeadSourceValue } from '@/types/lead.types';
 import type {CallDirectionValue}  from '@/types/activity.types';
-import { ActivityType, ActivityStatus, ActivityPriority, CallDirection } from '@/types/activity.types';
+import { ActivityType, ActivityStatus, ActivityPriority, Direction } from '@/types/activity.types';
 import { LeadStatus, LeadRating, LeadSource } from '@/types/lead.types';
 
 // ==================== ACTIVITY ICON GETTERS ====================
@@ -85,8 +85,8 @@ export const getActivityPriorityIcon = (priority: ActivityPriorityValue): React.
 /** Get Call Direction Icon */
 export const getCallDirectionIcon = (direction: CallDirectionValue): React.ReactNode => {
   const icons: Record<CallDirectionValue, React.ReactNode> = {
-    [CallDirection.Incoming]: <PhoneOutlined style={{ color: '#52c41a' }} />,
-    [CallDirection.Outgoing]: <PhoneOutlined style={{ color: '#1890ff' }} />,
+    [Direction.Incoming]: <PhoneOutlined style={{ color: '#52c41a' }} />,
+    [Direction.Outgoing]: <PhoneOutlined style={{ color: '#1890ff' }} />,
   };
   return icons[direction] ?? <PhoneOutlined />;
 };

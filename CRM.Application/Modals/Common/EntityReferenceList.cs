@@ -5,7 +5,7 @@ using System.Text;
 
 namespace CRM.Application.Modals.Common
 {
-    public class SearchListResponse
+    public class EntityReferenceList
     {
         public List<EntityReference> Data { get; set; } = new List<EntityReference>();
         public bool HasMore { get; set; }

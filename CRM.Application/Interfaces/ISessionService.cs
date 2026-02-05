@@ -10,7 +10,7 @@ namespace CRM.Application.Interfaces
     {
         AuthenticationToken CreateSession(AppUser user, ClientInfo? clientInfo = null);
         AuthenticationToken RefreshSession(string refreshToken, ClientInfo? clientInfo);
-        void RevokeSessionAsync(string accessToken, ClientInfo? clientInfo);
+        void RevokeSession(string accessToken, ClientInfo? clientInfo);
 
         IContextUser? GetSessionUser(string accessToken);
 

@@ -12,6 +12,5 @@ namespace CRM.Application.Interfaces
         AppUser? GetByEmail(string email);
         AppUser? GetByAzureUserId(string microsoftAzureUserId);
         Dictionary<string, AccessLevel> GetPrivileges(Guid userId);
-        PaginationResult<EntityReference> Search(string searchText, PaginationInfo? paginationInfo);
     }
 }

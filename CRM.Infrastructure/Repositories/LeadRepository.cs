@@ -19,13 +19,11 @@ namespace CRM.Infrastructure.Repositories
 {
     public class LeadRepository : ILeadRepository
     {
-        private readonly IConfiguration _config;
         private readonly DatabaseContext dbContext;
 
-        public LeadRepository(DatabaseContext dbContext, IConfiguration _config)
+        public LeadRepository(DatabaseContext dbContext)
         {
             this.dbContext = dbContext;
-            this._config = _config;
         }
 
         public Lead Create(Lead entity)
@@ -46,7 +44,7 @@ namespace CRM.Infrastructure.Repositories
             return entry.Entity;
         }
 
-        public Lead? Get(Guid Id)
+        public Lead Get(Guid Id)
         {
             var entity = this.dbContext.Lead.FirstOrDefault(e => e.Id == Id) ?? throw new NotFoundException();
             return entity;
@@ -123,76 +121,6 @@ namespace CRM.Infrastructure.Repositories
 
 
         }
-
-        public PaginationResult<EntityReference> Search(string searchText, PaginationInfo? paginationInfo)
-        {
-
-            if (string.IsNullOrEmpty(searchText))
-                return new PaginationResult<EntityReference>()
-                {
-                    Data = new List<EntityReference>(),
-                    HasMore = false,
-                };
-
-
-            int pageSize = int.Parse(_config["Search_Max_Record"]!);
-            int skipCnt = 0;
-
-            if (paginationInfo != null && paginationInfo.isValid())
-            {
-                pageSize = paginationInfo.PageSize;
-
-                var pageIndex = (paginationInfo.Page - 1) >= 0 ? paginationInfo.Page - 1 : 0;
-                skipCnt = pageIndex * paginationInfo.PageSize;
-
-            }
-
-            var query = from lead in this.dbContext.Lead.AsNoTracking()
-                        where
-                        lead.IsActive
-                        && (
-                            EF.Functions.ILike(lead.CompanyName, $"%{searchText}%")
-                           || EF.Functions.ILike((lead.FirstName + " " + lead.LastName), $"%{searchText}%")
-                           )
-                        select new
-                        {
-                            lead.Id,
-                            lead.CompanyName,
-                            lead.FirstName,
-                            lead.LastName,
-                            lead.Email,
-                            lead.Phone,
-                            lead.MobilePhone
-                        };
-
-
-            var entityList = query.Skip(skipCnt).Take(pageSize + 1).ToList();
-
-            var hasMore = entityList.Count > pageSize;
-
-            var modalList = entityList.Take(pageSize)
-                .Select(item => new EntityReference(EntityType.Lead)
-                {
-                    Id = item.Id,
-                    Company = item.CompanyName,
-                    Name = $"{item.FirstName} {item.LastName}",
-                    Email = item.Email,
-                    Phone = item.MobilePhone ?? item.Phone,
-                })
-                .ToList();
-
-            return new PaginationResult<EntityReference>()
-            {
-                Data = modalList,
-                HasMore = hasMore,
-                Page = paginationInfo?.Page ?? 1,
-                PageSize = pageSize,
-            };
-
-
-
-        }
-
     }
 
 
