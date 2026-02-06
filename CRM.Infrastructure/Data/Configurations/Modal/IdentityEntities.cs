@@ -102,8 +102,8 @@ public static class IdentityEntities
                 .HasMaxLength(100)
                 .IsRequired();
 
-            entity.Property(e => e.Microsoft365Id)
-                .HasColumnName("microsoft365_id")
+            entity.Property(e => e.AzureUserId)
+                .HasColumnName("azure_user_id")
                 .HasMaxLength(100);
 
             entity.Property(e => e.PasswordHash)

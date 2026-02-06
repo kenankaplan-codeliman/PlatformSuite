@@ -8,14 +8,15 @@ namespace CRM.Application.Interfaces
 {
     public interface ISessionService
     {
-        AuthenticationToken CreateSession(AppUser user, ClientInfo? clientInfo = null);
-        AuthenticationToken RefreshSession(string refreshToken, ClientInfo? clientInfo);
-        void RevokeSession(string accessToken, ClientInfo? clientInfo);
+        Task<AuthenticationToken> CreateSessionAsync(AppUser user, ClientInfo? clientInfo = null);
+        Task<AuthenticationToken> RefreshSessionAsync(string refreshToken, ClientInfo? clientInfo);
+        Task RevokeSessionAsync(string accessToken, ClientInfo? clientInfo);
 
         IContextUser? GetSessionUser(string accessToken);
 
+
+        Task RevokeAllUserSessionsAsync(Guid userId);
         
-        void RevokeAllUserSessions(Guid userId);
         List<SessionInfo> GetUserActiveSessions(Guid userId);
     }
 }

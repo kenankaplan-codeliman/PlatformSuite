@@ -6,6 +6,7 @@ using CRM.Domain.Enums;
 using CRM.Infrastructure.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
+using System.Runtime.CompilerServices;
 
 
 namespace CRM.Infrastructure.Authentication
@@ -37,7 +38,7 @@ namespace CRM.Infrastructure.Authentication
             this.dbContext = dbContext;
         }
 
-        public AuthenticationToken CreateSession(AppUser user, ClientInfo? clientInfo = null)
+        public async Task<AuthenticationToken> CreateSessionAsync(AppUser user, ClientInfo? clientInfo = null)
         {
             string accessTokenId = generateTokenId();
             DateTime accessTokenExp = getAccessTokenExpire();
@@ -67,9 +68,10 @@ namespace CRM.Infrastructure.Authentication
 
 
             dbContext.AppLogin.Add(loginHistory);
+            await dbContext.SaveChangesAsync();
 
             var orgMap = organizationRepository.GetOrganizationHierarchy(user.OrganizationId);
-            var usrPrivileges = userRepository.GetPrivileges(user.Id);
+            var usrPrivileges = userRepository.GetUserPrivileges(user.Id);
 
             var contextUser = new ContextUser()
             {
@@ -88,10 +90,9 @@ namespace CRM.Infrastructure.Authentication
 
 
             return authenticationToken;
-
         }
 
-        public AuthenticationToken RefreshSession(string refreshToken, ClientInfo? clientInfo)
+        public async Task<AuthenticationToken> RefreshSessionAsync(string refreshToken, ClientInfo? clientInfo)
         {
 
             string refreshTokenId = tokenService.ValidateAccessToken(refreshToken);
@@ -115,7 +116,7 @@ namespace CRM.Infrastructure.Authentication
             //New Context User
             var user = userRepository.Get(appLogin.UserId);
             var orgMap = organizationRepository.GetOrganizationHierarchy(user.OrganizationId);
-            var usrPrivileges = userRepository.GetPrivileges(user.Id);
+            var usrPrivileges = userRepository.GetUserPrivileges(user.Id);
 
             var newContextUser = new ContextUser()
             {
@@ -138,14 +139,14 @@ namespace CRM.Infrastructure.Authentication
             appLogin.UserAgent = clientInfo?.UserAgent;
 
             dbContext.AppLogin.Update(appLogin);
+            await dbContext.SaveChangesAsync();
 
             var authenticationToken = AuthenticationToken.Create(newAccessToken, newAccessTokenExp, refreshToken, appLogin.RefreshTokenExpiresAt);
-
 
             return authenticationToken;
         }
 
-        public void RevokeSession(string accessToken, ClientInfo? clientInfo)
+        public async Task RevokeSessionAsync(string accessToken, ClientInfo? clientInfo)
         {
             string accessTokenId = tokenService.ValidateAccessToken(accessToken, false);
 
@@ -158,7 +159,9 @@ namespace CRM.Infrastructure.Authentication
                 appLogin.IsActive = false;
                 appLogin.LogoutDate = DateTime.UtcNow;
                 dbContext.AppLogin.Update(appLogin);
+                await dbContext.SaveChangesAsync();
             }
+            
         }
 
         public IContextUser? GetSessionUser(string accessTokenId)
@@ -201,7 +204,7 @@ namespace CRM.Infrastructure.Authentication
             cache.Remove(cacheKey);
         }
 
-        public void RevokeAllUserSessions(Guid userId)
+        public async Task RevokeAllUserSessionsAsync(Guid userId)
         {
             List<SessionInfo> sessions = GetUserActiveSessions(userId);
 
@@ -240,6 +243,6 @@ namespace CRM.Infrastructure.Authentication
             return DateTime.Now.AddMinutes(int.Parse(config["Jwt:AccessExpireMin"]!));
         }
 
-
+        
     }
 }

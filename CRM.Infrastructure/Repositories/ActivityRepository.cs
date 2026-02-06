@@ -119,7 +119,7 @@ public class ActivityRepository : IActivityRepository
 
     private IQueryable<ActivityBase> BuildFilteredQuery(ActivityListFilters? filters)
     {
-        var query = _dbContext.Activity.AsNoTracking();
+        var query = _dbContext.Activity.AsNoTracking().IgnoreAutoIncludes();
 
         if (filters == null)
             return query;

@@ -4,6 +4,7 @@ using CRM.Application.Modals.Common;
 using CRM.Domain.Entities.Identity;
 using CRM.Infrastructure.Data;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Graph.Models;
 using System;
 using System.Collections.Generic;
@@ -14,10 +15,12 @@ namespace CRM.Infrastructure.Repositories
     public class OrganizationRepository : IOrganizationRepository
     {
         private readonly DatabaseContext dbContext;
+        private readonly IConfiguration config;
 
-        public OrganizationRepository(DatabaseContext dbContext)
+        public OrganizationRepository(DatabaseContext dbContext, IConfiguration config)
         {
             this.dbContext = dbContext;
+            this.config = config;
         }
 
         public AppOrganization Get(Guid Id)
@@ -25,16 +28,13 @@ namespace CRM.Infrastructure.Repositories
             return dbContext.AppOrganization.FirstOrDefault(x => x.Id == Id) ?? throw new NotFoundException();
         }
 
-        public AppOrganization? GetDefaultOrganization()
-        {
-            return dbContext.AppOrganization.FirstOrDefault(x => x.IsDefault );
-        }
+
 
         public AppOrganization Create(AppOrganization entity)
         {
             var entry = dbContext.AppOrganization.Add(entity);
             return entry.Entity;
-            
+
         }
 
         public AppOrganization Update(AppOrganization entity)
@@ -98,6 +98,38 @@ namespace CRM.Infrastructure.Repositories
             Traverse(organizationId);
 
             return result;
+        }
+
+        public AppOrganization? GetDefaultOrganization()
+        {
+            return dbContext.AppOrganization
+                .IgnoreQueryFilters()
+                .AsNoTracking()
+                .FirstOrDefault(o => !o.IsDeleted && o.IsDefault);
+        }
+
+        public async Task<AppOrganization> GetOrCreateDefaultOrganization()
+        {
+            var defaultOrganization = dbContext.AppOrganization
+                               .IgnoreQueryFilters()
+                               .AsNoTracking()
+                               .Where(o => o.IsActive && !o.IsDeleted && o.IsDefault)
+                               .FirstOrDefault();
+
+            if (defaultOrganization != null)
+                return defaultOrganization;
+
+            defaultOrganization = new AppOrganization()
+            {
+                OrganizationCode = config["DefaultValues:Default_Organization_Code"]!,
+                OrganizationName = config["DefaultValues:Default_Organization_Name"]!,
+                IsDefault = true
+            };
+
+            dbContext.AppOrganization.Add(defaultOrganization);
+            dbContext.SaveChanges();
+
+            return defaultOrganization;
         }
     }
 }

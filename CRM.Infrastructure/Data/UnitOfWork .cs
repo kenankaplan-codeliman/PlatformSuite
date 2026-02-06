@@ -7,22 +7,22 @@ using System.Text;
 
 namespace CRM.Infrastructure.Data
 {
-    public sealed class EfUnitOfWork : IUnitOfWork
+    public sealed class UnitOfWork : IUnitOfWork
     {
         private readonly DatabaseContext dbContext;
         private IDbContextTransaction? transaction;
 
-        public EfUnitOfWork(DatabaseContext context)
+        public UnitOfWork(DatabaseContext context)
         {
             dbContext = context;
         }
 
-        public void BeginTransaction()
+        public async Task BeginTransactionAsync()
         {
-            transaction = dbContext.Database.BeginTransaction();
+            transaction = await dbContext.Database.BeginTransactionAsync();
         }
 
-        public void CommitTransaction()
+        public async Task CommitTransactionAsync()
         {
             var hasChanges = dbContext.ChangeTracker
                                .Entries()
@@ -33,17 +33,17 @@ namespace CRM.Infrastructure.Data
 
             if (hasChanges)
             {
-                dbContext.SaveChanges();
+                await dbContext.SaveChangesAsync();
             }
 
             if (transaction != null)
-                transaction!.Commit();
+                await transaction!.CommitAsync();
         }
 
-        public void RollbackTransaction()
+        public async Task RollbackTransactionAsync()
         {
             if (transaction!=null)
-                transaction!.Rollback();
+                await transaction!.RollbackAsync();
         }
     }
 }

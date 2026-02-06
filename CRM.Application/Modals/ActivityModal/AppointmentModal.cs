@@ -19,7 +19,7 @@ namespace CRM.Application.Modals.ActivityModal
         public EntityReference? Organizer { get; set; }
 
         // Katılımcılar - çoklu seçim
-        public List<EntityReference>? Attendees { get; set; }
+        public List<EntityReference> Attendees { get; set; } = new List<EntityReference>();
 
         // Konum bilgileri
         public string? Location { get; set; }

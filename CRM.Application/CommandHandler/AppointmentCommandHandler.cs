@@ -17,7 +17,7 @@ public class AppointmentCommandHandler
     private readonly IReferenceRepository referenceRepository;
 
     public AppointmentCommandHandler(
-        IUnitOfWork unitOfWork, 
+        IUnitOfWork unitOfWork,
         IAppointmentRepository appointmentRepository,
         IReferenceRepository referenceRepository)
     {
@@ -26,32 +26,7 @@ public class AppointmentCommandHandler
         this.referenceRepository = referenceRepository;
     }
 
-    public async Task<AppointmentModal> CreateAppointment(AppointmentModal appointment)
-    {
-        try
-        {
-            var entity = ConvertToEntity(appointment);
-
-            unitOfWork.BeginTransaction();
-
-            var createdEntity = appointmentRepository.Create(entity);
-
-            unitOfWork.CommitTransaction();
-
-            var createdModal = ConvertToModal(createdEntity);
-
-            return createdModal;
-        }
-        catch
-        {
-            unitOfWork.RollbackTransaction();
-            throw;
-        }
-    }
-
-
-
-    public async Task<AppointmentModal> ReadAppointment(Guid Id)
+    public async Task<AppointmentModal> AppointmentRead(Guid Id)
     {
         var entity = appointmentRepository.Get(Id);
 
@@ -60,18 +35,71 @@ public class AppointmentCommandHandler
         return createdModal;
     }
 
+    public async Task<AppointmentModal> AppointmentCreate(AppointmentModal appointment)
+    {
+        try
+        {
+            Appointment entity = new Appointment();
+
+            SetToEntity(entity, appointment);
+
+            await unitOfWork.BeginTransactionAsync();
+
+            var createdEntity = appointmentRepository.Create(entity);
+
+            await unitOfWork.CommitTransactionAsync();
+
+            var createdModal = ConvertToModal(createdEntity);
+
+            return createdModal;
+        }
+        catch
+        {
+            await unitOfWork.RollbackTransactionAsync();
+            throw;
+        }
+    }
+
+
+    public async Task<AppointmentModal> AppointmentUpdate(Guid Id, AppointmentModal appointment)
+    {
+        try
+        {
+            var entity = appointmentRepository.Get(Id);
+
+            SetToEntity(entity, appointment);
+
+            await unitOfWork.BeginTransactionAsync();
+
+            var updatedEntity = appointmentRepository.Update(entity);
+
+            await unitOfWork.CommitTransactionAsync();
+
+            var updatedModal = ConvertToModal(updatedEntity);
+
+            return updatedModal;
+        }
+        catch
+        {
+            await unitOfWork.RollbackTransactionAsync();
+            throw;
+        }
+    }
+
+
 
     private AppointmentModal ConvertToModal(Appointment entity)
     {
         AppointmentModal modal = new AppointmentModal();
 
         #region ActivityBase
-        modal.IsActive = entity.IsActive; 
+        modal.Id = entity.Id;
+        modal.IsActive = entity.IsActive;
         modal.Subject = entity.Subject;
         modal.Priority = entity.Priority;
         modal.StartDate = entity.StartDate;
         modal.DueDate = entity.DueDate;
-        modal.EndDate = entity.EndDate; 
+        modal.EndDate = entity.EndDate;
 
         modal.Status = entity.Status;
 
@@ -94,14 +122,9 @@ public class AppointmentCommandHandler
 
         #endregion
         var organizer = entity.Organizer;
-        if (organizer != null) {
-
-            var entityType = Enum.Parse<EntityType>(organizer.ParticipantType.ToString());
-            
-            modal.Organizer = new EntityReference(entityType)
-            {
-                Id = organizer.Id,
-            };
+        if (organizer != null && organizer.ParticipantType == ActivityParticipantType.User)
+        {
+            modal.Organizer = referenceRepository.GetReference(EntityType.User, organizer.ParticipantId!.Value);
         }
 
         var attendeesList = entity.Attendees;
@@ -110,11 +133,11 @@ public class AppointmentCommandHandler
 
         foreach (var attendees in attendeesList)
         {
-            EntityReference? entityReference = null; 
+            EntityReference? entityReference = null;
 
-            if (attendees.ParticipantType == ActivityParticipantType.User && attendees.ParticipantId!=null)
+            if (attendees.ParticipantType == ActivityParticipantType.User && attendees.ParticipantId != null)
             {
-                entityReference = referenceRepository.GetReference(EntityType.User,attendees.ParticipantId.Value);
+                entityReference = referenceRepository.GetReference(EntityType.User, attendees.ParticipantId.Value);
             }
             else if (attendees.ParticipantType == ActivityParticipantType.Account)
             {
@@ -131,7 +154,7 @@ public class AppointmentCommandHandler
                 {
                     Name = attendees.Name ?? string.Empty,
                     Email = attendees.Email,
-                    Phone  = attendees.PhoneNumber,
+                    Phone = attendees.PhoneNumber,
                 };
             }
             else
@@ -143,9 +166,8 @@ public class AppointmentCommandHandler
         return modal;
     }
 
-    private Appointment ConvertToEntity(AppointmentModal modal)
+    private void SetToEntity(Appointment entity, AppointmentModal modal)
     {
-        Appointment entity = new Appointment();
 
         #region ActivityBase
 
@@ -157,9 +179,11 @@ public class AppointmentCommandHandler
         entity.DueDate = modal.DueDate;
         entity.EndDate = modal.EndDate;
 
-        entity.ResolveStatus();
+        entity.Status = modal.Status;
+        //entity.ResolveStatus();
 
-        if (modal.RegardingEntity != null) {
+        if (modal.RegardingEntity != null)
+        {
             entity.RegardingEntityType = modal.RegardingEntity.EntityType;
             entity.RegardingEntityId = modal.RegardingEntity.Id;
         }
@@ -168,7 +192,7 @@ public class AppointmentCommandHandler
 
         #region Appointment
 
-        
+
         entity.IsAllDay = modal.IsAllDay;
         entity.MeetingNotes = modal.MeetingNotes;
         entity.ReminderMinutesBefore = modal.ReminderMinutesBefore;
@@ -184,7 +208,7 @@ public class AppointmentCommandHandler
 
         #endregion
 
-        
+
 
         #region Organizer & Attendees
 
@@ -194,40 +218,41 @@ public class AppointmentCommandHandler
             entity.SetOrganizer(organizer);
         }
 
-        if (modal.Attendees != null && modal.Attendees.Count() > 0)
+        foreach (var attende in modal.Attendees)
         {
-            foreach (var attendees in modal.Attendees)
+            if (entity.Attendees.Any(p=> p.ParticipantId == attende.Id))
+                continue;
+
+            ActivityParty activityParty = null;
+
+            if (attende.EntityType == EntityType.User)
             {
-                ActivityParty activityParty = null;
-
-                if (attendees.EntityType == EntityType.User)
-                {
-                    activityParty = ActivityParty.ForUser(entity.Id, attendees.Id, ActivityPartyType.Attendee);
-                }
-                else if (attendees.EntityType == EntityType.Account)
-                {
-                    activityParty = ActivityParty.ForAccount(entity.Id, attendees.Id, ActivityPartyType.Attendee);
-                }
-                else if (attendees.EntityType == EntityType.Contact)
-                {
-                    activityParty = ActivityParty.ForContact(entity.Id, attendees.Id, ActivityPartyType.Attendee);
-                }
-                else
-                    throw new BusinessException("Invalid attendees type");
-
-                entity.AddAttendee(activityParty);
+                activityParty = ActivityParty.ForUser(entity.Id, attende.Id, ActivityPartyType.Attendee);
             }
+            else if (attende.EntityType == EntityType.Account)
+            {
+                activityParty = ActivityParty.ForAccount(entity.Id, attende.Id, ActivityPartyType.Attendee);
+            }
+            else if (attende.EntityType == EntityType.Contact)
+            {
+                activityParty = ActivityParty.ForContact(entity.Id, attende.Id, ActivityPartyType.Attendee);
+            }
+            else
+                throw new BusinessException("Invalid attendees type");
+
+            entity.AddAttendee(activityParty);
         }
+
+        // Remove Not Exist Attendess
+        entity.Attendees
+            .Where(p => !modal.Attendees.Any(m => m.Id == p.ParticipantId))
+            .ToList()
+            .ForEach(p => entity.Parties.Remove(p));    
 
         #endregion
 
-        return entity;
-
-
         //OwnerId
         //OrganizationId
-
-
         //RecurringParentId
     }
 }

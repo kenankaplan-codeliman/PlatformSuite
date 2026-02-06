@@ -59,8 +59,8 @@ export const Lead = {
     Appointment: {
       New: `${BasePaths.ActivityPath}/appointment/new`,
       Detail: (id: string) => `${BasePaths.ActivityPath}/appointment/${id}`,
-      Edit: (id: string) => `${BasePaths.ActivityPath}/appointment/${id}`,
-      View: (id: string) => `${BasePaths.ActivityPath}/appointment/${id}`,
+      Edit: (id: string) => `${BasePaths.ActivityPath}/appointment/${id}?mode=edit`,
+      View: (id: string) => `${BasePaths.ActivityPath}/appointment/${id}?mode=view`,
     },
   }as const;
 

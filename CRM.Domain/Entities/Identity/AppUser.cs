@@ -12,7 +12,7 @@ namespace CRM.Domain.Entities.Identity
         public required string FirstName { get; set; }
         public required string LastName { get; set; }
         public Guid OrganizationId { get; set; }
-        public string? Microsoft365Id { get; set; }
+        public string? AzureUserId { get; set; }
         public string? PasswordHash { get; set; }
         public bool IsActive { get; set; } = true;
         // IAuditableEntity

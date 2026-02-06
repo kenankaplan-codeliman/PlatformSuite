@@ -170,6 +170,8 @@ public static class ActivityEntities
                 .HasForeignKey(p => p.ActivityId)
                 .OnDelete(DeleteBehavior.Cascade);
 
+            entity.Navigation(a => a.Parties).AutoInclude();
+
             entity.Ignore(e => e.Duration);
         });
 

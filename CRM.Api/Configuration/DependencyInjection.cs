@@ -22,7 +22,7 @@ public static class DependencyInjection
         services.AddScoped<IContextUser, ContextUser>();
         services.AddScoped<IContextAuthorization, ContextAuthorization>();
         services.AddScoped<ITokenService, JwtTokenService>();
-        services.AddScoped<IUnitOfWork, EfUnitOfWork>();
+        services.AddScoped<IUnitOfWork, UnitOfWork>();
         services.AddScoped<IMicrosoftGraphService, MicrosoftGraphService>();
 
         // Entity Repository

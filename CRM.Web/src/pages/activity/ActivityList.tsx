@@ -1018,13 +1018,13 @@ const getActivityDetailPath = (
 
   switch (activityType) {
     case ActivityType.Email:
-      return RoutePaths.Activity.Email.Edit(id) + modeParam;
+      return RoutePaths.Activity.Email.Detail(id) + modeParam;
     case ActivityType.PhoneCall:
-      return RoutePaths.Activity.PhoneCall.Edit(id) + modeParam;
+      return RoutePaths.Activity.PhoneCall.Detail(id) + modeParam;
     case ActivityType.Task:
-      return RoutePaths.Activity.Task.Edit(id) + modeParam;
+      return RoutePaths.Activity.Task.Detail(id) + modeParam;
     case ActivityType.Appointment:
-      return RoutePaths.Activity.Appointment.Edit(id) + modeParam;
+      return RoutePaths.Activity.Appointment.Detail(id) + modeParam;
     default:
       return RoutePaths.Activity.List;
   }

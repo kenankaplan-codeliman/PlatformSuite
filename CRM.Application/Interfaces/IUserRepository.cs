@@ -9,8 +9,10 @@ namespace CRM.Application.Interfaces
 {
     public interface IUserRepository : IEntityRepository<AppUser>
     {
+        
+        Task<AppUser> GetOrCreateAsync(string email, string firstName, string lastName, string? password = null, string? azureUserId = null, Guid? organizationId = null, List<Guid>? roleIds = null);
+
         AppUser? GetByEmail(string email);
-        AppUser? GetByAzureUserId(string microsoftAzureUserId);
-        Dictionary<string, AccessLevel> GetPrivileges(Guid userId);
+        Dictionary<string, AccessLevel> GetUserPrivileges(Guid userId);
     }
 }

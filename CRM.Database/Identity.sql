@@ -44,7 +44,7 @@ create table if not exists app_user (
     email               varchar(150) not null,
     first_name          varchar(100) not null,
     last_name           varchar(100) not null,
-    microsoft365_id     varchar(100),
+    azure_user_id       varchar(100),
     password_hash       varchar(500),
     organization_id      uuid not null,
 

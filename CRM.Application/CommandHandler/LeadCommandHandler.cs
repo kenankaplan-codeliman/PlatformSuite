@@ -66,19 +66,19 @@ namespace CRM.Application.CommandHandler
         {
             try
             {
-                unitOfWork.BeginTransaction();
+                await unitOfWork.BeginTransactionAsync();
 
                 var entity = LeadDetailItem.toEntity(leadDetail);
 
                 leadRepository.Create(entity);
 
-                unitOfWork.CommitTransaction();
+                await unitOfWork.CommitTransactionAsync();
 
                 var resultEntity = leadRepository.Get(entity.Id);
 
                 if (resultEntity == null)
                 {
-                    unitOfWork.RollbackTransaction();
+                    await unitOfWork.RollbackTransactionAsync();
                     throw new BusinessException($"Can not create Lead (Id:{entity.Id})");
                 }
 
@@ -88,7 +88,7 @@ namespace CRM.Application.CommandHandler
             }
             catch
             {
-                unitOfWork.RollbackTransaction();
+                await unitOfWork.RollbackTransactionAsync();
                 throw;
             }
         }
@@ -97,7 +97,7 @@ namespace CRM.Application.CommandHandler
         {
             try
             {
-                unitOfWork.BeginTransaction();
+                await unitOfWork.BeginTransactionAsync();
 
                 var entity = leadRepository.Get(Id);
 
@@ -105,13 +105,13 @@ namespace CRM.Application.CommandHandler
 
                 leadRepository.Update(entity);
 
-                unitOfWork.CommitTransaction();
+                await unitOfWork.CommitTransactionAsync();
 
                 var resultEntity = leadRepository.Get(Id);
 
                 if (resultEntity == null)
                 {
-                    unitOfWork.RollbackTransaction();
+                    await unitOfWork.RollbackTransactionAsync();
                     throw new BusinessException($"Can not create Lead (Id:{entity.Id})");
                 }
 
@@ -121,7 +121,7 @@ namespace CRM.Application.CommandHandler
             }
             catch
             {
-                unitOfWork.RollbackTransaction();
+                await unitOfWork.RollbackTransactionAsync();
                 throw;
             }
         }
@@ -131,7 +131,7 @@ namespace CRM.Application.CommandHandler
         {
             try
             {
-                unitOfWork.BeginTransaction();
+                await unitOfWork.BeginTransactionAsync();
 
                 var entity = leadRepository.Get(Id);
 
@@ -140,12 +140,12 @@ namespace CRM.Application.CommandHandler
 
                 leadRepository.Delete(entity);
 
-                unitOfWork.CommitTransaction();
+                await unitOfWork.CommitTransactionAsync();
 
             }
             catch
             {
-                unitOfWork.RollbackTransaction();
+                await unitOfWork.RollbackTransactionAsync();
                 throw;
             }
         }
@@ -154,7 +154,7 @@ namespace CRM.Application.CommandHandler
         {
             try
             {
-                unitOfWork.BeginTransaction();
+                await unitOfWork.BeginTransactionAsync();
 
                 foreach (var Id in Ids)
                 {
@@ -166,11 +166,11 @@ namespace CRM.Application.CommandHandler
                     leadRepository.Delete(entity);
                 }
 
-                unitOfWork.CommitTransaction();
+                await unitOfWork.CommitTransactionAsync();
             }
             catch
             {
-                unitOfWork.RollbackTransaction();
+                await unitOfWork.RollbackTransactionAsync();
                 throw;
             }
         }
@@ -179,7 +179,7 @@ namespace CRM.Application.CommandHandler
         {
             try
             {
-                unitOfWork.BeginTransaction();
+                await unitOfWork.BeginTransactionAsync();
 
                 foreach (var Id in Ids)
                 {
@@ -194,11 +194,11 @@ namespace CRM.Application.CommandHandler
                     leadRepository.Update(entity);
                 }
 
-                unitOfWork.CommitTransaction();
+                await unitOfWork.CommitTransactionAsync();
             }
             catch
             {
-                unitOfWork.RollbackTransaction();
+                await unitOfWork.RollbackTransactionAsync();
                 throw;
             }
         }

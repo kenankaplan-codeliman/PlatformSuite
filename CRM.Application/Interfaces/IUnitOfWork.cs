@@ -6,8 +6,8 @@ namespace CRM.Application.Interfaces
 {
     public interface IUnitOfWork
     {
-        void BeginTransaction();
-        void CommitTransaction();
-        void RollbackTransaction();
+        Task BeginTransactionAsync();
+        Task CommitTransactionAsync();
+        Task RollbackTransactionAsync();
     }
 }

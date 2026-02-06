@@ -14,13 +14,13 @@ namespace CRM.Infrastructure.Repositories
 {
     public class ReferenceRepository : IReferenceRepository
     {
-        private readonly IConfiguration config;
+        private readonly IConfiguration configuration;
         private readonly DatabaseContext dbContext;
 
         public ReferenceRepository(DatabaseContext dbContext, IConfiguration config)
         {
             this.dbContext = dbContext;
-            this.config = config;
+            this.configuration = config;
         }
 
 
@@ -54,7 +54,7 @@ namespace CRM.Infrastructure.Repositories
                 };
 
 
-            int pageSize = int.Parse(config["Search_Max_Record"]!);
+            int pageSize = int.Parse(configuration["DefaultValues:Search_Max_Record"]!);
             int skipCnt = 0;
 
             if (paginationInfo != null && paginationInfo.isValid())
@@ -139,7 +139,7 @@ namespace CRM.Infrastructure.Repositories
                 };
 
 
-            int pageSize = int.Parse(config["Search_Max_Record"]!);
+            int pageSize = int.Parse(configuration["DefaultValues:Search_Max_Record"]!);
             int skipCnt = 0;
 
             if (paginationInfo != null && paginationInfo.isValid())

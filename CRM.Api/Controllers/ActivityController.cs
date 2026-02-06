@@ -52,7 +52,7 @@ public class ActivityController : ControllerBase
     [PrivilegeAuthorize(PrivilegeCodes.ActivityPrivilegeCodes.AppointmentCreate)]
     public async Task<IActionResult> AppointmentCreate(AppointmentModal request)
     {
-        var response = await appointmentCommandHandler.CreateAppointment(request);
+        var response = await appointmentCommandHandler.AppointmentCreate(request);
         return Ok(response);
     }
 
@@ -61,7 +61,16 @@ public class ActivityController : ControllerBase
     [PrivilegeAuthorize(PrivilegeCodes.ActivityPrivilegeCodes.AppointmentRead)]
     public async Task<IActionResult> AppointmentRead(ActivityGetRequest request)
     {
-        var response = await appointmentCommandHandler.ReadAppointment(request.Id);
+        var response = await appointmentCommandHandler.AppointmentRead(request.Id);
+        return Ok(response);
+    }
+
+    [HttpPost("update/appointment")]
+    [ProducesResponseType(typeof(AppointmentModal), 200)]
+    [PrivilegeAuthorize(PrivilegeCodes.ActivityPrivilegeCodes.AppointmentRead)]
+    public async Task<IActionResult> AppointmentUpdate(AppointmentUpdateRequest request)
+    {
+        var response = await appointmentCommandHandler.AppointmentUpdate(request.Id, request.Data);
         return Ok(response);
     }
 

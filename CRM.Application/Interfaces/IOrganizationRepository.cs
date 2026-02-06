@@ -8,6 +8,7 @@ namespace CRM.Application.Interfaces
     public interface IOrganizationRepository : IEntityRepository<AppOrganization>
     {
         AppOrganization? GetDefaultOrganization();
+        Task<AppOrganization> GetOrCreateDefaultOrganization();
         Dictionary<Guid, string> GetOrganizationHierarchy(Guid organizationId);
     }
 

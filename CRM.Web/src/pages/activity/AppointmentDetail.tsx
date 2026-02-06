@@ -217,9 +217,6 @@ const AppointmentDetail: React.FC<AppointmentDetailProps> = (props) => {
       organizer: organizer,
       attendees: attendees,
       regardingEntity: regarding,
-      // Ayrıca flat alanlar da güncellenebilir (backend uyumu için)
-      regardingEntityType: regarding?.entityType || null,
-      regardingEntityId: regarding?.id || null,
     };
 
     if (isNewAppointment) {
