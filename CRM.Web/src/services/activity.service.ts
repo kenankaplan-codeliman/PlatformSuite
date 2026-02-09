@@ -3,8 +3,7 @@ import {
   type ActivityListFilters,
   type ActivityListResponse,
   type ActivityListRequest,
-  type ActivityGetRequest,
-  type ActivityUpdateRequest,
+  type ActivityGetRequest as ActivityRequest,
   type ActivityDeleteRequest,
   type ActivityBulkDeleteRequest,
   type ActivityBulkUpdateStatusRequest,
@@ -12,6 +11,7 @@ import {
   type ActivityCalendarRequest,
   ActivityType,
   type ActivityTypeValue,
+  type ActivityListItem,
 } from '@/types/activity.types';
 import apiClient from '@/services/api.client';
 import { ServicePath } from '@/constants/service.paths';
@@ -66,7 +66,7 @@ export const activityService = {
     startDate: string,
     endDate: string,
     filters?: ActivityListFilters
-  ): Promise<ActivityBase[]> => {
+  ): Promise<ActivityListItem[]> => {
     const request: ActivityCalendarRequest = {
       startDate,
       endDate,
@@ -82,7 +82,7 @@ export const activityService = {
 
   // Get single activity by ID
   getActivityById: async (id: string, activityType: ActivityTypeValue): Promise<ActivityBase> => {
-    const request: ActivityGetRequest = {
+    const request: ActivityRequest = {
       id: id,
     };
 
@@ -111,17 +111,12 @@ export const activityService = {
 
   // Update existing activity
 updateActivity: async <T extends ActivityBase>(
-  id: string,
   activity: Partial<T> & { activityType: T['activityType'] }
 ): Promise<T> => {
-  const request: ActivityUpdateRequest = {
-    id: id,
-    data: activity,
-  };
-
+  
   const endpoint = activityUpdateEndpointMap[activity.activityType];
 
-  const response = await apiClient.post<T>(endpoint, request);
+  const response = await apiClient.post<T>(endpoint, activity);
   return response.data;
 },
 

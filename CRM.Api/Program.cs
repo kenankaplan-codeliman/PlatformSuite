@@ -15,7 +15,7 @@ builder.Services.AddDbContext<DatabaseContext>(
 
 builder.AddCustomLogging();
 
-builder.Services.AddControllers();
+builder.Services.AddControllers().SetJsonOptions();
 builder.Services.AddEndpointsApiExplorer();
 
 builder.Services

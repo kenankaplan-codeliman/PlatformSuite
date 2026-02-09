@@ -6,8 +6,8 @@ namespace CRM.Domain.Enums
 {
     public enum LeadRating
     {
-        Cold = 0,
-        Warm = 1,
-        Hot = 2,
+        Cold,
+        Warm,
+        Hot,
     }
 }

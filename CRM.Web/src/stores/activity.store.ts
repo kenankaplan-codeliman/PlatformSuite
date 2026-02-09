@@ -47,7 +47,7 @@ interface ActivityState {
   createActivity: <T extends ActivityBase>(
     activity: Omit<T, 'id' | 'createdAt' | 'createdBy'>
   ) => Promise<T>;
-  updateActivity: <T extends ActivityBase>(id: string, activity: Partial<T>) => Promise<T>;
+  updateActivity: <T extends ActivityBase>(activity: Partial<T>) => Promise<T>;
   deleteActivity: (id: string) => Promise<void>;
   bulkDeleteActivities: () => Promise<void>;
   bulkUpdateStatus: (status: ActivityStatusValue) => Promise<void>;
@@ -219,14 +219,13 @@ export const useActivityStore = create<ActivityState>()(
       },
 
       updateActivity: async <T extends ActivityBase>(
-        id: string, 
         activityData: Partial<T>  & { activityType: T['activityType'] }
       ) => {
         const { setState, clearState } = useProcessState.getState();
 
         try {
           setState(StateType.Loading, 'Aktivite güncelleniyor...', 'Lütfen bekleyiniz...');
-          const updatedActivity = await activityService.updateActivity<T>(id, activityData);
+          const updatedActivity = await activityService.updateActivity<T>(activityData);
           set({ currentActivity: updatedActivity });
           clearState();
           return updatedActivity;

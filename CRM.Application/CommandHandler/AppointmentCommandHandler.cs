@@ -61,11 +61,11 @@ public class AppointmentCommandHandler
     }
 
 
-    public async Task<AppointmentModal> AppointmentUpdate(Guid Id, AppointmentModal appointment)
+    public async Task<AppointmentModal> AppointmentUpdate(AppointmentModal appointment)
     {
         try
         {
-            var entity = appointmentRepository.Get(Id);
+            var entity = appointmentRepository.Get(appointment.Id);
 
             SetToEntity(entity, appointment);
 
@@ -177,10 +177,23 @@ public class AppointmentCommandHandler
 
         entity.StartDate = modal.StartDate;
         entity.DueDate = modal.DueDate;
-        entity.EndDate = modal.EndDate;
+        //entity.EndDate = modal.EndDate;
 
-        entity.Status = modal.Status;
-        //entity.ResolveStatus();
+        switch (modal.Status)
+        {
+            case ActivityStatus.Completed:
+                entity.Completed();
+                break;
+
+            case ActivityStatus.Cancelled:
+                entity.Cancel();
+                break;
+
+            default:
+                entity.Status = modal.Status;
+                entity.EndDate = null;
+                break;
+        }
 
         if (modal.RegardingEntity != null)
         {
@@ -220,7 +233,7 @@ public class AppointmentCommandHandler
 
         foreach (var attende in modal.Attendees)
         {
-            if (entity.Attendees.Any(p=> p.ParticipantId == attende.Id))
+            if (entity.Attendees.Any(p => p.ParticipantId == attende.Id))
                 continue;
 
             ActivityParty activityParty = null;
@@ -247,7 +260,7 @@ public class AppointmentCommandHandler
         entity.Attendees
             .Where(p => !modal.Attendees.Any(m => m.Id == p.ParticipantId))
             .ToList()
-            .ForEach(p => entity.Parties.Remove(p));    
+            .ForEach(p => entity.Parties.Remove(p));
 
         #endregion
 

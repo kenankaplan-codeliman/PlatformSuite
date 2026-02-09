@@ -1,4 +1,6 @@
-﻿namespace CRM.Domain.Enums;
+﻿using System.Text.Json.Serialization;
+
+namespace CRM.Domain.Enums;
 
 /// <summary>
 /// Aktivite katılımcısının rolü
@@ -8,55 +10,55 @@ public enum ActivityPartyType
     /// <summary>
     /// Gönderen (Email için)
     /// </summary>
-    From = 0,
+    From,
 
     /// <summary>
     /// Alıcı (Email To, Appointment Attendee)
     /// </summary>
-    To = 1,
+    To,
 
     /// <summary>
     /// CC alıcısı (Email için)
     /// </summary>
-    Cc = 2,
+    Cc,
 
     /// <summary>
     /// BCC alıcısı (Email için)
     /// </summary>
-    Bcc = 3,
+    Bcc,
 
     /// <summary>
     /// Organizatör (Appointment için)
     /// </summary>
-    Organizer = 4,
+    Organizer,
 
     /// <summary>
     /// Katılımcı (Appointment için)
     /// </summary>
-    Attendee = 5,
+    Attendee,
 
     /// <summary>
     /// Arayan (PhoneCall için)
     /// </summary>
-    Caller = 6,
+    Caller,
 
     /// <summary>
     /// Aranan (PhoneCall için)
     /// </summary>
-    Recipient = 7,
+    Recipient,
 
     /// <summary>
     /// Görev sahibi (Task için)
     /// </summary>
-    Owner = 8,
+    Owner,
 
     /// <summary>
     /// Gerekli katılımcı
     /// </summary>
-    Required = 9,
+    Required,
 
     /// <summary>
     /// Opsiyonel katılımcı
     /// </summary>
-    Optional = 10
+    Optional
 }

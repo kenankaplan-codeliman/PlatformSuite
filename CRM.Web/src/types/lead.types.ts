@@ -1,33 +1,33 @@
 // Lead Types - Based on Lead.cs Entity
 
 export const LeadSource = {
-  Web: 0,
-  Phone: 1,
-  Email: 2,
-  Referral: 3,
-  Partner: 4,
-  Event: 5,
-  Campaign: 6,
-  Social: 7,
-  Other: 8,
+  Web: 'web',
+  Phone: 'phone',
+  Email: 'email',
+  Referral: 'referral',
+  Partner: 'partner',
+  Event: 'event',
+  Campaign: 'campaign',
+  Social: 'social',
+  Other: 'other',
 } as const;
 
 export type LeadSourceValue = (typeof LeadSource)[keyof typeof LeadSource];
 
 export const LeadStatus = {
-  New: 0,
-  Contacted: 1,
-  Qualified: 2,
-  Unqualified: 3,
-  Converted: 4,
+  New: 'new',
+  Contacted: 'contacted',
+  Qualified: 'qualified',
+  Unqualified: 'unqualified',
+  Converted: 'converted',
 } as const;
 
 export type LeadStatusValue = (typeof LeadStatus)[keyof typeof LeadStatus];
 
 export const LeadRating = {
-  Cold: 0,
-  Warm: 1,
-  Hot: 2,
+  Cold: 'cold',
+  Warm: 'warm',
+  Hot: 'hot',
 } as const;
 
 export type LeadRatingValue = (typeof LeadRating)[keyof typeof LeadRating];

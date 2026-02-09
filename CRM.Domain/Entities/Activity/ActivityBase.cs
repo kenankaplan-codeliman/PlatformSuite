@@ -116,10 +116,10 @@ public abstract class ActivityBase : IBaseEntity, ISoftDeleteEntity, IAuditableE
     /// <summary>
     /// Aktiviteyi tamamlandı olarak işaretle
     /// </summary>
-    public virtual void MarkAsCompleted()
+    public virtual void Completed()
     {
         Status = ActivityStatus.Completed;
-        EndDate = DateTime.UtcNow;
+        EndDate = DateTime.Now;
     }
 
     /// <summary>
@@ -127,6 +127,7 @@ public abstract class ActivityBase : IBaseEntity, ISoftDeleteEntity, IAuditableE
     /// </summary>
     public virtual void Cancel()
     {
+        EndDate = DateTime.Now;
         Status = ActivityStatus.Cancelled;
     }
 

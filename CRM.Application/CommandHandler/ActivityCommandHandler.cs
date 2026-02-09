@@ -18,7 +18,7 @@ public class ActivityCommandHandler
         this.unitOfWork = unitOfWork;
     }
 
-    public async Task<List<ActivityBaseModal>> Calendar(ActivityListFilters? filters, DateTime startDate, DateTime endDate)
+    public async Task<List<ActivityListItem>> Calendar(ActivityListFilters? filters, DateTime startDate, DateTime endDate)
     {
         var result = activityRepository.Calendar(filters, startDate, endDate);
 

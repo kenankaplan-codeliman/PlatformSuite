@@ -1,4 +1,24 @@
-import type { EntityReference } from '@/types/entity.lookup.types';
+import type { EntityReference, EntityType } from '@/types/entity.lookup.types';
+
+
+import {
+  DeleteOutlined,
+  FilterOutlined,
+  ReloadOutlined,
+  MoreOutlined,
+  SearchOutlined,
+  ClearOutlined,
+  CheckCircleOutlined,
+  MailOutlined,
+  PhoneOutlined,
+  CheckSquareOutlined,
+  CalendarOutlined,
+  ClockCircleOutlined,
+  FlagOutlined,
+  EyeOutlined,
+  CloseCircleOutlined,
+  RightCircleOutlined,
+} from '@ant-design/icons';
 
 /**
  * Activity Types
@@ -9,14 +29,14 @@ import type { EntityReference } from '@/types/entity.lookup.types';
 // ============================================
 
 export const PartyType = {
-  Organizer: 0,
-  Attendee: 1,
-  Regarding: 2,
-  Owner: 3,
-  From: 4,
-  To: 5,
-  CC: 6,
-  BCC: 7,
+  Organizer: 'organizer',
+  Attendee: 'attendee',
+  Regarding: 'regarding',
+  Owner: 'owner',
+  From: 'from',
+  To: 'to',
+  CC: 'cc',
+  BCC: 'bcc',
 } as const;
 
 export type PartyTypeValue = (typeof PartyType)[keyof typeof PartyType];
@@ -38,11 +58,11 @@ export interface ActivityParty {
 // ============================================
 
 export const ActivityStatus = {
-  NotStarted: 0,
-  InProgress: 1,
-  Completed: 2,
-  Cancelled: 3,
-  Deferred: 4,
+  NotStarted: 'notStarted',
+  InProgress: 'inProgress',
+  Completed: 'completed',
+  Cancelled: 'cancelled',
+  //Deferred: 'deferred',
 } as const;
 
 export type ActivityStatusValue = (typeof ActivityStatus)[keyof typeof ActivityStatus];
@@ -53,7 +73,7 @@ export const getActivityStatusLabel = (status: ActivityStatusValue): string => {
     [ActivityStatus.InProgress]: 'Devam Ediyor',
     [ActivityStatus.Completed]: 'Tamamlandı',
     [ActivityStatus.Cancelled]: 'İptal Edildi',
-    [ActivityStatus.Deferred]: 'Ertelendi',
+    //[ActivityStatus.Deferred]: 'Ertelendi',
   };
   return labels[status] || 'Bilinmiyor';
 };
@@ -64,7 +84,7 @@ export const getActivityStatusColor = (status: ActivityStatusValue): string => {
     [ActivityStatus.InProgress]: 'processing',
     [ActivityStatus.Completed]: 'success',
     [ActivityStatus.Cancelled]: 'error',
-    [ActivityStatus.Deferred]: 'warning',
+    //[ActivityStatus.Deferred]: 'warning',
   };
   return colors[status] || 'default';
 };
@@ -74,10 +94,10 @@ export const getActivityStatusColor = (status: ActivityStatusValue): string => {
 // ============================================
 
 export const ActivityType = {
-  Email: 0,
-  PhoneCall: 1,
-  Task: 2,
-  Appointment: 3,
+  Email: 'email',
+  PhoneCall: 'phoneCall',
+  Task: 'task',
+  Appointment: 'appointment',
 } as const;
 
 export type ActivityTypeValue = (typeof ActivityType)[keyof typeof ActivityType];
@@ -102,14 +122,15 @@ export const getActivityTypeColor = (type: ActivityTypeValue): string => {
   return colors[type] || '#8c8c8c';
 };
 
+
 // ============================================
 // ACTIVITY PRIORITY
 // ============================================
 
 export const ActivityPriority = {
-  Low: 0,
-  Normal: 1,
-  High: 2,
+  Low: 'low',
+  Normal: 'normal',
+  High: 'high',
 } as const;
 
 export type ActivityPriorityValue = (typeof ActivityPriority)[keyof typeof ActivityPriority];
@@ -158,6 +179,29 @@ export interface ActivityBase {
   
   isActive: boolean;
   
+}
+
+// ============================================
+// LIST ACTIVITY INTERFACE
+// ============================================
+
+export interface ActivityListItem {
+  id: string;
+
+  subject: string;
+  
+  activityType: ActivityTypeValue;
+  status: ActivityStatusValue;
+  priority: ActivityPriorityValue;
+
+  startDate?: string;
+  endDate?: string;
+  dueDate?: string;
+  
+  // Sahip ve organizasyon
+  owner?: EntityReference | null;
+  
+  isActive: boolean;
 }
 
 // ============================================
@@ -278,7 +322,7 @@ export interface ActivityListFilters {
   activityType?: ActivityTypeValue;
   status?: ActivityStatusValue;
   priority?: ActivityPriorityValue;
-  regardingEntityType?: string;
+  regardingEntityType?: EntityType;
   regardingEntityId?: string;
   dueDateFrom?: string;
   dueDateTo?: string;
@@ -306,10 +350,6 @@ export interface ActivityGetRequest {
   id: string;
 }
 
-export interface ActivityUpdateRequest {
-  id: string;
-  data: Partial<ActivityBase>;
-}
 
 export interface ActivityDeleteRequest {
   id: string;
@@ -345,7 +385,7 @@ export const activityStatusOptions = [
   { label: 'Devam Ediyor', value: ActivityStatus.InProgress },
   { label: 'Tamamlandı', value: ActivityStatus.Completed },
   { label: 'İptal Edildi', value: ActivityStatus.Cancelled },
-  { label: 'Ertelendi', value: ActivityStatus.Deferred },
+  //{ label: 'Ertelendi', value: ActivityStatus.Deferred },
 ];
 
 export const activityTypeOptions = [

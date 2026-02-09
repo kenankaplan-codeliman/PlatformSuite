@@ -21,6 +21,7 @@ import {
   Timeline,
   Badge,
   Switch,
+  Modal,
 } from 'antd';
 import {
   ArrowLeftOutlined,
@@ -56,6 +57,9 @@ import {
 } from '@/types/lead.types';
 import { useLeadStore } from '@/stores/lead.store';
 import { StateType, useProcessState } from "@/stores/process.state.store";
+import { useActivityStore } from '@/stores/activity.store';
+import type { ActivityStatusValue } from '@/types/activity.types';
+import ActivityListView from '@/components/ActivityListView';
 
 const { Title, Text, Paragraph } = Typography;
 const { TextArea } = Input;
@@ -209,6 +213,14 @@ const { state } = useProcessState.getState();
     navigate(RoutePaths.Lead.List);
   }, [navigate]);
 
+
+
+  const [activeTab, setActiveTab] = useState<string>('details');
+  
+  const handleTabChange = useCallback((key: string) => {
+    setActiveTab(key);
+  }, []);
+
   // Not found state (only show if not loading and no error)
   if (!currentLead && !isNewLead ) {
     return (
@@ -277,7 +289,8 @@ const { state } = useProcessState.getState();
       </Card>
 
       <Tabs
-        defaultActiveKey="details"
+        defaultActiveKey={activeTab}
+        onChange={handleTabChange}
         items={[
           {
             key: 'details',
@@ -390,61 +403,15 @@ const { state } = useProcessState.getState();
             key: 'activities',
             label: 'Aktiviteler',
             children: (
-              <Card>
-                <Timeline
-                  items={[
-                    {
-                      color: 'green',
-                      dot: <CheckCircleOutlined />,
-                      children: (
-                        <>
-                          <Text strong>Lead Oluşturuldu</Text>
-                          <br />
-                          <Text type="secondary">
-                            {currentLead?.createdAt
-                              ? currentLead.createdAt.toLocaleString('tr-TR')
-                              : '-'}
-                          </Text>
-                        </>
-                      ),
-                    },
-                    ...(currentLead?.updatedAt
-                      ? [
-                          {
-                            color: 'blue',
-                            dot: <SyncOutlined />,
-                            children: (
-                              <>
-                                <Text strong>Son Güncelleme</Text>
-                                <br />
-                                <Text type="secondary">
-                                  {currentLead.updatedAt.toLocaleString('tr-TR')}
-                                </Text>
-                              </>
-                            ),
-                          },
-                        ]
-                      : []),
-                    ...(currentLead?.convertedDate
-                      ? [
-                          {
-                            color: 'purple',
-                            dot: <CheckCircleOutlined />,
-                            children: (
-                              <>
-                                <Text strong>Dönüştürüldü</Text>
-                                <br />
-                                <Text type="secondary">
-                                  {currentLead.convertedDate?.toLocaleString('tr-TR')}
-                                </Text>
-                              </>
-                            ),
-                          },
-                        ]
-                      : []),
-                  ]}
-                />
-              </Card>
+              <ActivityListView
+                initialFilters={{
+                  regardingEntityId: leadId,
+                  regardingEntityType: 'Lead',
+                }}
+                showFilters={true}
+                showBulkActions={true}
+                showPagination={true}
+              />
             ),
           },
         ]}

@@ -6,7 +6,7 @@ namespace CRM.Application.Interfaces
     public interface IActivityRepository
     {
         ActivityListResponse List(ActivityListFilters? filter, PaginationInfo? paginationInfo);
-        List<ActivityBaseModal> Calendar(ActivityListFilters? filters, DateTime startDate, DateTime endDate);
+        List<ActivityListItem> Calendar(ActivityListFilters? filters, DateTime startDate, DateTime endDate);
 
 
     }

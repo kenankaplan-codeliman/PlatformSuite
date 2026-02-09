@@ -6,8 +6,8 @@ namespace CRM.Domain.Enums
 {
     public enum LeadSource
     {
-        Other = 0,
-        Website = 1,
-        Reference = 2,
+        Other,
+        Website,
+        Reference,
     }
 }

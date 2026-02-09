@@ -36,7 +36,7 @@ public class ActivityController : ControllerBase
     }
 
     [HttpPost("calendar")]
-    [ProducesResponseType(typeof(List<ActivityBaseModal>), 200)]
+    [ProducesResponseType(typeof(List<ActivityListItem>), 200)]
     [PrivilegeAuthorize(PrivilegeCodes.ActivityPrivilegeCodes.Read)]
     public async Task<IActionResult> Calendar(ActivityCalendarRequest request)
     {
@@ -59,7 +59,7 @@ public class ActivityController : ControllerBase
     [HttpPost("get/appointment")]
     [ProducesResponseType(typeof(AppointmentModal), 200)]
     [PrivilegeAuthorize(PrivilegeCodes.ActivityPrivilegeCodes.AppointmentRead)]
-    public async Task<IActionResult> AppointmentRead(ActivityGetRequest request)
+    public async Task<IActionResult> AppointmentRead(ActivityRequest request)
     {
         var response = await appointmentCommandHandler.AppointmentRead(request.Id);
         return Ok(response);
@@ -68,9 +68,9 @@ public class ActivityController : ControllerBase
     [HttpPost("update/appointment")]
     [ProducesResponseType(typeof(AppointmentModal), 200)]
     [PrivilegeAuthorize(PrivilegeCodes.ActivityPrivilegeCodes.AppointmentRead)]
-    public async Task<IActionResult> AppointmentUpdate(AppointmentUpdateRequest request)
+    public async Task<IActionResult> AppointmentUpdate(AppointmentModal request)
     {
-        var response = await appointmentCommandHandler.AppointmentUpdate(request.Id, request.Data);
+        var response = await appointmentCommandHandler.AppointmentUpdate(request);
         return Ok(response);
     }
 

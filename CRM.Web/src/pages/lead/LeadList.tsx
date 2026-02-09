@@ -96,7 +96,7 @@ const LeadList: React.FC = () => {
   // Handle row click - navigate to detail/edit page
   const handleRowClick = useCallback(
     (record: LeadListItem) => {
-      navigate(RoutePaths.Lead.Edit(record.id));
+      navigate(RoutePaths.Lead.View(record.id));
     },
     [navigate]
   );
@@ -105,6 +105,14 @@ const LeadList: React.FC = () => {
   const handleView = useCallback(
     (record: LeadListItem) => {
       navigate(RoutePaths.Lead.View(record.id));
+    },
+    [navigate]
+  );
+  
+  // Handle edit
+  const handleEdit = useCallback(
+    (record: LeadListItem) => {
+      navigate(RoutePaths.Lead.Edit(record.id));
     },
     [navigate]
   );
@@ -257,7 +265,7 @@ const LeadList: React.FC = () => {
       icon: <EditOutlined />,
       onClick: (info) => {
         info.domEvent.stopPropagation();
-        handleRowClick(record);
+        handleEdit(record);
       },
     },
     { type: 'divider' },

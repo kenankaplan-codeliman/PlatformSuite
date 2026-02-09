@@ -30,22 +30,8 @@ public class ActivityRepository : IActivityRepository
             // Veritabanında projection yap - abstract class sorununu önler
             var projectedQuery = query
                 .Skip(skipCount)
-                .Take(paginationInfo.PageSize + 1)
-                .Select(a => new ActivityProjection
-                {
-                    Id = a.Id,
-                    ActivityType = a.ActivityType,
-                    Subject = a.Subject,
-                    Status = a.Status,
-                    Priority = a.Priority,
-                    StartDate = a.StartDate,
-                    EndDate = a.EndDate,
-                    DueDate = a.DueDate,
-                    IsActive = a.IsActive,
-                    OwnerId = a.OwnerId,
-                    RegardingEntityType = a.RegardingEntityType,
-                    RegardingEntityId = a.RegardingEntityId
-                });
+                .Take(paginationInfo.PageSize + 1);
+                
 
             var results = projectedQuery.ToList();
             var hasMore = results.Count > paginationInfo.PageSize;
@@ -86,7 +72,7 @@ public class ActivityRepository : IActivityRepository
         };
     }
 
-    public List<ActivityBaseModal> Calendar(ActivityListFilters? filters, DateTime startDate, DateTime endDate)
+    public List<ActivityListItem> Calendar(ActivityListFilters? filters, DateTime startDate, DateTime endDate)
     {
         var query = BuildFilteredQuery(filters);
 
@@ -95,21 +81,6 @@ public class ActivityRepository : IActivityRepository
             .Where(a =>
                 (a.StartDate != null && a.StartDate <= endDate && (a.EndDate == null || a.EndDate >= startDate)) ||
                 (a.StartDate == null && a.EndDate != null && a.EndDate >= startDate && a.EndDate <= endDate))
-            .Select(a => new ActivityProjection
-            {
-                Id = a.Id,
-                ActivityType = a.ActivityType,
-                Subject = a.Subject,
-                Status = a.Status,
-                Priority = a.Priority,
-                StartDate = a.StartDate,
-                EndDate = a.EndDate,
-                DueDate = a.DueDate,
-                IsActive = a.IsActive,
-                OwnerId = a.OwnerId,
-                RegardingEntityType = a.RegardingEntityType,
-                RegardingEntityId = a.RegardingEntityId
-            })
             .ToList();
 
         return results.Select(MapToModal).ToList();
@@ -117,49 +88,70 @@ public class ActivityRepository : IActivityRepository
 
     #region Private Methods
 
-    private IQueryable<ActivityBase> BuildFilteredQuery(ActivityListFilters? filters)
+    private IQueryable<ActivityProjection> BuildFilteredQuery(ActivityListFilters? filters)
     {
-        var query = _dbContext.Activity.AsNoTracking().IgnoreAutoIncludes();
+        var query =
+            from a in _dbContext.Activity.AsNoTracking().IgnoreAutoIncludes()
+            join u in _dbContext.AppUser.AsNoTracking()
+                on a.OwnerId equals u.Id into userGroup
+            from u in userGroup.DefaultIfEmpty()
+            select new { Activity = a, User = u };
 
-        if (filters == null)
-            return query;
+        if (filters != null)
+        {
+            if (!string.IsNullOrWhiteSpace(filters.Subject))
+                query = query.Where(q =>
+                    EF.Functions.ILike(q.Activity.Subject, $"%{filters.Subject}%"));
 
-        if (!string.IsNullOrEmpty(filters.Subject))
-            query = query.Where(a => EF.Functions.ILike(a.Subject, $"%{filters.Subject}%"));
+            if (filters.ActivityType != null)
+                query = query.Where(q => q.Activity.ActivityType == filters.ActivityType);
 
-        if (filters.ActivityType != null)
-            query = query.Where(a => a.ActivityType == filters.ActivityType);
+            if (filters.Status != null)
+                query = query.Where(q => q.Activity.Status == filters.Status);
 
-        if (filters.Status != null)
-            query = query.Where(a => a.Status == filters.Status);
+            if (filters.Priority != null)
+                query = query.Where(q => q.Activity.Priority == filters.Priority);
 
-        if (filters.Priority != null)
-            query = query.Where(a => a.Priority == filters.Priority);
+            if (filters.RegardingEntityType != null)
+                query = query.Where(q => q.Activity.RegardingEntityType == filters.RegardingEntityType);
 
-        if (filters.RegardingEntityType != null)
-            query = query.Where(a => a.RegardingEntityType == filters.RegardingEntityType);
+            if (filters.RegardingEntityId != null)
+                query = query.Where(q => q.Activity.RegardingEntityId == filters.RegardingEntityId);
 
-        if (filters.RegardingEntityId != null)
-            query = query.Where(a => a.RegardingEntityId == filters.RegardingEntityId);
+            if (filters.DueDateFrom != null)
+                query = query.Where(q => q.Activity.DueDate >= filters.DueDateFrom);
 
-        if (filters.DueDateFrom != null)
-            query = query.Where(a => a.DueDate >= filters.DueDateFrom);
+            if (filters.DueDateTo != null)
+                query = query.Where(q => q.Activity.DueDate <= filters.DueDateTo);
 
-        if (filters.DueDateTo != null)
-            query = query.Where(a => a.DueDate <= filters.DueDateTo);
+            if (filters.OwnerId != null)
+                query = query.Where(q => q.Activity.OwnerId == filters.OwnerId);
 
-        if (filters.OwnerId != null)
-            query = query.Where(a => a.OwnerId == filters.OwnerId);
+            if (filters.IsActive != null)
+                query = query.Where(q => q.Activity.IsActive == filters.IsActive);
+        }
 
-        if (filters.IsActive != null)
-            query = query.Where(a => a.IsActive == filters.IsActive);
-
-        return query;
+        return query.Select(q => new ActivityProjection
+        {
+            Id = q.Activity.Id,
+            ActivityType = q.Activity.ActivityType,
+            Subject = q.Activity.Subject,
+            Status = q.Activity.Status,
+            Priority = q.Activity.Priority,
+            StartDate = q.Activity.StartDate,
+            EndDate = q.Activity.EndDate,
+            DueDate = q.Activity.DueDate,
+            IsActive = q.Activity.IsActive,
+            OwnerId = q.Activity.OwnerId,
+            OwnerIdFirstName = q.User != null ? q.User.FirstName : null,
+            OwnerIdLastName = q.User != null ? q.User.LastName : null
+        });
     }
 
-    private static ActivityBaseModal MapToModal(ActivityProjection p)
+
+    private static ActivityListItem MapToModal(ActivityProjection p)
     {
-        var modal = new ActivityBaseModal(p.ActivityType)
+        var modal = new ActivityListItem(p.ActivityType)
         {
             Id = p.Id,
             Subject = p.Subject,
@@ -169,16 +161,11 @@ public class ActivityRepository : IActivityRepository
             EndDate = p.EndDate,
             DueDate = p.DueDate,
             IsActive = p.IsActive,
-            Owner = new EntityReference(EntityType.User) { Id = p.OwnerId }
+            Owner = new EntityReference(EntityType.User) { 
+                Id = p.OwnerId ?? Guid.Empty,
+                Name = $"{p.OwnerIdFirstName} {p.OwnerIdLastName}".Trim()
+            }
         };
-
-        if (p.RegardingEntityType != null && p.RegardingEntityId != null)
-        {
-            modal.RegardingEntity = new EntityReference(p.RegardingEntityType.Value)
-            {
-                Id = p.RegardingEntityId.Value
-            };
-        }
 
         return modal;
     }
@@ -198,7 +185,9 @@ public class ActivityRepository : IActivityRepository
         public DateTime? EndDate { get; set; }
         public DateTime? DueDate { get; set; }
         public bool IsActive { get; set; }
-        public Guid OwnerId { get; set; }
+        public Guid? OwnerId { get; set; }
+        public string? OwnerIdFirstName { get; set; }
+        public string? OwnerIdLastName { get; set; }
         public EntityType? RegardingEntityType { get; set; }
         public Guid? RegardingEntityId { get; set; }
     }

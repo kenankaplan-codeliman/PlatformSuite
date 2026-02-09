@@ -56,7 +56,7 @@ public class TaskActivity : ActivityBase
         IsCompleted = true;
         EndDate= DateTime.UtcNow;
         PercentComplete = 100;
-        MarkAsCompleted();
+        Completed();
     }
 
     /// <summary>
@@ -109,9 +109,9 @@ public class TaskActivity : ActivityBase
     /// <summary>
     /// Aktiviteyi tamamlandı olarak işaretle
     /// </summary>
-    public override void MarkAsCompleted()
+    public override void Completed()
     {
-        base.MarkAsCompleted();
+        base.Completed();
         IsCompleted = true;
         PercentComplete = 100;
     }

@@ -92,7 +92,7 @@ public class PhoneCall : ActivityBase
     public void EndCall(string? result = null)
     {
         CallResult = result;
-        MarkAsCompleted();
+        Completed();
     }
 
     #endregion

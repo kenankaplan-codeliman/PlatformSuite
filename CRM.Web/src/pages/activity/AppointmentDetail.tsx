@@ -61,6 +61,7 @@ import { StateType, useProcessState } from '@/stores/process.state.store';
 import EntityLookup, { EntityTypeConfig } from '@/components/EntityLookup';
 import type { EntityType as LookupEntityType } from '@/types/entity.lookup.types';
 import { entitySearchService } from '@/services/entity.search.service';
+import { useSmartBack } from '@/util/useSmartBack';
 
 const { Title, Text, Paragraph } = Typography;
 const { TextArea } = Input;
@@ -156,19 +157,18 @@ const AppointmentDetail: React.FC<AppointmentDetailProps> = (props) => {
     }
   }, [searchParams, isNewAppointment, mode]);
 
-  // Populate form when appointment data changes
   useEffect(() => {
     if (currentAppointment && !isNewAppointment) {
       form.setFieldsValue({
         ...currentAppointment,
         startDate: currentAppointment.startDate ? dayjs(currentAppointment.startDate) : null,
-        endDate: currentAppointment.endDate ? dayjs(currentAppointment.endDate) : null,
+        dueDate: currentAppointment.dueDate ? dayjs(currentAppointment.dueDate) : null,
       });
 
-      // Set EntityReference fields directly (already correct type from backend)
       setOrganizer(currentAppointment.organizer || null);
       setAttendees(currentAppointment.attendees || []);
       setRegarding(currentAppointment.regardingEntity || null);
+
     } else if (isNewAppointment) {
       form.resetFields();
       setOrganizer(null);
@@ -195,7 +195,7 @@ const AppointmentDetail: React.FC<AppointmentDetailProps> = (props) => {
       form.setFieldsValue({
         ...currentAppointment,
         startDate: currentAppointment?.startDate ? dayjs(currentAppointment.startDate) : null,
-        endDate: currentAppointment?.endDate ? dayjs(currentAppointment.endDate) : null,
+        dueDate: currentAppointment?.dueDate ? dayjs(currentAppointment.dueDate) : null,
       });
       setOrganizer(currentAppointment?.organizer || null);
       setAttendees(currentAppointment?.attendees || []);
@@ -208,12 +208,12 @@ const AppointmentDetail: React.FC<AppointmentDetailProps> = (props) => {
   const handleSave = useCallback(async () => {
     const values = await form.validateFields();
 
-    // EntityReference alanları doğrudan gönderiliyor (serialize etmeye gerek yok)
     const formattedValues: Partial<AppointmentActivity> = {
       ...values,
+      id: appointmentId || undefined, 
       activityType: ActivityType.Appointment,
       startDate: values.startDate?.toISOString(),
-      endDate: values.endDate?.toISOString(),
+      dueDate: values.dueDate?.toISOString(),
       organizer: organizer,
       attendees: attendees,
       regardingEntity: regarding,
@@ -224,7 +224,7 @@ const AppointmentDetail: React.FC<AppointmentDetailProps> = (props) => {
       props.onSave?.(newAppointment);
       navigate(RoutePaths.Activity.Appointment.View(newAppointment.id));
     } else if (appointmentId) {
-      const updatedAppointment = await updateActivity<AppointmentActivity>(appointmentId, formattedValues);
+      const updatedAppointment = await updateActivity<AppointmentActivity>(formattedValues);
       props.onSave?.(updatedAppointment);
       updateMode('view');
     }
@@ -247,7 +247,10 @@ const AppointmentDetail: React.FC<AppointmentDetailProps> = (props) => {
     await cancelActivity(appointmentId);
   }, [appointmentId, isNewAppointment, cancelActivity]);
 
-  const handleBack = useCallback(() => navigate(RoutePaths.Activity.List), [navigate]);
+  //const handleBack = useCallback(() => navigate(RoutePaths.Activity.List), [navigate]);
+  const handleBack = useSmartBack({ 
+  fallbackPath: RoutePaths.Activity.List 
+});
 
   // Not found state
   if (!currentAppointment && !isNewAppointment && state !== StateType.Loading) {
@@ -291,7 +294,7 @@ const AppointmentDetail: React.FC<AppointmentDetailProps> = (props) => {
       <Card style={{ marginBottom: 16 }}>
         <Row gutter={24} align="middle">
           <Col flex="auto">
-            <Space direction="vertical" size={4}>
+            <Space orientation="vertical" size={4}>
               <Space align="center" wrap>
                 <CalendarOutlined style={{ fontSize: 24, color: '#722ed1' }} />
                 <Title level={3} style={{ margin: 0 }}>{currentAppointment?.subject}</Title>
@@ -326,7 +329,7 @@ const AppointmentDetail: React.FC<AppointmentDetailProps> = (props) => {
           <Card title={<Space><ClockCircleOutlined /><span>Zaman Bilgileri</span></Space>} style={{ marginBottom: 16 }}>
             <Descriptions column={1} size="small">
               <Descriptions.Item label="Başlangıç">{currentAppointment?.startDate ? dayjs(currentAppointment.startDate).format('DD.MM.YYYY HH:mm') : '-'}</Descriptions.Item>
-              <Descriptions.Item label="Bitiş">{currentAppointment?.endDate ? dayjs(currentAppointment.endDate).format('DD.MM.YYYY HH:mm') : '-'}</Descriptions.Item>
+              <Descriptions.Item label="Bitiş">{currentAppointment?.dueDate ? dayjs(currentAppointment.dueDate).format('DD.MM.YYYY HH:mm') : '-'}</Descriptions.Item>
               <Descriptions.Item label="Tüm Gün"><Badge status={currentAppointment?.isAllDay ? 'success' : 'default'} text={currentAppointment?.isAllDay ? 'Evet' : 'Hayır'} /></Descriptions.Item>
               <Descriptions.Item label="Hatırlatma">
                 {currentAppointment?.reminderMinutesBefore ? `${currentAppointment.reminderMinutesBefore} dakika önce` : '-'}
@@ -437,7 +440,7 @@ const AppointmentDetail: React.FC<AppointmentDetailProps> = (props) => {
                 </Form.Item>
               </Col>
               <Col span={12}>
-                <Form.Item name="endDate" label="Bitiş" rules={[{ required: true, message: 'Bitiş zamanı gereklidir' }]}>
+                <Form.Item name="dueDate" label="Bitiş" rules={[{ required: true, message: 'Bitiş zamanı gereklidir' }]}>
                   <DatePicker showTime format="DD.MM.YYYY HH:mm" style={{ width: '100%' }} placeholder="Bitiş zamanı" />
                 </Form.Item>
               </Col>
