@@ -18,10 +18,8 @@ import {
   Tooltip,
   Popconfirm,
   Tabs,
-  Timeline,
   Badge,
   Switch,
-  Modal,
 } from 'antd';
 import {
   ArrowLeftOutlined,
@@ -37,8 +35,6 @@ import {
   DollarOutlined,
   FileTextOutlined,
   EnvironmentOutlined,
-  SyncOutlined,
-  CheckCircleOutlined,
   ClockCircleOutlined,
 } from '@ant-design/icons';
 import type { LeadDetailItem } from '@/types/lead.types';
@@ -57,8 +53,6 @@ import {
 } from '@/types/lead.types';
 import { useLeadStore } from '@/stores/lead.store';
 import { StateType, useProcessState } from "@/stores/process.state.store";
-import { useActivityStore } from '@/stores/activity.store';
-import type { ActivityStatusValue } from '@/types/activity.types';
 import ActivityListView from '@/components/ActivityListView';
 
 const { Title, Text, Paragraph } = Typography;

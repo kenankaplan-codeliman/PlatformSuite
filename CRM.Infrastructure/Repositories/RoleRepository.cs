@@ -90,7 +90,10 @@ namespace CRM.Infrastructure.Repositories
                                         .FirstOrDefault();
 
             if (role != null)
+            {
+                await CreateRolePrivileges(role.Id, accessLevel);
                 return role;
+            }
 
             role = new AppRole()
             {

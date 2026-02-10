@@ -14,16 +14,13 @@ namespace CRM.Api.Controllers;
 public class ActivityController : ControllerBase
 {
     private readonly ActivityCommandHandler activityCommandHandler;
-    private readonly AppointmentCommandHandler appointmentCommandHandler;
     private readonly ILogger<LeadController> logger;
 
     public ActivityController(ILogger<LeadController> logger, 
-        ActivityCommandHandler activityCommandHandler,
-        AppointmentCommandHandler appointmentCommandHandler)
+        ActivityCommandHandler activityCommandHandler)
     {
         this.logger = logger;
         this.activityCommandHandler = activityCommandHandler;
-        this.appointmentCommandHandler = appointmentCommandHandler;
     }
 
     [HttpPost("list")]
@@ -45,32 +42,63 @@ public class ActivityController : ControllerBase
     }
 
 
-    # region Appointment
-
-    [HttpPost("create/appointment")]
-    [ProducesResponseType(typeof(AppointmentModal), 200)]
-    [PrivilegeAuthorize(PrivilegeCodes.ActivityPrivilegeCodes.AppointmentCreate)]
-    public async Task<IActionResult> AppointmentCreate(AppointmentModal request)
-    {
-        var response = await appointmentCommandHandler.AppointmentCreate(request);
-        return Ok(response);
-    }
+    #region Appointment
 
     [HttpPost("get/appointment")]
     [ProducesResponseType(typeof(AppointmentModal), 200)]
     [PrivilegeAuthorize(PrivilegeCodes.ActivityPrivilegeCodes.AppointmentRead)]
     public async Task<IActionResult> AppointmentRead(ActivityRequest request)
     {
-        var response = await appointmentCommandHandler.AppointmentRead(request.Id);
+        var response = await activityCommandHandler.AppointmentRead(request.Id);
+        return Ok(response);
+    }
+
+    [HttpPost("create/appointment")]
+    [ProducesResponseType(typeof(AppointmentModal), 200)]
+    [PrivilegeAuthorize(PrivilegeCodes.ActivityPrivilegeCodes.AppointmentCreate)]
+    public async Task<IActionResult> AppointmentCreate(AppointmentModal request)
+    {
+        var response = await activityCommandHandler.AppointmentCreate(request);
         return Ok(response);
     }
 
     [HttpPost("update/appointment")]
     [ProducesResponseType(typeof(AppointmentModal), 200)]
-    [PrivilegeAuthorize(PrivilegeCodes.ActivityPrivilegeCodes.AppointmentRead)]
+    [PrivilegeAuthorize(PrivilegeCodes.ActivityPrivilegeCodes.AppointmentUpdate)]
     public async Task<IActionResult> AppointmentUpdate(AppointmentModal request)
     {
-        var response = await appointmentCommandHandler.AppointmentUpdate(request);
+        var response = await activityCommandHandler.AppointmentUpdate(request);
+        return Ok(response);
+    }
+
+    #endregion
+
+    #region PhoneCall
+
+    [HttpPost("get/phonecall")]
+    [ProducesResponseType(typeof(PhoneCallModal), 200)]
+    [PrivilegeAuthorize(PrivilegeCodes.ActivityPrivilegeCodes.PhoneCallRead)]
+    public async Task<IActionResult> PhoneCallRead(ActivityRequest request)
+    {
+        var response = await activityCommandHandler.PhoneCallRead(request.Id);
+        return Ok(response);
+    }
+
+    [HttpPost("create/phonecall")]
+    [ProducesResponseType(typeof(PhoneCallModal), 200)]
+    [PrivilegeAuthorize(PrivilegeCodes.ActivityPrivilegeCodes.PhoneCallCreate)]
+    public async Task<IActionResult> PhoneCallCreate(PhoneCallModal request)
+    {
+        var response = await activityCommandHandler.PhoneCallCreate(request);
+        return Ok(response);
+    }
+
+    [HttpPost("update/phonecall")]
+    [ProducesResponseType(typeof(PhoneCallModal), 200)]
+    [PrivilegeAuthorize(PrivilegeCodes.ActivityPrivilegeCodes.PhoneCallUpdate)]
+    public async Task<IActionResult> PhoneCallUpdate(PhoneCallModal request)
+    {
+        var response = await activityCommandHandler.PhoneCallUpdate(request);
         return Ok(response);
     }
 

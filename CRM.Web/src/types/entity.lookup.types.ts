@@ -6,16 +6,26 @@
  * Entity referansı - Lookup component'inde seçilen kayıtlar için
  * Tüm activity'lerde regarding, organizer, attendees vb. için kullanılır
  */
+
+export const EntityType = {
+  User: 'user',
+  Account: 'account',
+  Contact: 'contact',
+  Lead: 'lead',
+  Opportunity: 'opportunity',
+} as const;
+
+export type EntityTypeValue = (typeof EntityType)[keyof typeof EntityType];
+
 export interface EntityReference {
   id: string;
   name: string;
-  entityType: 'User' | 'Account' | 'Contact' | 'Lead' | 'Opportunity';
+  entityType: EntityTypeValue;
   email?: string;
   phone?: string;
 }
 
-// Desteklenen entity tipleri
-export type EntityType = EntityReference['entityType'];
+
 
 // Arama sonucu response
 export interface EntitySearchResponse {
@@ -25,7 +35,7 @@ export interface EntitySearchResponse {
 
 // Arama fonksiyonu tipi
 export type EntitySearchFunction = (
-  entityType: EntityType,
+  entityType: EntityTypeValue,
   searchText: string,
   page: number,
   pageSize: number

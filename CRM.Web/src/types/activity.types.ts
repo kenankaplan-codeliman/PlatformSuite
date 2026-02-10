@@ -1,25 +1,4 @@
-import type { EntityReference, EntityType } from '@/types/entity.lookup.types';
-
-
-import {
-  DeleteOutlined,
-  FilterOutlined,
-  ReloadOutlined,
-  MoreOutlined,
-  SearchOutlined,
-  ClearOutlined,
-  CheckCircleOutlined,
-  MailOutlined,
-  PhoneOutlined,
-  CheckSquareOutlined,
-  CalendarOutlined,
-  ClockCircleOutlined,
-  FlagOutlined,
-  EyeOutlined,
-  CloseCircleOutlined,
-  RightCircleOutlined,
-} from '@ant-design/icons';
-
+import type { EntityReference, EntityTypeValue } from '@/types/entity.lookup.types';
 /**
  * Activity Types
  * Lead modülü ile tutarlı request/response yapısı
@@ -247,12 +226,10 @@ export interface PhoneCallActivity extends ActivityBase {
   recipient?: EntityReference | null;
   
   // Telefon bilgileri
-  phoneNumber?: string;
   direction: DirectionValue;
   
   // Notlar
   callNotes?: string;
-  callResult?: string;
 
   recordingUrl?: string;  // Arama kaydı URL'si ekranda olmayabilir.
 }
@@ -322,7 +299,7 @@ export interface ActivityListFilters {
   activityType?: ActivityTypeValue;
   status?: ActivityStatusValue;
   priority?: ActivityPriorityValue;
-  regardingEntityType?: EntityType;
+  regardingEntityType?: EntityTypeValue;
   regardingEntityId?: string;
   dueDateFrom?: string;
   dueDateTo?: string;

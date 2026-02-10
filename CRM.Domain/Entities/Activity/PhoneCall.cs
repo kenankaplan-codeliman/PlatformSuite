@@ -19,11 +19,6 @@ public class PhoneCall : ActivityBase
     public Direction CallDirection { get; set; }
 
     /// <summary>
-    /// Telefon numarası (hızlı erişim için - ayrıca Party'de de tutulabilir)
-    /// </summary>
-    public string? PhoneNumber { get; set; }
-
-    /// <summary>
     /// Görüşme kaydı URL'i
     /// </summary>
     public string? RecordingUrl { get; set; }
@@ -33,10 +28,6 @@ public class PhoneCall : ActivityBase
     /// </summary>
     public string? CallNotes { get; set; }
 
-    /// <summary>
-    /// Arama sonucu (Cevaplandı, Meşgul, Cevapsız vb.)
-    /// </summary>
-    public string? CallResult { get; set; }
     #endregion
 
     #region Party Helper Properties
@@ -48,7 +39,7 @@ public class PhoneCall : ActivityBase
     /// <summary>
     /// Aranan(lar)
     /// </summary>
-    public IEnumerable<ActivityParty> Recipients => Parties.Where(p => p.PartyType == ActivityPartyType.Recipient);
+    public ActivityParty? Recipient => Parties.FirstOrDefault(p => p.PartyType == ActivityPartyType.Recipient);
     #endregion
 
     #region Domain Methods
@@ -71,28 +62,17 @@ public class PhoneCall : ActivityBase
     /// <summary>
     /// Aranan ekle
     /// </summary>
-    public void AddRecipient(ActivityParty party)
+    public void SetRecipient(ActivityParty party)
     {
+
+        var existingCaller = Parties.FirstOrDefault(p => p.PartyType == ActivityPartyType.Recipient);
+        if (existingCaller != null)
+        {
+            Parties.Remove(existingCaller);
+        }
+
         party.PartyType = ActivityPartyType.Recipient;
         AddParty(party);
-    }
-
-    /// <summary>
-    /// Görüşmeyi başlat
-    /// </summary>
-    public void StartCall()
-    {
-        StartDate = DateTime.UtcNow;
-        Status = ActivityStatus.InProgress;
-    }
-
-    /// <summary>
-    /// Görüşmeyi bitir
-    /// </summary>
-    public void EndCall(string? result = null)
-    {
-        CallResult = result;
-        Completed();
     }
 
     #endregion

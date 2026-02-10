@@ -19,7 +19,6 @@ import {
   Modal,
   Avatar,
 } from 'antd';
-import type { TableProps } from 'antd';
 import type { ColumnsType, TableRowSelection } from 'antd/es/table/interface';
 import dayjs from 'dayjs';
 import {
@@ -36,9 +35,7 @@ import {
   CalendarOutlined,
   ClockCircleOutlined,
   FlagOutlined,
-  EyeOutlined,
   CloseCircleOutlined,
-  RightCircleOutlined,
   EditOutlined,
   UserOutlined,
 } from '@ant-design/icons';

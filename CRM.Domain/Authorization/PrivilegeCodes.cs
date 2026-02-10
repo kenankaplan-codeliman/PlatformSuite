@@ -29,6 +29,11 @@ namespace CRM.Domain.Authorization
 
             public const string AppointmentRead = "Appointment.Read";
             public const string AppointmentCreate = "Appointment.Create";
+            public const string AppointmentUpdate = "Appointment.Update";
+
+            public const string PhoneCallRead = "PhoneCall.Read";
+            public const string PhoneCallCreate = "PhoneCall.Create";
+            public const string PhoneCallUpdate = "PhoneCall.Update";
         }
     }
 

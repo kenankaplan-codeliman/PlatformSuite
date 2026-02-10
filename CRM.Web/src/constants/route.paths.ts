@@ -35,24 +35,24 @@ export const Lead = {
     Email: {
       New: `${BasePaths.ActivityPath}/email/new`,
       Detail: (id: string) => `${BasePaths.ActivityPath}/email/${id}`,
-      Edit: (id: string) => `${BasePaths.ActivityPath}/email/${id}`,
-      View: (id: string) => `${BasePaths.ActivityPath}/email/${id}`,
+      Edit: (id: string) => `${BasePaths.ActivityPath}/email/${id}?mode=edit`,
+      View: (id: string) => `${BasePaths.ActivityPath}/email/${id}?mode=view`,
     },
     
     // Phone Call routes
     PhoneCall: {
       New: `${BasePaths.ActivityPath}/phonecall/new`,
       Detail: (id: string) => `${BasePaths.ActivityPath}/phonecall/${id}`,
-      Edit: (id: string) => `${BasePaths.ActivityPath}/phonecall/${id}`,
-      View: (id: string) => `${BasePaths.ActivityPath}/phonecall/${id}`,
+      Edit: (id: string) => `${BasePaths.ActivityPath}/phonecall/${id}?mode=edit`,
+      View: (id: string) => `${BasePaths.ActivityPath}/phonecall/${id}?mode=view`,
     },
     
     // Task routes
     Task: {
       New: `${BasePaths.ActivityPath}/task/new`,
       Detail: (id: string) => `${BasePaths.ActivityPath}/task/${id}`,
-      Edit: (id: string) => `${BasePaths.ActivityPath}/task/${id}`,
-      View: (id: string) => `${BasePaths.ActivityPath}/task/${id}`,
+      Edit: (id: string) => `${BasePaths.ActivityPath}/task/${id}?mode=edit`,
+      View: (id: string) => `${BasePaths.ActivityPath}/task/${id}?mode=view`,
     },
     
     // Appointment routes

@@ -168,28 +168,6 @@ updateActivity: async <T extends ActivityBase>(
     return response.data;
   },
 
-  // Get activities by regarding entity
-  getActivitiesByRegarding: async (
-    entityType: string,
-    entityId: string,
-    page: number = 1,
-    pageSize: number = 10
-  ): Promise<ActivityListResponse> => {
-    const request: ActivityListRequest = {
-      page: page,
-      pageSize: pageSize,
-      filters: {
-        regardingEntityType: entityType,
-        regardingEntityId: entityId,
-      },
-    };
-
-    const response = await apiClient.post<ActivityListResponse>(
-      ServicePath.Activity.List,
-      request
-    );
-    return response.data;
-  },
 
   // Export activities to Excel
   exportActivities: async (filters?: ActivityListFilters): Promise<Blob> => {

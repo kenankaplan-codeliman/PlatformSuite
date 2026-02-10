@@ -1,4 +1,5 @@
-﻿using CRM.Application.Interfaces;
+﻿using CRM.Application.Exceptions;
+using CRM.Application.Interfaces;
 using CRM.Application.Modals.ActivityModal;
 using CRM.Application.Modals.Common;
 using CRM.Domain.Entities.Activity;
@@ -11,12 +12,14 @@ namespace CRM.Infrastructure.Repositories;
 
 public class ActivityRepository : IActivityRepository
 {
-    private readonly DatabaseContext _dbContext;
+    private readonly DatabaseContext dbContext;
 
     public ActivityRepository(DatabaseContext dbContext)
     {
-        _dbContext = dbContext;
+        this.dbContext = dbContext;
     }
+
+    #region Query Methods
 
     public ActivityListResponse List(ActivityListFilters? filters, PaginationInfo? paginationInfo)
     {
@@ -27,7 +30,6 @@ public class ActivityRepository : IActivityRepository
             var pageIndex = Math.Max(0, paginationInfo.Page - 1);
             var skipCount = pageIndex * paginationInfo.PageSize;
 
-            // Veritabanında projection yap - abstract class sorununu önler
             var projectedQuery = query
                 .Skip(skipCount)
                 .Take(paginationInfo.PageSize + 1);
@@ -76,7 +78,6 @@ public class ActivityRepository : IActivityRepository
     {
         var query = BuildFilteredQuery(filters);
 
-        // Tarih aralığıyla kesişen aktiviteleri getir
         var results = query
             .Where(a =>
                 (a.StartDate != null && a.StartDate <= endDate && (a.EndDate == null || a.EndDate >= startDate)) ||
@@ -86,13 +87,13 @@ public class ActivityRepository : IActivityRepository
         return results.Select(MapToModal).ToList();
     }
 
-    #region Private Methods
+    
 
     private IQueryable<ActivityProjection> BuildFilteredQuery(ActivityListFilters? filters)
     {
         var query =
-            from a in _dbContext.Activity.AsNoTracking().IgnoreAutoIncludes()
-            join u in _dbContext.AppUser.AsNoTracking()
+            from a in dbContext.Activity.AsNoTracking().IgnoreAutoIncludes()
+            join u in dbContext.AppUser.AsNoTracking()
                 on a.OwnerId equals u.Id into userGroup
             from u in userGroup.DefaultIfEmpty()
             select new { Activity = a, User = u };
@@ -193,4 +194,61 @@ public class ActivityRepository : IActivityRepository
     }
 
     #endregion
+
+
+    #region Appointment Methods
+
+    public Appointment CreateAppointment(Appointment entity)
+    {
+        var entry = this.dbContext.Appointment.Add(entity);
+        return entry.Entity;
+    }
+
+    public Appointment UpdateAppointment(Appointment entity)
+    {
+        var entry = this.dbContext.Appointment.Update(entity);
+        return entry.Entity;
+    }
+
+    public Appointment DeleteAppointment(Appointment entity)
+    {
+        var entry = this.dbContext.Appointment.Remove(entity);
+        return entry.Entity;
+    }
+
+    public Appointment GetAppointment(Guid Id)
+    {
+        var entity = this.dbContext.Appointment.FirstOrDefault(e => e.Id == Id) ?? throw new NotFoundException();
+        return entity;
+    }
+
+    #endregion
+
+    #region PhoneCall Methods
+    public PhoneCall CreatePhoneCall(PhoneCall entity)
+    {
+        var entry = this.dbContext.PhoneCall.Add(entity);
+        return entry.Entity;
+    }
+
+    public PhoneCall UpdatePhoneCall(PhoneCall entity)
+    {
+        var entry = this.dbContext.PhoneCall.Update(entity);
+        return entry.Entity;
+    }
+
+    public PhoneCall DeletePhoneCall(PhoneCall entity)
+    {
+        var entry = this.dbContext.PhoneCall.Remove(entity);
+        return entry.Entity;
+    }
+
+    public PhoneCall GetPhoneCall(Guid Id)
+    {
+        var entity = this.dbContext.PhoneCall.FirstOrDefault(e => e.Id == Id) ?? throw new NotFoundException();
+        return entity;
+    }
+
+    #endregion
+
 }

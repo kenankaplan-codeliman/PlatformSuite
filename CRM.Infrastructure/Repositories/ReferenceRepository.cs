@@ -66,24 +66,27 @@ namespace CRM.Infrastructure.Repositories
 
             }
 
-            var query = from lead in this.dbContext.Lead.AsNoTracking()
-                        where
-                        lead.IsActive
-                        && (
-                            EF.Functions.ILike(lead.CompanyName, $"%{searchText}%")
-                           || EF.Functions.ILike((lead.FirstName + " " + lead.LastName), $"%{searchText}%")
-                           )
-                        select new
-                        {
-                            lead.Id,
-                            lead.CompanyName,
-                            lead.FirstName,
-                            lead.LastName,
-                            lead.Email,
-                            lead.Phone,
-                            lead.MobilePhone
-                        };
+            var tempQuery = this.dbContext.Lead.AsNoTracking().Where(lead => lead.IsActive);
 
+            if (!string.IsNullOrEmpty(searchText))
+            {
+
+                tempQuery = tempQuery.Where(lead =>
+                         EF.Functions.ILike(lead.CompanyName, $"%{searchText}%")
+                         || EF.Functions.ILike((lead.FirstName + " " + lead.LastName), $"%{searchText}%")
+                         );
+            }
+
+            var query = tempQuery.Select(lead => new
+            {
+                lead.Id,
+                lead.CompanyName,
+                lead.FirstName,
+                lead.LastName,
+                lead.Email,
+                lead.Phone,
+                lead.MobilePhone
+            });
 
             var entityList = query.Skip(skipCnt).Take(pageSize + 1).ToList();
 
@@ -131,14 +134,6 @@ namespace CRM.Infrastructure.Repositories
 
         private EntityReferenceList LookupUserReference(string searchText, PaginationInfo paginationInfo)
         {
-            if (string.IsNullOrEmpty(searchText))
-                return new EntityReferenceList()
-                {
-                    Data = new List<EntityReference>(),
-                    HasMore = false,
-                };
-
-
             int pageSize = int.Parse(configuration["DefaultValues:Search_Max_Record"]!);
             int skipCnt = 0;
 
@@ -151,19 +146,24 @@ namespace CRM.Infrastructure.Repositories
 
             }
 
-            var query = from usr in this.dbContext.AppUser.AsNoTracking()
-                        where
-                        usr.IsActive
-                        && EF.Functions.ILike((usr.FirstName + " " + usr.LastName), $"%{searchText}%")
-                        select new
-                        {
-                            usr.Id,
-                            usr.FirstName,
-                            usr.LastName,
-                            usr.Email,
-                            //usr.Phone,
-                            //usr.MobilePhone
-                        };
+            var tempQuery = this.dbContext.AppUser.AsNoTracking().Where(x => x.IsActive);
+
+            if (!string.IsNullOrEmpty(searchText))
+            {
+                tempQuery = tempQuery.Where(usr =>
+                         EF.Functions.ILike(usr.Email, $"%{searchText}%")
+                        && EF.Functions.ILike((usr.FirstName + " " + usr.LastName), $"%{searchText}%"));
+            }
+
+            var query = tempQuery.Select(usr => new
+            {
+                usr.Id,
+                usr.FirstName,
+                usr.LastName,
+                usr.Email,
+                //usr.Phone,
+                //usr.MobilePhone
+            });
 
 
             var entityList = query.Skip(skipCnt).Take(pageSize + 1).ToList();

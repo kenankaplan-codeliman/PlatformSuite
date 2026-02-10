@@ -27,7 +27,7 @@ import {
   LoadingOutlined,
 } from '@ant-design/icons';
 
-import type { EntityReference, EntitySearchFunction, EntityType } from '@/types/entity.lookup.types';
+import { EntityType, type EntityReference, type EntitySearchFunction, type EntityTypeValue } from '@/types/entity.lookup.types';
 import '@/css/EntityLookup.css';
 import CustomPagination from '@/components/CustomPagination';
 
@@ -41,16 +41,14 @@ export interface EntityLookupProps {
   // Değer yönetimi - EntityReference kullanır
   value?: EntityReference | EntityReference[] | null;
   onChange?: (value: EntityReference | EntityReference[] | null) => void;
-
-  // Ayarlar
-  entityTypes: EntityType[];
-  multiple?: boolean;
-  placeholder?: string;
-  disabled?: boolean;
-  maxSelections?: number;
-
   // Arama fonksiyonu
   onSearch: EntitySearchFunction;
+  
+  // Ayarlar
+  entityTypes: EntityTypeValue[];
+  multiple?: boolean;
+  disabled?: boolean;
+  maxSelections?: number;
 
   // Stil
   style?: React.CSSProperties;
@@ -66,30 +64,30 @@ export interface EntityLookupProps {
 
 // Entity tip konfigürasyonları
 export const EntityTypeConfig: Record<
-  EntityType,
-  { label: string; icon: React.ReactNode; color: string }
+    EntityTypeValue,
+      { label: string; icon: React.ReactNode; color: string }
 > = {
-  User: {
+  [EntityType.User]: {
     label: 'Kullanıcı',
     icon: <UserOutlined />,
     color: '#1890ff',
   },
-  Account: {
+  [EntityType.Account]: {
     label: 'Firma',
     icon: <BankOutlined />,
     color: '#52c41a',
   },
-  Contact: {
+  [EntityType.Contact]: {
     label: 'Kişi',
     icon: <IdcardOutlined />,
     color: '#722ed1',
   },
-  Lead: {
+  [EntityType.Lead]: {
     label: 'Aday Müşteri',
     icon: <RocketOutlined />,
     color: '#fa8c16',
   },
-  Opportunity: {
+  [EntityType.Opportunity]: {
     label: 'Fırsat',
     icon: <CrownOutlined />,
     color: '#eb2f96',
@@ -100,15 +98,15 @@ export const EntityTypeConfig: Record<
 // HELPER FUNCTIONS
 // ============================================
 
-const getEntityIcon = (entityType: EntityType): React.ReactNode => {
+const getEntityIcon = (entityType: EntityTypeValue): React.ReactNode => {
   return EntityTypeConfig[entityType]?.icon || <TeamOutlined />;
 };
 
-const getEntityColor = (entityType: EntityType): string => {
+const getEntityColor = (entityType: EntityTypeValue): string => {
   return EntityTypeConfig[entityType]?.color || '#8c8c8c';
 };
 
-const getEntityLabel = (entityType: EntityType): string => {
+const getEntityLabel = (entityType: EntityTypeValue ): string => {
   return EntityTypeConfig[entityType]?.label || entityType;
 };
 
@@ -168,19 +166,21 @@ const SelectedEntityTag: React.FC<SelectedEntityTagProps> = ({
 const EntityLookup: React.FC<EntityLookupProps> = ({
   value,
   onChange,
+  onSearch,
   entityTypes,
   multiple = false,
-  placeholder = 'Kayıt seçin...',
   disabled = false,
   maxSelections,
-  onSearch,
   style,
   className,
-  modalTitle = 'Kayıt Seç',
+  modalTitle = 'Kayıt seçin...',
 }) => {
+  
+
+
   // Local state
   const [modalVisible, setModalVisible] = useState(false);
-  const [selectedEntityType, setSelectedEntityType] = useState<EntityType>(entityTypes[0]);
+  const [selectedEntityType, setSelectedEntityType] = useState<EntityTypeValue>(entityTypes[0]);
   const [searchText, setSearchText] = useState('');
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(10);
@@ -240,15 +240,15 @@ const EntityLookup: React.FC<EntityLookupProps> = ({
   // Perform search - parametreleri dışarıdan alır (stale closure önlemi)
   const performSearch = useCallback(
     async (
-      entityType: EntityType,
+      entityType: EntityTypeValue,
       text: string,
       currentPage: number,
       currentPageSize: number
     ) => {
-      if (!text.trim()) {
-        clearSearchResults();
-        return;
-      }
+      //if (!text.trim()) {
+      //  clearSearchResults();
+      //  return;
+      //}
 
       setSearchLoading(true);
 
@@ -282,7 +282,7 @@ const EntityLookup: React.FC<EntityLookupProps> = ({
 
   // Handle entity type change
   const handleEntityTypeChange = useCallback(
-    (newType: EntityType) => {
+    (newType: EntityTypeValue) => {
       setSelectedEntityType(newType);
       setPage(1);
       if (searchText.trim()) {
@@ -367,7 +367,7 @@ const EntityLookup: React.FC<EntityLookupProps> = ({
       key: 'entityType',
       width: 60,
       align: 'center',
-      render: (type: EntityType) => (
+      render: (type: EntityTypeValue) => (
         <Tooltip title={getEntityLabel(type)}>
           <Avatar
             size="small"
@@ -474,7 +474,7 @@ const EntityLookup: React.FC<EntityLookupProps> = ({
             ))}
           </div>
         ) : (
-          <span className="entity-lookup-placeholder">{placeholder}</span>
+          <span className="entity-lookup-placeholder">{modalTitle}</span>
         )}
         <SearchOutlined className="entity-lookup-search-icon" />
       </div>
@@ -526,7 +526,7 @@ const EntityLookup: React.FC<EntityLookupProps> = ({
             placeholder="Arama yapın..."
             value={searchText}
             onChange={(e) => setSearchText(e.target.value)}
-            onKeyPress={handleSearchKeyPress}
+            onKeyDown={handleSearchKeyPress}
             style={{ flex: 1 }}
             allowClear
           />

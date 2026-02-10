@@ -221,9 +221,6 @@ public static class ActivityEntities
                 .IsRequired()
                 .HasConversion<EnumToStringConverter<Direction>>();
 
-            entity.Property(e => e.PhoneNumber)
-                .HasColumnName("phone_number")
-                .HasMaxLength(50);
 
             entity.Property(e => e.RecordingUrl)
                 .HasColumnName("recording_url")
@@ -233,13 +230,9 @@ public static class ActivityEntities
                 .HasColumnName("call_notes")
                 .HasColumnType("text");
 
-            entity.Property(e => e.CallResult)
-                .HasColumnName("call_result")
-                .HasMaxLength(100);
-
             // Computed/wrapper properties
             entity.Ignore(e => e.Caller);
-            entity.Ignore(e => e.Recipients);
+            entity.Ignore(e => e.Recipient);
         });
 
         // =====================================================

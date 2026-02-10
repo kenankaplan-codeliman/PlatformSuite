@@ -44,7 +44,7 @@ import {
 } from '@ant-design/icons';
 import dayjs from 'dayjs';
 import type { AppointmentActivity } from '@/types/activity.types';
-import type { EntityReference } from '@/types/entity.lookup.types';
+import { EntityType, type EntityReference, type EntityTypeValue } from '@/types/entity.lookup.types';
 import {
   ActivityStatus,
   ActivityPriority,
@@ -79,16 +79,18 @@ export interface AppointmentDetailProps {
 }
 
 // Helper function to get entity icon
-const getEntityIcon = (entityType: LookupEntityType) => {
-  const icons: Record<LookupEntityType, React.ReactNode> = {
-    User: <UserOutlined />,
-    Account: <BankOutlined />,
-    Contact: <IdcardOutlined />,
-    Lead: <RocketOutlined />,
-    Opportunity: <CalendarOutlined />,
+const getEntityIcon = (entityType: EntityTypeValue) => {
+  const icons: Record<EntityTypeValue, React.ReactNode> = {
+    [EntityType.User]: <UserOutlined />,
+    [EntityType.Account]: <BankOutlined />,
+    [EntityType.Contact]: <IdcardOutlined />,
+    [EntityType.Lead]: <RocketOutlined />,
+    [EntityType.Opportunity]: <CalendarOutlined />,
   };
   return icons[entityType];
 };
+
+
 
 const AppointmentDetail: React.FC<AppointmentDetailProps> = (props) => {
   const params = useParams<{ id: string }>();
@@ -210,7 +212,7 @@ const AppointmentDetail: React.FC<AppointmentDetailProps> = (props) => {
 
     const formattedValues: Partial<AppointmentActivity> = {
       ...values,
-      id: appointmentId || undefined, 
+      id: appointmentId || undefined,
       activityType: ActivityType.Appointment,
       startDate: values.startDate?.toISOString(),
       dueDate: values.dueDate?.toISOString(),
@@ -248,9 +250,9 @@ const AppointmentDetail: React.FC<AppointmentDetailProps> = (props) => {
   }, [appointmentId, isNewAppointment, cancelActivity]);
 
   //const handleBack = useCallback(() => navigate(RoutePaths.Activity.List), [navigate]);
-  const handleBack = useSmartBack({ 
-  fallbackPath: RoutePaths.Activity.List 
-});
+  const handleBack = useSmartBack({
+    fallbackPath: RoutePaths.Activity.List
+  });
 
   // Not found state
   if (!currentAppointment && !isNewAppointment && state !== StateType.Loading) {
@@ -396,25 +398,63 @@ const AppointmentDetail: React.FC<AppointmentDetailProps> = (props) => {
                 </Form.Item>
               </Col>
               <Col span={4}>
-                <Form.Item name="isActive" label="Aktif" valuePropName="checked">
-                  <Switch checkedChildren="Evet" unCheckedChildren="Hayır" />
-                </Form.Item>
-              </Col>
-              <Col span={4}>
-                <Form.Item name="isAllDay" label="Tüm Gün" valuePropName="checked">
-                  <Switch checkedChildren="Evet" unCheckedChildren="Hayır" />
-                </Form.Item>
-              </Col>
-              <Col span={4}>
                 <Form.Item name="isOnline" label="Online" valuePropName="checked">
                   <Switch checkedChildren="Evet" unCheckedChildren="Hayır" />
+                </Form.Item>
+              </Col>
+              <Col span={12}>
+                <Form.Item name="location" label="Konum">
+                  <Input prefix={<EnvironmentOutlined />} placeholder="Toplantı konumu" />
+                </Form.Item>
+              </Col>
+              <Col span={12}>
+                <Form.Item name="meetingUrl" label="Toplantı Linki">
+                  <Input prefix={<LinkOutlined />} placeholder="https://meet.google.com/..." />
+                </Form.Item>
+              </Col>
+              <Col span={12}>
+                <Form.Item label="Organizatör Seçin">
+                  <EntityLookup
+                    value={organizer}
+                    onChange={(value) => setOrganizer(value as EntityReference | null)}
+                    onSearch={entitySearchService.search}
+                    entityTypes={[EntityType.User]}
+                    multiple={false}
+                    modalTitle="Organizatör seçin..."
+                  />
+                </Form.Item>
+              </Col>
+              <Col span={12}>
+                <Form.Item label="Katılımcıları Seçin">
+                  <EntityLookup
+                    value={attendees}
+                    onChange={(value) => setAttendees((value as EntityReference[]) || [])}
+                    onSearch={entitySearchService.search}
+                    entityTypes={[EntityType.User, EntityType.Account, EntityType.Contact]}
+                    multiple={true}
+                    modalTitle="Katılımcı ekleyin..."
+                    maxSelections={50}
+                  />
+                </Form.Item>
+
+              </Col>
+              <Col span={12}>
+                <Form.Item label="İlgili Kaydı Seçin">
+                  <EntityLookup
+                    value={regarding}
+                    onChange={(value) => setRegarding(value as EntityReference | null)}
+                    onSearch={entitySearchService.search}
+                    entityTypes={[EntityType.Lead, EntityType.Account, EntityType.Contact]}
+                    multiple={false}
+                    modalTitle="İlgili kayıt seçin..."
+                  />
                 </Form.Item>
               </Col>
             </Row>
           </Card>
         </Col>
 
-        <Col span={12}>
+        <Col span={8}>
           <Card title={<Space><FlagOutlined /><span>Durum & Öncelik</span></Space>} style={{ marginBottom: 16 }}>
             <Row gutter={16}>
               <Col span={12}>
@@ -431,37 +471,20 @@ const AppointmentDetail: React.FC<AppointmentDetailProps> = (props) => {
           </Card>
         </Col>
 
-        <Col span={12}>
+        <Col span={16}>
           <Card title={<Space><ClockCircleOutlined /><span>Zaman Bilgileri</span></Space>} style={{ marginBottom: 16 }}>
             <Row gutter={16}>
-              <Col span={12}>
+              <Col span={8}>
                 <Form.Item name="startDate" label="Başlangıç" rules={[{ required: true, message: 'Başlangıç zamanı gereklidir' }]}>
                   <DatePicker showTime format="DD.MM.YYYY HH:mm" style={{ width: '100%' }} placeholder="Başlangıç zamanı" />
                 </Form.Item>
               </Col>
-              <Col span={12}>
+              <Col span={8}>
                 <Form.Item name="dueDate" label="Bitiş" rules={[{ required: true, message: 'Bitiş zamanı gereklidir' }]}>
                   <DatePicker showTime format="DD.MM.YYYY HH:mm" style={{ width: '100%' }} placeholder="Bitiş zamanı" />
                 </Form.Item>
               </Col>
-            </Row>
-          </Card>
-        </Col>
-
-        <Col span={24}>
-          <Card title={<Space><EnvironmentOutlined /><span>Konum & Toplantı</span></Space>} style={{ marginBottom: 16 }}>
-            <Row gutter={16}>
-              <Col span={8}>
-                <Form.Item name="location" label="Konum">
-                  <Input prefix={<EnvironmentOutlined />} placeholder="Toplantı konumu" />
-                </Form.Item>
-              </Col>
-              <Col span={8}>
-                <Form.Item name="meetingUrl" label="Toplantı Linki">
-                  <Input prefix={<LinkOutlined />} placeholder="https://meet.google.com/..." />
-                </Form.Item>
-              </Col>
-              <Col span={8}>
+              <Col span={4}>
                 <Form.Item name="reminderMinutesBefore" label="Hatırlatma (dakika)">
                   <Space.Compact>
                     <InputNumber min={0} max={10080} style={{ width: '100%' }} placeholder="Örn: 15" />
@@ -469,59 +492,12 @@ const AppointmentDetail: React.FC<AppointmentDetailProps> = (props) => {
                   </Space.Compact>
                 </Form.Item>
               </Col>
+              <Col span={4}>
+                <Form.Item name="isAllDay" label="Tüm Gün" valuePropName="checked">
+                  <Switch checkedChildren="Evet" unCheckedChildren="Hayır" />
+                </Form.Item>
+              </Col>
             </Row>
-          </Card>
-        </Col>
-
-        {/* Organizatör - Tek Seçimli, Sadece User */}
-        <Col span={12}>
-          <Card title={<Space><UserOutlined /><span>Organizatör</span></Space>} style={{ marginBottom: 16 }}>
-            <Form.Item label="Organizatör Seçin">
-              <EntityLookup
-                value={organizer}
-                onChange={(value) => setOrganizer(value as EntityReference | null)}
-                entityTypes={['User']}
-                multiple={false}
-                placeholder="Organizatör seçin..."
-                onSearch={entitySearchService.search}
-                modalTitle="Organizatör Seç"
-              />
-            </Form.Item>
-          </Card>
-        </Col>
-
-        {/* Katılımcılar - Çoklu Seçimli, User/Account/Contact */}
-        <Col span={12}>
-          <Card title={<Space><TeamOutlined /><span>Katılımcılar</span></Space>} style={{ marginBottom: 16 }}>
-            <Form.Item label="Katılımcıları Seçin">
-              <EntityLookup
-                value={attendees}
-                onChange={(value) => setAttendees((value as EntityReference[]) || [])}
-                entityTypes={['User', 'Account', 'Contact']}
-                multiple={true}
-                placeholder="Katılımcı ekleyin..."
-                onSearch={entitySearchService.search}
-                modalTitle="Katılımcı Seç"
-                maxSelections={50}
-              />
-            </Form.Item>
-          </Card>
-        </Col>
-
-        {/* İlgili Kayıt - Tek Seçimli, Lead/Account/Contact */}
-        <Col span={24}>
-          <Card title={<Space><LinkOutlined /><span>İlgili Kayıt</span></Space>} style={{ marginBottom: 16 }}>
-            <Form.Item label="İlgili Kaydı Seçin">
-              <EntityLookup
-                value={regarding}
-                onChange={(value) => setRegarding(value as EntityReference | null)}
-                entityTypes={['Lead', 'Account', 'Contact']}
-                multiple={false}
-                placeholder="İlgili kayıt seçin..."
-                onSearch={entitySearchService.search}
-                modalTitle="İlgili Kayıt Seç"
-              />
-            </Form.Item>
           </Card>
         </Col>
 
