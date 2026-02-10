@@ -17,27 +17,11 @@ public class TaskActivity : ActivityBase
     /// Görev açıklaması (Detaylı)
     /// </summary>
     public string? TaskDescription { get; set; }
-
-    /// <summary>
-    /// Görev tamamlandı mı?
-    /// </summary>
-    public bool IsCompleted { get; set; }
-
    
     /// <summary>
     /// Hatırlatıcı tarihi
     /// </summary>
     public DateTime? ReminderAt { get; set; }
-
-    /// <summary>
-    /// Hatırlatıcı aktif mi?
-    /// </summary>
-    public bool IsReminderSet { get; set; }
-
-    /// <summary>
-    /// Hatırlatıcı gönderildi mi?
-    /// </summary>
-    public bool IsReminderSent { get; set; }
 
     /// <summary>
     /// Tamamlanma yüzdesi (0-100)
@@ -53,7 +37,6 @@ public class TaskActivity : ActivityBase
     /// </summary>
     public void CompleteTask()
     {
-        IsCompleted = true;
         EndDate= DateTime.UtcNow;
         PercentComplete = 100;
         Completed();
@@ -78,42 +61,6 @@ public class TaskActivity : ActivityBase
             Status = ActivityStatus.InProgress;
         }
     }
-
-    /// <summary>
-    /// Hatırlatıcı ayarla
-    /// </summary>
-    public void SetReminder(DateTime reminderDate)
-    {
-        ReminderAt = reminderDate;
-        IsReminderSet = true;
-        IsReminderSent = false;
-    }
-
-    /// <summary>
-    /// Hatırlatıcıyı kaldır
-    /// </summary>
-    public void ClearReminder()
-    {
-        ReminderAt = null;
-        IsReminderSet = false;
-    }
-
-    /// <summary>
-    /// Hatırlatıcı gönderildi olarak işaretle
-    /// </summary>
-    public void MarkReminderSent()
-    {
-        IsReminderSent = true;
-    }
-
-    /// <summary>
-    /// Aktiviteyi tamamlandı olarak işaretle
-    /// </summary>
-    public override void Completed()
-    {
-        base.Completed();
-        IsCompleted = true;
-        PercentComplete = 100;
-    }
+   
     #endregion
 }

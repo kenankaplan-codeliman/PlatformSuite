@@ -61,7 +61,7 @@ import {
 } from '@/types/activity.types';
 import CustomPagination from '@/components/CustomPagination';
 import activityService from '@/services/activity.service';
-import { handleError } from '@/util/useHandleError';
+import { handleError } from '@/hooks/useHandleError';
 import { StateType, useProcessState } from '@/stores/process.state.store';
 
 const { Text } = Typography;

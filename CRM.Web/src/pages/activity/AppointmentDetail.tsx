@@ -1,32 +1,22 @@
-import { useEffect, useState, useCallback, useRef } from 'react';
-import { useParams, useNavigate, useSearchParams } from 'react-router-dom';
-import { RoutePaths } from '@/constants/route.paths';
+import React from 'react';
 import {
   Card,
   Form,
   Input,
   Select,
-  Button,
   Space,
   Row,
   Col,
   Typography,
-  Divider,
   Descriptions,
   Tag,
-  Tooltip,
-  Popconfirm,
   Badge,
+  Button,
   Switch,
   DatePicker,
   InputNumber,
 } from 'antd';
 import {
-  ArrowLeftOutlined,
-  EditOutlined,
-  SaveOutlined,
-  CloseOutlined,
-  DeleteOutlined,
   CalendarOutlined,
   ClockCircleOutlined,
   FlagOutlined,
@@ -37,14 +27,13 @@ import {
   TeamOutlined,
   CheckCircleOutlined,
   CloseCircleOutlined,
-  BankOutlined,
-  IdcardOutlined,
-  RocketOutlined,
   GlobalOutlined,
 } from '@ant-design/icons';
 import dayjs from 'dayjs';
+
+import { RoutePaths } from '@/constants/route.paths';
 import type { AppointmentActivity } from '@/types/activity.types';
-import { EntityType, type EntityReference, type EntityTypeValue } from '@/types/entity.lookup.types';
+import { EntityType, type EntityReference } from '@/types/entity.lookup.types';
 import {
   ActivityStatus,
   ActivityPriority,
@@ -57,126 +46,83 @@ import {
   activityPriorityOptions,
 } from '@/types/activity.types';
 import { useActivityStore } from '@/stores/activity.store';
-import { StateType, useProcessState } from '@/stores/process.state.store';
-import EntityLookup, { EntityTypeConfig } from '@/components/EntityLookup';
-import type { EntityType as LookupEntityType } from '@/types/entity.lookup.types';
 import { entitySearchService } from '@/services/entity.search.service';
-import { useSmartBack } from '@/util/useSmartBack';
+import EntityLookup, { EntityTypeConfig } from '@/components/EntityLookup';
+import { toLocalISO } from '@/util/dateHelper';
 
-const { Title, Text, Paragraph } = Typography;
+import { useDetailPage, type DetailPageProps } from '@/hooks/useDetailPage';
+import DetailPageLayout from '@/components/DetailPageLayout';
+import { getEntityIcon } from '@/constants/entity.icons';
+
+const { Title, Paragraph } = Typography;
 const { TextArea } = Input;
 
-// Page mode type
-export type AppointmentDetailMode = 'view' | 'edit' | 'create';
+// ─── Helper: Entity tag render (view mode) ───────────────────────────────────
 
-// Props interface
-export interface AppointmentDetailProps {
-  mode?: AppointmentDetailMode;
-  appointmentId?: string;
-  onModeChange?: (mode: AppointmentDetailMode) => void;
-  onSave?: (appointment: AppointmentActivity) => void;
-  onCancel?: () => void;
-}
+const renderSelectedEntities = (entities: EntityReference[] | EntityReference | null | undefined) => {
+  if (!entities) return '-';
+  const entityList = Array.isArray(entities) ? entities : [entities];
+  if (entityList.length === 0) return '-';
 
-// Helper function to get entity icon
-const getEntityIcon = (entityType: EntityTypeValue) => {
-  const icons: Record<EntityTypeValue, React.ReactNode> = {
-    [EntityType.User]: <UserOutlined />,
-    [EntityType.Account]: <BankOutlined />,
-    [EntityType.Contact]: <IdcardOutlined />,
-    [EntityType.Lead]: <RocketOutlined />,
-    [EntityType.Opportunity]: <CalendarOutlined />,
-  };
-  return icons[entityType];
+  return (
+    <Space wrap size={[4, 4]}>
+      {entityList.map((entity) => (
+        <Tag key={entity.id} icon={getEntityIcon(entity.entityType)} color={EntityTypeConfig[entity.entityType]?.color}>
+          {entity.name}
+        </Tag>
+      ))}
+    </Space>
+  );
 };
 
+// ─── Component ────────────────────────────────────────────────────────────────
 
+const AppointmentDetail: React.FC<DetailPageProps<AppointmentActivity>> = (props) => {
+  const store = useActivityStore();
 
-const AppointmentDetail: React.FC<AppointmentDetailProps> = (props) => {
-  const params = useParams<{ id: string }>();
-  const navigate = useNavigate();
-  const [searchParams, setSearchParams] = useSearchParams();
-  const [form] = Form.useForm();
-  const { state } = useProcessState.getState();
+  const detail = useDetailPage<AppointmentActivity>(
+    {
+      fetchById: (id) => store.fetchActivityById(id, ActivityType.Appointment),
+      createEntity: (values) => store.createActivity<AppointmentActivity>(values as any),
+      updateEntity: (values) => store.updateActivity<AppointmentActivity>(values),
+      deleteEntity: async (id) => {
+        const { deleteActivity } = useActivityStore.getState();
+        await deleteActivity(id);
+      },
+      currentEntity: store.currentActivity as AppointmentActivity | null,
+      clearCurrentEntity: () => store.setCurrentActivity(null),
 
-  const urlMode = searchParams.get('mode') as AppointmentDetailMode | null;
-  const initialMode = props.mode || urlMode || 'view';
-  const [mode, setMode] = useState<AppointmentDetailMode>(initialMode);
+      // Entity → Form dönüşümü
+      mapEntityToForm: (entity) => ({
+        subject: entity.subject,
+        location: entity.location,
+        meetingUrl: entity.meetingUrl,
+        meetingNotes: entity.meetingNotes,
+        status: entity.status,
+        priority: entity.priority,
+        isActive: entity.isActive,
+        isAllDay: entity.isAllDay,
+        isOnline: entity.isOnline,
+        isRecurring: entity.isRecurring,
+        reminderMinutesBefore: entity.reminderMinutesBefore,
+        startDate: entity.startDate ? dayjs(entity.startDate) : null,
+        dueDate: entity.dueDate ? dayjs(entity.dueDate) : null,
+        organizer: entity.organizer || null,
+        attendees: entity.attendees || [],
+        regardingEntity: entity.regardingEntity || null,
+      }),
 
-  // Lookup field states - EntityReference tipinde
-  const [organizer, setOrganizer] = useState<EntityReference | null>(null);
-  const [attendees, setAttendees] = useState<EntityReference[]>([]);
-  const [regarding, setRegarding] = useState<EntityReference | null>(null);
+      // Form → Entity dönüşümü
+      mapFormToEntity: (values, id) => ({
+        ...values,
+        id: id || undefined,
+        activityType: ActivityType.Appointment,
+        startDate: toLocalISO(values.startDate) ?? undefined,
+        dueDate: toLocalISO(values.dueDate) ?? undefined,
+      }),
 
-  const appointmentId = props.appointmentId || params.id;
-  const isNewAppointment = appointmentId === 'new' || !appointmentId;
-
-  const {
-    currentActivity,
-    fetchActivityById,
-    createActivity,
-    updateActivity,
-    setCurrentActivity,
-    completeActivity,
-    cancelActivity,
-  } = useActivityStore();
-
-  const currentAppointment = currentActivity as AppointmentActivity | null;
-
-  const isViewMode = mode === 'view';
-  const isEditMode = mode === 'edit';
-  const isCreateMode = mode === 'create' || isNewAppointment;
-
-  const isFirstRender = useRef(true);
-
-  const updateMode = useCallback(
-    (newMode: AppointmentDetailMode) => {
-      setMode(newMode);
-      if (!props.mode) {
-        setSearchParams({ mode: newMode }, { replace: true });
-      }
-      props.onModeChange?.(newMode);
-    },
-    [props, setSearchParams]
-  );
-
-  useEffect(() => {
-    if (isFirstRender.current) {
-      isFirstRender.current = false;
-      if (!isNewAppointment && appointmentId) {
-        fetchActivityById(appointmentId, ActivityType.Appointment);
-      } else {
-        setCurrentActivity(null);
-        setMode('create');
-      }
-    }
-  }, [appointmentId, isNewAppointment, fetchActivityById, setCurrentActivity]);
-
-  useEffect(() => {
-    const urlMode = searchParams.get('mode') as AppointmentDetailMode | null;
-    if (urlMode && urlMode !== mode && !isNewAppointment) {
-      setMode(urlMode);
-    }
-  }, [searchParams, isNewAppointment, mode]);
-
-  useEffect(() => {
-    if (currentAppointment && !isNewAppointment) {
-      form.setFieldsValue({
-        ...currentAppointment,
-        startDate: currentAppointment.startDate ? dayjs(currentAppointment.startDate) : null,
-        dueDate: currentAppointment.dueDate ? dayjs(currentAppointment.dueDate) : null,
-      });
-
-      setOrganizer(currentAppointment.organizer || null);
-      setAttendees(currentAppointment.attendees || []);
-      setRegarding(currentAppointment.regardingEntity || null);
-
-    } else if (isNewAppointment) {
-      form.resetFields();
-      setOrganizer(null);
-      setAttendees([]);
-      setRegarding(null);
-      form.setFieldsValue({
+      // Yeni kayıt default'ları
+      defaultFormValues: {
         activityType: ActivityType.Appointment,
         status: ActivityStatus.NotStarted,
         priority: ActivityPriority.Normal,
@@ -184,119 +130,26 @@ const AppointmentDetail: React.FC<AppointmentDetailProps> = (props) => {
         isAllDay: false,
         isOnline: false,
         isRecurring: false,
-      });
-    }
-  }, [currentAppointment, form, isNewAppointment]);
+      },
 
-  const handleEdit = useCallback(() => updateMode('edit'), [updateMode]);
+      listPath: RoutePaths.Activity.List,
+      getViewPath: (entity) => RoutePaths.Activity.Appointment.View(entity.id),
+      completeEntity: (id) => store.completeActivity(id),
+      cancelEntity: (id) => store.cancelActivity(id),
+    },
+    props
+  );
 
-  const handleCancelEdit = useCallback(() => {
-    if (isNewAppointment) {
-      navigate(RoutePaths.Activity.List);
-    } else {
-      form.setFieldsValue({
-        ...currentAppointment,
-        startDate: currentAppointment?.startDate ? dayjs(currentAppointment.startDate) : null,
-        dueDate: currentAppointment?.dueDate ? dayjs(currentAppointment.dueDate) : null,
-      });
-      setOrganizer(currentAppointment?.organizer || null);
-      setAttendees(currentAppointment?.attendees || []);
-      setRegarding(currentAppointment?.regardingEntity || null);
-      updateMode('view');
-    }
-    props.onCancel?.();
-  }, [isNewAppointment, navigate, form, currentAppointment, updateMode, props]);
+  const currentAppointment = detail.currentEntity;
 
-  const handleSave = useCallback(async () => {
-    const values = await form.validateFields();
+  // ─── View Mode ──────────────────────────────────────────────────────────
 
-    const formattedValues: Partial<AppointmentActivity> = {
-      ...values,
-      id: appointmentId || undefined,
-      activityType: ActivityType.Appointment,
-      startDate: values.startDate?.toISOString(),
-      dueDate: values.dueDate?.toISOString(),
-      organizer: organizer,
-      attendees: attendees,
-      regardingEntity: regarding,
-    };
-
-    if (isNewAppointment) {
-      const newAppointment = await createActivity<AppointmentActivity>(formattedValues as any);
-      props.onSave?.(newAppointment);
-      navigate(RoutePaths.Activity.Appointment.View(newAppointment.id));
-    } else if (appointmentId) {
-      const updatedAppointment = await updateActivity<AppointmentActivity>(formattedValues);
-      props.onSave?.(updatedAppointment);
-      updateMode('view');
-    }
-  }, [form, isNewAppointment, appointmentId, createActivity, updateActivity, navigate, updateMode, props, organizer, attendees, regarding]);
-
-  const handleDelete = useCallback(async () => {
-    if (!appointmentId || isNewAppointment) return;
-    const { deleteActivity } = useActivityStore.getState();
-    await deleteActivity(appointmentId);
-    navigate(RoutePaths.Activity.List);
-  }, [appointmentId, isNewAppointment, navigate]);
-
-  const handleComplete = useCallback(async () => {
-    if (!appointmentId || isNewAppointment) return;
-    await completeActivity(appointmentId);
-  }, [appointmentId, isNewAppointment, completeActivity]);
-
-  const handleCancelActivity = useCallback(async () => {
-    if (!appointmentId || isNewAppointment) return;
-    await cancelActivity(appointmentId);
-  }, [appointmentId, isNewAppointment, cancelActivity]);
-
-  //const handleBack = useCallback(() => navigate(RoutePaths.Activity.List), [navigate]);
-  const handleBack = useSmartBack({
-    fallbackPath: RoutePaths.Activity.List
-  });
-
-  // Not found state
-  if (!currentAppointment && !isNewAppointment && state !== StateType.Loading) {
-    return (
-      <div style={{ padding: 24 }}>
-        <Card>
-          <div style={{ textAlign: 'center', padding: '40px 0' }}>
-            <Title level={4} type="warning">Randevu Bulunamadı</Title>
-            <Text type="secondary">Aradığınız randevu bulunamadı veya silinmiş olabilir.</Text>
-            <div style={{ marginTop: 24 }}>
-              <Button type="primary" onClick={handleBack}>Listeye Dön</Button>
-            </div>
-          </div>
-        </Card>
-      </div>
-    );
-  }
-
-  if (state === StateType.Loading && !isNewAppointment) return null;
-
-  // Render selected entities for view mode
-  const renderSelectedEntities = (entities: EntityReference[] | EntityReference | null | undefined) => {
-    if (!entities) return '-';
-    const entityList = Array.isArray(entities) ? entities : [entities];
-    if (entityList.length === 0) return '-';
-
-    return (
-      <Space wrap size={[4, 4]}>
-        {entityList.map((entity) => (
-          <Tag key={entity.id} icon={getEntityIcon(entity.entityType)} color={EntityTypeConfig[entity.entityType]?.color}>
-            {entity.name}
-          </Tag>
-        ))}
-      </Space>
-    );
-  };
-
-  // Render View Mode
   const renderViewMode = () => (
     <>
       <Card style={{ marginBottom: 16 }}>
         <Row gutter={24} align="middle">
           <Col flex="auto">
-            <Space orientation="vertical" size={4}>
+            <Space direction="vertical" size={4}>
               <Space align="center" wrap>
                 <CalendarOutlined style={{ fontSize: 24, color: '#722ed1' }} />
                 <Title level={3} style={{ margin: 0 }}>{currentAppointment?.subject}</Title>
@@ -316,10 +169,10 @@ const AppointmentDetail: React.FC<AppointmentDetailProps> = (props) => {
           <Col>
             <Space>
               {currentAppointment?.status !== ActivityStatus.Completed && (
-                <Button type="primary" icon={<CheckCircleOutlined />} onClick={handleComplete}>Tamamla</Button>
+                <Button type="primary" icon={<CheckCircleOutlined />} onClick={detail.handleComplete}>Tamamla</Button>
               )}
               {currentAppointment?.status !== ActivityStatus.Cancelled && (
-                <Button icon={<CloseCircleOutlined />} onClick={handleCancelActivity}>İptal Et</Button>
+                <Button icon={<CloseCircleOutlined />} onClick={detail.handleCancelActivity}>İptal Et</Button>
               )}
             </Space>
           </Col>
@@ -330,9 +183,15 @@ const AppointmentDetail: React.FC<AppointmentDetailProps> = (props) => {
         <Col span={12}>
           <Card title={<Space><ClockCircleOutlined /><span>Zaman Bilgileri</span></Space>} style={{ marginBottom: 16 }}>
             <Descriptions column={1} size="small">
-              <Descriptions.Item label="Başlangıç">{currentAppointment?.startDate ? dayjs(currentAppointment.startDate).format('DD.MM.YYYY HH:mm') : '-'}</Descriptions.Item>
-              <Descriptions.Item label="Bitiş">{currentAppointment?.dueDate ? dayjs(currentAppointment.dueDate).format('DD.MM.YYYY HH:mm') : '-'}</Descriptions.Item>
-              <Descriptions.Item label="Tüm Gün"><Badge status={currentAppointment?.isAllDay ? 'success' : 'default'} text={currentAppointment?.isAllDay ? 'Evet' : 'Hayır'} /></Descriptions.Item>
+              <Descriptions.Item label="Başlangıç">
+                {currentAppointment?.startDate ? dayjs(currentAppointment.startDate).format('DD.MM.YYYY HH:mm') : '-'}
+              </Descriptions.Item>
+              <Descriptions.Item label="Bitiş">
+                {currentAppointment?.dueDate ? dayjs(currentAppointment.dueDate).format('DD.MM.YYYY HH:mm') : '-'}
+              </Descriptions.Item>
+              <Descriptions.Item label="Tüm Gün">
+                <Badge status={currentAppointment?.isAllDay ? 'success' : 'default'} text={currentAppointment?.isAllDay ? 'Evet' : 'Hayır'} />
+              </Descriptions.Item>
               <Descriptions.Item label="Hatırlatma">
                 {currentAppointment?.reminderMinutesBefore ? `${currentAppointment.reminderMinutesBefore} dakika önce` : '-'}
               </Descriptions.Item>
@@ -385,9 +244,10 @@ const AppointmentDetail: React.FC<AppointmentDetailProps> = (props) => {
     </>
   );
 
-  // Render Edit/Create Mode
+  // ─── Edit Mode ──────────────────────────────────────────────────────────
+
   const renderEditMode = () => (
-    <Form form={form} layout="vertical" initialValues={{ isActive: true, isAllDay: false, isOnline: false, isRecurring: false }}>
+    <Form form={detail.form} layout="vertical">
       <Row gutter={16}>
         <Col span={24}>
           <Card title={<Space><CalendarOutlined /><span>Randevu Bilgileri</span></Space>} style={{ marginBottom: 16 }}>
@@ -413,10 +273,8 @@ const AppointmentDetail: React.FC<AppointmentDetailProps> = (props) => {
                 </Form.Item>
               </Col>
               <Col span={12}>
-                <Form.Item label="Organizatör Seçin">
+                <Form.Item name="organizer" label="Organizatör Seçin">
                   <EntityLookup
-                    value={organizer}
-                    onChange={(value) => setOrganizer(value as EntityReference | null)}
                     onSearch={entitySearchService.search}
                     entityTypes={[EntityType.User]}
                     multiple={false}
@@ -425,10 +283,8 @@ const AppointmentDetail: React.FC<AppointmentDetailProps> = (props) => {
                 </Form.Item>
               </Col>
               <Col span={12}>
-                <Form.Item label="Katılımcıları Seçin">
+                <Form.Item name="attendees" label="Katılımcıları Seçin">
                   <EntityLookup
-                    value={attendees}
-                    onChange={(value) => setAttendees((value as EntityReference[]) || [])}
                     onSearch={entitySearchService.search}
                     entityTypes={[EntityType.User, EntityType.Account, EntityType.Contact]}
                     multiple={true}
@@ -436,13 +292,10 @@ const AppointmentDetail: React.FC<AppointmentDetailProps> = (props) => {
                     maxSelections={50}
                   />
                 </Form.Item>
-
               </Col>
               <Col span={12}>
-                <Form.Item label="İlgili Kaydı Seçin">
+                <Form.Item name="regardingEntity" label="İlgili Kaydı Seçin">
                   <EntityLookup
-                    value={regarding}
-                    onChange={(value) => setRegarding(value as EntityReference | null)}
                     onSearch={entitySearchService.search}
                     entityTypes={[EntityType.Lead, EntityType.Account, EntityType.Contact]}
                     multiple={false}
@@ -485,11 +338,8 @@ const AppointmentDetail: React.FC<AppointmentDetailProps> = (props) => {
                 </Form.Item>
               </Col>
               <Col span={4}>
-                <Form.Item name="reminderMinutesBefore" label="Hatırlatma (dakika)">
-                  <Space.Compact>
-                    <InputNumber min={0} max={10080} style={{ width: '100%' }} placeholder="Örn: 15" />
-                    <span style={{ padding: '0 8px', lineHeight: '32px' }}>dk</span>
-                  </Space.Compact>
+                <Form.Item name="reminderMinutesBefore" label="Hatırlatma (dk)">
+                  <InputNumber min={0} max={10080} style={{ width: '100%' }} placeholder="Örn: 15" />
                 </Form.Item>
               </Col>
               <Col span={4}>
@@ -512,54 +362,36 @@ const AppointmentDetail: React.FC<AppointmentDetailProps> = (props) => {
     </Form>
   );
 
+  // ─── Layout ─────────────────────────────────────────────────────────────
+
   return (
-    <div style={{ padding: 24 }}>
-      <Card style={{ marginBottom: 16 }}>
-        <Row justify="space-between" align="middle">
-          <Col>
-            <Space align="center">
-              <Tooltip title="Listeye Dön">
-                <Button icon={<ArrowLeftOutlined />} onClick={handleBack} />
-              </Tooltip>
-              <Divider type="vertical" />
-              <Title level={4} style={{ margin: 0 }}>
-                {isNewAppointment ? 'Yeni Randevu' : isViewMode ? 'Randevu Detayı' : 'Randevu Düzenle'}
-              </Title>
-            </Space>
-          </Col>
-          <Col>
-            <Space>
-              {isViewMode && !isNewAppointment && (
-                <>
-                  <Popconfirm
-                    title="Randevu Silme"
-                    description="Bu randevuyu silmek istediğinizden emin misiniz?"
-                    onConfirm={handleDelete}
-                    okText="Sil"
-                    cancelText="İptal"
-                    okButtonProps={{ danger: true }}
-                  >
-                    <Button danger icon={<DeleteOutlined />}>Sil</Button>
-                  </Popconfirm>
-                  <Button type="primary" icon={<EditOutlined />} onClick={handleEdit}>Düzenle</Button>
-                </>
-              )}
-
-              {(isEditMode || isCreateMode) && (
-                <>
-                  <Button icon={<CloseOutlined />} onClick={handleCancelEdit}>İptal</Button>
-                  <Button type="primary" icon={<SaveOutlined />} onClick={handleSave}>
-                    {isNewAppointment ? 'Oluştur' : 'Kaydet'}
-                  </Button>
-                </>
-              )}
-            </Space>
-          </Col>
-        </Row>
-      </Card>
-
-      {isViewMode ? renderViewMode() : renderEditMode()}
-    </div>
+    <DetailPageLayout
+      title={{
+        create: 'Yeni Randevu',
+        view: 'Randevu Detayı',
+        edit: 'Randevu Düzenle',
+      }}
+      deleteConfirm={{
+        title: 'Randevu Silme',
+        description: 'Bu randevuyu silmek istediğinizden emin misiniz?',
+      }}
+      notFoundTitle="Randevu Bulunamadı"
+      notFoundDescription="Aradığınız randevu bulunamadı veya silinmiş olabilir."
+      mode={detail.mode}
+      isNew={detail.isNew}
+      isViewMode={detail.isViewMode}
+      isEditMode={detail.isEditMode}
+      isCreateMode={detail.isCreateMode}
+      isLoading={detail.isLoading}
+      entityExists={!!currentAppointment}
+      onEdit={detail.handleEdit}
+      onCancelEdit={detail.handleCancelEdit}
+      onSave={detail.handleSave}
+      onDelete={detail.handleDelete}
+      onBack={detail.handleBack}
+      renderViewMode={renderViewMode}
+      renderEditMode={renderEditMode}
+    />
   );
 };
 

@@ -1,49 +1,35 @@
-import { useEffect, useState, useCallback, useRef } from 'react';
-import { useParams, useNavigate, useSearchParams } from 'react-router-dom';
-import { RoutePaths } from '@/constants/route.paths';
+import React from 'react';
 import {
   Card,
   Form,
   Input,
   Select,
-  Button,
   Space,
   Row,
   Col,
   Typography,
-  Divider,
   Descriptions,
   Tag,
-  Tooltip,
-  Popconfirm,
   Badge,
-  Switch,
+  Button,
   DatePicker,
   InputNumber,
   Progress,
 } from 'antd';
 import {
-  ArrowLeftOutlined,
-  EditOutlined,
-  SaveOutlined,
-  CloseOutlined,
-  DeleteOutlined,
   CheckSquareOutlined,
-  ClockCircleOutlined,
   FlagOutlined,
   FileTextOutlined,
-  UserOutlined,
   CalendarOutlined,
   CheckCircleOutlined,
   CloseCircleOutlined,
   LinkOutlined,
-  BankOutlined,
-  IdcardOutlined,
-  RocketOutlined,
 } from '@ant-design/icons';
 import dayjs from 'dayjs';
+
+import { RoutePaths } from '@/constants/route.paths';
 import type { TaskActivity } from '@/types/activity.types';
-import type { EntityReference, EntityType as LookupEntityType } from '@/types/entity.lookup.types';
+import { EntityType, type EntityReference } from '@/types/entity.lookup.types';
 import {
   ActivityStatus,
   ActivityPriority,
@@ -56,231 +42,96 @@ import {
   activityPriorityOptions,
 } from '@/types/activity.types';
 import { useActivityStore } from '@/stores/activity.store';
-import { StateType, useProcessState } from '@/stores/process.state.store';
+import { entitySearchService } from '@/services/entity.search.service';
 import EntityLookup, { EntityTypeConfig } from '@/components/EntityLookup';
-import { mockEntitySearch } from '@/services/entity.search.service';
+import { toLocalISO } from '@/util/dateHelper';
 
-const { Title, Text, Paragraph } = Typography;
+import { useDetailPage, type DetailPageProps } from '@/hooks/useDetailPage';
+import DetailPageLayout from '@/components/DetailPageLayout';
+import { getEntityIcon } from '@/constants/entity.icons';
+
+const { Title, Paragraph } = Typography;
 const { TextArea } = Input;
 
-// Page mode type
-export type TaskDetailMode = 'view' | 'edit' | 'create';
+// ─── Helper: Entity tag render (view mode) ───────────────────────────────────
 
-// Props interface for component reuse
-export interface TaskDetailProps {
-  mode?: TaskDetailMode;
-  taskId?: string;
-  onModeChange?: (mode: TaskDetailMode) => void;
-  onSave?: (task: TaskActivity) => void;
-  onCancel?: () => void;
-}
+const renderSelectedEntities = (entities: EntityReference[] | EntityReference | null | undefined) => {
+  if (!entities) return '-';
+  const entityList = Array.isArray(entities) ? entities : [entities];
+  if (entityList.length === 0) return '-';
 
-// Helper function to get entity icon
-const getEntityIcon = (entityType: LookupEntityType) => {
-  const icons: Record<LookupEntityType, React.ReactNode> = {
-    User: <UserOutlined />,
-    Account: <BankOutlined />,
-    Contact: <IdcardOutlined />,
-    Lead: <RocketOutlined />,
-    Opportunity: <CalendarOutlined />,
-  };
-  return icons[entityType];
+  return (
+    <Space wrap size={[4, 4]}>
+      {entityList.map((entity) => (
+        <Tag key={entity.id} icon={getEntityIcon(entity.entityType)} color={EntityTypeConfig[entity.entityType]?.color}>
+          {entity.name}
+        </Tag>
+      ))}
+    </Space>
+  );
 };
 
-const TaskDetail: React.FC<TaskDetailProps> = (props) => {
-  const params = useParams<{ id: string }>();
-  const navigate = useNavigate();
-  const [searchParams, setSearchParams] = useSearchParams();
-  const [form] = Form.useForm();
+// ─── Component ────────────────────────────────────────────────────────────────
 
-  const { state } = useProcessState.getState();
+const TaskDetail: React.FC<DetailPageProps<TaskActivity>> = (props) => {
+  const store = useActivityStore();
 
-  const urlMode = searchParams.get('mode') as TaskDetailMode | null;
-  const initialMode = props.mode || urlMode || 'view';
-  const [mode, setMode] = useState<TaskDetailMode>(initialMode);
+  const detail = useDetailPage<TaskActivity>(
+    {
+      fetchById: (id) => store.fetchActivityById(id, ActivityType.Task),
+      createEntity: (values) => store.createActivity<TaskActivity>(values as any),
+      updateEntity: (values) => store.updateActivity<TaskActivity>(values),
+      deleteEntity: async (id) => {
+        const { deleteActivity } = useActivityStore.getState();
+        await deleteActivity(id);
+      },
+      currentEntity: store.currentActivity as TaskActivity | null,
+      clearCurrentEntity: () => store.setCurrentActivity(null),
 
-  // Lookup field states - EntityReference tipinde
-  const [assignedTo, setAssignedTo] = useState<EntityReference | null>(null);
-  const [regarding, setRegarding] = useState<EntityReference | null>(null);
+      // Entity → Form dönüşümü
+      mapEntityToForm: (entity) => ({
+        subject: entity.subject,
+        description: entity.taskDescription,
+        status: entity.status,
+        priority: entity.priority,
+        regardingEntity: entity.regardingEntity || null,
+        startDate: entity.startDate ? dayjs(entity.startDate) : null,
+        dueDate: entity.dueDate ? dayjs(entity.dueDate) : null,
+        reminderAt: entity.reminderAt ? dayjs(entity.reminderAt) : null,
+        percentComplete: entity.percentComplete,
+      }),
 
-  const taskId = props.taskId || params.id;
-  const isNewTask = taskId === 'new' || !taskId;
+      // Form → Entity dönüşümü
+      mapFormToEntity: (values, id) => ({
+        ...values,
+        id: id || undefined,
+        activityType: ActivityType.Task,
+        startDate: toLocalISO(values.startDate) ?? undefined,
+        dueDate: toLocalISO(values.dueDate) ?? undefined,
+        reminderAt: toLocalISO(values.reminderAt) ?? undefined,
+      }),
 
-  const {
-    currentActivity,
-    fetchActivityById,
-    createActivity,
-    updateActivity,
-    setCurrentActivity,
-    completeActivity,
-    cancelActivity,
-  } = useActivityStore();
-
-  const currentTask = currentActivity as TaskActivity | null;
-
-  const isViewMode = mode === 'view';
-  const isEditMode = mode === 'edit';
-  const isCreateMode = mode === 'create' || isNewTask;
-
-  const isFirstRender = useRef(true);
-
-  const updateMode = useCallback(
-    (newMode: TaskDetailMode) => {
-      setMode(newMode);
-      if (!props.mode) {
-        setSearchParams({ mode: newMode }, { replace: true });
-      }
-      props.onModeChange?.(newMode);
-    },
-    [props, setSearchParams]
-  );
-
-  useEffect(() => {
-    if (isFirstRender.current) {
-      isFirstRender.current = false;
-
-      if (!isNewTask && taskId) {
-        fetchActivityById(taskId, ActivityType.Task);
-      } else {
-        setCurrentActivity(null);
-        setMode('create');
-      }
-    }
-  }, [taskId, isNewTask, fetchActivityById, setCurrentActivity]);
-
-  useEffect(() => {
-    const urlMode = searchParams.get('mode') as TaskDetailMode | null;
-    if (urlMode && urlMode !== mode && !isNewTask) {
-      setMode(urlMode);
-    }
-  }, [searchParams, isNewTask, mode]);
-
-  useEffect(() => {
-    if (currentTask && !isNewTask) {
-      form.setFieldsValue({
-        ...currentTask,
-        dueDate: currentTask.dueDate ? dayjs(currentTask.dueDate) : null,
-        startDate: currentTask.startDate ? dayjs(currentTask.startDate) : null,
-        reminderDateTime: currentTask.reminderDateTime ? dayjs(currentTask.reminderDateTime) : null,
-      });
-
-      setAssignedTo(currentTask.assignedTo || null);
-      setRegarding(currentTask.regardingEntity || null);
-    } else if (isNewTask) {
-      form.resetFields();
-      setAssignedTo(null);
-      setRegarding(null);
-      form.setFieldsValue({
+      // Yeni kayıt default'ları
+      defaultFormValues: {
         activityType: ActivityType.Task,
         status: ActivityStatus.NotStarted,
         priority: ActivityPriority.Normal,
         isActive: true,
         percentComplete: 0,
-      });
-    }
-  }, [currentTask, form, isNewTask]);
+      },
 
-  const handleEdit = useCallback(() => updateMode('edit'), [updateMode]);
+      listPath: RoutePaths.Activity.List,
+      getViewPath: (entity) => RoutePaths.Activity.Task.View(entity.id),
+      completeEntity: (id) => store.completeActivity(id),
+      cancelEntity: (id) => store.cancelActivity(id),
+    },
+    props
+  );
 
-  const handleCancelEdit = useCallback(() => {
-    if (isNewTask) {
-      navigate(RoutePaths.Activity.List);
-    } else {
-      form.setFieldsValue({
-        ...currentTask,
-        dueDate: currentTask?.dueDate ? dayjs(currentTask.dueDate) : null,
-        startDate: currentTask?.startDate ? dayjs(currentTask.startDate) : null,
-        reminderDateTime: currentTask?.reminderDateTime ? dayjs(currentTask.reminderDateTime) : null,
-      });
-      setAssignedTo(currentTask?.assignedTo || null);
-      setRegarding(currentTask?.regardingEntity || null);
-      updateMode('view');
-    }
-    props.onCancel?.();
-  }, [isNewTask, navigate, form, currentTask, updateMode, props]);
+  const currentTask = detail.currentEntity;
 
-  const handleSave = useCallback(async () => {
-    const values = await form.validateFields();
+  // ─── View Mode ──────────────────────────────────────────────────────────
 
-    const formattedValues: Partial<TaskActivity> = {
-      ...values,
-      activityType: ActivityType.Task,
-      dueDate: values.dueDate?.toISOString(),
-      startDate: values.startDate?.toISOString(),
-      reminderDateTime: values.reminderDateTime?.toISOString(),
-      assignedTo: assignedTo,
-      regardingEntity: regarding,
-      regardingEntityType: regarding?.entityType || null,
-      regardingEntityId: regarding?.id || null,
-    };
-
-    if (isNewTask) {
-      const newTask = await createActivity<TaskActivity>(formattedValues as any);
-      props.onSave?.(newTask);
-      navigate(RoutePaths.Activity.Task.View(newTask.id));
-    } else if (taskId) {
-      const updatedTask = await updateActivity<TaskActivity>(taskId, formattedValues);
-      props.onSave?.(updatedTask);
-      updateMode('view');
-    }
-  }, [form, isNewTask, taskId, createActivity, updateActivity, navigate, updateMode, props, assignedTo, regarding]);
-
-  const handleDelete = useCallback(async () => {
-    if (!taskId || isNewTask) return;
-    const { deleteActivity } = useActivityStore.getState();
-    await deleteActivity(taskId);
-    navigate(RoutePaths.Activity.List);
-  }, [taskId, isNewTask, navigate]);
-
-  const handleComplete = useCallback(async () => {
-    if (!taskId || isNewTask) return;
-    await completeActivity(taskId);
-  }, [taskId, isNewTask, completeActivity]);
-
-  const handleCancelActivity = useCallback(async () => {
-    if (!taskId || isNewTask) return;
-    await cancelActivity(taskId);
-  }, [taskId, isNewTask, cancelActivity]);
-
-  const handleBack = useCallback(() => navigate(RoutePaths.Activity.List), [navigate]);
-
-  // Render selected entities for view mode
-  const renderSelectedEntities = (entities: EntityReference[] | EntityReference | null | undefined) => {
-    if (!entities) return '-';
-    const entityList = Array.isArray(entities) ? entities : [entities];
-    if (entityList.length === 0) return '-';
-
-    return (
-      <Space wrap size={[4, 4]}>
-        {entityList.map((entity) => (
-          <Tag key={entity.id} icon={getEntityIcon(entity.entityType)} color={EntityTypeConfig[entity.entityType]?.color}>
-            {entity.name}
-          </Tag>
-        ))}
-      </Space>
-    );
-  };
-
-  // Not found state
-  if (!currentTask && !isNewTask && state !== StateType.Loading) {
-    return (
-      <div style={{ padding: 24 }}>
-        <Card>
-          <div style={{ textAlign: 'center', padding: '40px 0' }}>
-            <Title level={4} type="warning">Görev Bulunamadı</Title>
-            <Text type="secondary">Aradığınız görev bulunamadı veya silinmiş olabilir.</Text>
-            <div style={{ marginTop: 24 }}>
-              <Button type="primary" onClick={handleBack}>Listeye Dön</Button>
-            </div>
-          </div>
-        </Card>
-      </div>
-    );
-  }
-
-  if (state === StateType.Loading && !isNewTask) return null;
-
-  // Render View Mode
   const renderViewMode = () => (
     <>
       <Card style={{ marginBottom: 16 }}>
@@ -303,10 +154,10 @@ const TaskDetail: React.FC<TaskDetailProps> = (props) => {
           <Col>
             <Space>
               {currentTask?.status !== ActivityStatus.Completed && (
-                <Button type="primary" icon={<CheckCircleOutlined />} onClick={handleComplete}>Tamamla</Button>
+                <Button type="primary" icon={<CheckCircleOutlined />} onClick={detail.handleComplete}>Tamamla</Button>
               )}
               {currentTask?.status !== ActivityStatus.Cancelled && (
-                <Button icon={<CloseCircleOutlined />} onClick={handleCancelActivity}>İptal Et</Button>
+                <Button icon={<CloseCircleOutlined />} onClick={detail.handleCancelActivity}>İptal Et</Button>
               )}
             </Space>
           </Col>
@@ -344,20 +195,12 @@ const TaskDetail: React.FC<TaskDetailProps> = (props) => {
                 {currentTask?.dueDate ? dayjs(currentTask.dueDate).format('DD.MM.YYYY HH:mm') : '-'}
               </Descriptions.Item>
               <Descriptions.Item label="Hatırlatma">
-                {currentTask?.reminderDateTime ? dayjs(currentTask.reminderDateTime).format('DD.MM.YYYY HH:mm') : '-'}
+                {currentTask?.reminderAt ? dayjs(currentTask.reminderAt).format('DD.MM.YYYY HH:mm') : '-'}
               </Descriptions.Item>
             </Descriptions>
           </Card>
         </Col>
 
-        {/* Atanan Kişi */}
-        <Col span={12}>
-          <Card title={<Space><UserOutlined /><span>Atanan Kişi</span></Space>} style={{ marginBottom: 16 }}>
-            {renderSelectedEntities(currentTask?.assignedTo)}
-          </Card>
-        </Col>
-
-        {/* İlgili Kayıt */}
         <Col span={12}>
           <Card title={<Space><LinkOutlined /><span>İlgili Kayıt</span></Space>} style={{ marginBottom: 16 }}>
             {renderSelectedEntities(currentTask?.regardingEntity)}
@@ -366,35 +209,51 @@ const TaskDetail: React.FC<TaskDetailProps> = (props) => {
 
         <Col span={24}>
           <Card title={<Space><FileTextOutlined /><span>Açıklama</span></Space>} style={{ marginBottom: 16 }}>
-            <Paragraph>{currentTask?.description || 'Açıklama girilmemiş.'}</Paragraph>
+            <Paragraph>{currentTask?.taskDescription || 'Açıklama girilmemiş.'}</Paragraph>
           </Card>
         </Col>
       </Row>
     </>
   );
 
-  // Render Edit/Create Mode
+  // ─── Edit Mode ──────────────────────────────────────────────────────────
+
   const renderEditMode = () => (
-    <Form form={form} layout="vertical" initialValues={{ isActive: true, percentComplete: 0 }}>
+    <Form form={detail.form} layout="vertical">
       <Row gutter={16}>
         <Col span={24}>
           <Card title={<Space><CheckSquareOutlined /><span>Görev Bilgileri</span></Space>} style={{ marginBottom: 16 }}>
             <Row gutter={16}>
-              <Col span={16}>
+              <Col span={24}>
                 <Form.Item name="subject" label="Konu" rules={[{ required: true, message: 'Konu gereklidir' }]}>
                   <Input placeholder="Görev konusu girin" />
                 </Form.Item>
               </Col>
-              <Col span={8}>
-                <Form.Item name="isActive" label="Aktif" valuePropName="checked">
-                  <Switch checkedChildren="Evet" unCheckedChildren="Hayır" />
+              <Col span={12}>
+                <Form.Item name="percentComplete" label="Tamamlanma Yüzdesi">
+                  <InputNumber
+                    min={0}
+                    max={100}
+                    style={{ width: '100%' }}
+                    formatter={(value) => `${value}%`}
+                    parser={(value) => parseInt(value?.replace('%', '') || '0', 10) as any}
+                  />
+                </Form.Item>
+              </Col>
+              <Col span={12}>
+                <Form.Item name="regardingEntity" label="İlgili Kaydı Seçin">
+                  <EntityLookup
+                    onSearch={entitySearchService.search}
+                    entityTypes={[EntityType.Lead, EntityType.Account, EntityType.Contact]}
+                    multiple={false}
+                    modalTitle="İlgili Kayıt Seç"
+                  />
                 </Form.Item>
               </Col>
             </Row>
           </Card>
         </Col>
-
-        <Col span={12}>
+        <Col span={8}>
           <Card title={<Space><FlagOutlined /><span>Durum & Öncelik</span></Space>} style={{ marginBottom: 16 }}>
             <Row gutter={16}>
               <Col span={12}>
@@ -407,77 +266,30 @@ const TaskDetail: React.FC<TaskDetailProps> = (props) => {
                   <Select options={activityPriorityOptions} placeholder="Öncelik seçin" />
                 </Form.Item>
               </Col>
-              <Col span={24}>
-                <Form.Item name="percentComplete" label="Tamamlanma Yüzdesi">
-                  <InputNumber
-                    min={0}
-                    max={100}
-                    style={{ width: '100%' }}
-                    formatter={(value) => `${value}%`}
-                    parser={(value) => parseInt(value?.replace('%', '') || '0', 10) as any}
-                  />
-                </Form.Item>
-              </Col>
             </Row>
           </Card>
         </Col>
-
-        <Col span={12}>
-          <Card title={<Space><CalendarOutlined /><span>Tarih Bilgileri</span></Space>} style={{ marginBottom: 16 }}>
+        <Col span={16}>
+          <Card title={<Space><CalendarOutlined /><span>Zaman Bilgileri</span></Space>} style={{ marginBottom: 16 }}>
             <Row gutter={16}>
-              <Col span={12}>
-                <Form.Item name="startDate" label="Başlangıç Tarihi">
+              <Col span={8}>
+                <Form.Item name="startDate" label="Başlangıç Tarihi" rules={[{ required: true, message: 'Başlangıç tarihi gereklidir' }]}>
                   <DatePicker showTime format="DD.MM.YYYY HH:mm" style={{ width: '100%' }} placeholder="Başlangıç tarihi" />
                 </Form.Item>
               </Col>
-              <Col span={12}>
-                <Form.Item name="dueDate" label="Bitiş Tarihi">
+              <Col span={8}>
+                <Form.Item name="dueDate" label="Bitiş Tarihi" rules={[{ required: true, message: 'Bitiş tarihi gereklidir' }]}>
                   <DatePicker showTime format="DD.MM.YYYY HH:mm" style={{ width: '100%' }} placeholder="Bitiş tarihi" />
                 </Form.Item>
               </Col>
-              <Col span={24}>
-                <Form.Item name="reminderDateTime" label="Hatırlatma">
+              <Col span={8}>
+                <Form.Item name="reminderAt" label="Hatırlatma">
                   <DatePicker showTime format="DD.MM.YYYY HH:mm" style={{ width: '100%' }} placeholder="Hatırlatma tarihi" />
                 </Form.Item>
               </Col>
             </Row>
           </Card>
         </Col>
-
-        {/* Atanan Kişi - Tek Seçimli, Sadece User */}
-        <Col span={12}>
-          <Card title={<Space><UserOutlined /><span>Atanan Kişi</span></Space>} style={{ marginBottom: 16 }}>
-            <Form.Item label="Atanacak Kişiyi Seçin">
-              <EntityLookup
-                value={assignedTo}
-                onChange={(value) => setAssignedTo(value as EntityReference | null)}
-                entityTypes={['User']}
-                multiple={false}
-                placeholder="Kişi seçin..."
-                onSearch={mockEntitySearch}
-                modalTitle="Kişi Seç"
-              />
-            </Form.Item>
-          </Card>
-        </Col>
-
-        {/* İlgili Kayıt - Tek Seçimli, Lead/Account/Contact */}
-        <Col span={12}>
-          <Card title={<Space><LinkOutlined /><span>İlgili Kayıt</span></Space>} style={{ marginBottom: 16 }}>
-            <Form.Item label="İlgili Kaydı Seçin">
-              <EntityLookup
-                value={regarding}
-                onChange={(value) => setRegarding(value as EntityReference | null)}
-                entityTypes={['Lead', 'Account', 'Contact']}
-                multiple={false}
-                placeholder="İlgili kayıt seçin..."
-                onSearch={mockEntitySearch}
-                modalTitle="İlgili Kayıt Seç"
-              />
-            </Form.Item>
-          </Card>
-        </Col>
-
         <Col span={24}>
           <Card title={<Space><FileTextOutlined /><span>Açıklama</span></Space>} style={{ marginBottom: 16 }}>
             <Form.Item name="description" label="Açıklama">
@@ -489,54 +301,36 @@ const TaskDetail: React.FC<TaskDetailProps> = (props) => {
     </Form>
   );
 
+  // ─── Layout ─────────────────────────────────────────────────────────────
+
   return (
-    <div style={{ padding: 24 }}>
-      <Card style={{ marginBottom: 16 }}>
-        <Row justify="space-between" align="middle">
-          <Col>
-            <Space align="center">
-              <Tooltip title="Listeye Dön">
-                <Button icon={<ArrowLeftOutlined />} onClick={handleBack} />
-              </Tooltip>
-              <Divider type="vertical" />
-              <Title level={4} style={{ margin: 0 }}>
-                {isNewTask ? 'Yeni Görev' : isViewMode ? 'Görev Detayı' : 'Görev Düzenle'}
-              </Title>
-            </Space>
-          </Col>
-          <Col>
-            <Space>
-              {isViewMode && !isNewTask && (
-                <>
-                  <Popconfirm
-                    title="Görev Silme"
-                    description="Bu görevi silmek istediğinizden emin misiniz?"
-                    onConfirm={handleDelete}
-                    okText="Sil"
-                    cancelText="İptal"
-                    okButtonProps={{ danger: true }}
-                  >
-                    <Button danger icon={<DeleteOutlined />}>Sil</Button>
-                  </Popconfirm>
-                  <Button type="primary" icon={<EditOutlined />} onClick={handleEdit}>Düzenle</Button>
-                </>
-              )}
-
-              {(isEditMode || isCreateMode) && (
-                <>
-                  <Button icon={<CloseOutlined />} onClick={handleCancelEdit}>İptal</Button>
-                  <Button type="primary" icon={<SaveOutlined />} onClick={handleSave}>
-                    {isNewTask ? 'Oluştur' : 'Kaydet'}
-                  </Button>
-                </>
-              )}
-            </Space>
-          </Col>
-        </Row>
-      </Card>
-
-      {isViewMode ? renderViewMode() : renderEditMode()}
-    </div>
+    <DetailPageLayout
+      title={{
+        create: 'Yeni Görev',
+        view: 'Görev Detayı',
+        edit: 'Görev Düzenle',
+      }}
+      deleteConfirm={{
+        title: 'Görev Silme',
+        description: 'Bu görevi silmek istediğinizden emin misiniz?',
+      }}
+      notFoundTitle="Görev Bulunamadı"
+      notFoundDescription="Aradığınız görev bulunamadı veya silinmiş olabilir."
+      mode={detail.mode}
+      isNew={detail.isNew}
+      isViewMode={detail.isViewMode}
+      isEditMode={detail.isEditMode}
+      isCreateMode={detail.isCreateMode}
+      isLoading={detail.isLoading}
+      entityExists={!!currentTask}
+      onEdit={detail.handleEdit}
+      onCancelEdit={detail.handleCancelEdit}
+      onSave={detail.handleSave}
+      onDelete={detail.handleDelete}
+      onBack={detail.handleBack}
+      renderViewMode={renderViewMode}
+      renderEditMode={renderEditMode}
+    />
   );
 };
 

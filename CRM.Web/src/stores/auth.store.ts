@@ -2,7 +2,7 @@ import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import type { User, LoginResponse } from '@/types/auth.types';
 import { authService } from '@/services/auth.sevice';
-import { handleError } from '@/util/useHandleError';
+import { handleError } from '@/hooks/useHandleError';
 import { StateType, useProcessState } from "@/stores/process.state.store";
 
 interface AuthState {

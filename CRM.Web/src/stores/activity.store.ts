@@ -3,11 +3,12 @@ import { devtools } from 'zustand/middleware';
 import type {
   ActivityBase,
   ActivityListFilters,
+  ActivityListItem,
   ActivityStatusValue,
   ActivityTypeValue,
 } from '@/types/activity.types';
 import activityService from '@/services/activity.service';
-import { handleError } from '@/util/useHandleError';
+import { handleError } from '@/hooks/useHandleError';
 import { StateType, useProcessState } from '@/stores/process.state.store';
 import type { PaginationParams } from '@/types/common.types';
 
@@ -19,7 +20,7 @@ interface ActivityState {
   viewMode: ActivityViewMode;
 
   // List state
-  activities: ActivityBase[];
+  activities: ActivityListItem[];
   hasMore: boolean;
   page: number;
   pageSize: number;
@@ -27,7 +28,7 @@ interface ActivityState {
   selectedRowKeys: string[];
 
   // Calendar state
-  calendarActivities: ActivityBase[];
+  calendarActivities: ActivityListItem[];
   calendarDate: Date;
 
   // Detail state
@@ -118,13 +119,13 @@ export const useActivityStore = create<ActivityState>()(
         try {
           setState(StateType.Loading, 'Takvim aktiviteleri yükleniyor...', 'Lütfen bekleyiniz...');
 
-          const activities = await activityService.getActivitiesForCalendar(
+          const response = await activityService.getActivitiesForCalendar(
             startDate,
             endDate,
             filters
           );
           set({
-            calendarActivities: activities,
+            calendarActivities: response,
           });
 
           clearState();

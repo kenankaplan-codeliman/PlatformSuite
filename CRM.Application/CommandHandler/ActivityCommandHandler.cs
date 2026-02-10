@@ -5,6 +5,8 @@ using CRM.Application.Modals.ActivityModal;
 using CRM.Application.Modals.Common;
 using CRM.Domain.Entities.Activity;
 using CRM.Domain.Enums;
+using System.ComponentModel.Design;
+using System.Threading.Tasks;
 
 namespace CRM.Application.CommandHandler;
 
@@ -14,7 +16,7 @@ public class ActivityCommandHandler
     private readonly IActivityRepository activityRepository;
     private readonly IReferenceRepository referenceRepository;
 
-    public ActivityCommandHandler(IActivityRepository activityRepository, IUnitOfWork unitOfWork, IReferenceRepository referenceRepository  )
+    public ActivityCommandHandler(IActivityRepository activityRepository, IUnitOfWork unitOfWork, IReferenceRepository referenceRepository)
     {
         this.activityRepository = activityRepository;
         this.unitOfWork = unitOfWork;
@@ -35,24 +37,113 @@ public class ActivityCommandHandler
         return result;
     }
 
+
+    #region Task
+
+    public async Task<TaskModal> TaskRead(Guid Id)
+    {
+        var entity = activityRepository.GetTask(Id);
+
+        var modal = MapToTaskModal(entity);
+
+        return modal;
+    }
+
+    public async Task<TaskModal> TaskCreate(TaskModal task)
+    {
+        try
+        {
+            var entity = MapToTaskEntity(task);
+
+            await unitOfWork.BeginTransactionAsync();
+
+            var createdEntity = activityRepository.CreateTask(entity);
+
+            await unitOfWork.CommitTransactionAsync();
+
+            var createdModal = MapToTaskModal(createdEntity);
+
+            return createdModal;
+        }
+        catch
+        {
+            await unitOfWork.RollbackTransactionAsync();
+            throw;
+        }
+    }
+
+    public async Task<TaskModal> TaskUpdate(TaskModal task)
+    {
+        try
+        {
+            var entity = MapToTaskEntity(task);
+
+            await unitOfWork.BeginTransactionAsync();
+
+            var updatedEntity = activityRepository.UpdateTask(entity);
+
+            await unitOfWork.CommitTransactionAsync();
+
+            var updatedModal = MapToTaskModal(updatedEntity);
+
+            return updatedModal;
+        }
+        catch
+        {
+            await unitOfWork.RollbackTransactionAsync();
+            throw;
+        }
+    }
+
+    private TaskActivity MapToTaskEntity(TaskModal modal)
+    {
+        TaskActivity entity;
+
+        if (modal.Id == Guid.Empty)
+            entity = new TaskActivity();
+        else
+            entity = activityRepository.GetTask(modal.Id);
+
+        SetToActivityBaseEntity(entity, modal);
+
+        entity.TaskDescription = modal.TaskDescription;
+        entity.PercentComplete = modal.PercentComplete;
+        entity.ReminderAt = modal.ReminderAt;
+
+        return entity;
+    }
+
+    private TaskModal MapToTaskModal(TaskActivity entity)
+    {
+        TaskModal modal = new TaskModal();
+
+        SetActivityBaseModal(modal, entity);
+
+        modal.TaskDescription = entity.TaskDescription;
+        modal.PercentComplete = entity.PercentComplete;
+        modal.ReminderAt = entity.ReminderAt;
+
+        return modal;
+    }
+
+    #endregion
+
     #region PhoneCall
 
     public async Task<PhoneCallModal> PhoneCallRead(Guid Id)
     {
         var entity = activityRepository.GetPhoneCall(Id);
 
-        var createdModal = ConvertToPhoneCallModal(entity);
+        var modal = MapToPhoneCallModal(entity);
 
-        return createdModal;
+        return modal;
     }
 
     public async Task<PhoneCallModal> PhoneCallCreate(PhoneCallModal phonecall)
     {
         try
         {
-            PhoneCall entity = new PhoneCall();
-
-            SetToPhoneCallEntity(entity, phonecall);
+            var entity = MapToPhoneCallEntity(phonecall);
 
             await unitOfWork.BeginTransactionAsync();
 
@@ -60,7 +151,7 @@ public class ActivityCommandHandler
 
             await unitOfWork.CommitTransactionAsync();
 
-            var createdModal = ConvertToPhoneCallModal(createdEntity);
+            var createdModal = MapToPhoneCallModal(createdEntity);
 
             return createdModal;
         }
@@ -75,9 +166,7 @@ public class ActivityCommandHandler
     {
         try
         {
-            var entity = activityRepository.GetPhoneCall(phonecall.Id);
-
-            SetToPhoneCallEntity(entity, phonecall);
+            var entity = MapToPhoneCallEntity(phonecall);
 
             await unitOfWork.BeginTransactionAsync();
 
@@ -85,7 +174,7 @@ public class ActivityCommandHandler
 
             await unitOfWork.CommitTransactionAsync();
 
-            var updatedModal = ConvertToPhoneCallModal(updatedEntity);
+            var updatedModal = MapToPhoneCallModal(updatedEntity);
 
             return updatedModal;
         }
@@ -96,8 +185,15 @@ public class ActivityCommandHandler
         }
     }
 
-    private void SetToPhoneCallEntity(PhoneCall entity, PhoneCallModal modal)
+    private PhoneCall MapToPhoneCallEntity(PhoneCallModal modal)
     {
+        PhoneCall entity;
+
+        if (modal.Id == Guid.Empty)
+            entity = new PhoneCall();
+        else
+            entity = activityRepository.GetPhoneCall(modal.Id);
+
         SetToActivityBaseEntity(entity, modal);
 
         entity.CallDirection = modal.Direction;
@@ -105,7 +201,8 @@ public class ActivityCommandHandler
         entity.RecordingUrl = modal.RecordingUrl;
 
 
-        if (modal.Caller != null) {
+        if (modal.Caller != null)
+        {
             entity.SetCaller(new ActivityParty
             {
                 ParticipantType = Enum.Parse<ActivityParticipantType>(modal.Caller!.EntityType.ToString()),
@@ -122,14 +219,16 @@ public class ActivityCommandHandler
             });
         }
 
+        return entity;
+
     }
 
-    private PhoneCallModal ConvertToPhoneCallModal(PhoneCall entity)
+    private PhoneCallModal MapToPhoneCallModal(PhoneCall entity)
     {
         PhoneCallModal modal = new PhoneCallModal();
 
         SetActivityBaseModal(modal, entity);
-        
+
         if (entity.Caller != null)
         {
             modal.Caller = referenceRepository.GetReference(
@@ -153,25 +252,22 @@ public class ActivityCommandHandler
 
     #endregion
 
-
     #region Appointment
 
     public async Task<AppointmentModal> AppointmentRead(Guid Id)
     {
         var entity = activityRepository.GetAppointment(Id);
 
-        var createdModal = ConvertToAppointmentModal(entity);
+        var modal = MapToAppointmentModal(entity);
 
-        return createdModal;
+        return modal;
     }
 
     public async Task<AppointmentModal> AppointmentCreate(AppointmentModal appointment)
     {
         try
         {
-            Appointment entity = new Appointment();
-
-            SetToAppointmentEntity(entity, appointment);
+            var entity = MapToAppointmentEntity(appointment);
 
             await unitOfWork.BeginTransactionAsync();
 
@@ -179,7 +275,7 @@ public class ActivityCommandHandler
 
             await unitOfWork.CommitTransactionAsync();
 
-            var createdModal = ConvertToAppointmentModal(createdEntity);
+            var createdModal = MapToAppointmentModal(createdEntity);
 
             return createdModal;
         }
@@ -195,9 +291,7 @@ public class ActivityCommandHandler
     {
         try
         {
-            var entity = activityRepository.GetAppointment(appointment.Id);
-
-            SetToAppointmentEntity(entity, appointment);
+            var entity = MapToAppointmentEntity(appointment);
 
             await unitOfWork.BeginTransactionAsync();
 
@@ -205,7 +299,7 @@ public class ActivityCommandHandler
 
             await unitOfWork.CommitTransactionAsync();
 
-            var updatedModal = ConvertToAppointmentModal(updatedEntity);
+            var updatedModal = MapToAppointmentModal(updatedEntity);
 
             return updatedModal;
         }
@@ -217,7 +311,7 @@ public class ActivityCommandHandler
     }
 
 
-    private AppointmentModal ConvertToAppointmentModal(Appointment entity)
+    private AppointmentModal MapToAppointmentModal(Appointment entity)
     {
         AppointmentModal modal = new AppointmentModal();
 
@@ -279,8 +373,16 @@ public class ActivityCommandHandler
         return modal;
     }
 
-    private void SetToAppointmentEntity(Appointment entity, AppointmentModal modal)
+    private Appointment MapToAppointmentEntity(AppointmentModal modal)
     {
+
+        Appointment entity;
+
+        if (modal.Id == Guid.Empty)
+            entity = new Appointment();
+        else
+            entity = activityRepository.GetAppointment(modal.Id);
+
         SetToActivityBaseEntity(entity, modal);
 
 
@@ -302,14 +404,15 @@ public class ActivityCommandHandler
 
         #endregion
 
-
-
         #region Organizer & Attendees
 
-        if (modal.Organizer != null && modal.Organizer.EntityType == EntityType.User)
+        if (modal.Organizer != null)
         {
-            ActivityParty organizer = ActivityParty.ForUser(entity.Id, modal.Organizer.Id, ActivityPartyType.Organizer);
-            entity.SetOrganizer(organizer);
+            entity.SetOrganizer(new ActivityParty
+            {
+                ParticipantType = Enum.Parse<ActivityParticipantType>(modal.Organizer.EntityType.ToString()),
+                ParticipantId = modal.Organizer.Id
+            });
         }
 
         foreach (var attende in modal.Attendees)
@@ -317,24 +420,11 @@ public class ActivityCommandHandler
             if (entity.Attendees.Any(p => p.ParticipantId == attende.Id))
                 continue;
 
-            ActivityParty activityParty = null;
-
-            if (attende.EntityType == EntityType.User)
+            entity.AddAttendee(new ActivityParty
             {
-                activityParty = ActivityParty.ForUser(entity.Id, attende.Id, ActivityPartyType.Attendee);
-            }
-            else if (attende.EntityType == EntityType.Account)
-            {
-                activityParty = ActivityParty.ForAccount(entity.Id, attende.Id, ActivityPartyType.Attendee);
-            }
-            else if (attende.EntityType == EntityType.Contact)
-            {
-                activityParty = ActivityParty.ForContact(entity.Id, attende.Id, ActivityPartyType.Attendee);
-            }
-            else
-                throw new BusinessException("Invalid attendees type");
-
-            entity.AddAttendee(activityParty);
+                ParticipantType = Enum.Parse<ActivityParticipantType>(attende.EntityType.ToString()),
+                ParticipantId = attende.Id
+            });
         }
 
         // Remove Not Exist Attendess
@@ -345,13 +435,249 @@ public class ActivityCommandHandler
 
         #endregion
 
-        //OwnerId
-        //OrganizationId
-        //RecurringParentId
+        return entity;
     }
 
     #endregion
 
+    #region Email
+
+    public async Task<EmailModal> EmailRead(Guid Id)
+    {
+        var entity = activityRepository.GetEmail(Id);
+
+        var modal = MapToEmailModal(entity);
+
+        return modal;
+    }
+
+    public async Task<EmailModal> EmailCreate(EmailModal task)
+    {
+        try
+        {
+            var entity = MapToEmailEntity(task);
+
+            await unitOfWork.BeginTransactionAsync();
+
+            var createdEntity = activityRepository.CreateEmail(entity);
+
+            await unitOfWork.CommitTransactionAsync();
+
+            var createdModal = MapToEmailModal(createdEntity);
+
+            return createdModal;
+        }
+        catch
+        {
+            await unitOfWork.RollbackTransactionAsync();
+            throw;
+        }
+    }
+
+    public async Task<EmailModal> EmailUpdate(EmailModal task)
+    {
+        try
+        {
+            var entity = MapToEmailEntity(task);
+
+            await unitOfWork.BeginTransactionAsync();
+
+            var updatedEntity = activityRepository.UpdateEmail(entity);
+
+            await unitOfWork.CommitTransactionAsync();
+
+            var updatedModal = MapToEmailModal(updatedEntity);
+
+            return updatedModal;
+        }
+        catch
+        {
+            await unitOfWork.RollbackTransactionAsync();
+            throw;
+        }
+    }
+
+    private EmailActivity MapToEmailEntity(EmailModal modal)
+    {
+        EmailActivity entity;
+
+        if (modal.Id == Guid.Empty)
+            entity = new EmailActivity();
+        else
+            entity = activityRepository.GetEmail(modal.Id);
+
+        SetToActivityBaseEntity(entity, modal);
+
+
+        entity.SetFrom(new ActivityParty
+        {
+            ParticipantType = Enum.Parse<ActivityParticipantType>(modal.From.EntityType.ToString()),
+            ParticipantId = modal.From.Id
+        });
+
+        entity.Body = modal.Body;
+
+        entity.IsHtml = modal.IsHtml;
+        entity.IsSent = modal.IsSent;
+        entity.IsRead = modal.IsRead;
+        entity.ReadDate = modal.ReadDate;
+
+
+        #region To 
+        foreach (var toItem in modal.To)
+        {
+            if (entity.ToRecipients.Any(p => p.ParticipantId == toItem.Id))
+                continue;
+
+            entity.AddTo(new ActivityParty
+            {
+                ParticipantType = Enum.Parse<ActivityParticipantType>(toItem.EntityType.ToString()),
+                ParticipantId = toItem.Id
+            });
+        }
+
+        // Remove Not Exist
+        entity.ToRecipients
+            .Where(p => !modal.To.Any(m => m.Id == p.ParticipantId))
+            .ToList()
+            .ForEach(p => entity.Parties.Remove(p));
+
+        #endregion
+
+        #region Cc
+        if (modal.Cc != null)
+        {
+            foreach (var toItem in modal.Cc)
+            {
+                if (entity.CcRecipients.Any(p => p.ParticipantId == toItem.Id))
+                    continue;
+
+                entity.AddCc(new ActivityParty
+                {
+                    ParticipantType = Enum.Parse<ActivityParticipantType>(toItem.EntityType.ToString()),
+                    ParticipantId = toItem.Id
+                });
+            }
+
+            // Remove Not Exist
+            entity.CcRecipients
+                .Where(p => !modal.Cc.Any(m => m.Id == p.ParticipantId))
+                .ToList()
+                .ForEach(p => entity.Parties.Remove(p));
+        }
+        else
+        {
+            entity.CcRecipients
+               .ToList()
+               .ForEach(p => entity.Parties.Remove(p));
+        }
+        #endregion
+
+        #region Bcc
+        if (modal.Bcc != null)
+        {
+            foreach (var toItem in modal.Bcc)
+            {
+                if (entity.BccRecipients.Any(p => p.ParticipantId == toItem.Id))
+                    continue;
+
+                entity.AddBcc(new ActivityParty
+                {
+                    ParticipantType = Enum.Parse<ActivityParticipantType>(toItem.EntityType.ToString()),
+                    ParticipantId = toItem.Id
+                });
+            }
+
+            // Remove Not Exist
+            entity.BccRecipients
+                .Where(p => !modal.To.Any(m => m.Id == p.ParticipantId))
+                .ToList()
+                .ForEach(p => entity.Parties.Remove(p));
+        }
+        else
+        {
+            entity.BccRecipients
+               .ToList()
+               .ForEach(p => entity.Parties.Remove(p));
+        }
+        #endregion
+
+
+        return entity;
+    }
+
+    private EmailModal MapToEmailModal(EmailActivity entity)
+    {
+        EmailModal modal = new EmailModal();
+
+        SetActivityBaseModal(modal, entity);
+
+        modal.Body = entity.Body;
+
+        modal.IsHtml = entity.IsHtml;
+        modal.IsSent = entity.IsSent;
+        modal.IsRead = entity.IsRead;
+        modal.ReadDate = entity.ReadDate;
+
+        if (entity.From != null)
+        {
+            modal.From = referenceRepository.GetReference(
+                   Enum.Parse<EntityType>(entity.From.ParticipantType.ToString()),
+                   entity.From.ParticipantId!.Value);
+        }
+
+        #region To 
+
+        modal.To = new List<EntityReference>();
+
+        foreach (var item in entity.ToRecipients)
+        {
+            var entityRef = referenceRepository.GetReference(
+                Enum.Parse<EntityType>(item.ParticipantType.ToString()),
+                item.ParticipantId!.Value);
+
+            modal.To.Add(entityRef);
+        }
+
+        #endregion
+
+
+
+        #region Cc
+
+        modal.Cc = new List<EntityReference>();
+
+        foreach (var item in entity.CcRecipients)
+        {
+            var entityRef = referenceRepository.GetReference(
+                Enum.Parse<EntityType>(item.ParticipantType.ToString()),
+                item.ParticipantId!.Value);
+
+            modal.Cc.Add(entityRef);
+        }
+
+        #endregion
+
+        #region Bcc
+
+        modal.Bcc = new List<EntityReference>();
+
+        foreach (var item in entity.BccRecipients)
+        {
+            var entityRef = referenceRepository.GetReference(
+                Enum.Parse<EntityType>(item.ParticipantType.ToString()),
+                item.ParticipantId!.Value);
+
+            modal.Cc.Add(entityRef);
+        }
+
+        #endregion
+
+
+        return modal;
+    }
+
+    #endregion
 
     #region ActivityBase Helper
     private void SetToActivityBaseEntity(ActivityBase entity, ActivityBaseModal modal)

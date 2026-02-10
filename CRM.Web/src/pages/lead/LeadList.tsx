@@ -52,7 +52,7 @@ import {
 import { useLeadStore } from '@/stores/lead.store';
 import leadService from '@/services/lead.service';
 import CustomPagination from '@/components/CustomPagination';
-import { handleError } from '@/util/useHandleError';
+import { handleError } from '@/hooks/useHandleError';
 import { StateType, useProcessState } from "@/stores/process.state.store";
 
 const { Title, Text } = Typography;

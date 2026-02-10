@@ -1,39 +1,14 @@
 import React from 'react';
 import {
-  // Activity Icons
   MailOutlined,
   PhoneOutlined,
   CheckSquareOutlined,
   CalendarOutlined,
   ScheduleOutlined,
-  ClockCircleOutlined,
-  // Lead Icons
-  UserAddOutlined,
   RocketOutlined,
   UserOutlined,
   ContactsOutlined,
-  FunnelPlotOutlined,
   RiseOutlined,
-  FireOutlined,
-  ThunderboltOutlined,
-  StarOutlined,
-  TrophyOutlined,
-  AimOutlined,
-  TeamOutlined,
-  // Priority Icons
-  FlagOutlined,
-  ArrowUpOutlined,
-  ArrowDownOutlined,
-  MinusOutlined,
-  // Status Icons
-  CheckCircleOutlined,
-  CloseCircleOutlined,
-  PauseCircleOutlined,
-  ExclamationCircleOutlined,
-  LoadingOutlined,
-  // Menu & Other Icons
-  GlobalOutlined,
-  ShareAltOutlined,
   EllipsisOutlined,
   DashboardOutlined,
   BankOutlined,
@@ -41,104 +16,17 @@ import {
   BarChartOutlined,
 } from '@ant-design/icons';
 
-import type { ActivityTypeValue, ActivityStatusValue, ActivityPriorityValue } from '@/types/activity.types';
-import type { LeadStatusValue, LeadRatingValue, LeadSourceValue } from '@/types/lead.types';
-import type {CallDirectionValue}  from '@/types/activity.types';
-import { ActivityType, ActivityStatus, ActivityPriority, Direction } from '@/types/activity.types';
-import { LeadStatus, LeadRating, LeadSource } from '@/types/lead.types';
 
-// ==================== ACTIVITY ICON GETTERS ====================
+import { EntityType, type EntityTypeValue } from '@/types/entity.lookup.types';
 
-/** Get Activity Type Icon */
-export const getActivityTypeIcon = (type: ActivityTypeValue): React.ReactNode => {
-  const icons: Record<ActivityTypeValue, React.ReactNode> = {
-    [ActivityType.Email]: <MailOutlined />,
-    [ActivityType.PhoneCall]: <PhoneOutlined />,
-    [ActivityType.Task]: <CheckSquareOutlined />,
-    [ActivityType.Appointment]: <CalendarOutlined />,
-  };
-  return icons[type] ?? <ScheduleOutlined />;
-};
 
-/** Get Activity Status Icon */
-export const getActivityStatusIcon = (status: ActivityStatusValue): React.ReactNode => {
-  const icons: Record<ActivityStatusValue, React.ReactNode> = {
-    [ActivityStatus.NotStarted]: <ClockCircleOutlined />,
-    [ActivityStatus.InProgress]: <LoadingOutlined />,
-    [ActivityStatus.Completed]: <CheckCircleOutlined />,
-    [ActivityStatus.Cancelled]: <CloseCircleOutlined />,
-    [ActivityStatus.Deferred]: <ExclamationCircleOutlined />,
-  };
-  return icons[status] ?? <ClockCircleOutlined />;
-};
-
-/** Get Activity Priority Icon */
-export const getActivityPriorityIcon = (priority: ActivityPriorityValue): React.ReactNode => {
-  const icons: Record<ActivityPriorityValue, React.ReactNode> = {
-    [ActivityPriority.Low]: <ArrowDownOutlined />,
-    [ActivityPriority.Normal]: <MinusOutlined />,
-    [ActivityPriority.High]: <ArrowUpOutlined />,
-  };
-  return icons[priority] ?? <FlagOutlined />;
-};
-
-/** Get Call Direction Icon */
-export const getCallDirectionIcon = (direction: CallDirectionValue): React.ReactNode => {
-  const icons: Record<CallDirectionValue, React.ReactNode> = {
-    [Direction.Incoming]: <PhoneOutlined style={{ color: '#52c41a' }} />,
-    [Direction.Outgoing]: <PhoneOutlined style={{ color: '#1890ff' }} />,
-  };
-  return icons[direction] ?? <PhoneOutlined />;
-};
-
-// ==================== LEAD ICON GETTERS ====================
-
-/** Get Lead Status Icon */
-export const getLeadStatusIcon = (status: LeadStatusValue): React.ReactNode => {
-  const icons: Record<LeadStatusValue, React.ReactNode> = {
-    [LeadStatus.New]: <UserAddOutlined />,
-    [LeadStatus.Contacted]: <PhoneOutlined />,
-    [LeadStatus.Qualified]: <TrophyOutlined />,
-    [LeadStatus.Unqualified]: <CloseCircleOutlined />,
-    [LeadStatus.Converted]: <RiseOutlined />,
-  };
-  return icons[status] ?? <UserOutlined />;
-};
-
-/** Get Lead Rating Icon */
-export const getLeadRatingIcon = (rating: LeadRatingValue): React.ReactNode => {
-  const icons: Record<LeadRatingValue, React.ReactNode> = {
-    [LeadRating.Cold]: <UserOutlined />,
-    [LeadRating.Warm]: <ThunderboltOutlined />,
-    [LeadRating.Hot]: <FireOutlined />,
-  };
-  return icons[rating] ?? <StarOutlined />;
-};
-
-/** Get Lead Source Icon */
-export const getLeadSourceIcon = (source: LeadSourceValue): React.ReactNode => {
-  const icons: Record<LeadSourceValue, React.ReactNode> = {
-    [LeadSource.Web]: <GlobalOutlined />,
-    [LeadSource.Phone]: <PhoneOutlined />,
-    [LeadSource.Email]: <MailOutlined />,
-    [LeadSource.Referral]: <TeamOutlined />,
-    [LeadSource.Partner]: <ContactsOutlined />,
-    [LeadSource.Event]: <CalendarOutlined />,
-    [LeadSource.Campaign]: <FlagOutlined />,
-    [LeadSource.Social]: <ShareAltOutlined />,
-    [LeadSource.Other]: <EllipsisOutlined />,
-  };
-  return icons[source] ?? <AimOutlined />;
-};
 
 // ==================== MENU ICON GETTERS ====================
 
 export type MenuIconType = 
   | 'dashboard' 
   | 'lead' 
-  | 'leadAlt' 
   | 'activity' 
-  | 'activityAlt' 
   | 'account' 
   | 'contact' 
   | 'opportunity' 
@@ -154,43 +42,28 @@ export type MenuIconType =
  */
 export const MenuIcons = {
   get dashboard() { return <DashboardOutlined />; },
-  get lead() { return <RocketOutlined />; },
-  get leadAlt() { return <FunnelPlotOutlined />; },
   get activity() { return <ScheduleOutlined />; },
-  get activityAlt() { return <ClockCircleOutlined />; },
-  get account() { return <BankOutlined />; },
-  get contact() { return <ContactsOutlined />; },
-  get opportunity() { return <RiseOutlined />; },
   get settings() { return <SettingOutlined />; },
   get reports() { return <BarChartOutlined />; },
+  get lead() { return getEntityIcon(EntityType.Lead); },
+  get account() { return getEntityIcon(EntityType.Account); },
+  get contact() { return getEntityIcon(EntityType.Contact); },
+  get opportunity() { return getEntityIcon(EntityType.Opportunity); },
+  
 } as const;
 
-/** Get Menu Icon by key */
-export const getMenuIcon = (key: MenuIconType): React.ReactNode => {
-  const icons: Record<MenuIconType, React.ReactNode> = {
-    dashboard: MenuIcons.dashboard,
-    lead: MenuIcons.lead,
-    leadAlt: MenuIcons.leadAlt,
-    activity: MenuIcons.activity,
-    activityAlt: MenuIcons.activityAlt,
-    account: MenuIcons.account,
-    contact: MenuIcons.contact,
-    opportunity: MenuIcons.opportunity,
-    settings: MenuIcons.settings,
-    reports: MenuIcons.reports,
-  };
-  return icons[key] ?? <EllipsisOutlined />;
-};
 
-// ==================== ACTIVITY TYPE ICONS OBJECT (Lazy Getter) ====================
+export const EntityIcons ={
+  get [EntityType.User]() { return <UserOutlined />; },
+  get [EntityType.Account]() { return <BankOutlined />; },
+  get [EntityType.Contact]() { return <ContactsOutlined />; },
+  get [EntityType.Lead]() { return <RocketOutlined />; },
+  get [EntityType.Opportunity]() { return <RiseOutlined />; },
+  get [EntityType.Email]() { return <MailOutlined />; },
+  get [EntityType.PhoneCall]() { return <PhoneOutlined />; },
+  get [EntityType.Task]() { return <CheckSquareOutlined />; },
+  get [EntityType.Appointment]() { return <CalendarOutlined />; },
+} as const;;
 
-/**
- * ActivityTypeIcons object with getter functions
- * Usage: ActivityTypeIcons[ActivityType.Email], etc.
- */
-export const ActivityTypeIcons = {
-  get [ActivityType.Email]() { return <MailOutlined />; },
-  get [ActivityType.PhoneCall]() { return <PhoneOutlined />; },
-  get [ActivityType.Task]() { return <CheckSquareOutlined />; },
-  get [ActivityType.Appointment]() { return <CalendarOutlined />; },
-} as const;
+export const getEntityIcon = (entityType: EntityTypeValue) =>
+  EntityIcons[entityType] ?? <EllipsisOutlined />;

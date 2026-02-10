@@ -121,10 +121,7 @@ CREATE TABLE IF NOT EXISTS activity_task (
     
     -- Task Properties
     task_description        TEXT,
-    is_completed            BOOLEAN NOT NULL DEFAULT FALSE,
     reminder_at             TIMESTAMPTZ,
-    is_reminder_set         BOOLEAN NOT NULL DEFAULT FALSE,
-    is_reminder_sent        BOOLEAN NOT NULL DEFAULT FALSE,
     percent_complete        INTEGER NOT NULL DEFAULT 0
     
 );

@@ -18,7 +18,7 @@ public class EmailActivity : ActivityBase
     /// <summary>
     /// E-posta içeriği
     /// </summary>
-    public string? Body { get; set; }
+    public string Body { get; set; } = default!;
 
     /// <summary>
     /// HTML formatında mı?

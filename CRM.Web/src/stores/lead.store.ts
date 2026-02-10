@@ -3,7 +3,7 @@ import { devtools } from 'zustand/middleware';
 import type { LeadListItem, LeadDetailItem, LeadListFilters, LeadStatusValue } from '@/types/lead.types';
 import leadService from '@/services/lead.service';
 
-import { handleError } from '@/util/useHandleError';
+import { handleError } from '@/hooks/useHandleError';
 import { StateType, useProcessState } from "@/stores/process.state.store";
 import type { PaginationParams } from '@/types/common.types';
 
@@ -28,8 +28,8 @@ interface LeadState {
   resetFilters: () => void;
   setSelectedRowKeys: (keys: string[]) => void;
   clearSelectedRowKeys: () => void;
-  createLead: (lead: Omit<LeadDetailItem, 'id' | 'createdAt' | 'createdBy'>) => Promise<LeadDetailItem>;
-  updateLead: (id: string, lead: Partial<LeadDetailItem>) => Promise<LeadDetailItem>;
+  createLead: (lead: Omit<Partial<LeadDetailItem>, 'id' | 'createdAt' | 'createdBy'>) => Promise<LeadDetailItem>;
+  updateLead: (lead: Partial<LeadDetailItem>) => Promise<LeadDetailItem>;
   deleteLead: (id: string) => Promise<void>;
   bulkDeleteLeads: () => Promise<void>;
   bulkUpdateStatus: (status: LeadStatusValue) => Promise<void>;
@@ -163,12 +163,12 @@ export const useLeadStore = create<LeadState>()(
         }
       },
 
-      updateLead: async (id: string, leadData: Partial<LeadDetailItem>) => {
+      updateLead: async (leadData: Partial<LeadDetailItem>) => {
         const { setState, clearState } = useProcessState.getState();
 
         try {
           setState(StateType.Loading, "Lead güncelleniyor...", "Lütfen bekleyiniz...");
-          const updatedLead = await leadService.updateLead(id, leadData);
+          const updatedLead = await leadService.updateLead(leadData.id as string, leadData);
           set({ currentLead: updatedLead });
           clearState();
           

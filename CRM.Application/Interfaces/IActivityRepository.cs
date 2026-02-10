@@ -27,6 +27,24 @@ namespace CRM.Application.Interfaces
 
         #endregion
 
+        #region Task
+
+        TaskActivity CreateTask(TaskActivity entity);
+        TaskActivity UpdateTask(TaskActivity entity);
+        TaskActivity DeleteTask(TaskActivity entity);
+        TaskActivity GetTask(Guid Id);
+
+        #endregion
+
+        #region Email
+
+        EmailActivity CreateEmail(EmailActivity entity);
+        EmailActivity UpdateEmail(EmailActivity entity);
+        EmailActivity DeleteEmail(EmailActivity entity);
+        EmailActivity GetEmail(Guid Id);
+
+        #endregion
+
 
     }
 }

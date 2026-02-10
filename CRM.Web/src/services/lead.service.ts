@@ -38,7 +38,7 @@ export const leadService = {
   },
 
   // Create new lead
-  createLead: async (lead: Omit<LeadDetailItem, 'id' | 'createdAt' | 'createdBy'>): Promise<LeadDetailItem> => {
+  createLead: async (lead: Omit<Partial<LeadDetailItem>, 'id' | 'createdAt' | 'createdBy'>): Promise<LeadDetailItem> => {
     const response = await apiClient.post<LeadDetailItem>(
       ServicePath.Lead.Create
       , lead);

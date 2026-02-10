@@ -9,10 +9,14 @@
 
 export const EntityType = {
   User: 'user',
+  Lead: 'lead',
   Account: 'account',
   Contact: 'contact',
-  Lead: 'lead',
   Opportunity: 'opportunity',
+  Email: 'email',
+  PhoneCall: 'phoneCall',
+  Task: 'task',
+  Appointment: 'appointment',
 } as const;
 
 export type EntityTypeValue = (typeof EntityType)[keyof typeof EntityType];

@@ -105,6 +105,68 @@ public class ActivityController : ControllerBase
     #endregion
 
 
+    #region Task
+
+    [HttpPost("get/task")]
+    [ProducesResponseType(typeof(TaskModal), 200)]
+    [PrivilegeAuthorize(PrivilegeCodes.ActivityPrivilegeCodes.TaskRead)]
+    public async Task<IActionResult> TaskRead(ActivityRequest request)
+    {
+        var response = await activityCommandHandler.TaskRead(request.Id);
+        return Ok(response);
+    }
+
+    [HttpPost("create/task")]
+    [ProducesResponseType(typeof(TaskModal), 200)]
+    [PrivilegeAuthorize(PrivilegeCodes.ActivityPrivilegeCodes.TaskCreate)]
+    public async Task<IActionResult> TaskCreate(TaskModal request)
+    {
+        var response = await activityCommandHandler.TaskCreate(request);
+        return Ok(response);
+    }
+
+    [HttpPost("update/task")]
+    [ProducesResponseType(typeof(TaskModal), 200)]
+    [PrivilegeAuthorize(PrivilegeCodes.ActivityPrivilegeCodes.TaskUpdate)]
+    public async Task<IActionResult> TaskUpdate(TaskModal request)
+    {
+        var response = await activityCommandHandler.TaskUpdate(request);
+        return Ok(response);
+    }
+
+    #endregion
+
+    #region Email
+
+    [HttpPost("get/email")]
+    [ProducesResponseType(typeof(EmailModal), 200)]
+    [PrivilegeAuthorize(PrivilegeCodes.ActivityPrivilegeCodes.EmailRead)]
+    public async Task<IActionResult> EmailRead(ActivityRequest request)
+    {
+        var response = await activityCommandHandler.EmailRead(request.Id);
+        return Ok(response);
+    }
+
+    [HttpPost("create/email")]
+    [ProducesResponseType(typeof(EmailModal), 200)]
+    [PrivilegeAuthorize(PrivilegeCodes.ActivityPrivilegeCodes.EmailCreate)]
+    public async Task<IActionResult> EmailCreate(EmailModal request)
+    {
+        var response = await activityCommandHandler.EmailCreate(request);
+        return Ok(response);
+    }
+
+    [HttpPost("update/email")]
+    [ProducesResponseType(typeof(EmailModal), 200)]
+    [PrivilegeAuthorize(PrivilegeCodes.ActivityPrivilegeCodes.EmailUpdate)]
+    public async Task<IActionResult> EmailUpdate(EmailModal request)
+    {
+        var response = await activityCommandHandler.EmailUpdate(request);
+        return Ok(response);
+    }
+
+    #endregion
+
 
 
 

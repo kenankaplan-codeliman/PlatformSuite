@@ -145,9 +145,10 @@ export interface ActivityBase {
   status: ActivityStatusValue;
   priority: ActivityPriorityValue;
 
-  startDate?: string;
+  startDate: string;
+  dueDate: string;
   endDate?: string;
-  dueDate?: string;
+  
   
   
   // İlgili kayıt - EntityReference olarak
@@ -191,13 +192,13 @@ export interface EmailActivity extends ActivityBase {
   activityType: typeof ActivityType.Email;
   
   // E-posta alanları - EntityReference olarak
-  from?: EntityReference | null;
-  to?: EntityReference[];
+  from: EntityReference | null;
+  to: EntityReference[];
   cc?: EntityReference[];
   bcc?: EntityReference[];
   
   // E-posta içeriği
-  body?: string;
+  body: string;
 
   isHtml?: boolean;
   isSent?: boolean;
@@ -241,18 +242,13 @@ export interface PhoneCallActivity extends ActivityBase {
 export interface TaskActivity extends ActivityBase {
   activityType: typeof ActivityType.Task;
    
-  taskDescription?: string;
+  taskDescription: string;
   
   // İlerleme
   percentComplete?: number;
   
   // Hatırlatma
-  reminderDateTime?: string;
-  isReminderSet?: boolean;
-  isReminderSent?: boolean;
-
-   isCompleted?: boolean;
-
+  reminderAt?: string;
 }
 
 // ============================================
@@ -346,7 +342,7 @@ export interface ActivityBulkUpdateStatusRequest {
 // ============================================
 
 export interface ActivityListResponse {
-  data: ActivityBase[];
+  data: ActivityListItem[];
   total?: number;
   hasMore?: boolean;
   page: number;

@@ -251,4 +251,58 @@ public class ActivityRepository : IActivityRepository
 
     #endregion
 
+    #region Task Methods
+    public TaskActivity CreateTask(TaskActivity entity)
+    {
+        var entry = this.dbContext.TaskActivity.Add(entity);
+        return entry.Entity;
+    }
+
+    public TaskActivity UpdateTask(TaskActivity entity)
+    {
+        var entry = this.dbContext.TaskActivity.Update(entity);
+        return entry.Entity;
+    }
+
+    public TaskActivity DeleteTask(TaskActivity entity)
+    {
+        var entry = this.dbContext.TaskActivity.Remove(entity);
+        return entry.Entity;
+    }
+
+    public TaskActivity GetTask(Guid Id)
+    {
+        var entity = this.dbContext.TaskActivity.FirstOrDefault(e => e.Id == Id) ?? throw new NotFoundException();
+        return entity;
+    }
+
+    #endregion
+
+    #region Email Methods
+    public EmailActivity CreateEmail(EmailActivity entity)
+    {
+        var entry = this.dbContext.EmailActivity.Add(entity);
+        return entry.Entity;
+    }
+
+    public EmailActivity UpdateEmail(EmailActivity entity)
+    {
+        var entry = this.dbContext.EmailActivity.Update(entity);
+        return entry.Entity;
+    }
+
+    public EmailActivity DeleteEmail(EmailActivity entity)
+    {
+        var entry = this.dbContext.EmailActivity.Remove(entity);
+        return entry.Entity;
+    }
+
+    public EmailActivity GetEmail(Guid Id)
+    {
+        var entity = this.dbContext.EmailActivity.FirstOrDefault(e => e.Id == Id) ?? throw new NotFoundException();
+        return entity;
+    }
+
+    #endregion
+
 }

@@ -30,10 +30,24 @@ namespace CRM.Domain.Authorization
             public const string AppointmentRead = "Appointment.Read";
             public const string AppointmentCreate = "Appointment.Create";
             public const string AppointmentUpdate = "Appointment.Update";
+            public const string AppointmentDelete = "Appointment.Delete";
 
             public const string PhoneCallRead = "PhoneCall.Read";
             public const string PhoneCallCreate = "PhoneCall.Create";
             public const string PhoneCallUpdate = "PhoneCall.Update";
+            public const string PhoneCallDelete = "PhoneCall.Delete";
+
+            public const string TaskRead = "Task.Read";
+            public const string TaskCreate = "Task.Create";
+            public const string TaskUpdate = "Task.Update";
+            public const string TaskDelete = "Task.Delete";
+
+            public const string EmailRead = "Email.Read";
+            public const string EmailCreate = "Email.Create";
+            public const string EmailUpdate = "Email.Update";
+            public const string EmailDelete = "Email.Delete";
+
+
         }
     }
 

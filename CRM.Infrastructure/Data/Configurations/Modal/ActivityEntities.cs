@@ -246,20 +246,10 @@ public static class ActivityEntities
                 .HasColumnName("task_description")
                 .HasColumnType("text");
 
-            entity.Property(e => e.IsCompleted)
-                .HasColumnName("is_completed")
-                .IsRequired();
 
             entity.Property(e => e.ReminderAt)
                 .HasColumnName("reminder_at");
 
-            entity.Property(e => e.IsReminderSet)
-                .HasColumnName("is_reminder_set")
-                .IsRequired();
-
-            entity.Property(e => e.IsReminderSent)
-                .HasColumnName("is_reminder_sent")
-                .IsRequired();
 
             entity.Property(e => e.PercentComplete)
                 .HasColumnName("percent_complete")

@@ -24,7 +24,7 @@ import { ActivityType } from '@/types/activity.types';
 import ActivityListView from '@/components/ActivityListView';
 import ActivityCalendarView from '@/components/ActivityCalendarView';
 import activityService from '@/services/activity.service';
-import { handleError } from '@/util/useHandleError';
+import { handleError } from '@/hooks/useHandleError';
 import dayjs from 'dayjs';
 
 const { Title, Text } = Typography;
