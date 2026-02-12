@@ -3,9 +3,8 @@ import {
   type ActivityListFilters,
   type ActivityListResponse,
   type ActivityListRequest,
-  type ActivityGetRequest as ActivityRequest,
-  type ActivityDeleteRequest,
-  type ActivityBulkDeleteRequest,
+  type ActivityRequest,
+  type ActivityBulkDeleteRequest as ActivityBulkRequest,
   type ActivityBulkUpdateStatusRequest,
   type ActivityStatusValue,
   type ActivityCalendarRequest,
@@ -122,7 +121,7 @@ updateActivity: async <T extends ActivityBase>(
 
   // Delete activity (soft delete)
   deleteActivity: async (id: string): Promise<void> => {
-    const request: ActivityDeleteRequest = {
+    const request: ActivityRequest = {
       id: id,
     };
 
@@ -131,7 +130,7 @@ updateActivity: async <T extends ActivityBase>(
 
   // Bulk delete activities
   bulkDeleteActivities: async (ids: string[]): Promise<void> => {
-    const request: ActivityBulkDeleteRequest = {
+    const request: ActivityBulkRequest = {
       ids: ids,
     };
 
@@ -150,7 +149,11 @@ updateActivity: async <T extends ActivityBase>(
 
   // Mark activity as completed
   completeActivity: async (id: string): Promise<ActivityBase> => {
-    const request = { id };
+     
+    const request: ActivityRequest = {
+      id: id,
+    };
+
     const response = await apiClient.post<ActivityBase>(
       ServicePath.Activity.Complete,
       request
@@ -160,7 +163,11 @@ updateActivity: async <T extends ActivityBase>(
 
   // Cancel activity
   cancelActivity: async (id: string): Promise<ActivityBase> => {
-    const request = { id };
+      
+    const request: ActivityRequest = {
+      id: id,
+    };
+
     const response = await apiClient.post<ActivityBase>(
       ServicePath.Activity.Cancel,
       request

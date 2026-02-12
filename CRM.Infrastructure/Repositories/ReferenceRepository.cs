@@ -6,6 +6,7 @@ using CRM.Infrastructure.Data;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Graph.Models.ExternalConnectors;
 using System;
 using System.Collections.Generic;
 using System.Text;
@@ -29,6 +30,7 @@ namespace CRM.Infrastructure.Repositories
                  {
                      EntityType.User => GetUserReference(id),
                      EntityType.Lead => GetLeadReference(id),
+                     EntityType.Account => GetAccountReference(id),
                      _ => throw new NotImplementedException()
                  };
 
@@ -37,6 +39,7 @@ namespace CRM.Infrastructure.Repositories
                  {
                      EntityType.User => LookupUserReference(searchText, paginationInfo),
                      EntityType.Lead => LookupLeadReference(searchText, paginationInfo),
+                     EntityType.Account => LookupAccountReference(searchText, paginationInfo),
                      _ => throw new NotImplementedException()
                  };
 
@@ -201,5 +204,91 @@ namespace CRM.Infrastructure.Repositories
         }
 
         #endregion User
+
+        #region Account
+
+        private EntityReferenceList LookupAccountReference(string searchText, PaginationInfo paginationInfo)
+        {
+            int pageSize = int.Parse(configuration["DefaultValues:Search_Max_Record"]!);
+            int skipCnt = 0;
+
+            if (paginationInfo != null && paginationInfo.isValid())
+            {
+                pageSize = paginationInfo.PageSize;
+
+                var pageIndex = (paginationInfo.Page - 1) >= 0 ? paginationInfo.Page - 1 : 0;
+                skipCnt = pageIndex * paginationInfo.PageSize;
+
+            }
+
+            var tempQuery = this.dbContext.Account.AsNoTracking().Where(x => x.IsActive);
+
+            if (!string.IsNullOrEmpty(searchText))
+            {
+                tempQuery = tempQuery.Where(acc => EF.Functions.ILike(acc.AccountName, $"%{searchText}%"));
+            }
+
+            var query = tempQuery.Select(acc => new
+            {
+                acc.Id,
+                acc.AccountName,
+                PrimaryEmail = acc.Emails
+                  .Where(e => e.IsPrimary && !e.IsDeleted)
+                  .Select(e => e.Email)
+                  .FirstOrDefault(),
+                PrimaryPhone = acc.Phones
+                  .Where(p => p.IsPrimary && !p.IsDeleted)
+                  .Select(p => p.PhoneNumber)
+                  .FirstOrDefault(),
+            });
+
+
+            var entityList = query.Skip(skipCnt).Take(pageSize + 1).ToList();
+
+            var hasMore = entityList.Count > pageSize;
+
+            var modalList = entityList.Take(pageSize)
+                .Select(item => new EntityReference(EntityType.User)
+                {
+                    Id = item.Id,
+                    Name = item.AccountName,
+                    Email = item.PrimaryEmail,
+                    Phone = item.PrimaryPhone,
+                })
+                .ToList();
+
+            return new EntityReferenceList()
+            {
+                Data = modalList,
+                HasMore = hasMore,
+                Page = paginationInfo?.Page ?? 1,
+                PageSize = pageSize,
+            };
+        }
+        private EntityReference GetAccountReference(Guid Id)
+        {
+            var usr = dbContext.Account.Select(acc => new {
+                acc.Id,
+                acc.AccountName,
+                PrimaryEmail = acc.Emails
+                  .Where(e => e.IsPrimary && !e.IsDeleted)
+                  .Select(e => e.Email)
+                  .FirstOrDefault(),
+                PrimaryPhone = acc.Phones
+                  .Where(p => p.IsPrimary && !p.IsDeleted)
+                  .Select(p => p.PhoneNumber)
+                  .FirstOrDefault(),
+            }).FirstOrDefault(acc => acc.Id == Id) ?? throw new NotFoundException();
+
+            return new EntityReference(EntityType.User)
+            {
+                Id = usr.Id,
+                Name = usr.AccountName,
+                Email = usr.PrimaryEmail,
+                Phone = usr.PrimaryPhone,
+            };
+        }
+
+        #endregion Account
     }
 }

@@ -2,7 +2,7 @@
 using CRM.Application.Interfaces;
 using CRM.Application.Modals.ActivityModal;
 using CRM.Application.Modals.Common;
-using CRM.Domain.Entities.Activity;
+using CRM.Domain.Entities.Activities;
 using CRM.Domain.Enums;
 using CRM.Infrastructure.Data;
 using Microsoft.EntityFrameworkCore;
@@ -19,6 +19,10 @@ public class ActivityRepository : IActivityRepository
         this.dbContext = dbContext;
     }
 
+    public ActivityType GetActivityType(Guid Id) { 
+        var activity = this.dbContext.Activity.AsNoTracking().Where(a => a.Id == Id).Select(a=> new { a.ActivityType }).FirstOrDefault() ?? throw new NotFoundException();
+        return activity.ActivityType;   
+    }
     #region Query Methods
 
     public ActivityListResponse List(ActivityListFilters? filters, PaginationInfo? paginationInfo)

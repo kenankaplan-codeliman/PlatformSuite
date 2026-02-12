@@ -23,10 +23,23 @@ namespace CRM.Domain.Authorization
             public const string Delete = "Lead.Delete";
         }
 
+        public static class AccountPrivilegeCodes
+        {
+            public const string Read = "Account.Read";
+            public const string Create = "Account.Create";
+            public const string Update = "Account.Update";
+            public const string Delete = "Account.Delete";
+        }
+
         public static class ActivityPrivilegeCodes
         {
             public const string Read = "Activity.Read";
+            public const string Create = "Activity.Create";
+            public const string Update = "Activity.Update";
+            public const string Delete = "Activity.Delete";
+            public const string UpdateStatus = "Activity.UpdateStatus";
 
+            /*
             public const string AppointmentRead = "Appointment.Read";
             public const string AppointmentCreate = "Appointment.Create";
             public const string AppointmentUpdate = "Appointment.Update";
@@ -46,7 +59,7 @@ namespace CRM.Domain.Authorization
             public const string EmailCreate = "Email.Create";
             public const string EmailUpdate = "Email.Update";
             public const string EmailDelete = "Email.Delete";
-
+            */
 
         }
     }

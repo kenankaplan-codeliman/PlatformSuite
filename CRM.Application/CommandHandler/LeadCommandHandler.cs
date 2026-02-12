@@ -93,13 +93,13 @@ namespace CRM.Application.CommandHandler
             }
         }
 
-        public async Task<LeadDetailItem> Update(Guid Id, LeadDetailItem leadDetail)
+        public async Task<LeadDetailItem> Update(LeadDetailItem leadDetail)
         {
             try
             {
                 await unitOfWork.BeginTransactionAsync();
 
-                var entity = leadRepository.Get(Id);
+                var entity = leadRepository.Get(leadDetail.Id);
 
                 entity = LeadDetailItem.toEntity(leadDetail, entity);
 
@@ -107,15 +107,7 @@ namespace CRM.Application.CommandHandler
 
                 await unitOfWork.CommitTransactionAsync();
 
-                var resultEntity = leadRepository.Get(Id);
-
-                if (resultEntity == null)
-                {
-                    await unitOfWork.RollbackTransactionAsync();
-                    throw new BusinessException($"Can not create Lead (Id:{entity.Id})");
-                }
-
-                var modal = LeadDetailItem.fromEntity(resultEntity);
+                var modal = LeadDetailItem.fromEntity(entity);
 
                 return modal;
             }

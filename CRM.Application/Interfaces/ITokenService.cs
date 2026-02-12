@@ -1,5 +1,5 @@
 using CRM.Application.Modals;
-using CRM.Domain.Entities.Identity;
+using CRM.Domain.Entities.Identities;
 
 namespace CRM.Application.Interfaces;
 

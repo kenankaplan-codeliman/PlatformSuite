@@ -1,4 +1,4 @@
-﻿using CRM.Domain.Entities.Lead;
+﻿using CRM.Domain.Entities.Leads;
 using CRM.Domain.Enums;
 using System;
 using System.Collections.Generic;
@@ -10,7 +10,7 @@ namespace CRM.Application.Modals.LeadModal
 {
     public class LeadDetailItem
     {
-        public Guid? Id { get; set; }
+        public Guid Id { get; set; }
         public string? CompanyName { get; set; }
         public string? FirstName { get; set; }
         public string? LastName { get; set; }

@@ -15,10 +15,13 @@ Project("{54A90642-561A-4BB1-A94E-469ADEE60C69}") = "crm-web-ui", "CRM.Web\crm-w
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "CRM.Database", "CRM.Database", "{AE6DA6AA-6A83-4369-A9A3-3E2C17033DC4}"
 	ProjectSection(SolutionItems) = preProject
+		CRM.Database\Account.sql = CRM.Database\Account.sql
 		CRM.Database\Activity.sql = CRM.Database\Activity.sql
+		CRM.Database\Contact.sql = CRM.Database\Contact.sql
 		CRM.Database\Database.sql = CRM.Database\Database.sql
 		CRM.Database\Identity.sql = CRM.Database\Identity.sql
 		CRM.Database\Lead.sql = CRM.Database\Lead.sql
+		CRM.Database\opportunities.sql = CRM.Database\opportunities.sql
 	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{7EF98938-02F1-416A-8BDB-CE52C491E458}"

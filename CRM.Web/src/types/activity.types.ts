@@ -306,6 +306,9 @@ export interface ActivityListFilters {
 // ============================================
 // REQUEST TYPES
 // ============================================
+export interface ActivityRequest {
+  id: string;
+}
 
 export interface ActivityListRequest {
   page: number;
@@ -319,15 +322,6 @@ export interface ActivityCalendarRequest {
   filters?: ActivityListFilters;
 }
 
-export interface ActivityGetRequest {
-  id: string;
-}
-
-
-export interface ActivityDeleteRequest {
-  id: string;
-}
-
 export interface ActivityBulkDeleteRequest {
   ids: string[];
 }
@@ -336,6 +330,8 @@ export interface ActivityBulkUpdateStatusRequest {
   ids: string[];
   status: ActivityStatusValue;
 }
+
+
 
 // ============================================
 // RESPONSE TYPES

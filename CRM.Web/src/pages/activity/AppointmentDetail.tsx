@@ -149,7 +149,7 @@ const AppointmentDetail: React.FC<DetailPageProps<AppointmentActivity>> = (props
       <Card style={{ marginBottom: 16 }}>
         <Row gutter={24} align="middle">
           <Col flex="auto">
-            <Space direction="vertical" size={4}>
+            <Space orientation="vertical" size={4}>
               <Space align="center" wrap>
                 <CalendarOutlined style={{ fontSize: 24, color: '#722ed1' }} />
                 <Title level={3} style={{ margin: 0 }}>{currentAppointment?.subject}</Title>

@@ -2,7 +2,7 @@
 using CRM.Application.Interfaces;
 using CRM.Application.Modals;
 using CRM.Application.Modals.Authentication;
-using CRM.Domain.Entities.Identity;
+using CRM.Domain.Entities.Identities;
 
 namespace CRM.Application.CommandHandler
 {

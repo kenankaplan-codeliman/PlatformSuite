@@ -12,16 +12,16 @@ interface AuthState {
     accessTokenExpireAt: string | null; // ISO date string
     refreshToken: string | null;
     isAuthenticated: boolean;
-    
+
 
     // Actions
     loadUser: () => void;
-    login: ( email: string, password: string) => Promise<void>;
+    login: (email: string, password: string) => Promise<void>;
     loginWithMicrosoft: (msalToken: string) => Promise<void>;
     refreshAuthToken: () => Promise<void>;
-    
-    setToken:(response: LoginResponse) => void;
-    clearToken:() => void;
+
+    setToken: (response: LoginResponse) => void;
+    clearToken: () => void;
 
     logout: () => void;
 
@@ -33,7 +33,7 @@ interface AuthState {
 export const useAuthState = create<AuthState>()(
     persist(
         (set, get) => ({
-            
+
 
             // Initial state
             user: null,
@@ -43,7 +43,7 @@ export const useAuthState = create<AuthState>()(
             isAuthenticated: false,
 
             // Actions
-            clearToken:() => {  
+            clearToken: () => {
                 set({
                     user: null,
                     accessToken: null,
@@ -53,7 +53,7 @@ export const useAuthState = create<AuthState>()(
                 });
             },
 
-            setToken:(response: LoginResponse)=> {
+            setToken: (response: LoginResponse) => {
                 const expireAtStr = convertExpireAtString(response.accessTokenExpireAt);
                 set({
                     accessToken: response.accessToken,
@@ -62,25 +62,25 @@ export const useAuthState = create<AuthState>()(
                     isAuthenticated: true,
                 });
             },
-            
-            loadUser: async () => { 
-                const { setState} = useProcessState.getState();
-                const { accessToken} = get();
+
+            loadUser: async () => {
+                const { setState } = useProcessState.getState();
+                const { accessToken } = get();
 
                 setState(StateType.Loading, "Initializing user", "Please wait...");
 
                 try {
-                    const response = await authService.fetchUser(accessToken!);   
+                    const response = await authService.fetchUser(accessToken!);
 
                     set({
                         user: response
                     });
 
-                    setState(StateType.Success, "User loaded", "User information has been loaded successfully.");   
+                    setState(StateType.Success, "User loaded", "User information has been loaded successfully.");
 
                 } catch (error) {
                     const errorMessage = handleError(error);
-                    setState(StateType.Error, "User loading failed", errorMessage); 
+                    setState(StateType.Error, "User loading failed", errorMessage);
                 }
 
             },
@@ -89,11 +89,11 @@ export const useAuthState = create<AuthState>()(
 
                 const { setState } = useProcessState.getState();
                 const { setToken, clearToken } = get();
-                
+
                 try {
                     setState(StateType.Loading, "Logging in", "Please wait...");
 
-                    const response = await authService.login(email,  password)
+                    const response = await authService.login(email, password)
 
                     setToken(response);
 
@@ -104,28 +104,28 @@ export const useAuthState = create<AuthState>()(
                     const errorMessage = handleError(error);
                     setState(StateType.Error, "Login Failed", errorMessage);
                 }
-                
+
             },
 
             loginWithMicrosoft: async (msalToken: string) => {
-                
+
                 const { setState } = useProcessState.getState();
                 const { setToken, clearToken } = get();
 
-                
+
 
                 try {
                     setState(StateType.Loading, "Logging in with Microsoft", "Please wait...");
-                    
+
                     const response = await authService.loginWithMicrosoft(msalToken);
-                    
+
                     setToken(response);
 
                     setState(StateType.Success, "Login Successful", "You have been logged in successfully.");
                 } catch (error) {
                     clearToken();
                     const errorMessage = handleError(error);
-                    setState(StateType.Error, 'Microsoft login failed', errorMessage); 
+                    setState(StateType.Error, 'Microsoft login failed', errorMessage);
                 }
             },
 
@@ -133,21 +133,22 @@ export const useAuthState = create<AuthState>()(
                 const { setState } = useProcessState.getState();
                 const { setToken, clearToken, refreshToken } = get();
 
-                
+
 
                 try {
-                    setState(StateType.Loading, "Refreshing token", "Please wait...");
-
                     // Check if refreshToken is available
                     if (!refreshToken) {
-                        throw new Error("No refresh token available");
+                        clearToken();
+                        return;
                     }
+
+                    setState(StateType.Loading, "Refreshing token", "Please wait...");
 
                     // Implement token refresh logic here
                     const response = await authService.refreshToken(refreshToken);
-                    
+
                     setToken(response);
-                    
+
                     setState(StateType.Success, "Token refreshed", "Your session has been extended.");
                 } catch (error) {
                     clearToken();
@@ -162,22 +163,24 @@ export const useAuthState = create<AuthState>()(
                 const { accessToken, clearToken } = get();
 
                 try {
-                    setState(StateType.Loading, "Logging out", "Please wait...");
+                    if (accessToken != null) {
+                        setState(StateType.Loading, "Logging out", "Please wait...");
 
+                        await authService.logout(accessToken!);
+
+                        setState(StateType.Success, 'Logout Successful', 'You have been logged out successfully.');
+                    }
+                } catch (error) {
+                    const errorMessage = handleError(error);
+                    setState(StateType.Error, 'Logout failed', errorMessage);
+                }
+                finally {
                     clearToken();
-
                     // 2. Storage'ı temizle
                     sessionStorage.clear();
                     localStorage.removeItem('crm-auth-state');
-
-                    await authService.logout(accessToken!);
-                    
-                    setState(StateType.Success, 'Logout Successful', 'You have been logged out successfully.');
-                } catch (error) {
-                    const errorMessage = handleError(error);
-                    setState(StateType.Error, 'Logout failed', errorMessage); 
                 }
-               
+
             },
 
             // Token expire kontrolü
@@ -209,7 +212,7 @@ export const useAuthState = create<AuthState>()(
 
                 if (isTokenExpired()) {
                     logout();
-                    return  false;
+                    return false;
                 }
                 else
                     return true;

@@ -1,4 +1,4 @@
-﻿using CRM.Domain.Entities.Lead;
+﻿using CRM.Domain.Entities.Leads;
 using System;
 using System.Collections.Generic;
 using System.Text;

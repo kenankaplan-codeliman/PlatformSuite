@@ -1,6 +1,6 @@
 ﻿using CRM.Application.Exceptions;
 using CRM.Application.Modals.Common;
-using CRM.Domain.Entities.Activity;
+using CRM.Domain.Entities.Activities;
 using CRM.Domain.Enums;
 using System;
 using System.Collections.Generic;

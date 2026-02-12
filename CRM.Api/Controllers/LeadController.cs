@@ -49,9 +49,9 @@ public class LeadController : ControllerBase
     [HttpPost("get")]
     [ProducesResponseType(typeof(LeadDetailItem), 200)]
     [PrivilegeAuthorize(PrivilegeCodes.LeadPrivilegeCodes.Read)]
-    public async Task<IActionResult> get(LeadGetRequest leadDetail)
+    public async Task<IActionResult> get(IdRequest idRequest)
     {
-        var lead = await leadCommandHandler.Get(leadDetail.Id);
+        var lead = await leadCommandHandler.Get(idRequest.Id);
         return Ok(lead);
     }
 
@@ -68,23 +68,23 @@ public class LeadController : ControllerBase
     
     [HttpPost("update")]
     [PrivilegeAuthorize(PrivilegeCodes.LeadPrivilegeCodes.Update)]
-    public async Task<IActionResult> update(LeadUpdateRequest request)
+    public async Task<IActionResult> update(LeadDetailItem request)
     {
-        var lead = await leadCommandHandler.Update(request.Id, request.Data);
+        var lead = await leadCommandHandler.Update(request);
         return Ok(lead);
     }
 
     [HttpPost("delete")]
     [PrivilegeAuthorize(PrivilegeCodes.LeadPrivilegeCodes.Delete)]
-    public async Task<IActionResult> delete(LeadDeleteRequest request)
+    public async Task<IActionResult> delete(IdRequest idRequest)
     {
-        await leadCommandHandler.Delete(request.Id);
+        await leadCommandHandler.Delete(idRequest.Id);
         return Ok();
     }
 
     [HttpPost("bulk-delete")]
     [PrivilegeAuthorize(PrivilegeCodes.LeadPrivilegeCodes.Delete)]
-    public async Task<IActionResult> bulkdelete(LeadBulkDeleteRequest request)
+    public async Task<IActionResult> bulkdelete(IdListRequest request)
     {
         await leadCommandHandler.BulkDelete(request.Ids);
         return Ok();

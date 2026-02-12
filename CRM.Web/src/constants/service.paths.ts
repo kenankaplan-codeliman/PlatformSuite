@@ -5,6 +5,7 @@ export const ControllerPaths = {
   AuthPath: `${ServiceBasePath}/auth`,
   UserPath: `${ServiceBasePath}/api/user`,
   LeadPath: `${ServiceBasePath}/api/lead`,
+  AccountPath: `${ServiceBasePath}/api/account`,
   ActivityPath: `${ServiceBasePath}/api/activity`,
 } as const;
 
@@ -61,6 +62,16 @@ export const ServicePath = {
 
     User: {
         Search: `${ControllerPaths.UserPath}/search`,
+    },
+
+    Account:{
+        List: `${ControllerPaths.AccountPath}/list`,
+        Search: `${ControllerPaths.AccountPath}/search`,
+        Get: `${ControllerPaths.AccountPath}/get`,
+        Create: `${ControllerPaths.AccountPath}/create`,
+        Update: `${ControllerPaths.AccountPath}/update`,
+        Delete: `${ControllerPaths.AccountPath}/delete`,
+        BulkDelete: `${ControllerPaths.AccountPath}/bulk-delete`,
     }
 
 

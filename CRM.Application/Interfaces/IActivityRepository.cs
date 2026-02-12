@@ -1,6 +1,7 @@
 ﻿using CRM.Application.Modals.ActivityModal;
 using CRM.Application.Modals.Common;
-using CRM.Domain.Entities.Activity;
+using CRM.Domain.Entities.Activities;
+using CRM.Domain.Enums;
 
 namespace CRM.Application.Interfaces
 {
@@ -8,6 +9,11 @@ namespace CRM.Application.Interfaces
     {
         ActivityListResponse List(ActivityListFilters? filter, PaginationInfo? paginationInfo);
         List<ActivityListItem> Calendar(ActivityListFilters? filters, DateTime startDate, DateTime endDate);
+
+        #region Common Functions
+        ActivityType GetActivityType(Guid Id);
+
+        #endregion
 
         #region Appointment
 

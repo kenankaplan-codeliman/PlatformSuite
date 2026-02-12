@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
-using CRM.Domain.Entities.Lead;
+using CRM.Domain.Entities.Leads;
 using CRM.Domain.Enums;
 
 namespace CRM.Application.Modals.LeadModal

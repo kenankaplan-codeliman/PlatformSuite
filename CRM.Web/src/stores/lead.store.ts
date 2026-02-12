@@ -168,7 +168,7 @@ export const useLeadStore = create<LeadState>()(
 
         try {
           setState(StateType.Loading, "Lead güncelleniyor...", "Lütfen bekleyiniz...");
-          const updatedLead = await leadService.updateLead(leadData.id as string, leadData);
+          const updatedLead = await leadService.updateLead(leadData);
           set({ currentLead: updatedLead });
           clearState();
           

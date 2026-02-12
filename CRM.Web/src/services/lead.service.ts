@@ -1,6 +1,7 @@
-import type { LeadDetailItem, LeadListRequest,LeadListFilters, LeadListResponse, LeadStatusValue, LeadGetRequest, LeadUpdateRequest, LeadDeleteRequest, LeadBulkDeleteRequest, LeadBulkUpdateStatusRequest } from '@/types/lead.types';
+import type { LeadDetailItem, LeadListRequest,LeadListFilters, LeadListResponse, LeadStatusValue, LeadBulkUpdateStatusRequest } from '@/types/lead.types';
 import apiClient from "@/services/api.client";
 import { ServicePath } from '@/constants/service.paths';
+import type { IdListRequest, IdRequest } from '@/types/common.types';
 
 
 export const leadService = {
@@ -27,7 +28,7 @@ export const leadService = {
   // Get single lead by ID
   getLeadById: async (id: string): Promise<LeadDetailItem> => {
 
-    const request : LeadGetRequest = {
+    const request : IdRequest = {
       id: id,
       };
     
@@ -39,6 +40,7 @@ export const leadService = {
 
   // Create new lead
   createLead: async (lead: Omit<Partial<LeadDetailItem>, 'id' | 'createdAt' | 'createdBy'>): Promise<LeadDetailItem> => {
+    
     const response = await apiClient.post<LeadDetailItem>(
       ServicePath.Lead.Create
       , lead);
@@ -46,23 +48,18 @@ export const leadService = {
   },
 
   // Update existing lead
-  updateLead: async (id: string, lead: Partial<LeadDetailItem>): Promise<LeadDetailItem> => {
+  updateLead: async (lead: Partial<LeadDetailItem>): Promise<LeadDetailItem> => {
 
-  const request : LeadUpdateRequest = {
-      id: id,
-      data: lead,
-      };
-
-  const response = await apiClient.post<LeadDetailItem>(
+    const response = await apiClient.post<LeadDetailItem>(
       ServicePath.Lead.Update
-      , request);
+      , lead);
 
     return response.data;
   },
 
   // Delete lead (soft delete)
   deleteLead: async (id: string): Promise<void> => {
-    const request : LeadDeleteRequest = {
+    const request : IdRequest = {
       id: id,
       };
 
@@ -72,7 +69,7 @@ export const leadService = {
   // Bulk delete leads
   bulkDeleteLeads: async (ids: string[]): Promise<void> => {
 
-    const request : LeadBulkDeleteRequest = {
+    const request : IdListRequest = {
           ids: ids,
           };
 

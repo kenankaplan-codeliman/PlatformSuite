@@ -2,7 +2,7 @@
 using CRM.Application.Interfaces;
 using CRM.Application.Modals.Common;
 using CRM.Domain.Authorization;
-using CRM.Domain.Entities.Identity;
+using CRM.Domain.Entities.Identities;
 using CRM.Domain.Enums;
 using CRM.Infrastructure.Data;
 using Microsoft.EntityFrameworkCore;

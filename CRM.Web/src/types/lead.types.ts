@@ -104,23 +104,6 @@ export interface LeadListResponse {
   pageSize: number;
 }
 
-export interface LeadGetRequest {
-  id: string;
-}
-
-export interface LeadUpdateRequest {
-  id: string;
-  data: Partial<LeadDetailItem>;
-}
-
-export interface LeadDeleteRequest {
-  id: string;
-}
-
-export interface LeadBulkDeleteRequest {
-  ids: string[];
-}
-
 export interface LeadBulkUpdateStatusRequest {
   ids: string[];
   status: LeadStatusValue;

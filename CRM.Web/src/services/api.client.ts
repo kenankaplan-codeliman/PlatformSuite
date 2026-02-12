@@ -59,9 +59,6 @@ apiClient.interceptors.response.use(
           .catch((err) => Promise.reject(err));
       }
 
-      originalRequest._retry = true;
-      isRefreshing = true;
-
       const { refreshToken, refreshAuthToken, logout } = useAuthState.getState();
 
       if (!refreshToken) {
@@ -70,6 +67,9 @@ apiClient.interceptors.response.use(
         return Promise.reject(error);
       }
 
+      originalRequest._retry = true;
+      isRefreshing = true;
+
       try {
         await refreshAuthToken();
         
@@ -77,13 +77,12 @@ apiClient.interceptors.response.use(
         const { accessToken: newAccessToken } = useAuthState.getState();
         
         if (newAccessToken && originalRequest.headers) {
+          
           originalRequest.headers.Authorization = `Bearer ${newAccessToken}`;
-        } else {
-          throw new Error('Token refresh failed');
-        }
-        
-        processQueue();
-        return apiClient(originalRequest);
+
+          processQueue();
+          return apiClient(originalRequest);
+        } 
 
       } catch (refreshError) {
         processQueue(refreshError);
@@ -92,6 +91,7 @@ apiClient.interceptors.response.use(
         return Promise.reject(refreshError);
       } finally {
         isRefreshing = false;
+        originalRequest._retry = false;
       }
     }
 

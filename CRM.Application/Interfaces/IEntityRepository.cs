@@ -1,5 +1,5 @@
 ﻿using CRM.Application.Modals.Common;
-using CRM.Domain.Entities.Identity;
+using CRM.Domain.Entities.Identities;
 using System;
 using System.Collections.Generic;
 using System.Linq;

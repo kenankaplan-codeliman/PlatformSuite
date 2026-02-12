@@ -6,6 +6,9 @@ using CRM.Application.Modals.ActivityModal;
 using CRM.Application.Modals.Common;
 using CRM.Domain.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Graph.Models;
+using System.Numerics;
+using static Microsoft.EntityFrameworkCore.DbLoggerCategory;
 
 namespace CRM.Api.Controllers;
 
@@ -46,7 +49,7 @@ public class ActivityController : ControllerBase
 
     [HttpPost("get/appointment")]
     [ProducesResponseType(typeof(AppointmentModal), 200)]
-    [PrivilegeAuthorize(PrivilegeCodes.ActivityPrivilegeCodes.AppointmentRead)]
+    [PrivilegeAuthorize(PrivilegeCodes.ActivityPrivilegeCodes.Read)]
     public async Task<IActionResult> AppointmentRead(ActivityRequest request)
     {
         var response = await activityCommandHandler.AppointmentRead(request.Id);
@@ -55,7 +58,7 @@ public class ActivityController : ControllerBase
 
     [HttpPost("create/appointment")]
     [ProducesResponseType(typeof(AppointmentModal), 200)]
-    [PrivilegeAuthorize(PrivilegeCodes.ActivityPrivilegeCodes.AppointmentCreate)]
+    [PrivilegeAuthorize(PrivilegeCodes.ActivityPrivilegeCodes.Create)]
     public async Task<IActionResult> AppointmentCreate(AppointmentModal request)
     {
         var response = await activityCommandHandler.AppointmentCreate(request);
@@ -64,7 +67,7 @@ public class ActivityController : ControllerBase
 
     [HttpPost("update/appointment")]
     [ProducesResponseType(typeof(AppointmentModal), 200)]
-    [PrivilegeAuthorize(PrivilegeCodes.ActivityPrivilegeCodes.AppointmentUpdate)]
+    [PrivilegeAuthorize(PrivilegeCodes.ActivityPrivilegeCodes.Update)]
     public async Task<IActionResult> AppointmentUpdate(AppointmentModal request)
     {
         var response = await activityCommandHandler.AppointmentUpdate(request);
@@ -77,7 +80,7 @@ public class ActivityController : ControllerBase
 
     [HttpPost("get/phonecall")]
     [ProducesResponseType(typeof(PhoneCallModal), 200)]
-    [PrivilegeAuthorize(PrivilegeCodes.ActivityPrivilegeCodes.PhoneCallRead)]
+    [PrivilegeAuthorize(PrivilegeCodes.ActivityPrivilegeCodes.Read)]
     public async Task<IActionResult> PhoneCallRead(ActivityRequest request)
     {
         var response = await activityCommandHandler.PhoneCallRead(request.Id);
@@ -86,7 +89,7 @@ public class ActivityController : ControllerBase
 
     [HttpPost("create/phonecall")]
     [ProducesResponseType(typeof(PhoneCallModal), 200)]
-    [PrivilegeAuthorize(PrivilegeCodes.ActivityPrivilegeCodes.PhoneCallCreate)]
+    [PrivilegeAuthorize(PrivilegeCodes.ActivityPrivilegeCodes.Create)]
     public async Task<IActionResult> PhoneCallCreate(PhoneCallModal request)
     {
         var response = await activityCommandHandler.PhoneCallCreate(request);
@@ -95,7 +98,7 @@ public class ActivityController : ControllerBase
 
     [HttpPost("update/phonecall")]
     [ProducesResponseType(typeof(PhoneCallModal), 200)]
-    [PrivilegeAuthorize(PrivilegeCodes.ActivityPrivilegeCodes.PhoneCallUpdate)]
+    [PrivilegeAuthorize(PrivilegeCodes.ActivityPrivilegeCodes.Update)]
     public async Task<IActionResult> PhoneCallUpdate(PhoneCallModal request)
     {
         var response = await activityCommandHandler.PhoneCallUpdate(request);
@@ -109,7 +112,7 @@ public class ActivityController : ControllerBase
 
     [HttpPost("get/task")]
     [ProducesResponseType(typeof(TaskModal), 200)]
-    [PrivilegeAuthorize(PrivilegeCodes.ActivityPrivilegeCodes.TaskRead)]
+    [PrivilegeAuthorize(PrivilegeCodes.ActivityPrivilegeCodes.Read)]
     public async Task<IActionResult> TaskRead(ActivityRequest request)
     {
         var response = await activityCommandHandler.TaskRead(request.Id);
@@ -118,7 +121,7 @@ public class ActivityController : ControllerBase
 
     [HttpPost("create/task")]
     [ProducesResponseType(typeof(TaskModal), 200)]
-    [PrivilegeAuthorize(PrivilegeCodes.ActivityPrivilegeCodes.TaskCreate)]
+    [PrivilegeAuthorize(PrivilegeCodes.ActivityPrivilegeCodes.Create)]
     public async Task<IActionResult> TaskCreate(TaskModal request)
     {
         var response = await activityCommandHandler.TaskCreate(request);
@@ -127,7 +130,7 @@ public class ActivityController : ControllerBase
 
     [HttpPost("update/task")]
     [ProducesResponseType(typeof(TaskModal), 200)]
-    [PrivilegeAuthorize(PrivilegeCodes.ActivityPrivilegeCodes.TaskUpdate)]
+    [PrivilegeAuthorize(PrivilegeCodes.ActivityPrivilegeCodes.Update)]
     public async Task<IActionResult> TaskUpdate(TaskModal request)
     {
         var response = await activityCommandHandler.TaskUpdate(request);
@@ -140,7 +143,7 @@ public class ActivityController : ControllerBase
 
     [HttpPost("get/email")]
     [ProducesResponseType(typeof(EmailModal), 200)]
-    [PrivilegeAuthorize(PrivilegeCodes.ActivityPrivilegeCodes.EmailRead)]
+    [PrivilegeAuthorize(PrivilegeCodes.ActivityPrivilegeCodes.Read)]
     public async Task<IActionResult> EmailRead(ActivityRequest request)
     {
         var response = await activityCommandHandler.EmailRead(request.Id);
@@ -149,7 +152,7 @@ public class ActivityController : ControllerBase
 
     [HttpPost("create/email")]
     [ProducesResponseType(typeof(EmailModal), 200)]
-    [PrivilegeAuthorize(PrivilegeCodes.ActivityPrivilegeCodes.EmailCreate)]
+    [PrivilegeAuthorize(PrivilegeCodes.ActivityPrivilegeCodes.Create)]
     public async Task<IActionResult> EmailCreate(EmailModal request)
     {
         var response = await activityCommandHandler.EmailCreate(request);
@@ -158,7 +161,7 @@ public class ActivityController : ControllerBase
 
     [HttpPost("update/email")]
     [ProducesResponseType(typeof(EmailModal), 200)]
-    [PrivilegeAuthorize(PrivilegeCodes.ActivityPrivilegeCodes.EmailUpdate)]
+    [PrivilegeAuthorize(PrivilegeCodes.ActivityPrivilegeCodes.Update)]
     public async Task<IActionResult> EmailUpdate(EmailModal request)
     {
         var response = await activityCommandHandler.EmailUpdate(request);
@@ -168,6 +171,53 @@ public class ActivityController : ControllerBase
     #endregion
 
 
+    #region Common Function
 
+    [HttpPost("delete")]
+    [ProducesResponseType(typeof(ActivityBaseModal), 200)]
+    [PrivilegeAuthorize(PrivilegeCodes.ActivityPrivilegeCodes.Delete)]
+    public async Task<IActionResult> Delete(ActivityRequest request)
+    {
+        var response = await activityCommandHandler.Delete(request.Id);
+        return Ok(response);
+    }
+
+    [HttpPost("bulk-delete")]
+    [PrivilegeAuthorize(PrivilegeCodes.ActivityPrivilegeCodes.Delete)]
+    public async Task<IActionResult> BulkDelete(ActivityBulkRequest request)
+    {
+        await activityCommandHandler.BulkDelete(request.Ids);
+        return Ok();
+    }
+
+    [HttpPost("complete")]
+    [ProducesResponseType(typeof(ActivityBaseModal), 200)]
+    [PrivilegeAuthorize(PrivilegeCodes.ActivityPrivilegeCodes.UpdateStatus)]
+    public async Task<IActionResult> Complete(ActivityRequest request)
+    {
+        var response = await activityCommandHandler.Complete(request.Id);
+        return Ok(response);
+    }
+
+    [HttpPost("cancel")]
+    [ProducesResponseType(typeof(ActivityBaseModal), 200)]
+    [PrivilegeAuthorize(PrivilegeCodes.ActivityPrivilegeCodes.UpdateStatus)]
+    public async Task<IActionResult> Cancel(ActivityRequest request)
+    {
+        var response = await activityCommandHandler.Cancel(request.Id);
+        return Ok(response);
+    }
+
+    [HttpPost("bulk-update-status")]
+    [ProducesResponseType(typeof(ActivityBaseModal), 200)]
+    [PrivilegeAuthorize(PrivilegeCodes.ActivityPrivilegeCodes.UpdateStatus)]
+    public async Task<IActionResult> BulkUpdateStatus(ActivityBulkUpdateStatusRequest request)
+    {
+        await activityCommandHandler.BulkUpdateStatus(request.Ids, request.Status);
+        return Ok();
+    }
+
+
+    #endregion 
 
 }

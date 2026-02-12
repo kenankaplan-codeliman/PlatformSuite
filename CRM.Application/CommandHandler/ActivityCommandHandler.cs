@@ -3,7 +3,7 @@ using CRM.Application.Exceptions;
 using CRM.Application.Interfaces;
 using CRM.Application.Modals.ActivityModal;
 using CRM.Application.Modals.Common;
-using CRM.Domain.Entities.Activity;
+using CRM.Domain.Entities.Activities;
 using CRM.Domain.Enums;
 using System.ComponentModel.Design;
 using System.Threading.Tasks;
@@ -727,6 +727,209 @@ public class ActivityCommandHandler
         if (entity.RegardingEntityType != null && entity.RegardingEntityId != null)
         {
             modal.RegardingEntity = referenceRepository.GetReference(entity.RegardingEntityType.Value, entity.RegardingEntityId.Value);
+        }
+    }
+
+    public async Task<ActivityBaseModal> Complete(Guid Id)
+    {
+        try
+        {
+            await unitOfWork.BeginTransactionAsync();
+
+            var activityType = activityRepository.GetActivityType(Id);
+            switch (activityType)
+            {
+                case ActivityType.Task:
+                    var taskEntity = activityRepository.GetTask(Id);
+                    taskEntity.Completed();
+                    var updatedTask = activityRepository.UpdateTask(taskEntity);
+                    return MapToTaskModal(updatedTask);
+                case ActivityType.PhoneCall:
+                    var phoneCallEntity = activityRepository.GetPhoneCall(Id);
+                    phoneCallEntity.Completed();
+                    var updatedPhoneCall = activityRepository.UpdatePhoneCall(phoneCallEntity);
+                    return MapToPhoneCallModal(updatedPhoneCall);
+                case ActivityType.Appointment:
+                    var appointmentEntity = activityRepository.GetAppointment(Id);
+                    appointmentEntity.Completed();
+                    var updatedAppointment = activityRepository.UpdateAppointment(appointmentEntity);
+                    return MapToAppointmentModal(updatedAppointment);
+                case ActivityType.Email:
+                    var emailEntity = activityRepository.GetEmail(Id);
+                    emailEntity.Completed();
+                    var updatedEmail = activityRepository.UpdateEmail(emailEntity);
+                    return MapToEmailModal(updatedEmail);
+                default:
+                    throw new BusinessException("Invalid activity type");
+            }
+        }
+        catch
+        {
+            await unitOfWork.RollbackTransactionAsync();
+            throw;
+        }
+        finally
+        {
+            await unitOfWork.CommitTransactionAsync();
+        }
+    }
+
+    public async Task<ActivityBaseModal> Cancel(Guid Id)
+    {
+        try
+        {
+            await unitOfWork.BeginTransactionAsync();
+            var activityType = activityRepository.GetActivityType(Id);
+
+            switch (activityType)
+            {
+                case ActivityType.Task:
+                    var taskEntity = activityRepository.GetTask(Id);
+                    taskEntity.Cancel();
+                    var updatedTask = activityRepository.UpdateTask(taskEntity);
+                    return MapToTaskModal(updatedTask);
+                case ActivityType.PhoneCall:
+                    var phoneCallEntity = activityRepository.GetPhoneCall(Id);
+                    phoneCallEntity.Cancel();
+                    var updatedPhoneCall = activityRepository.UpdatePhoneCall(phoneCallEntity);
+                    return MapToPhoneCallModal(updatedPhoneCall);
+                case ActivityType.Appointment:
+                    var appointmentEntity = activityRepository.GetAppointment(Id);
+                    appointmentEntity.Cancel();
+                    var updatedAppointment = activityRepository.UpdateAppointment(appointmentEntity);
+                    return MapToAppointmentModal(updatedAppointment);
+                case ActivityType.Email:
+                    var emailEntity = activityRepository.GetEmail(Id);
+                    emailEntity.Cancel();
+                    var updatedEmail = activityRepository.UpdateEmail(emailEntity);
+                    return MapToEmailModal(updatedEmail);
+                default:
+                    throw new BusinessException("Invalid activity type");
+            }
+        }
+        catch
+        {
+            await unitOfWork.RollbackTransactionAsync();
+            throw;
+        }
+        finally
+        {
+            await unitOfWork.CommitTransactionAsync();
+        }
+    }
+
+    public async Task<ActivityBaseModal> Delete(Guid Id)
+    {
+        try
+        {
+            await unitOfWork.BeginTransactionAsync();
+
+            var activityType = activityRepository.GetActivityType(Id);
+
+            switch (activityType)
+            {
+                case ActivityType.Task:
+                    var taskEntity = activityRepository.GetTask(Id);
+                    var deletedTask = activityRepository.DeleteTask(taskEntity);
+                    return MapToTaskModal(deletedTask);
+                case ActivityType.PhoneCall:
+                    var phoneCallEntity = activityRepository.GetPhoneCall(Id);
+                    var deletedPhoneCall = activityRepository.DeletePhoneCall(phoneCallEntity);
+                    return MapToPhoneCallModal(deletedPhoneCall);
+                case ActivityType.Appointment:
+                    var appointmentEntity = activityRepository.GetAppointment(Id);
+                    var deletedAppointment = activityRepository.DeleteAppointment(appointmentEntity);
+                    return MapToAppointmentModal(deletedAppointment);
+                case ActivityType.Email:
+                    var emailEntity = activityRepository.GetEmail(Id);
+                    var deletedEmail = activityRepository.DeleteEmail(emailEntity);
+                    return MapToEmailModal(deletedEmail);
+                default:
+                    throw new BusinessException("Invalid activity type");
+            }
+
+
+        }
+        catch
+        {
+            await unitOfWork.RollbackTransactionAsync();
+            throw;
+        }
+        finally
+        {
+            await unitOfWork.CommitTransactionAsync();
+        }
+    }
+
+    public async Task BulkDelete(List<Guid> Ids)
+    {
+        foreach (var id in Ids)
+        {
+            _ = await Delete(id);
+        }
+    }
+
+    public async Task BulkUpdateStatus(List<Guid> Ids, ActivityStatus status)
+    {
+        foreach (var id in Ids)
+        {
+            switch (status)
+            {
+                case ActivityStatus.Completed:
+                    _ = await Complete(id);
+                    break;
+                case ActivityStatus.Cancelled:
+                    _ = await Cancel(id);
+                    break;
+                case ActivityStatus.NotStarted:
+                case ActivityStatus.InProgress:
+                    await UpdateStatus(id, status);
+                    break;
+                default:
+                    throw new BusinessException("Invalid status");
+            }
+        }
+    }
+
+    private async Task UpdateStatus(Guid Id, ActivityStatus status)
+    {
+        try
+        {
+            await unitOfWork.BeginTransactionAsync();
+
+            var activityType = activityRepository.GetActivityType(Id);
+            switch (activityType)
+            {
+                case ActivityType.Task:
+                    var taskEntity = activityRepository.GetTask(Id);
+                    taskEntity.Status = status;
+                    activityRepository.UpdateTask(taskEntity);
+                    break;
+                case ActivityType.PhoneCall:
+                    var phoneCallEntity = activityRepository.GetPhoneCall(Id);
+                    phoneCallEntity.Status = status;
+                    activityRepository.UpdatePhoneCall(phoneCallEntity);
+                    break;
+                case ActivityType.Appointment:
+                    var appointmentEntity = activityRepository.GetAppointment(Id);
+                    appointmentEntity.Status = status;
+                    activityRepository.UpdateAppointment(appointmentEntity);
+                    break;
+                case ActivityType.Email:
+                    var emailEntity = activityRepository.GetEmail(Id);
+                    emailEntity.Status = status;
+                    activityRepository.UpdateEmail(emailEntity);
+                    break;
+                default:
+                    throw new BusinessException("Invalid activity type");
+            }
+
+            await unitOfWork.CommitTransactionAsync();
+        }
+        catch
+        {
+            await unitOfWork.RollbackTransactionAsync();
+            throw;
         }
     }
 

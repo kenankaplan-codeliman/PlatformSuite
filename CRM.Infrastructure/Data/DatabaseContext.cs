@@ -1,13 +1,16 @@
 ﻿
 using CRM.Application.Interfaces;
-using CRM.Domain.Entities.Activity;
+using CRM.Domain.Entities.Accounts;
+using CRM.Domain.Entities.Activities;
 using CRM.Domain.Entities.Common;
-using CRM.Domain.Entities.Identity;
-using CRM.Domain.Entities.Lead;
+using CRM.Domain.Entities.Contacts;
+using CRM.Domain.Entities.Identities;
+using CRM.Domain.Entities.Leads;
+using CRM.Domain.Entities.Opportunities;
 using CRM.Infrastructure.Data.Configurations;
-using CRM.Infrastructure.Data.Configurations.Modal;
+using CRM.Infrastructure.Data.Configurations.Accounts;
 using Microsoft.EntityFrameworkCore;
-using AppRole = CRM.Domain.Entities.Identity.AppRole;
+using AppRole = CRM.Domain.Entities.Identities.AppRole;
 
 namespace CRM.Infrastructure.Data;
 
@@ -33,8 +36,26 @@ public class DatabaseContext : DbContext
     public DbSet<TaskActivity> TaskActivity{ get; set; }
     public DbSet<Appointment> Appointment { get; set; }
 
+    // ======= Account =======
+    public DbSet<Account> Account { get; set; }
+    public DbSet<AccountEmail> AccountEmail { get; set; }
+    public DbSet<AccountPhone> AccountPhone { get; set; }
+    public DbSet<AccountAddress> AccountAddress { get; set; }
+    public DbSet<AccountContact> AccountContact { get; set; }
+
+    // ======= Contact =======
+    public DbSet<Contact> Contact { get; set; }
+    public DbSet<ContactEmail> ContactEmail { get; set; }
+    public DbSet<ContactPhone> ContactPhone { get; set; }
+    public DbSet<ContactAddress> ContactAddress { get; set; }
+
     // ======= Lead =======
     public DbSet<Lead> Lead { get; set; }
+
+    // ======= Opportunity =======
+    public DbSet<Opportunity> Opportunity { get; set; }
+
+
 
     public DatabaseContext(DbContextOptions<DatabaseContext> options, IContextUser currentUserContext, IContextAuthorization contextAuthorization)
         : base(options)
@@ -54,9 +75,7 @@ public class DatabaseContext : DbContext
 
         modelBuilder.SetGlobalFilter(contextUser, contextAuthorization);
 
-        modelBuilder.ConfigureIdentityEntities();
-        modelBuilder.ConfigureActivityEntities();
-        modelBuilder.ConfigureLeadEntities();
+        modelBuilder.ApplyConfigurationsFromAssembly(typeof(DatabaseContext).Assembly);
 
     }
   
