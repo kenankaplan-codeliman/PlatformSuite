@@ -1,6 +1,6 @@
 import { lazy } from 'react';
 import type { RouteObject } from 'react-router-dom';
-import { RoutePaths } from '@/constants/route.paths';
+import { RoutePaths } from '@/config/route.paths';
 
 
 const ActivityList = lazy(() => import('@/pages/activity/ActivityList'));

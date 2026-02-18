@@ -1,6 +1,6 @@
 import { useCallback, useMemo, useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { RoutePaths } from '@/constants/route.paths';
+import { RoutePaths } from '@/config/route.paths';
 import {
   Table,
   Card,
@@ -29,10 +29,6 @@ import {
   SearchOutlined,
   ClearOutlined,
   CheckCircleOutlined,
-  MailOutlined,
-  PhoneOutlined,
-  CheckSquareOutlined,
-  CalendarOutlined,
   ClockCircleOutlined,
   FlagOutlined,
   CloseCircleOutlined,
@@ -58,6 +54,7 @@ import {
   activityTypeOptions,
   activityStatusOptions,
   activityPriorityOptions,
+  getActivityTypeIcon,
 } from '@/types/activity.types';
 import CustomPagination from '@/components/CustomPagination';
 import activityService from '@/services/activity.service';
@@ -66,17 +63,6 @@ import { StateType, useProcessState } from '@/stores/process.state.store';
 
 const { Text } = Typography;
 const { Search } = Input;
-
-// Activity type icons mapping
-const getActivityTypeIcon = (type: ActivityTypeValue): React.ReactNode => {
-  const icons: Record<ActivityTypeValue, React.ReactNode> = {
-    [ActivityType.Email]: <MailOutlined />,
-    [ActivityType.PhoneCall]: <PhoneOutlined />,
-    [ActivityType.Task]: <CheckSquareOutlined />,
-    [ActivityType.Appointment]: <CalendarOutlined />,
-  };
-  return icons[type];
-};
 
 // Helper function to get activity detail path
 const getActivityDetailPath = (

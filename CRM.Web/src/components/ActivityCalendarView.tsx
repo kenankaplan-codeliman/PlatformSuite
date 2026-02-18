@@ -1,6 +1,6 @@
 import { useCallback, useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { RoutePaths } from '@/constants/route.paths';
+import { RoutePaths } from '@/config/route.paths';
 import {
   Card,
   Button,
@@ -28,9 +28,6 @@ import {
   ReloadOutlined,
   SearchOutlined,
   ClearOutlined,
-  MailOutlined,
-  PhoneOutlined,
-  CheckSquareOutlined,
   CalendarOutlined,
   LeftOutlined,
   RightOutlined,
@@ -41,6 +38,7 @@ import {
   type ActivityListItem,
   type ActivityTypeValue,
   type ActivityListFilters,
+  getActivityTypeIcon,
 } from '@/types/activity.types';
 import {
   ActivityType,
@@ -55,17 +53,6 @@ import { StateType, useProcessState } from '@/stores/process.state.store';
 
 const { Text } = Typography;
 const { Search } = Input;
-
-// Activity type icons mapping
-const getActivityTypeIcon = (type: ActivityTypeValue): React.ReactNode => {
-  const icons: Record<ActivityTypeValue, React.ReactNode> = {
-    [ActivityType.Email]: <MailOutlined />,
-    [ActivityType.PhoneCall]: <PhoneOutlined />,
-    [ActivityType.Task]: <CheckSquareOutlined />,
-    [ActivityType.Appointment]: <CalendarOutlined />,
-  };
-  return icons[type];
-};
 
 // Helper function to get activity detail path
 const getActivityDetailPath = (
@@ -177,7 +164,6 @@ const ActivityCalendarView: React.FC<ActivityCalendarViewProps> = ({
     }));
   }, []);
 
-  // Handle filter change
   const handleFilterChange = useCallback((field: string, value: any) => {
     setFilters(prev => ({
       ...prev,
@@ -185,26 +171,23 @@ const ActivityCalendarView: React.FC<ActivityCalendarViewProps> = ({
     }));
   }, []);
 
-  // Handle reset filters
   const handleResetFilters = useCallback(() => {
     setFilters({ ...initialFilters });
     setSearchText('');
   }, [initialFilters]);
 
-  // ✅ FIX: Month change - dependency yok
   const handleMonthChange = useCallback(
     (startDate: string, endDate: string) => {
       fetchCalendarActivities(startDate, endDate);
     },
-    [] // ✅ Empty deps - fetchCalendarActivities normal fonksiyon olduğu için sorun yok
+    [] 
   );
 
-  // ✅ FIX: Refresh - dependency yok
   const handleRefresh = useCallback(() => {
     const startOfMonth = dayjs(calendarDate).startOf('month').format('YYYY-MM-DD');
     const endOfMonth = dayjs(calendarDate).endOf('month').format('YYYY-MM-DD');
     fetchCalendarActivities(startOfMonth, endOfMonth);
-  }, [calendarDate]); // ✅ Sadece calendarDate dependency
+  }, [calendarDate]); 
 
   // ========== CALENDAR RENDERING ==========
 

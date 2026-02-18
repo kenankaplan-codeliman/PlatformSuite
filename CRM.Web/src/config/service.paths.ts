@@ -6,6 +6,7 @@ export const ControllerPaths = {
   UserPath: `${ServiceBasePath}/api/user`,
   LeadPath: `${ServiceBasePath}/api/lead`,
   AccountPath: `${ServiceBasePath}/api/account`,
+  ContactPath: `${ServiceBasePath}/api/contact`,
   ActivityPath: `${ServiceBasePath}/api/activity`,
 } as const;
 
@@ -72,6 +73,16 @@ export const ServicePath = {
         Update: `${ControllerPaths.AccountPath}/update`,
         Delete: `${ControllerPaths.AccountPath}/delete`,
         BulkDelete: `${ControllerPaths.AccountPath}/bulk-delete`,
+    },
+
+    Contact:{
+        List: `${ControllerPaths.ContactPath}/list`,
+        Search: `${ControllerPaths.ContactPath}/search`,
+        Get: `${ControllerPaths.ContactPath}/get`,
+        Create: `${ControllerPaths.ContactPath}/create`,
+        Update: `${ControllerPaths.ContactPath}/update`,
+        Delete: `${ControllerPaths.ContactPath}/delete`,
+        BulkDelete: `${ControllerPaths.ContactPath}/bulk-delete`,
     }
 
 

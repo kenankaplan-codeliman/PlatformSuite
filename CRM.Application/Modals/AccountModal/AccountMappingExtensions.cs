@@ -99,7 +99,7 @@ public static class AccountMappingExtensions
         entity.Website = modal.Website;
         entity.Description = modal.Description;
         entity.ParentAccountId = modal.ParentAccountId;
-        entity.IsActive = modal.IsActive;
+        //entity.IsActive = modal.IsActive;
 
         SyncEmails(entity, modal);
         SyncPhones(entity, modal);

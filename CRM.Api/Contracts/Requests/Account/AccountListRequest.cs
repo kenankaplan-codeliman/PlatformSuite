@@ -7,6 +7,6 @@ namespace CRM.Api.Contracts.Requests.Account
     {
         public int Page { get; set; }
         public int PageSize { get; set; }
-        public AccountListFilter filters { get; set; } = new AccountListFilter();
+        public AccountListFilter filters { get; set; } = new();
     }
 }

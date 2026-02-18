@@ -1,4 +1,6 @@
-import type { EntityReference, EntityTypeValue } from '@/types/entity.lookup.types';
+import { EntityType, type EntityReference, type EntityTypeValue } from '@/types/entity.lookup.types';
+import { getEntityColor, getEntityIcon, getEntityLabel } from '@/config/entity.config';
+
 /**
  * Activity Types
  * Lead modülü ile tutarlı request/response yapısı
@@ -83,22 +85,32 @@ export type ActivityTypeValue = (typeof ActivityType)[keyof typeof ActivityType]
 
 export const getActivityTypeLabel = (type: ActivityTypeValue): string => {
   const labels: Record<ActivityTypeValue, string> = {
-    [ActivityType.Email]: 'E-posta',
-    [ActivityType.PhoneCall]: 'Telefon',
-    [ActivityType.Task]: 'Görev',
-    [ActivityType.Appointment]: 'Randevu',
+    [ActivityType.Email]: getEntityLabel(EntityType.Email),
+    [ActivityType.PhoneCall]: getEntityLabel(EntityType.PhoneCall),
+    [ActivityType.Task]: getEntityLabel(EntityType.Task),
+    [ActivityType.Appointment]: getEntityLabel(EntityType.Appointment),
   };
   return labels[type] || 'Bilinmiyor';
 };
 
 export const getActivityTypeColor = (type: ActivityTypeValue): string => {
   const colors: Record<ActivityTypeValue, string> = {
-    [ActivityType.Email]: '#1890ff',
-    [ActivityType.PhoneCall]: '#52c41a',
-    [ActivityType.Task]: '#faad14',
-    [ActivityType.Appointment]: '#722ed1',
+    [ActivityType.Email]: getEntityColor(EntityType.Email),
+    [ActivityType.PhoneCall]: getEntityColor(EntityType.PhoneCall),
+    [ActivityType.Task]: getEntityColor(EntityType.Task),
+    [ActivityType.Appointment]: getEntityColor(EntityType.Appointment),
   };
   return colors[type] || '#8c8c8c';
+};
+
+export const getActivityTypeIcon = (type: ActivityTypeValue): React.ReactNode => {
+  const icons: Record<ActivityTypeValue, React.ReactNode> = {
+    [ActivityType.Email]: getEntityIcon(EntityType.Email),
+    [ActivityType.PhoneCall]: getEntityIcon(EntityType.PhoneCall),
+    [ActivityType.Task]: getEntityIcon(EntityType.Task),
+    [ActivityType.Appointment]: getEntityIcon(EntityType.Appointment),
+  };
+  return icons[type];
 };
 
 

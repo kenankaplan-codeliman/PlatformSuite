@@ -2,13 +2,8 @@
 using CRM.Application.Interfaces;
 using CRM.Application.Modals.AccountModal;
 using CRM.Application.Modals.Common;
-using CRM.Application.Modals.LeadModal;
 using CRM.Domain.Entities.Accounts;
 using CRM.Domain.Enums;
-using System;
-using System.Collections.Generic;
-using System.Reflection;
-using System.Text;
 
 namespace CRM.Application.CommandHandler
 {
@@ -61,7 +56,7 @@ namespace CRM.Application.CommandHandler
                 return modal;
             }
             else
-                throw new BusinessException("Lead not found.");
+                throw new BusinessException("Contact not found.");
         }
 
         public async Task<AccountDetailItem> Create(AccountDetailItem accountDetailItem)

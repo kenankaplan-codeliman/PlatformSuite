@@ -1,5 +1,5 @@
 import axios from 'axios';
-import { ServicePath } from '@/constants/service.paths';
+import { ServicePath } from '@/config/service.paths';
 import type { LoginRequest, LoginResponse, MsalRequest, RefreshTokenRequest, AccessTokenRequest, User } from '@/types/auth.types';
 
 

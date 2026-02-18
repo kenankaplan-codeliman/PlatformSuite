@@ -1,6 +1,6 @@
 import { useState, useCallback } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
-import { RoutePaths } from '@/constants/route.paths';
+import { RoutePaths } from '@/config/route.paths';
 import {
   Button,
   Space,
@@ -14,10 +14,6 @@ import {
   ExportOutlined,
   UnorderedListOutlined,
   CalendarOutlined,
-  MailOutlined,
-  PhoneOutlined,
-  CheckSquareOutlined,
-  CalendarOutlined as AppointmentIcon,
 } from '@ant-design/icons';
 import type { ActivityTypeValue } from '@/types/activity.types';
 import { ActivityType } from '@/types/activity.types';
@@ -26,6 +22,9 @@ import ActivityCalendarView from '@/components/ActivityCalendarView';
 import activityService from '@/services/activity.service';
 import { handleError } from '@/hooks/useHandleError';
 import dayjs from 'dayjs';
+
+import { getEntityIcon, getEntityLabel } from '@/config/entity.config';
+import { EntityType } from '@/types/entity.lookup.types';
 
 const { Title, Text } = Typography;
 
@@ -85,26 +84,26 @@ const ActivityList: React.FC = () => {
   const newActivityMenuItems = [
     {
       key: 'email',
-      label: 'E-posta',
-      icon: <MailOutlined />,
+      label: getEntityLabel(EntityType.Email),
+      icon: getEntityIcon(EntityType.Email),
       onClick: () => handleCreateActivity(ActivityType.Email),
     },
     {
       key: 'phone',
-      label: 'Telefon Görüşmesi',
-      icon: <PhoneOutlined />,
+      label: getEntityLabel(EntityType.PhoneCall),
+      icon: getEntityIcon(EntityType.PhoneCall),
       onClick: () => handleCreateActivity(ActivityType.PhoneCall),
     },
     {
       key: 'task',
-      label: 'Görev',
-      icon: <CheckSquareOutlined />,
+      label: getEntityLabel(EntityType.Task),
+      icon: getEntityIcon(EntityType.Task),
       onClick: () => handleCreateActivity(ActivityType.Task),
     },
     {
       key: 'appointment',
-      label: 'Randevu',
-      icon: <AppointmentIcon />,
+      label: getEntityLabel(EntityType.Appointment),
+      icon: getEntityIcon(EntityType.Appointment),
       onClick: () => handleCreateActivity(ActivityType.Appointment),
     },
   ];

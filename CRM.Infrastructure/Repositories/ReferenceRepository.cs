@@ -7,6 +7,7 @@ using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Graph.Models.ExternalConnectors;
+using Microsoft.IdentityModel.Tokens;
 using System;
 using System.Collections.Generic;
 using System.Text;
@@ -31,6 +32,7 @@ namespace CRM.Infrastructure.Repositories
                      EntityType.User => GetUserReference(id),
                      EntityType.Lead => GetLeadReference(id),
                      EntityType.Account => GetAccountReference(id),
+                     EntityType.Contact => GetContactReference(id),
                      _ => throw new NotImplementedException()
                  };
 
@@ -40,6 +42,7 @@ namespace CRM.Infrastructure.Repositories
                      EntityType.User => LookupUserReference(searchText, paginationInfo),
                      EntityType.Lead => LookupLeadReference(searchText, paginationInfo),
                      EntityType.Account => LookupAccountReference(searchText, paginationInfo),
+                     EntityType.Contact => LookupContactReference(searchText, paginationInfo),
                      _ => throw new NotImplementedException()
                  };
 
@@ -247,19 +250,19 @@ namespace CRM.Infrastructure.Repositories
 
             var hasMore = entityList.Count > pageSize;
 
-            var modalList = entityList.Take(pageSize)
-                .Select(item => new EntityReference(EntityType.User)
+            var acoountlist = entityList.Take(pageSize)
+                .Select(acc => new EntityReference(EntityType.Account)
                 {
-                    Id = item.Id,
-                    Name = item.AccountName,
-                    Email = item.PrimaryEmail,
-                    Phone = item.PrimaryPhone,
+                    Id = acc.Id,
+                    Name = acc.AccountName,
+                    Email = acc.PrimaryEmail,
+                    Phone = acc.PrimaryPhone,
                 })
                 .ToList();
 
             return new EntityReferenceList()
             {
-                Data = modalList,
+                Data = acoountlist,
                 HasMore = hasMore,
                 Page = paginationInfo?.Page ?? 1,
                 PageSize = pageSize,
@@ -267,7 +270,7 @@ namespace CRM.Infrastructure.Repositories
         }
         private EntityReference GetAccountReference(Guid Id)
         {
-            var usr = dbContext.Account.Select(acc => new {
+            var account = dbContext.Account.Select(acc => new {
                 acc.Id,
                 acc.AccountName,
                 PrimaryEmail = acc.Emails
@@ -280,15 +283,103 @@ namespace CRM.Infrastructure.Repositories
                   .FirstOrDefault(),
             }).FirstOrDefault(acc => acc.Id == Id) ?? throw new NotFoundException();
 
-            return new EntityReference(EntityType.User)
+            return new EntityReference(EntityType.Account)
             {
-                Id = usr.Id,
-                Name = usr.AccountName,
-                Email = usr.PrimaryEmail,
-                Phone = usr.PrimaryPhone,
+                Id = account.Id,
+                Name = account.AccountName,
+                Email = account.PrimaryEmail,
+                Phone = account.PrimaryPhone,
             };
         }
 
         #endregion Account
+
+        #region Contact
+
+        private EntityReferenceList LookupContactReference(string searchText, PaginationInfo paginationInfo)
+        {
+            int pageSize = int.Parse(configuration["DefaultValues:Search_Max_Record"]!);
+            int skipCnt = 0;
+
+            if (paginationInfo != null && paginationInfo.isValid())
+            {
+                pageSize = paginationInfo.PageSize;
+
+                var pageIndex = (paginationInfo.Page - 1) >= 0 ? paginationInfo.Page - 1 : 0;
+                skipCnt = pageIndex * paginationInfo.PageSize;
+
+            }
+
+            var tempQuery = this.dbContext.Contact.AsNoTracking().Where(x => x.IsActive);
+
+            if (!string.IsNullOrEmpty(searchText))
+            {
+                tempQuery = tempQuery.Where(cnt => EF.Functions.ILike($"{cnt.FirstName} {cnt.LastName}", $"%{searchText}%"));
+            }
+
+            var query = tempQuery.Select(cnt => new
+            {
+                cnt.Id,
+                cnt.FirstName,
+                cnt.LastName,
+                PrimaryEmail = cnt.Emails
+                  .Where(e => e.IsPrimary && !e.IsDeleted)
+                  .Select(e => e.Email)
+                  .FirstOrDefault(),
+                PrimaryPhone = cnt.Phones
+                  .Where(p => p.IsPrimary && !p.IsDeleted)
+                  .Select(p => p.PhoneNumber)
+                  .FirstOrDefault(),
+            });
+
+
+            var entityList = query.Skip(skipCnt).Take(pageSize + 1).ToList();
+
+            var hasMore = entityList.Count > pageSize;
+
+            var contactList = entityList.Take(pageSize)
+                .Select(item => new EntityReference(EntityType.Contact)
+                {
+                    Id = item.Id,
+                    Name = $"{item.FirstName} {item.LastName}",
+                    Email = item.PrimaryEmail,
+                    Phone = item.PrimaryPhone,
+                })
+                .ToList();
+
+            return new EntityReferenceList()
+            {
+                Data = contactList,
+                HasMore = hasMore,
+                Page = paginationInfo?.Page ?? 1,
+                PageSize = pageSize,
+            };
+        }
+        private EntityReference GetContactReference(Guid Id)
+        {
+            var contact = dbContext.Contact.Select(cnt => new {
+                cnt.Id,
+                cnt.FirstName,
+                cnt.LastName,
+                PrimaryEmail = cnt.Emails
+                  .Where(e => e.IsPrimary && !e.IsDeleted)
+                  .Select(e => e.Email)
+                  .FirstOrDefault(),
+                PrimaryPhone = cnt.Phones
+                  .Where(p => p.IsPrimary && !p.IsDeleted)
+                  .Select(p => p.PhoneNumber)
+                  .FirstOrDefault(),
+            }).FirstOrDefault(acc => acc.Id == Id) ?? throw new NotFoundException();
+
+            return new EntityReference(EntityType.Contact)
+            {
+                Id = contact.Id,
+                Name = $"{contact.FirstName} {contact.LastName}",
+                Email = contact.PrimaryEmail,
+                Phone = contact.PrimaryPhone,
+            };
+        }
+
+        #endregion Contact
     }
 }

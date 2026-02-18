@@ -4,7 +4,7 @@ import { useAuthState } from "@/stores/auth.store";
 import { loginRequest, msalInstance } from "@/util/msalInstance";
 import MicrosoftOutlined from '@/components/MicrosoftIcon';
 import { useEffect } from "react";
-import RoutePaths from "@/constants/route.paths";
+import RoutePaths from "@/config/route.paths";
 import { StateType, useProcessState } from "@/stores/process.state.store";
 
 const Login = () => {

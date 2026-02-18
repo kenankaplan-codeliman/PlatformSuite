@@ -1,7 +1,7 @@
 import { Layout, Menu } from "antd";
 import { Outlet, useLocation, useNavigate } from "react-router-dom";
-import { MenuIcons } from '@/constants/entity.icons';
-import { RoutePaths } from '@/constants/route.paths';
+import { MenuIcons } from '@/config/entity.config';
+import { RoutePaths } from '@/config/route.paths';
 
 
 const { Sider, Content } = Layout;

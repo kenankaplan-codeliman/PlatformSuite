@@ -1,6 +1,6 @@
 import { useEffect, useState, useCallback, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { RoutePaths } from '@/constants/route.paths';
+import { RoutePaths } from '@/config/route.paths';
 import {
   Table,
   Card,

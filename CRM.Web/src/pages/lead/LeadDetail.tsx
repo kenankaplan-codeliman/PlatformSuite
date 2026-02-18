@@ -26,7 +26,7 @@ import {
   ClockCircleOutlined,
 } from '@ant-design/icons';
 
-import { RoutePaths } from '@/constants/route.paths';
+import { RoutePaths } from '@/config/route.paths';
 import type { LeadDetailItem } from '@/types/lead.types';
 import {
   LeadStatus,

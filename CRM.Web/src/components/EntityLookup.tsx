@@ -18,23 +18,15 @@ import type { TableProps } from 'antd';
 import {
   SearchOutlined,
   CloseOutlined,
-  UserOutlined,
-  TeamOutlined,
-  BankOutlined,
-  IdcardOutlined,
-  RocketOutlined,
-  CrownOutlined,
   LoadingOutlined,
 } from '@ant-design/icons';
 
-import { EntityType, type EntityReference, type EntitySearchFunction, type EntityTypeValue } from '@/types/entity.lookup.types';
+import { type EntityReference, type EntitySearchFunction, type EntityTypeValue } from '@/types/entity.lookup.types';
 import '@/css/EntityLookup.css';
 import CustomPagination from '@/components/CustomPagination';
-
+import { getEntityColor, getEntityIcon, getEntityLabel } from '@/config/entity.config';
 
 const { Text } = Typography;
-
-
 
 // Component props
 export interface EntityLookupProps {
@@ -58,57 +50,7 @@ export interface EntityLookupProps {
   modalTitle?: string;
 }
 
-// ============================================
-// CONSTANTS
-// ============================================
 
-// Entity tip konfigürasyonları
-export const EntityTypeConfig: Record<
-    EntityTypeValue,
-      { label: string; icon: React.ReactNode; color: string }
-> = {
-  [EntityType.User]: {
-    label: 'Kullanıcı',
-    icon: <UserOutlined />,
-    color: '#1890ff',
-  },
-  [EntityType.Account]: {
-    label: 'Firma',
-    icon: <BankOutlined />,
-    color: '#52c41a',
-  },
-  [EntityType.Contact]: {
-    label: 'Kişi',
-    icon: <IdcardOutlined />,
-    color: '#722ed1',
-  },
-  [EntityType.Lead]: {
-    label: 'Aday Müşteri',
-    icon: <RocketOutlined />,
-    color: '#fa8c16',
-  },
-  [EntityType.Opportunity]: {
-    label: 'Fırsat',
-    icon: <CrownOutlined />,
-    color: '#eb2f96',
-  },
-};
-
-// ============================================
-// HELPER FUNCTIONS
-// ============================================
-
-const getEntityIcon = (entityType: EntityTypeValue): React.ReactNode => {
-  return EntityTypeConfig[entityType]?.icon || <TeamOutlined />;
-};
-
-const getEntityColor = (entityType: EntityTypeValue): string => {
-  return EntityTypeConfig[entityType]?.color || '#8c8c8c';
-};
-
-const getEntityLabel = (entityType: EntityTypeValue ): string => {
-  return EntityTypeConfig[entityType]?.label || entityType;
-};
 
 
 
@@ -175,8 +117,6 @@ const EntityLookup: React.FC<EntityLookupProps> = ({
   className,
   modalTitle = 'Kayıt seçin...',
 }) => {
-  
-
 
   // Local state
   const [modalVisible, setModalVisible] = useState(false);
@@ -261,7 +201,7 @@ const EntityLookup: React.FC<EntityLookupProps> = ({
         setSearchLoading(false);
       }
     },
-    [onSearch, clearSearchResults]
+    [onSearch]
   );
 
   // Handle search
@@ -356,7 +296,7 @@ const EntityLookup: React.FC<EntityLookupProps> = ({
         handleSelectRecord(record);
       //}
     },
-    [multiple, handleSelectRecord]
+    [handleSelectRecord]
   );
 
   // Table columns

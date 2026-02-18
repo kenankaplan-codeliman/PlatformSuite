@@ -1,7 +1,7 @@
 import { useEffect } from "react";
 import { Navigate, Outlet, useNavigate } from "react-router-dom";
 import { useAuthState } from "@/stores/auth.store";
-import RoutePaths from "@/constants/route.paths";
+import RoutePaths from "@/config/route.paths";
 
 const ProtectedRoute =() => {
 

@@ -1,6 +1,6 @@
 import { lazy } from 'react';
 import type { RouteObject } from 'react-router-dom';
-import { RoutePaths } from '@/constants/route.paths';
+import { RoutePaths } from '@/config/route.paths';
 
 // Lazy load Lead pages for code splitting
 const LeadList = lazy(() => import('@/pages/lead/LeadList'));

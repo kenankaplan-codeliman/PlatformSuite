@@ -31,7 +31,7 @@ import {
 } from '@ant-design/icons';
 import dayjs from 'dayjs';
 
-import { RoutePaths } from '@/constants/route.paths';
+import { RoutePaths } from '@/config/route.paths';
 import type { AppointmentActivity } from '@/types/activity.types';
 import { EntityType, type EntityReference } from '@/types/entity.lookup.types';
 import {
@@ -47,12 +47,12 @@ import {
 } from '@/types/activity.types';
 import { useActivityStore } from '@/stores/activity.store';
 import { entitySearchService } from '@/services/entity.search.service';
-import EntityLookup, { EntityTypeConfig } from '@/components/EntityLookup';
+import EntityLookup from '@/components/EntityLookup';
 import { toLocalISO } from '@/util/dateHelper';
 
 import { useDetailPage, type DetailPageProps } from '@/hooks/useDetailPage';
 import DetailPageLayout from '@/components/DetailPageLayout';
-import { getEntityIcon } from '@/constants/entity.icons';
+import { getEntityColor, getEntityIcon } from '@/config/entity.config';
 
 const { Title, Paragraph } = Typography;
 const { TextArea } = Input;
@@ -67,7 +67,7 @@ const renderSelectedEntities = (entities: EntityReference[] | EntityReference | 
   return (
     <Space wrap size={[4, 4]}>
       {entityList.map((entity) => (
-        <Tag key={entity.id} icon={getEntityIcon(entity.entityType)} color={EntityTypeConfig[entity.entityType]?.color}>
+        <Tag key={entity.id} icon={getEntityIcon(entity.entityType)} color={getEntityColor(entity.entityType)}>
           {entity.name}
         </Tag>
       ))}

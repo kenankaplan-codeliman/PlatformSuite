@@ -1,8 +1,8 @@
 import axios, { AxiosError } from 'axios';
 import type { InternalAxiosRequestConfig } from 'axios';
-import { ServiceBasePath } from '@/constants/service.paths';
+import { ServiceBasePath } from '@/config/service.paths';
 import { useAuthState } from '@/stores/auth.store';
-import { RoutePaths } from '@/constants/route.paths';
+import { RoutePaths } from '@/config/route.paths';
 
 const apiClient = axios.create({
   baseURL: ServiceBasePath,

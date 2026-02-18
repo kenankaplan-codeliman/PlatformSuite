@@ -1,6 +1,6 @@
 import type { LeadDetailItem, LeadListRequest,LeadListFilters, LeadListResponse, LeadStatusValue, LeadBulkUpdateStatusRequest } from '@/types/lead.types';
 import apiClient from "@/services/api.client";
-import { ServicePath } from '@/constants/service.paths';
+import { ServicePath } from '@/config/service.paths';
 import type { IdListRequest, IdRequest } from '@/types/common.types';
 
 

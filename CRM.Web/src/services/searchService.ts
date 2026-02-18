@@ -1,5 +1,5 @@
 import apiClient from "@/services/api.client";
-import { ServicePath } from '@/constants/service.paths';
+import { ServicePath } from '@/config/service.paths';
 
 /* ===== TYPES ===== */
 

@@ -31,6 +31,14 @@ namespace CRM.Domain.Authorization
             public const string Delete = "Account.Delete";
         }
 
+        public static class ContactPrivilegeCodes
+        {
+            public const string Read = "Contact.Read";
+            public const string Create = "Contact.Create";
+            public const string Update = "Contact.Update";
+            public const string Delete = "Contact.Delete";
+        }
+
         public static class ActivityPrivilegeCodes
         {
             public const string Read = "Activity.Read";

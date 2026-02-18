@@ -29,8 +29,7 @@ public class AccountRepository : IAccountRepository
 
         if (!string.IsNullOrWhiteSpace(filter.accountName))
         {
-            var name = filter.accountName.Trim().ToLower();
-            query = query.Where(x => x.AccountName.ToLower().Contains(name));
+            query = query.Where(x => EF.Functions.ILike(x.AccountName, $"%{filter.accountName}%"));
         }
 
         if (filter.accountType.HasValue)
@@ -38,10 +37,9 @@ public class AccountRepository : IAccountRepository
             query = query.Where(x => x.AccountType == filter.accountType.Value);
         }
 
-        if (!string.IsNullOrWhiteSpace(filter.industry))
+        if (!string.IsNullOrWhiteSpace(filter.Industry))
         {
-            var industry = filter.industry.Trim().ToLower();
-            query = query.Where(x => x.Industry != null && x.Industry.ToLower().Contains(industry));
+            query = query.Where(x => EF.Functions.ILike(x.Industry!, $"%{filter.Industry}%"));
         }
 
         if (filter.isActive.HasValue)
@@ -66,15 +64,15 @@ public class AccountRepository : IAccountRepository
               NumberOfEmployees = acc.NumberOfEmployees,
               Website = acc.Website,
               PrimaryEmail = acc.Emails
-                  .Where(e => e.IsPrimary && !e.IsDeleted)
+                  .Where(e => e.IsPrimary)
                   .Select(e => e.Email)
                   .FirstOrDefault(),
               PrimaryPhone = acc.Phones
-                  .Where(p => p.IsPrimary && !p.IsDeleted)
+                  .Where(p => p.IsPrimary)
                   .Select(p => p.PhoneNumber)
                   .FirstOrDefault(),
               PrimaryCity = acc.Addresses
-                  .Where(a => a.IsPrimary && !a.IsDeleted)
+                  .Where(a => a.IsPrimary)
                   .Select(a => a.City)
                   .FirstOrDefault(),
               IsActive = acc.IsActive

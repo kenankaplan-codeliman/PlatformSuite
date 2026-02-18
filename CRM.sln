@@ -11,8 +11,6 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CRM.Domain", "CRM.Domain\CR
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CRM.Infrastructure", "CRM.Infrastructure\CRM.Infrastructure.csproj", "{39F7B4D4-9A65-4BFA-BCD0-F2FEF85C50B8}"
 EndProject
-Project("{54A90642-561A-4BB1-A94E-469ADEE60C69}") = "crm-web-ui", "CRM.Web\crm-web-ui.esproj", "{20B11863-FD9D-7988-DE46-B17E913EB797}"
-EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "CRM.Database", "CRM.Database", "{AE6DA6AA-6A83-4369-A9A3-3E2C17033DC4}"
 	ProjectSection(SolutionItems) = preProject
 		CRM.Database\Account.sql = CRM.Database\Account.sql

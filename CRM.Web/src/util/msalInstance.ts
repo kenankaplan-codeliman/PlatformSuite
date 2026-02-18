@@ -1,6 +1,6 @@
 import type { RedirectRequest } from '@azure/msal-browser';
 import { PublicClientApplication } from '@azure/msal-browser';
-import { msalConfig } from "@/config/msalConfig";
+import { msalConfig } from "@/config/msal.config";
 
 /**
  * Scopes for initial login

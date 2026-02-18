@@ -1,11 +1,9 @@
 ﻿using CRM.Api.Authorization;
 using CRM.Api.Contracts.Requests.Account;
 using CRM.Api.Contracts.Requests.Common;
-using CRM.Api.Contracts.Requests.Lead;
 using CRM.Application.CommandHandler;
 using CRM.Application.Modals.AccountModal;
 using CRM.Application.Modals.Common;
-using CRM.Application.Modals.LeadModal;
 using CRM.Domain.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -45,18 +43,18 @@ public class AccountController : ControllerBase
     [PrivilegeAuthorize(PrivilegeCodes.AccountPrivilegeCodes.Read)]
     public async Task<IActionResult> Get(IdRequest idRequest)
     {
-        var lead = await accountCommandHandler.Get(idRequest.Id);
-        return Ok(lead);
+        var account = await accountCommandHandler.Get(idRequest.Id);
+        return Ok(account);
     }
 
 
     [HttpPost("create")]
-    [ProducesResponseType(typeof(LeadDetailItem), 200)]
+    [ProducesResponseType(typeof(AccountDetailItem), 200)]
     [PrivilegeAuthorize(PrivilegeCodes.AccountPrivilegeCodes.Create)]
     public async Task<IActionResult> Create(AccountDetailItem accDetail)
     {
-        var lead = await accountCommandHandler.Create(accDetail);
-        return Ok(lead);
+        var account = await accountCommandHandler.Create(accDetail);
+        return Ok(account);
     }
 
 

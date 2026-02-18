@@ -1,9 +1,4 @@
-﻿using CRM.Application.Modals.ActivityModal;
-using CRM.Domain.Entities.Leads;
-using System;
-using System.Collections.Generic;
-using System.Text;
-
+﻿
 namespace CRM.Application.Modals.ActivityModal
 {
     public class ActivityListResponse

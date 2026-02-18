@@ -1,6 +1,3 @@
-import { ActivityType } from '@/types/activity.types';
-import type { ActivityTypeValue } from '@/types/activity.types';
-
 // ==================== BASE PATHS ====================
 
 export const BasePaths = {

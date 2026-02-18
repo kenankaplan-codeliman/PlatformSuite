@@ -1,8 +1,4 @@
-﻿using CRM.Application.Modals.LeadModal;
-using System;
-using System.Collections.Generic;
-using System.Text;
-
+﻿
 namespace CRM.Application.Modals.Common
 {
     public class EntityReferenceList

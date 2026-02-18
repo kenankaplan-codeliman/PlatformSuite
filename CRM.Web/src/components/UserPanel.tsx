@@ -2,7 +2,7 @@ import { Popover, Avatar, Button, Divider } from "antd";
 import { UserOutlined, LogoutOutlined } from "@ant-design/icons";
 import { useNavigate } from "react-router-dom";
 import { useAuthState } from '@/stores/auth.store';
-import RoutePaths from "@/constants/route.paths";
+import RoutePaths from "@/config/route.paths";
 import { useEffect } from "react";
 
 const UserPanel = () => {

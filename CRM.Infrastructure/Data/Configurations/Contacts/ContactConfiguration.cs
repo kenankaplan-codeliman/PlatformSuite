@@ -105,7 +105,10 @@ public class ContactConfiguration : IEntityTypeConfiguration<Contact>
             .HasConstraintName("fk_contact_address")
             .OnDelete(DeleteBehavior.Cascade);
 
-        // Ignore - AccountContacts many-to-many ilişkisi Account modülü tarafında yapılandırılmalı
-        builder.Ignore(x => x.AccountContacts);
+        
+        builder.HasMany(a => a.AccountContacts)
+            .WithOne(ac => ac.Contact)
+            .HasForeignKey(ac => ac.ContactId)
+            .OnDelete(DeleteBehavior.Cascade);
     }
 }

@@ -17,20 +17,20 @@ public class Contact :
     public bool IsActive { get; set; } = true;
     #endregion
 
-    public string FirstName { get; set; }
-    public string LastName { get; set; }
-    public string Title { get; set; }
-    public string Department { get; set; }
+    public string FirstName { get; set; } = default!;
+    public string LastName { get; set; } = default!;
+    public string? Title { get; set; }
+    public string? Department { get; set; }
     public DateTime? BirthDate { get; set; }
-    public string Description { get; set; }
+    public string? Description { get; set; }
 
     public Guid OwnerId { get; set; }
     public Guid OrganizationId { get; set; }
 
-    public ICollection<AccountContact> AccountContacts { get; private set; } = new List<AccountContact>();
-    public ICollection<ContactEmail> Emails { get; private set; } = new List<ContactEmail>();
-    public ICollection<ContactPhone> Phones { get; private set; } = new List<ContactPhone>();
-    public ICollection<ContactAddress> Addresses { get; private set; } = new List<ContactAddress>();
+    public ICollection<AccountContact> AccountContacts { get;} = new List<AccountContact>();
+    public ICollection<ContactEmail> Emails { get;} = new List<ContactEmail>();
+    public ICollection<ContactPhone> Phones { get;} = new List<ContactPhone>();
+    public ICollection<ContactAddress> Addresses { get; } = new List<ContactAddress>();
 
     public Guid CreatedBy { get; set; }
     public DateTime CreatedAt { get; set; }

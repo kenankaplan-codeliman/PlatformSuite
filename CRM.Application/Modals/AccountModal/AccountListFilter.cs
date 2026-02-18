@@ -9,6 +9,6 @@ public class AccountListFilter
 {
     public string? accountName { get; set; }
     public AccountType? accountType { get; set; }
-    public string? industry { get; set; }
+    public string? Industry { get; set; }
     public bool? isActive { get; set; }
 }

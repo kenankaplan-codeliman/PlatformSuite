@@ -1,5 +1,5 @@
 import apiClient from '@/services/api.client';
-import { ServicePath } from '@/constants/service.paths';
+import { ServicePath } from '@/config/service.paths';
 import type { EntityReference, EntitySearchResponse, EntityTypeValue } from '@/types/entity.lookup.types';
 import { EntityType } from '@/types/entity.lookup.types';
 
@@ -28,9 +28,13 @@ export const entitySearchService = {
     const endpointMap: Record<EntityTypeValue, string> = {
       [EntityType.User]: ServicePath.User.Search,
       [EntityType.Lead]: ServicePath.Lead.Search,
-      [EntityType.Account]: '',//ServicePath.Account.Search,
-      [EntityType.Contact]: '',//ServicePath.Contact.Search,
-      [EntityType.Opportunity]: '', //ServicePath.Opportunity.Search,
+      [EntityType.Account]: ServicePath.Account.Search,
+      [EntityType.Contact]: ServicePath.Contact.Search,
+      [EntityType.Opportunity]: '',
+      [EntityType.Email]: '',
+      [EntityType.PhoneCall]: '',
+      [EntityType.Task]: '',
+      [EntityType.Appointment]: ''
     };
 
     const endpoint = endpointMap[entityType];

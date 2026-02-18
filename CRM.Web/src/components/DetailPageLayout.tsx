@@ -70,7 +70,6 @@ export interface DetailPageLayoutProps {
 const DetailPageLayout: React.FC<DetailPageLayoutProps> = ({
   title,
   deleteConfirm,
-  mode,
   isNew,
   isViewMode,
   isEditMode,

@@ -24,7 +24,7 @@ import {
 } from '@ant-design/icons';
 import dayjs from 'dayjs';
 
-import { RoutePaths } from '@/constants/route.paths';
+import { RoutePaths } from '@/config/route.paths';
 import type { EmailActivity } from '@/types/activity.types';
 import { EntityType, type EntityReference } from '@/types/entity.lookup.types';
 import {
@@ -45,7 +45,7 @@ import { toLocalISO } from '@/util/dateHelper';
 
 import { useDetailPage, type DetailPageProps } from '@/hooks/useDetailPage';
 import DetailPageLayout from '@/components/DetailPageLayout';
-import { getEntityIcon } from '@/constants/entity.icons';
+import { getEntityIcon } from '@/config/entity.config';
 
 const { Title } = Typography;
 const { TextArea } = Input;
