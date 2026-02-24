@@ -12,7 +12,10 @@ export const EntityType = {
   Lead: 'lead',
   Account: 'account',
   Contact: 'contact',
+  Product: 'product',
   Opportunity: 'opportunity',
+  OpportunityProduct: 'opportunityProduct',
+
   Email: 'email',
   PhoneCall: 'phoneCall',
   Task: 'task',

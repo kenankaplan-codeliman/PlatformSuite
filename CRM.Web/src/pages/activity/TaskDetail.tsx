@@ -43,12 +43,12 @@ import {
 } from '@/types/activity.types';
 import { useActivityStore } from '@/stores/activity.store';
 import { entitySearchService } from '@/services/entity.search.service';
-import EntityLookup, { EntityTypeConfig } from '@/components/EntityLookup';
+import EntityLookup from '@/components/EntityLookup';
 import { toLocalISO } from '@/util/dateHelper';
 
 import { useDetailPage, type DetailPageProps } from '@/hooks/useDetailPage';
 import DetailPageLayout from '@/components/DetailPageLayout';
-import { getEntityIcon } from '@/config/entity.config';
+import { EntityTypeConfig, getEntityIcon } from '@/config/entity.config';
 
 const { Title, Paragraph } = Typography;
 const { TextArea } = Input;
@@ -137,7 +137,7 @@ const TaskDetail: React.FC<DetailPageProps<TaskActivity>> = (props) => {
       <Card style={{ marginBottom: 16 }}>
         <Row gutter={24} align="middle">
           <Col flex="auto">
-            <Space direction="vertical" size={4}>
+            <Space orientation="vertical" size={4}>
               <Space align="center" wrap>
                 <CheckSquareOutlined style={{ fontSize: 24, color: '#faad14' }} />
                 <Title level={3} style={{ margin: 0 }}>{currentTask?.subject}</Title>

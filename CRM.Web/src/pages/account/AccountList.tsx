@@ -198,6 +198,14 @@ const AccountList: React.FC = () => {
     },
   ];
 
+  const normalizeUrl = (url?: string) => {
+    if (!url) return '';
+    if (url.startsWith('http://') || url.startsWith('https://')) {
+      return url;
+    }
+    return `https://${url}`;
+  };
+
   // Row action menu
   const getRowActionItems = (record: AccountListItem): MenuProps['items'] => [
     {
@@ -278,7 +286,7 @@ const AccountList: React.FC = () => {
       key: 'contact',
       width: 220,
       render: (_: unknown, record: AccountListItem) => (
-        <Space direction="vertical" size={2}>
+        <Space orientation="vertical" size={2}>
           {record.primaryEmail && (
             <Space size={4}>
               <MailOutlined style={{ color: '#8c8c8c', fontSize: 12 }} />
@@ -345,7 +353,7 @@ const AccountList: React.FC = () => {
         url ? (
           <Tooltip title={url}>
             <a
-              href={url}
+              href={normalizeUrl(url)}
               target="_blank"
               rel="noopener noreferrer"
               onClick={(e) => e.stopPropagation()}

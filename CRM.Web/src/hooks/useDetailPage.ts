@@ -136,14 +136,18 @@ export function useDetailPage<TEntity>(
 
   // ─── Form Population ───────────────────────────────────────────────────
 
+
   useEffect(() => {
-    if (currentEntity && !isNew) {
+  if (currentEntity && !isNew) {
+    // sadece edit/create modunda set et
+    if (!isViewMode) {
       form.setFieldsValue(mapEntityToForm(currentEntity));
-    } else if (isNew) {
-      form.resetFields();
-      form.setFieldsValue(defaultFormValues);
     }
-  }, [currentEntity, form, isNew]);
+  } else if (isNew) {
+    form.resetFields();
+    form.setFieldsValue(defaultFormValues);
+  }
+}, [currentEntity, form, isNew, isViewMode]);
 
   // ─── Handlers ───────────────────────────────────────────────────────────
 

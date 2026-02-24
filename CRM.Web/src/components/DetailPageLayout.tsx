@@ -126,7 +126,7 @@ const DetailPageLayout: React.FC<DetailPageLayoutProps> = ({
               <Tooltip title="Geri">
                 <Button icon={<ArrowLeftOutlined />} onClick={onBack} />
               </Tooltip>
-              <Divider type="vertical" />
+              <Divider orientation="vertical" />
               <Title level={4} style={{ margin: 0 }}>
                 {pageTitle}
               </Title>

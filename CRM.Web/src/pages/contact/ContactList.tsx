@@ -231,7 +231,7 @@ const ContactList: React.FC = () => {
       render: (_: unknown, record: ContactListItem) => (
         <Space>
           <Avatar size="small" icon={<UserOutlined />} />
-          <Space direction="vertical" size={0}>
+          <Space orientation="vertical" size={0}>
             <Text strong style={{ cursor: 'pointer', color: '#1890ff' }}>
               {record.fullName}
             </Text>
@@ -273,7 +273,7 @@ const ContactList: React.FC = () => {
       key: 'contact',
       width: 220,
       render: (_: unknown, record: ContactListItem) => (
-        <Space direction="vertical" size={2}>
+        <Space orientation="vertical" size={2}>
           {record.primaryEmail && (
             <Space size={4}>
               <MailOutlined style={{ color: '#8c8c8c', fontSize: 12 }} />

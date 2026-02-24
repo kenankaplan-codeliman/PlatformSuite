@@ -196,17 +196,17 @@ public static class AccountMappingExtensions
             entity.AccountContacts.Remove(accCnt);
         }
 
-        foreach (var accCnt in modal.Contacts)
+        foreach (var modalAccCnt in modal.Contacts)
         {
-            var existingAccCnt = entity.AccountContacts.FirstOrDefault(e => e.Id == accCnt.Id);
+            var existingAccCnt = Guid.Empty.Equals(modalAccCnt.Id) ? null : entity.AccountContacts.FirstOrDefault(e => e.Id == modalAccCnt.Id);
 
             if (existingAccCnt == null)
             {
-                entity.AccountContacts.Add(accCnt.ToEntity(entity.Id));
+                entity.AccountContacts.Add(modalAccCnt.ToEntity(entity.Id));
             }
             else
             {
-                existingAccCnt.UpdateFrom(accCnt);
+                existingAccCnt.UpdateFrom(modalAccCnt);
             }
         }
     }

@@ -27,6 +27,7 @@ import {
   EnvironmentOutlined,
   ClockCircleOutlined,
   TeamOutlined,
+  UserOutlined,
   PlusOutlined,
   DeleteOutlined,
 } from '@ant-design/icons';
@@ -59,7 +60,9 @@ import ActivityListView from '@/components/ActivityListView';
 
 import { useDetailPage, type DetailPageProps } from '@/hooks/useDetailPage';
 import DetailPageLayout from '@/components/DetailPageLayout';
-import { EntityType } from '@/types/entity.lookup.types';
+import { EntityType, type EntityReference } from '@/types/entity.lookup.types';
+import EntityLookup from '@/components/EntityLookup';
+import { entitySearchService } from '@/services/entity.search.service';
 
 const { Title, Text, Paragraph } = Typography;
 const { TextArea } = Input;
@@ -85,12 +88,33 @@ const AccountDetail: React.FC<DetailPageProps<AccountDetailItem>> = (props) => {
       clearCurrentEntity: () => store.setCurrentAccount(null),
 
       // Entity → Form dönüşümü
-      mapEntityToForm: (entity) => ({ ...entity }),
+      mapEntityToForm: (entity) => ({
+        ...entity,
+        // AccountContactRef → form satırı: EntityLookup'ın anlayacağı EntityReference formatına çevir
+        contacts: (entity.contacts ?? []).map((c) => ({
+          id: c.id,
+          contact: c.contactId
+            ? ({ id: c.contactId, name: c.contactName, entityType: EntityType.Contact } as EntityReference)
+            : null,
+          role: c.role,
+          isPrimary: c.isPrimary,
+        })),
+      }),
 
       // Form → Entity dönüşümü
       mapFormToEntity: (values, id) => ({
         ...values,
         id: id || undefined,
+        // Form satırı → AccountContactRef: EntityReference'ı geri çevir
+        contacts: (values.contacts ?? [])
+          .filter((c: any) => c.contact != null)
+          .map((c: any) => ({
+            id: c.id,
+            contactId: c.contact.id,
+            contactName: c.contact.name,
+            role: c.role ?? undefined,
+            isPrimary: c.isPrimary ?? false,
+          })),
       }),
 
       // Yeni kayıt default'ları
@@ -118,7 +142,7 @@ const AccountDetail: React.FC<DetailPageProps<AccountDetailItem>> = (props) => {
       <Card style={{ marginBottom: 16 }}>
         <Row gutter={24} align="middle">
           <Col flex="auto">
-            <Space direction="vertical" size={4}>
+            <Space orientation="vertical" size={4}>
               <Space align="center">
                 <Title level={3} style={{ margin: 0 }}>
                   {currentAccount?.accountName}
@@ -291,7 +315,7 @@ const AccountDetail: React.FC<DetailPageProps<AccountDetailItem>> = (props) => {
                       title={<Space><TeamOutlined /><span>İlişkili Kişiler</span></Space>}
                       style={{ marginBottom: 16 }}
                     >
-                      <Table
+                      <Table<AccountContactRef>
                         dataSource={currentAccount.contacts}
                         rowKey={(record) => record.id || record.contactId}
                         pagination={false}
@@ -301,19 +325,27 @@ const AccountDetail: React.FC<DetailPageProps<AccountDetailItem>> = (props) => {
                             title: 'Kişi',
                             dataIndex: 'contactName',
                             key: 'contactName',
+                            width: '42%',
+                            render: (name: string) => (
+                              <Space size={4}>
+                                <UserOutlined style={{ color: '#8c8c8c' }} />
+                                <Text>{name}</Text>
+                              </Space>
+                            ),
                           },
                           {
                             title: 'Rol',
                             dataIndex: 'role',
                             key: 'role',
-                            render: (role: string) => role || '-',
+                            width: '42%',
+                            render: (role: string) => role || <Text type="secondary">-</Text>,
                           },
                           {
                             title: 'Birincil',
                             dataIndex: 'isPrimary',
                             key: 'isPrimary',
-                            width: 80,
                             align: 'center',
+                            width: '16%',
                             render: (isPrimary: boolean) => (
                               <Badge status={isPrimary ? 'success' : 'default'} text={isPrimary ? 'Evet' : 'Hayır'} />
                             ),
@@ -689,6 +721,108 @@ const AccountDetail: React.FC<DetailPageProps<AccountDetailItem>> = (props) => {
                     icon={<PlusOutlined />}
                   >
                     Adres Ekle
+                  </Button>
+                </>
+              )}
+            </Form.List>
+          </Card>
+        </Col>
+
+        {/* İlişkili Kişiler */}
+        <Col span={24}>
+          <Card
+            title={<Space><TeamOutlined /><span>İlişkili Kişiler</span></Space>}
+            style={{ marginBottom: 16 }}
+          >
+            <Form.List name="contacts">
+              {(fields, { add, remove }) => (
+                <>
+                  <Row
+                    gutter={8}
+                    align="middle"
+                    style={{ marginBottom: 4, borderBottom: '1px solid #d9d9d9' }}
+                  >
+                    <Col span={10}>
+                      <Text strong>Kişi</Text>
+                    </Col>
+                    <Col span={10}>
+                      <Text strong>Rol</Text>
+                    </Col>
+                    <Col span={2}>
+                      <Text strong>Birincil</Text>
+                    </Col>
+                    <Col span={2}>
+                      <Text strong>Sil</Text>
+                    </Col>
+                  </Row>
+
+                  {fields.map(({ key, name, ...restField }) => (
+                    <Row key={key} gutter={8} align="middle" style={{ marginBottom: 4 }}>
+                      {/* Mevcut junction kaydının ID'si */}
+                      <Form.Item {...restField} name={[name, 'id']} hidden>
+                        <Input type="hidden" />
+                      </Form.Item>
+
+                      {/* Kişi seçimi — EntityLookup Contact tipinde, tekli seçim */}
+                      <Col span={10}>
+                        <Form.Item
+                          {...restField}
+                          name={[name, 'contact']}
+                          rules={[{ required: true, message: 'Kişi seçimi gereklidir' }]}
+                          style={{ marginBottom: 0 }}
+                        >
+                          <EntityLookup
+                            onSearch={entitySearchService.search}
+                            entityTypes={[EntityType.Contact]}
+                            multiple={false}
+                            modalTitle="Kişi seçin..."
+                          />
+                        </Form.Item>
+                      </Col>
+
+                      {/* Rol */}
+                      <Col span={10}>
+                        <Form.Item
+                          {...restField}
+                          name={[name, 'role']}
+                          style={{ marginBottom: 0 }}
+                        >
+                          <Input placeholder="Rol girin (opsiyonel)" />
+                        </Form.Item>
+                      </Col>
+
+                      {/* Birincil */}
+                      <Col span={2}>
+                        <Form.Item
+                          {...restField}
+                          name={[name, 'isPrimary']}
+                          valuePropName="checked"
+                          initialValue={false}
+                          style={{ marginBottom: 0 }}
+                        >
+                          <Switch checkedChildren="Evet" unCheckedChildren="Hayır" size="small" />
+                        </Form.Item>
+                      </Col>
+
+                      <Col span={2}>
+                        <Button
+                          type="text"
+                          danger
+                          icon={<DeleteOutlined />}
+                          onClick={() => remove(name)}
+                          size="small"
+                        />
+                      </Col>
+                    </Row>
+                  ))}
+
+                  <Button
+                    type="dashed"
+                    onClick={() => add({ contact: null, role: undefined, isPrimary: false })}
+                    block
+                    icon={<PlusOutlined />}
+                  >
+                    Kişi Ekle
                   </Button>
                 </>
               )}

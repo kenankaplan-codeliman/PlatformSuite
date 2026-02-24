@@ -62,8 +62,9 @@ CREATE TABLE account_contact (
         ON DELETE CASCADE
 );
 
-CREATE UNIQUE INDEX ix_account_contact_account_contact_unique 
-    ON account_contact(account_id, contact_id);
+CREATE UNIQUE INDEX ix_account_contact_account_contact_unique
+ON account_contact(account_id, contact_id)
+WHERE is_deleted = false;
 
 
 CREATE TABLE account_email (

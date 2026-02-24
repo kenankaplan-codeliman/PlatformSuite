@@ -151,7 +151,7 @@ const ContactDetail: React.FC<DetailPageProps<ContactDetailItem>> = (props) => {
             <Avatar size={64} icon={<UserOutlined />} />
           </Col>
           <Col flex="auto">
-            <Space direction="vertical" size={4}>
+            <Space orientation="vertical" size={4}>
               <Space align="center">
                 <Title level={3} style={{ margin: 0 }}>
                   {fullName}
@@ -332,6 +332,7 @@ const ContactDetail: React.FC<DetailPageProps<ContactDetailItem>> = (props) => {
                             title: 'Firma',
                             dataIndex: 'accountName',
                             key: 'accountName',
+                            width: '42%',
                             render: (name: string) => (
                               <Space size={4}>
                                 <BankOutlined style={{ color: '#8c8c8c' }} />
@@ -343,14 +344,15 @@ const ContactDetail: React.FC<DetailPageProps<ContactDetailItem>> = (props) => {
                             title: 'Rol',
                             dataIndex: 'role',
                             key: 'role',
+                            width: '42%',
                             render: (role: string) => role || <Text type="secondary">-</Text>,
                           },
                           {
                             title: 'Birincil',
                             dataIndex: 'isPrimary',
                             key: 'isPrimary',
-                            width: 80,
                             align: 'center',
+                            width: '16%',
                             render: (isPrimary: boolean) => (
                               <Badge
                                 status={isPrimary ? 'success' : 'default'}
@@ -742,33 +744,43 @@ const ContactDetail: React.FC<DetailPageProps<ContactDetailItem>> = (props) => {
             <Form.List name="accountContacts">
               {(fields, { add, remove }) => (
                 <>
+                  <Row
+                    gutter={8}
+                    align="middle"
+                    style={{ marginBottom: 4, borderBottom: "1px solid #d9d9d9" }}
+                  >
+                    <Col span={10}>
+                      <Text strong>Firma</Text>
+                    </Col>
+                    <Col span={10}>
+                      <Text strong>Rol</Text>
+                    </Col>
+                    <Col span={2}>
+                      <Text strong>Birincil</Text>
+                    </Col>
+                    <Col span={2}>
+                      <Text strong>Sil</Text>
+                    </Col>
+                  </Row>
+
                   {fields.map(({ key, name, ...restField }) => (
-                    <Card
-                      key={key}
-                      size="small"
-                      style={{ marginBottom: 8 }}
-                      extra={
-                        <Button
-                          type="text"
-                          danger
-                          icon={<DeleteOutlined />}
-                          onClick={() => remove(name)}
-                          size="small"
-                        />
-                      }
-                    >
-                      <Row gutter={8} align="middle">
+                        <Row
+                          key={key}
+                          gutter={8}
+                          align="middle"
+                          style={{ marginBottom: 4 }}
+                        >
                         {/* Mevcut junction kaydının ID'si */}
                         <Form.Item {...restField} name={[name, 'id']} hidden>
                           <Input type="hidden" />
                         </Form.Item>
 
                         {/* Firma seçimi — EntityLookup Account tipinde, tekli seçim */}
-                        <Col span={12}>
+                        <Col span={10}>
                           <Form.Item
                             {...restField}
                             name={[name, 'account']}
-                            label="Firma"
+                            // label="Firma"
                             rules={[{ required: true, message: 'Firma seçimi gereklidir' }]}
                             style={{ marginBottom: 0 }}
                           >
@@ -782,11 +794,11 @@ const ContactDetail: React.FC<DetailPageProps<ContactDetailItem>> = (props) => {
                         </Col>
 
                         {/* Rol */}
-                        <Col span={8}>
+                        <Col span={10}>
                           <Form.Item
                             {...restField}
                             name={[name, 'role']}
-                            label="Rol"
+                            // label="Rol"
                             style={{ marginBottom: 0 }}
                           >
                             <Input placeholder="Rol girin (opsiyonel)" />
@@ -794,11 +806,11 @@ const ContactDetail: React.FC<DetailPageProps<ContactDetailItem>> = (props) => {
                         </Col>
 
                         {/* Birincil */}
-                        <Col span={4}>
+                        <Col span={2}>
                           <Form.Item
                             {...restField}
                             name={[name, 'isPrimary']}
-                            label="Birincil"
+                            // label="Birincil"
                             valuePropName="checked"
                             initialValue={false}
                             style={{ marginBottom: 0 }}
@@ -806,8 +818,18 @@ const ContactDetail: React.FC<DetailPageProps<ContactDetailItem>> = (props) => {
                             <Switch checkedChildren="Evet" unCheckedChildren="Hayır" size="small" />
                           </Form.Item>
                         </Col>
+
+                        <Col span={2}>
+                        <Button
+                          type="text"
+                          danger
+                          icon={<DeleteOutlined />}
+                          onClick={() => remove(name)}
+                          size="small"
+                        />
+                        </Col>
                       </Row>
-                    </Card>
+                    
                   ))}
                   <Button
                     type="dashed"

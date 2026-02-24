@@ -7,6 +7,7 @@ export const ControllerPaths = {
   LeadPath: `${ServiceBasePath}/api/lead`,
   AccountPath: `${ServiceBasePath}/api/account`,
   ContactPath: `${ServiceBasePath}/api/contact`,
+  OpportunityPath: `${ServiceBasePath}/api/opportunity`,
   ActivityPath: `${ServiceBasePath}/api/activity`,
 } as const;
 
@@ -83,8 +84,18 @@ export const ServicePath = {
         Update: `${ControllerPaths.ContactPath}/update`,
         Delete: `${ControllerPaths.ContactPath}/delete`,
         BulkDelete: `${ControllerPaths.ContactPath}/bulk-delete`,
-    }
+    },
 
+    Opportunity:{
+        List: `${ControllerPaths.OpportunityPath}/list`,
+        Search: `${ControllerPaths.OpportunityPath}/search`,
+        Get: `${ControllerPaths.OpportunityPath}/get`,
+        Create: `${ControllerPaths.OpportunityPath}/create`,
+        Update: `${ControllerPaths.OpportunityPath}/update`,
+        Delete: `${ControllerPaths.OpportunityPath}/delete`,
+        BulkDelete: `${ControllerPaths.OpportunityPath}/bulk-delete`,
+        Export: `${ControllerPaths.OpportunityPath}/export`,
+    }
 
 };
 
