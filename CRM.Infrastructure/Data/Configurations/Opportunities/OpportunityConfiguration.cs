@@ -12,7 +12,6 @@ public class OpportunityConfiguration : IEntityTypeConfiguration<Opportunity>
 
         // Primary Key
         builder.HasKey(x => x.Id);
-
         builder.Property(x => x.Id)
             .HasColumnName("id");
 
@@ -57,6 +56,13 @@ public class OpportunityConfiguration : IEntityTypeConfiguration<Opportunity>
             .HasColumnName("source")
             .HasConversion<string>()
             .HasMaxLength(50);
+
+        builder.Property(x => x.AccountId)
+            .HasColumnName("account_id")
+            .IsRequired();
+
+        builder.Property(x => x.ContactId)
+            .HasColumnName("contact_id");
 
         // IBaseEntity
         builder.Property(x => x.IsActive)

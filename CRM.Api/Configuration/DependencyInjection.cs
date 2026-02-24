@@ -34,6 +34,7 @@ public static class DependencyInjection
         services.AddScoped<IActivityRepository, ActivityRepository>();
         services.AddScoped<IAccountRepository, AccountRepository>();
         services.AddScoped<IContactRepository, ContactRepository>();
+        services.AddScoped<IOpportunityRepository, OpportunityRepository>();
 
 
         //Command Handler
@@ -44,6 +45,7 @@ public static class DependencyInjection
         services.AddScoped<UserCommandHandler>();
         services.AddScoped<AccountCommandHandler>();
         services.AddScoped<ContactCommandHandler>();
+        services.AddScoped<OpportunityCommandHandler>();
 
         return services;
     }

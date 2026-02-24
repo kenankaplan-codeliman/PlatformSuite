@@ -8,6 +8,6 @@ public class LeadListRequest
 {
   public int Page { get; set; }
   public int PageSize { get; set; }
-  public LeadListFilter filters { get; set; }= new LeadListFilter();
+  public LeadListFilter Filters { get; set; }= new LeadListFilter();
     
 }

@@ -6,5 +6,5 @@ public class ContactListRequest
 {
     public int Page { get; set; }
     public int PageSize { get; set; }
-    public ContactListFilters filters { get; set; } = new();
+    public ContactListFilters Filters { get; set; } = new();
 }

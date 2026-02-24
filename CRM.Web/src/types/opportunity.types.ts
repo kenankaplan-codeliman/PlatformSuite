@@ -5,26 +5,26 @@
 // =====================================================
 
 export const OpportunityStage = {
-  Prospect: 'Prospect',
-  Qualification: 'Qualification',
-  Proposal: 'Proposal',
-  Negotiation: 'Negotiation',
-  Won: 'Won',
-  Lost: 'Lost',
+  Prospect: 'prospect',
+  Qualification: 'qualification',
+  Proposal: 'proposal',
+  Negotiation: 'negotiation',
+  Won: 'won',
+  Lost: 'lost',
 } as const;
 
 export type OpportunityStageValue = (typeof OpportunityStage)[keyof typeof OpportunityStage];
 
 export const OpportunitySource = {
-  Web: 'Web',
-  Referral: 'Referral',
-  ColdCall: 'ColdCall',
-  EmailCampaign: 'EmailCampaign',
-  Event: 'Event',
-  SocialMedia: 'SocialMedia',
-  Partner: 'Partner',
-  ExistingCustomer: 'ExistingCustomer',
-  Other: 'Other',
+  Web: 'web',
+  Referral: 'referral',
+  ColdCall: 'coldCall',
+  EmailCampaign: 'emailCampaign',
+  Event: 'event',
+  SocialMedia: 'socialMedia',
+  Partner: 'partner',
+  ExistingCustomer: 'existingCustomer',
+  Other: 'other',
 } as const;
 
 export type OpportunitySourceValue = (typeof OpportunitySource)[keyof typeof OpportunitySource];

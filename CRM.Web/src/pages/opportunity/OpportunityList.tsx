@@ -16,7 +16,6 @@ import {
   Tag,
   Badge,
   Select,
-  Divider,
 } from 'antd';
 import type { MenuProps } from 'antd';
 import {
@@ -33,7 +32,6 @@ import {
   BankOutlined,
   UserOutlined,
   CalendarOutlined,
-  DollarOutlined,
 } from '@ant-design/icons';
 import type { OpportunityListItem } from '@/types/opportunity.types';
 import {
@@ -282,9 +280,7 @@ const OpportunityList: React.FC = () => {
   }, [fetchOpportunities]);
 
   // Stage'e göre gruplama
-  const groupedByStage = KANBAN_STAGE_ORDER.reduce<
-    Record<string, OpportunityListItem[]>
-  >((acc, stage) => {
+  const groupedByStage = KANBAN_STAGE_ORDER.reduce<Record<string, OpportunityListItem[]>>((acc, stage) => {
     acc[stage] = opportunities.filter((o) => o.stage === stage);
     return acc;
   }, {} as Record<string, OpportunityListItem[]>);
@@ -365,12 +361,6 @@ const OpportunityList: React.FC = () => {
   const hasActiveFilters =
     !!filters.name || !!filters.stage || !!filters.accountId || !!filters.source;
 
-  // Özet istatistikler
-  const totalValue = opportunities.reduce((s, o) => s + o.estimatedValue, 0);
-  const wonValue = opportunities
-    .filter((o) => o.stage === OpportunityStage.Won)
-    .reduce((s, o) => s + (o.actualValue ?? o.estimatedValue), 0);
-
   return (
     <div style={{ padding: 24 }}>
       {/* Page Header */}
@@ -390,71 +380,6 @@ const OpportunityList: React.FC = () => {
           </Button>
         </Space>
       </Flex>
-
-      {/* Özet Kartları */}
-      <Row gutter={12} style={{ marginBottom: 16 }}>
-        <Col span={6}>
-          <Card size="small" styles={{ body: { padding: '12px 16px' } }}>
-            <Flex align="center" gap={8}>
-              <RiseOutlined style={{ color: '#1890ff', fontSize: 20 }} />
-              <div>
-                <Text type="secondary" style={{ fontSize: 12 }}>Toplam Fırsat</Text>
-                <div>
-                  <Text strong style={{ fontSize: 16 }}>{opportunities.length}</Text>
-                </div>
-              </div>
-            </Flex>
-          </Card>
-        </Col>
-        <Col span={6}>
-          <Card size="small" styles={{ body: { padding: '12px 16px' } }}>
-            <Flex align="center" gap={8}>
-              <DollarOutlined style={{ color: '#52c41a', fontSize: 20 }} />
-              <div>
-                <Text type="secondary" style={{ fontSize: 12 }}>Toplam Değer</Text>
-                <div>
-                  <Text strong style={{ fontSize: 14, color: '#52c41a' }}>
-                    {formatCurrency(totalValue)}
-                  </Text>
-                </div>
-              </div>
-            </Flex>
-          </Card>
-        </Col>
-        <Col span={6}>
-          <Card size="small" styles={{ body: { padding: '12px 16px' } }}>
-            <Flex align="center" gap={8}>
-              <DollarOutlined style={{ color: '#faad14', fontSize: 20 }} />
-              <div>
-                <Text type="secondary" style={{ fontSize: 12 }}>Kazanılan</Text>
-                <div>
-                  <Text strong style={{ fontSize: 14, color: '#faad14' }}>
-                    {formatCurrency(wonValue)}
-                  </Text>
-                </div>
-              </div>
-            </Flex>
-          </Card>
-        </Col>
-        <Col span={6}>
-          <Card size="small" styles={{ body: { padding: '12px 16px' } }}>
-            <Flex align="center" gap={8}>
-              <RiseOutlined style={{ color: '#722ed1', fontSize: 20 }} />
-              <div>
-                <Text type="secondary" style={{ fontSize: 12 }}>Aktif Fırsat</Text>
-                <div>
-                  <Text strong style={{ fontSize: 16 }}>
-                    {opportunities.filter((o) => o.isActive &&
-                      o.stage !== OpportunityStage.Won &&
-                      o.stage !== OpportunityStage.Lost
-                    ).length}
-                  </Text>
-                </div>
-              </div>
-            </Flex>
-          </Card>
-        </Col>
-      </Row>
 
       {/* Filtre Kartı */}
       <Card style={{ marginBottom: 16 }} styles={{ body: { padding: '12px 24px' } }}>

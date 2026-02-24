@@ -25,7 +25,7 @@ public class AccountController : ControllerBase
     [PrivilegeAuthorize(PrivilegeCodes.AccountPrivilegeCodes.Read)]
     public async Task<IActionResult> List(AccountListRequest request)
     {
-        var response = await accountCommandHandler.List(request.filters, new PaginationInfo(request.Page, request.PageSize));
+        var response = await accountCommandHandler.List(request.Filters, new PaginationInfo(request.Page, request.PageSize));
         return Ok(response);
     }
 

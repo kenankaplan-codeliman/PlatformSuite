@@ -31,7 +31,7 @@ public class ActivityController : ControllerBase
     [PrivilegeAuthorize(PrivilegeCodes.ActivityPrivilegeCodes.Read)]
     public async Task<IActionResult> List(ActivityListRequest request)
     {
-        var response = await activityCommandHandler.List(request.filters, new PaginationInfo(request.page, request.pageSize));
+        var response = await activityCommandHandler.List(request.Filters, new PaginationInfo(request.Page, request.PageSize));
         return Ok(response);
     }
 

@@ -14,6 +14,14 @@ namespace CRM.Domain.Authorization
             public const string Update = "User.Update";
             public const string Delete = "User.Delete";
         }
+        public static class ActivityPrivilegeCodes
+        {
+            public const string Read = "Activity.Read";
+            public const string Create = "Activity.Create";
+            public const string Update = "Activity.Update";
+            public const string Delete = "Activity.Delete";
+            public const string UpdateStatus = "Activity.UpdateStatus";
+        }
 
         public static class LeadPrivilegeCodes
         {
@@ -39,37 +47,15 @@ namespace CRM.Domain.Authorization
             public const string Delete = "Contact.Delete";
         }
 
-        public static class ActivityPrivilegeCodes
+        public static class OpportunityPrivilegeCodes
         {
-            public const string Read = "Activity.Read";
-            public const string Create = "Activity.Create";
-            public const string Update = "Activity.Update";
-            public const string Delete = "Activity.Delete";
-            public const string UpdateStatus = "Activity.UpdateStatus";
-
-            /*
-            public const string AppointmentRead = "Appointment.Read";
-            public const string AppointmentCreate = "Appointment.Create";
-            public const string AppointmentUpdate = "Appointment.Update";
-            public const string AppointmentDelete = "Appointment.Delete";
-
-            public const string PhoneCallRead = "PhoneCall.Read";
-            public const string PhoneCallCreate = "PhoneCall.Create";
-            public const string PhoneCallUpdate = "PhoneCall.Update";
-            public const string PhoneCallDelete = "PhoneCall.Delete";
-
-            public const string TaskRead = "Task.Read";
-            public const string TaskCreate = "Task.Create";
-            public const string TaskUpdate = "Task.Update";
-            public const string TaskDelete = "Task.Delete";
-
-            public const string EmailRead = "Email.Read";
-            public const string EmailCreate = "Email.Create";
-            public const string EmailUpdate = "Email.Update";
-            public const string EmailDelete = "Email.Delete";
-            */
-
+            public const string Read = "Opportunity.Read";
+            public const string Create = "Opportunity.Create";
+            public const string Update = "Opportunity.Update";
+            public const string Delete = "Opportunity.Delete";
         }
+
+
     }
 
 }

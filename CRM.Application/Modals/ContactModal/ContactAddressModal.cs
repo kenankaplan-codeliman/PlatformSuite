@@ -4,7 +4,7 @@ namespace CRM.Application.Modals.ContactModal;
 
 public class ContactAddressModal
 {
-    public string? Id { get; set; }
+    public Guid Id { get; set; }
     public string AddressLine1 { get; set; } = default!;
     public string? AddressLine2 { get; set; }
     public string? City { get; set; }

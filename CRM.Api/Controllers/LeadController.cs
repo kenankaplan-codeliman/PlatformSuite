@@ -33,7 +33,7 @@ public class LeadController : ControllerBase
     [PrivilegeAuthorize(PrivilegeCodes.LeadPrivilegeCodes.Read)]
     public async Task<IActionResult> List(LeadListRequest request)
     {
-       var response =  await leadCommandHandler.List(request.filters, new PaginationInfo(request.Page, request.PageSize));
+       var response =  await leadCommandHandler.List(request.Filters, new PaginationInfo(request.Page, request.PageSize));
         return Ok(response);
     }
 

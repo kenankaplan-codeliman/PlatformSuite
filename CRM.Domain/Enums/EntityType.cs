@@ -8,6 +8,6 @@ namespace CRM.Domain.Enums
     [JsonConverter(typeof(JsonStringEnumConverter))]
     public enum EntityType
     {
-        None, User, Account, Contact, Lead, Opportunity
+        None, User, Account, Contact, Lead, Product, Opportunity, OpportunityProduct
     }
 }

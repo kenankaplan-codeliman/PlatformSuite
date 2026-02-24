@@ -36,7 +36,7 @@ public static class ContactMappingExtensions
     {
         return new ContactEmailModal
         {
-            Id = entity.Id.ToString(),
+            Id = entity.Id,
             Email = entity.Email,
             Type = entity.Type,
             IsPrimary = entity.IsPrimary
@@ -47,7 +47,7 @@ public static class ContactMappingExtensions
     {
         return new ContactPhoneModal
         {
-            Id = entity.Id.ToString(),
+            Id = entity.Id,
             PhoneNumber = entity.PhoneNumber,
             Type = entity.Type,
             IsPrimary = entity.IsPrimary
@@ -58,7 +58,7 @@ public static class ContactMappingExtensions
     {
         return new ContactAddressModal
         {
-            Id = entity.Id.ToString(),
+            Id = entity.Id,
             AddressLine1 = entity.AddressLine1,
             AddressLine2 = entity.AddressLine2,
             City = entity.City,
@@ -104,7 +104,7 @@ public static class ContactMappingExtensions
     private static void SyncEmails(Contact entity, ContactDetailItem modal)
     {
         var emailsToRemove = entity.Emails
-            .Where(e => !modal.Emails.Any(m => m.Id == e.Id.ToString()))
+            .Where(e => !modal.Emails.Any(m => m.Id == e.Id))
             .ToList();
 
         foreach (var email in emailsToRemove)
@@ -112,8 +112,10 @@ public static class ContactMappingExtensions
 
         foreach (var modalEmail in modal.Emails)
         {
-            var existingEmail = entity.Emails
-                .FirstOrDefault(e => e.Id.ToString() == modalEmail.Id);
+            var existingEmail = !Guid.Empty.Equals(modalEmail.Id)
+                ? entity.Emails.FirstOrDefault(e => e.Id == modalEmail.Id)
+                : null;
+
 
             if (existingEmail == null)
             {
@@ -129,7 +131,7 @@ public static class ContactMappingExtensions
     private static void SyncPhones(Contact entity, ContactDetailItem modal)
     {
         var phonesToRemove = entity.Phones
-            .Where(e => !modal.Phones.Any(m => m.Id == e.Id.ToString()))
+            .Where(e => !modal.Phones.Any(m => m.Id == e.Id))
             .ToList();
 
         foreach (var phone in phonesToRemove)
@@ -137,9 +139,10 @@ public static class ContactMappingExtensions
 
         foreach (var modalPhone in modal.Phones)
         {
-            var existingPhone = entity.Phones
-                .FirstOrDefault(e => e.Id.ToString() == modalPhone.Id);
-
+            var existingPhone = !Guid.Empty.Equals(modalPhone.Id)
+               ? entity.Phones.FirstOrDefault(e => e.Id == modalPhone.Id)
+               : null;
+            
             if (existingPhone == null)
             {
                 entity.Phones.Add(modalPhone.ToEntity(entity.Id));
@@ -154,7 +157,7 @@ public static class ContactMappingExtensions
     private static void SyncAddresses(Contact entity, ContactDetailItem modal)
     {
         var addressesToRemove = entity.Addresses
-            .Where(e => !modal.Addresses.Any(m => m.Id == e.Id.ToString()))
+            .Where(e => !modal.Addresses.Any(m => m.Id == e.Id))
             .ToList();
 
         foreach (var address in addressesToRemove)
@@ -162,8 +165,9 @@ public static class ContactMappingExtensions
 
         foreach (var modalAddress in modal.Addresses)
         {
-            var existingAddress = entity.Addresses
-                .FirstOrDefault(e => e.Id.ToString() == modalAddress.Id);
+            var existingAddress = !Guid.Empty.Equals(modalAddress.Id)
+              ? entity.Addresses.FirstOrDefault(e => e.Id == modalAddress.Id)
+              : null;
 
             if (existingAddress == null)
             {
@@ -187,7 +191,9 @@ public static class ContactMappingExtensions
 
         foreach (var modalAccCnt in modal.AccountContacts)
         {
-            var existingAccCnt = Guid.Empty.Equals(modalAccCnt.Id) ? null :  entity.AccountContacts.FirstOrDefault(e => e.Id == modalAccCnt.Id);
+            var existingAccCnt = !Guid.Empty.Equals(modalAccCnt.Id)
+              ? entity.AccountContacts.FirstOrDefault(e => e.Id == modalAccCnt.Id)
+              : null;
 
             if (existingAccCnt == null)
             {

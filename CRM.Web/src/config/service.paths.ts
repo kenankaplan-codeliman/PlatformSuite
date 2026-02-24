@@ -1,7 +1,6 @@
-import Search from "antd/es/transfer/search";
-
 export const ServiceBasePath = import.meta.env.VITE_API_BASE_URL;
 export const ControllerPaths = {
+  Dashboard:`${ServiceBasePath}/dashboard`,
   AuthPath: `${ServiceBasePath}/auth`,
   UserPath: `${ServiceBasePath}/api/user`,
   LeadPath: `${ServiceBasePath}/api/lead`,
@@ -13,7 +12,14 @@ export const ControllerPaths = {
 
 
 export const ServicePath = {
-    // Authentication
+    
+    Dashboard: {
+        LeadStats: `${ControllerPaths.Dashboard}/lead-stats`,
+        AccountStats: `${ControllerPaths.Dashboard}/account-stats`,
+        OpportunityStats: `${ControllerPaths.Dashboard}/opportunity-stats`,
+        RevenueStats: `${ControllerPaths.Dashboard}/revenue-stats`,
+    },
+
     Auth: {
         Login: `${ControllerPaths.AuthPath}/login`,
         MicrosoftCallback: `${ControllerPaths.AuthPath}/microsoft/callback`,
@@ -22,7 +28,7 @@ export const ServicePath = {
         Me: `${ControllerPaths.AuthPath}/me`,
     },
 
-    // Leads
+    
     Lead: {
         List: `${ControllerPaths.LeadPath}/list`,
         Search: `${ControllerPaths.LeadPath}/search`,

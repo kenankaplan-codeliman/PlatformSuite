@@ -27,7 +27,7 @@ public class ContactController : ControllerBase
     [PrivilegeAuthorize(PrivilegeCodes.ContactPrivilegeCodes.Read)]
     public async Task<IActionResult> List(ContactListRequest request)
     {
-        var response = await contactCommandHandler.List(request.filters, new PaginationInfo(request.Page, request.PageSize));
+        var response = await contactCommandHandler.List(request.Filters, new PaginationInfo(request.Page, request.PageSize));
         return Ok(response);
     }
 
@@ -61,6 +61,7 @@ public class ContactController : ControllerBase
 
 
     [HttpPost("update")]
+    [ProducesResponseType(typeof(ContactDetailItem), 200)]
     [PrivilegeAuthorize(PrivilegeCodes.ContactPrivilegeCodes.Update)]
     public async Task<IActionResult> Update(ContactDetailItem contactDetail)
     {

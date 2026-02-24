@@ -55,7 +55,7 @@ export const useOpportunityStore = create<OpportunityState>()(
       opportunities: [],
       hasMore: false,
       page: 1,
-      pageSize: 50,       // Kanban board için daha fazla kayıt çek
+      pageSize: 50,       
       filters: initialFilters,
       selectedRowKeys: [],
       currentOpportunity: null,
