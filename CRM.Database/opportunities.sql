@@ -1,7 +1,6 @@
 -- -----------------------------------------------------------------------------
 -- TABLE: opportunity
 -- -----------------------------------------------------------------------------
-drop table opportunity;
 CREATE TABLE opportunity (
     id                  UUID            NOT NULL DEFAULT gen_random_uuid(),
     name                VARCHAR(250)    NOT NULL,
@@ -86,14 +85,8 @@ CREATE TABLE opportunity_product (
 
     -- Hesaplanan toplam (opsiyonel — uygulama katmanında da hesaplanabilir)
     -- total_price = MAX(0, quantity * unit_price - discount_amount - quantity * unit_price * discount_percent / 100)
-    total_price         NUMERIC(18, 2)  GENERATED ALWAYS AS (
-                            GREATEST(
-                                0,
-                                quantity * unit_price
-                                - discount_amount
-                                - quantity * unit_price * discount_percent / 100.0
-                            )
-                        ) STORED,
+    total_price         NUMERIC(18, 2)   NOT NULL DEFAULT 0
+                            CONSTRAINT chk_op_total_price  CHECK (total_price >= 0),
 
     -- IBaseEntity
     is_active           BOOLEAN         NOT NULL DEFAULT TRUE,
