@@ -14,8 +14,6 @@ export const EntityType = {
   Contact: 'contact',
   Product: 'product',
   Opportunity: 'opportunity',
-  OpportunityProduct: 'opportunityProduct',
-
   Email: 'email',
   PhoneCall: 'phoneCall',
   Task: 'task',
@@ -31,8 +29,6 @@ export interface EntityReference {
   email?: string;
   phone?: string;
 }
-
-
 
 // Arama sonucu response
 export interface EntitySearchResponse {

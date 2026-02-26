@@ -1,11 +1,12 @@
 export const ServiceBasePath = import.meta.env.VITE_API_BASE_URL;
 export const ControllerPaths = {
-  Dashboard:`${ServiceBasePath}/dashboard`,
   AuthPath: `${ServiceBasePath}/auth`,
+  Dashboard:`${ServiceBasePath}/api/dashboard`,
   UserPath: `${ServiceBasePath}/api/user`,
   LeadPath: `${ServiceBasePath}/api/lead`,
   AccountPath: `${ServiceBasePath}/api/account`,
   ContactPath: `${ServiceBasePath}/api/contact`,
+  ProductPath: `${ServiceBasePath}/api/product`,
   OpportunityPath: `${ServiceBasePath}/api/opportunity`,
   ActivityPath: `${ServiceBasePath}/api/activity`,
 } as const;
@@ -90,6 +91,10 @@ export const ServicePath = {
         Update: `${ControllerPaths.ContactPath}/update`,
         Delete: `${ControllerPaths.ContactPath}/delete`,
         BulkDelete: `${ControllerPaths.ContactPath}/bulk-delete`,
+    },
+
+    Product:{
+        Search: `${ControllerPaths.ProductPath}/search`,
     },
 
     Opportunity:{

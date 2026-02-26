@@ -4,6 +4,7 @@ import {
   EllipsisOutlined, DashboardOutlined, BankOutlined,
   SettingOutlined, BarChartOutlined,
   CrownOutlined, ShoppingOutlined, AppstoreOutlined,
+  ProductOutlined,
 } from '@ant-design/icons';
 
 import { EntityType, type EntityTypeValue } from '@/types/entity.lookup.types';
@@ -31,18 +32,13 @@ export const EntityTypeConfig: Record<EntityTypeValue, { label: string; icon: Re
   },
   [EntityType.Product]: {
     label: 'Ürün',
-    icon: <ShoppingOutlined />,
+    icon: <ProductOutlined />,
     color: '#13c2c2',
   },
   [EntityType.Opportunity]: {
     label: 'Fırsat',
     icon: <CrownOutlined />,
     color: '#eb2f96',
-  },
-  [EntityType.OpportunityProduct]: {
-    label: 'Fırsat Kalemi',
-    icon: <AppstoreOutlined />,
-    color: '#fa541c',
   },
   [EntityType.Email]: {
     label: 'E-Posta',

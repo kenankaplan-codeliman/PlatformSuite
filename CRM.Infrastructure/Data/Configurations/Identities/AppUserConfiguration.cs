@@ -30,6 +30,8 @@ public class AppUserConfiguration : IEntityTypeConfiguration<AppUser>
             .HasMaxLength(100)
             .IsRequired();
 
+        builder.Ignore(e => e.FullName);
+
         builder.Property(e => e.AzureUserId)
             .HasColumnName("azure_user_id")
             .HasMaxLength(100);

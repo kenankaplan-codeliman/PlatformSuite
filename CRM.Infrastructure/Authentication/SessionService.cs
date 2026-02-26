@@ -77,7 +77,7 @@ namespace CRM.Infrastructure.Authentication
             {
                 UserId = user.Id,
                 Email = user.Email,
-                DisplayName = $"{user.FirstName} {user.LastName}",
+                DisplayName = user.FullName,
                 OrganizationId = user.OrganizationId,
                 OrganizationName = orgMap[user.OrganizationId],
                 AccessibleOrganizationList = orgMap.Keys.ToList(),
@@ -122,7 +122,7 @@ namespace CRM.Infrastructure.Authentication
             {
                 UserId = user.Id,
                 Email = user.Email,
-                DisplayName = $"{user.FirstName} {user.LastName}",
+                DisplayName = user.FullName,
                 OrganizationId = user.OrganizationId,
                 OrganizationName = orgMap[user.OrganizationId],
                 AccessibleOrganizationList = orgMap.Keys.ToList(),

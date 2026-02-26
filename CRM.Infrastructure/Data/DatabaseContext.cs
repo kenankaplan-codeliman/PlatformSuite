@@ -7,6 +7,7 @@ using CRM.Domain.Entities.Contacts;
 using CRM.Domain.Entities.Identities;
 using CRM.Domain.Entities.Leads;
 using CRM.Domain.Entities.Opportunities;
+using CRM.Domain.Entities.Products;
 using CRM.Infrastructure.Data.Configurations;
 using CRM.Infrastructure.Data.Configurations.Accounts;
 using Microsoft.EntityFrameworkCore;
@@ -52,8 +53,12 @@ public class DatabaseContext : DbContext
     // ======= Lead =======
     public DbSet<Lead> Lead { get; set; }
 
+    // ======= Product =======
+    public DbSet<Product> Product { get; set; }
+
     // ======= Opportunity =======
     public DbSet<Opportunity> Opportunity { get; set; }
+    public DbSet<OpportunityProduct> OpportunityProduct { get; set; }
 
 
 

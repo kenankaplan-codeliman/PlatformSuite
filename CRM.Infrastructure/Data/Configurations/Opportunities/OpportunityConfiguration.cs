@@ -119,7 +119,7 @@ public class OpportunityConfiguration : IEntityTypeConfiguration<Opportunity>
             .HasConstraintName("fk_opportunity_contact")
             .OnDelete(DeleteBehavior.SetNull);
 
-        builder.HasMany(x => x.Products)
+        builder.HasMany(x => x.OpportunityProducts)
             .WithOne(x => x.Opportunity)
             .HasForeignKey(x => x.OpportunityId)
             .HasConstraintName("fk_opportunity_product")

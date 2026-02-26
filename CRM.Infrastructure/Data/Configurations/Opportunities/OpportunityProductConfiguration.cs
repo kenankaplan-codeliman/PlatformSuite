@@ -30,37 +30,6 @@ public class OpportunityProductConfiguration : IEntityTypeConfiguration<Opportun
             .HasColumnName("product_id")
             .IsRequired();
 
-        // Properties
-        builder.Property(x => x.Quantity)
-            .HasColumnName("quantity")
-            .IsRequired();
-
-        builder.Property(x => x.UnitPrice)
-            .HasColumnName("unit_price")
-            .HasColumnType("decimal(18,2)")
-            .IsRequired();
-
-        builder.Property(x => x.DiscountPercent)
-            .HasColumnName("discount_percent")
-            .HasColumnType("decimal(5,2)")
-            .IsRequired()
-            .HasDefaultValue(0m);
-
-        builder.Property(x => x.DiscountAmount)
-            .HasColumnName("discount_amount")
-            .HasColumnType("decimal(18,2)")
-            .IsRequired()
-            .HasDefaultValue(0m);
-
-        builder.Property(x => x.TotalPrice)
-            .HasColumnName("total_price")
-            .HasColumnType("decimal(18,2)")
-            .IsRequired()
-            .HasDefaultValue(0m);
-
-        builder.Property(x => x.Description)
-            .HasColumnName("description");
-
         // IBaseEntity
         builder.Property(x => x.IsActive)
             .HasColumnName("is_active")
@@ -84,7 +53,7 @@ public class OpportunityProductConfiguration : IEntityTypeConfiguration<Opportun
 
         // Relationships — FK'lar üst tablolarda tanımlıdır; burada sadece navigation açıklanır
         builder.HasOne(x => x.Opportunity)
-            .WithMany(x => x.Products)
+            .WithMany(x => x.OpportunityProducts)
             .HasForeignKey(x => x.OpportunityId)
             .HasConstraintName("fk_opportunity_product_opportunity")
             .OnDelete(DeleteBehavior.Cascade);

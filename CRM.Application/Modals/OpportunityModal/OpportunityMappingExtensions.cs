@@ -29,7 +29,7 @@ public static class OpportunityMappingExtensions
             ContactName = entity.Contact != null
                                 ? $"{entity.Contact.FirstName} {entity.Contact.LastName}"
                                 : null,
-            Products = entity.Products.Select(p => p.ToModal()).ToList(),
+            Products = entity.OpportunityProducts.Select(p => p.ToModal()).ToList(),
             CreatedAt = entity.CreatedAt,
             UpdatedAt = entity.UpdatedAt,
             IsActive = entity.IsActive
@@ -43,12 +43,12 @@ public static class OpportunityMappingExtensions
             Id = entity.Id,
             ProductId = entity.ProductId,
             ProductName = entity.Product?.Name,
-            Quantity = entity.Quantity,
-            UnitPrice = entity.UnitPrice,
-            DiscountPercent = entity.DiscountPercent,
-            DiscountAmount = entity.DiscountAmount,
-            Description = entity.Description,
-            TotalPrice = entity.TotalPrice
+            //Quantity = entity.Quantity,
+            //UnitPrice = entity.UnitPrice,
+            //DiscountPercent = entity.DiscountPercent,
+            //DiscountAmount = entity.DiscountAmount,
+            //Description = entity.Description,
+            //TotalPrice = entity.TotalPrice
         };
     }
 
@@ -69,7 +69,6 @@ public static class OpportunityMappingExtensions
         entity.Source = modal.Source;
         entity.AccountId = modal.AccountId;
         entity.ContactId = modal.ContactId;
-        entity.IsActive = modal.IsActive;
 
         SyncProducts(entity, modal);
     }
@@ -81,22 +80,22 @@ public static class OpportunityMappingExtensions
     private static void SyncProducts(Opportunity entity, OpportunityDetailItem modal)
     {
         // Modalda olmayan kalemleri sil
-        var toRemove = entity.Products
+        var toRemove = entity.OpportunityProducts
             .Where(p => !modal.Products.Any(m => m.Id == p.Id))
             .ToList();
 
         foreach (var product in toRemove)
-            entity.Products.Remove(product);
+            entity.OpportunityProducts.Remove(product);
 
         foreach (var modalProduct in modal.Products)
         {
             var existing = modalProduct.Id != Guid.Empty
-                ? entity.Products.FirstOrDefault(p => p.Id == modalProduct.Id)
+                ? entity.OpportunityProducts.FirstOrDefault(p => p.Id == modalProduct.Id)
                 : null;
 
             if (existing == null)
             {
-                entity.Products.Add(modalProduct.ToEntity(entity.Id));
+                entity.OpportunityProducts.Add(modalProduct.ToEntity(entity.Id));
             }
             else
             {
@@ -112,12 +111,12 @@ public static class OpportunityMappingExtensions
     private static void UpdateFrom(this OpportunityProduct entity, OpportunityProductItem modal)
     {
         entity.ProductId = modal.ProductId;
-        entity.Quantity = modal.Quantity;
-        entity.UnitPrice = modal.UnitPrice;
-        entity.DiscountPercent = modal.DiscountPercent;
-        entity.DiscountAmount = modal.DiscountAmount;
-        entity.Description = modal.Description;
-        entity.TotalPrice = CalculateTotalPrice(modal);
+        //entity.Quantity = modal.Quantity;
+        //entity.UnitPrice = modal.UnitPrice;
+        //entity.DiscountPercent = modal.DiscountPercent;
+        //entity.DiscountAmount = modal.DiscountAmount;
+        //entity.Description = modal.Description;
+        //entity.TotalPrice = CalculateTotalPrice(modal);
     }
 
     // ========================
@@ -130,12 +129,12 @@ public static class OpportunityMappingExtensions
         {
             OpportunityId = opportunityId,
             ProductId = modal.ProductId,
-            Quantity = modal.Quantity,
-            UnitPrice = modal.UnitPrice,
-            DiscountPercent = modal.DiscountPercent,
-            DiscountAmount = modal.DiscountAmount,
-            Description = modal.Description,
-            TotalPrice = CalculateTotalPrice(modal)
+            //Quantity = modal.Quantity,
+            //UnitPrice = modal.UnitPrice,
+            //DiscountPercent = modal.DiscountPercent,
+            //DiscountAmount = modal.DiscountAmount,
+            //Description = modal.Description,
+            //TotalPrice = CalculateTotalPrice(modal)
         };
     }
 
@@ -146,10 +145,10 @@ public static class OpportunityMappingExtensions
     /// <summary>
     /// (Quantity * UnitPrice) - DiscountAmount - (Quantity * UnitPrice * DiscountPercent / 100)
     /// </summary>
-    private static decimal CalculateTotalPrice(OpportunityProductItem modal)
-    {
-        var gross = modal.Quantity * modal.UnitPrice;
-        var discount = modal.DiscountAmount + (gross * modal.DiscountPercent / 100m);
-        return Math.Max(0, gross - discount);
-    }
+    //private static decimal CalculateTotalPrice(OpportunityProductItem modal)
+    //{
+    //    var gross = modal.Quantity * modal.UnitPrice;
+    //    var discount = modal.DiscountAmount + (gross * modal.DiscountPercent / 100m);
+    //    return Math.Max(0, gross - discount);
+    //}
 }

@@ -34,6 +34,7 @@ namespace CRM.Infrastructure.Repositories
                      EntityType.Account => GetAccountReference(id),
                      EntityType.Contact => GetContactReference(id),
                      EntityType.Opportunity => GetOpportunityReference(id),
+                     EntityType.Product => GetProductReference(id),
 
                      _ => throw new NotImplementedException()
                  };
@@ -46,7 +47,8 @@ namespace CRM.Infrastructure.Repositories
                      EntityType.Account => LookupAccountReference(searchText, paginationInfo),
                      EntityType.Contact => LookupContactReference(searchText, paginationInfo),
                      EntityType.Opportunity => LookupOpportunityReference(searchText, paginationInfo),
-                     
+                     EntityType.Product => LookupProductReference(searchText, paginationInfo),
+
                      _ => throw new NotImplementedException()
                  };
 
@@ -386,6 +388,78 @@ namespace CRM.Infrastructure.Repositories
 
         #endregion Contact
 
+
+        #region Product
+
+        private EntityReferenceList LookupProductReference(string searchText, PaginationInfo paginationInfo)
+        {
+            int pageSize = int.Parse(configuration["DefaultValues:Search_Max_Record"]!);
+            int skipCnt = 0;
+
+            if (paginationInfo != null && paginationInfo.isValid())
+            {
+                pageSize = paginationInfo.PageSize;
+
+                var pageIndex = (paginationInfo.Page - 1) >= 0 ? paginationInfo.Page - 1 : 0;
+                skipCnt = pageIndex * paginationInfo.PageSize;
+
+            }
+
+            var tempQuery = this.dbContext.Product.AsNoTracking().Where(x => x.IsActive);
+
+            if (!string.IsNullOrEmpty(searchText))
+            {
+                tempQuery = tempQuery.Where(prd => EF.Functions.ILike(prd.Name, $"%{searchText}%"));
+            }
+
+            var query = tempQuery.Select(prd => new
+            {
+                prd.Id,
+                prd.Name,
+            });
+
+
+            var entityList = query.Skip(skipCnt).Take(pageSize + 1).ToList();
+
+            var hasMore = entityList.Count > pageSize;
+
+            var contactList = entityList.Take(pageSize)
+                .Select(item => new EntityReference(EntityType.Product)
+                {
+                    Id = item.Id,
+                    Name = item.Name,
+                    Email = null,
+                    Phone = null,
+                })
+                .ToList();
+
+            return new EntityReferenceList()
+            {
+                Data = contactList,
+                HasMore = hasMore,
+                Page = paginationInfo?.Page ?? 1,
+                PageSize = pageSize,
+            };
+        }
+        private EntityReference GetProductReference(Guid Id)
+        {
+            var product = dbContext.Product.Select(prd => new {
+                prd.Id,
+                prd.Name,
+            }).FirstOrDefault(opp => opp.Id == Id) ?? throw new NotFoundException();
+
+            return new EntityReference(EntityType.Product)
+            {
+                Id = product.Id,
+                Name = product.Name,
+                Email = null,
+                Phone = null,
+            };
+        }
+
+        #endregion Product
+
+
         #region Opportunity
 
         private EntityReferenceList LookupOpportunityReference(string searchText, PaginationInfo paginationInfo)
@@ -421,7 +495,7 @@ namespace CRM.Infrastructure.Repositories
             var hasMore = entityList.Count > pageSize;
 
             var contactList = entityList.Take(pageSize)
-                .Select(item => new EntityReference(EntityType.Contact)
+                .Select(item => new EntityReference(EntityType.Opportunity)
                 {
                     Id = item.Id,
                     Name = item.Name,
@@ -445,7 +519,7 @@ namespace CRM.Infrastructure.Repositories
                 opp.Name,
             }).FirstOrDefault(opp => opp.Id == Id) ?? throw new NotFoundException();
 
-            return new EntityReference(EntityType.Contact)
+            return new EntityReference(EntityType.Opportunity)
             {
                 Id = opportunity.Id,
                 Name = opportunity.Name,

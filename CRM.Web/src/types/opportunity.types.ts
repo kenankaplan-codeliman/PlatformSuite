@@ -30,22 +30,6 @@ export const OpportunitySource = {
 export type OpportunitySourceValue = (typeof OpportunitySource)[keyof typeof OpportunitySource];
 
 // =====================================================
-// SUB-ENTITY INTERFACES
-// =====================================================
-
-export interface OpportunityProductItem {
-  id?: string;
-  productId: string;
-  productName?: string;
-  quantity: number;
-  unitPrice: number;
-  discountPercent: number;
-  discountAmount: number;
-  description?: string;
-  totalPrice?: number;
-}
-
-// =====================================================
 // MAIN INTERFACES
 // =====================================================
 
@@ -64,6 +48,12 @@ export interface OpportunityListItem {
   contactId?: string;
   contactName?: string;
   isActive: boolean;
+}
+
+export interface OpportunityProductItem {
+  id?: string;
+  productId: string;
+  productName?: string;
 }
 
 export interface OpportunityDetailItem {
@@ -165,14 +155,6 @@ export const getOpportunitySourceLabel = (source: OpportunitySourceValue): strin
 
 export const formatCurrency = (value: number, currency = 'TRY'): string =>
   new Intl.NumberFormat('tr-TR', { style: 'currency', currency }).format(value);
-
-export const calculateTotalPrice = (item: OpportunityProductItem): number =>
-  Math.max(
-    0,
-    item.quantity * item.unitPrice -
-      item.discountAmount -
-      (item.quantity * item.unitPrice * item.discountPercent) / 100
-  );
 
 // =====================================================
 // SELECT OPTIONS

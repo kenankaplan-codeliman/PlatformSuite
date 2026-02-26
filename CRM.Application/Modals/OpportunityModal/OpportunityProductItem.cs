@@ -9,16 +9,4 @@ public class OpportunityProductItem
     public Guid ProductId { get; set; }
 
     public string? ProductName { get; set; }
-
-    public int Quantity { get; set; }
-
-    public decimal UnitPrice { get; set; }
-
-    public decimal DiscountPercent { get; set; }
-
-    public decimal DiscountAmount { get; set; }
-
-    public string? Description { get; set; }
-
-    public decimal? TotalPrice { get; set; }
 }

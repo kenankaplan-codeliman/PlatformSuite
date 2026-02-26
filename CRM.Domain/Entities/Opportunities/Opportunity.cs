@@ -57,7 +57,7 @@ public class Opportunity :
     public Contact? Contact { get; set; }
 
     /// <summary>Fırsata eklenen ürün/hizmet kalemleri</summary>
-    public ICollection<OpportunityProduct> Products { get; set; } = new List<OpportunityProduct>();
+    public ICollection<OpportunityProduct> OpportunityProducts { get; set; } = new List<OpportunityProduct>();
 
     // ── IOwnedEntity ──────────────────────────────────────────────────────
 

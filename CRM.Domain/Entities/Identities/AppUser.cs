@@ -11,6 +11,16 @@ namespace CRM.Domain.Entities.Identities
         public required string Email { get; set; }
         public required string FirstName { get; set; }
         public required string LastName { get; set; }
+
+
+        public string FullName
+        {
+            get
+            {
+                return $"{FirstName} {LastName}";
+            }
+        }
+
         public Guid OrganizationId { get; set; }
         public string? AzureUserId { get; set; }
         public string? PasswordHash { get; set; }

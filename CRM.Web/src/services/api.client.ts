@@ -46,10 +46,9 @@ const processQueue = (error: any = null) => {
 
 apiClient.interceptors.response.use(
   (response) => response,
-  async (error: AxiosError) => {
+  (error: AxiosError) => {
     const originalRequest = error.config as InternalAxiosRequestConfig & { _retry?: boolean };
     
-    // 401 Unauthorized - Token refresh logic
     if (error.response?.status === 401 && !originalRequest._retry) {
       if (isRefreshing) {
         return new Promise((resolve, reject) => {
@@ -70,32 +69,32 @@ apiClient.interceptors.response.use(
       originalRequest._retry = true;
       isRefreshing = true;
 
-      try {
-        await refreshAuthToken();
-        
-        // Refresh sonrası güncel token'ı al
-        const { accessToken: newAccessToken } = useAuthState.getState();
-        
-        if (newAccessToken && originalRequest.headers) {
+      return refreshAuthToken()
+        .then(() => {
+          const { accessToken: newAccessToken } = useAuthState.getState();
           
-          originalRequest.headers.Authorization = `Bearer ${newAccessToken}`;
-
-          processQueue();
-          return apiClient(originalRequest);
-        } 
-
-      } catch (refreshError) {
-        processQueue(refreshError);
-        logout();
-        window.location.href = RoutePaths.Login;
-        return Promise.reject(refreshError);
-      } finally {
-        isRefreshing = false;
-        originalRequest._retry = false;
-      }
+          if (newAccessToken && originalRequest.headers) {
+            originalRequest.headers.Authorization = `Bearer ${newAccessToken}`;
+            processQueue();
+            return apiClient(originalRequest);
+          } else {
+            processQueue(new Error('Token refresh failed'));
+            logout();
+            window.location.href = RoutePaths.Login;
+            return Promise.reject(new Error('No access token after refresh'));
+          }
+        })
+        .catch((refreshError) => {
+          processQueue(refreshError);
+          logout();
+          window.location.href = RoutePaths.Login;
+          return Promise.reject(refreshError);
+        })
+        .finally(() => {
+          isRefreshing = false;
+        });
     }
 
-    // Diğer tüm hatalar için reject
     return Promise.reject(error);
   }
 );

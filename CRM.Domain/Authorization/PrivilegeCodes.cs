@@ -55,6 +55,14 @@ namespace CRM.Domain.Authorization
             public const string Delete = "Opportunity.Delete";
         }
 
+        public static class ProductPrivilegeCodes
+        {
+            public const string Read = "Product.Read";
+            public const string Create = "Product.Create";
+            public const string Update = "Product.Update";
+            public const string Delete = "Product.Delete";
+        }
+
 
     }
 

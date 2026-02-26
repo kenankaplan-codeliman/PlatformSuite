@@ -99,7 +99,7 @@ public class OpportunityRepository : IOpportunityRepository
     public Opportunity Get(Guid id)
     {
         var entity = this.dbContext.Opportunity
-            .Include(o => o.Products)
+            .Include(o => o.OpportunityProducts).ThenInclude(op=> op.Product)
             .Include(o => o.Account)
             .Include(o => o.Contact)
             .FirstOrDefault(o => o.Id == id)

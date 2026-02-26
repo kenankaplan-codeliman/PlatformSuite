@@ -73,21 +73,6 @@ CREATE TABLE opportunity_product (
     opportunity_id      UUID            NOT NULL,
     product_id          UUID            NOT NULL,
 
-    -- Kalem bilgileri
-    quantity            INTEGER         NOT NULL DEFAULT 1
-                            CONSTRAINT chk_op_quantity CHECK (quantity > 0),
-    unit_price          NUMERIC(18, 2)  NOT NULL,
-    discount_percent    NUMERIC(5, 2)   NOT NULL DEFAULT 0
-                            CONSTRAINT chk_op_discount_percent CHECK (discount_percent BETWEEN 0 AND 100),
-    discount_amount     NUMERIC(18, 2)  NOT NULL DEFAULT 0
-                            CONSTRAINT chk_op_discount_amount  CHECK (discount_amount >= 0),
-    description         TEXT,
-
-    -- Hesaplanan toplam (opsiyonel — uygulama katmanında da hesaplanabilir)
-    -- total_price = MAX(0, quantity * unit_price - discount_amount - quantity * unit_price * discount_percent / 100)
-    total_price         NUMERIC(18, 2)   NOT NULL DEFAULT 0
-                            CONSTRAINT chk_op_total_price  CHECK (total_price >= 0),
-
     -- IBaseEntity
     is_active           BOOLEAN         NOT NULL DEFAULT TRUE,
 
@@ -105,11 +90,4 @@ CREATE TABLE opportunity_product (
         REFERENCES product (id)                 ON DELETE RESTRICT
 );
 
-CREATE INDEX idx_opp_product_opportunity_id ON opportunity_product (opportunity_id);
-CREATE INDEX idx_opp_product_product_id     ON opportunity_product (product_id);
-
-COMMENT ON TABLE  opportunity_product                  IS 'Fırsat–Ürün kalem tablosu (many-to-many)';
-COMMENT ON COLUMN opportunity_product.unit_price       IS 'Satış anındaki birim fiyat; product.unit_price override edilebilir';
-COMMENT ON COLUMN opportunity_product.discount_percent IS 'İndirim yüzdesi (0–100)';
-COMMENT ON COLUMN opportunity_product.discount_amount  IS 'Sabit indirim tutarı';
-COMMENT ON COLUMN opportunity_product.total_price      IS 'Hesaplanan kalem tutarı (GENERATED ALWAYS STORED)';
+CREATE INDEX idx_opp_product_opportunity_id ON opportunity_product (opportunity_id)

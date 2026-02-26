@@ -73,6 +73,7 @@ public class OpportunityCommandHandler
             opportunityRepository.Create(entity);
             await unitOfWork.CommitTransactionAsync();
 
+            entity = opportunityRepository.Get(entity.Id);
             return entity.ToModal();
         }
         catch
@@ -95,6 +96,7 @@ public class OpportunityCommandHandler
 
             await unitOfWork.CommitTransactionAsync();
 
+            entity = opportunityRepository.Get(entity.Id);
             return entity.ToModal();
         }
         catch

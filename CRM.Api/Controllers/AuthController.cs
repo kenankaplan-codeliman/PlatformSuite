@@ -25,7 +25,7 @@ namespace CRM.Api.Controllers
         }
 
         [HttpPost("login")]
-        [ProducesResponseType(typeof(LoginResponse), 200)]
+        [ProducesResponseType(typeof(AuthResponse), 200)]
         public async Task<IActionResult> Login([FromBody] LoginRequest request)
         {
             var authToken = await this.authenticationCommandHandler.LoginAsync(request.Email,
@@ -37,11 +37,11 @@ namespace CRM.Api.Controllers
                 });
 
 
-            return Ok(LoginResponse.fromAuthToken(authToken));
+            return Ok(AuthResponse.fromAuthToken(authToken));
         }
 
         [HttpPost("microsoft/callback")]
-        [ProducesResponseType(typeof(LoginResponse), 200)]
+        [ProducesResponseType(typeof(AuthResponse), 200)]
         public async Task<IActionResult> MicrosoftCallback([FromBody] MsalRequest request)
         {
             var authToken = await this.authenticationCommandHandler.LoginMicrosoftAsync(request.MsalToken,
@@ -52,7 +52,7 @@ namespace CRM.Api.Controllers
                  });
 
 
-            return Ok(LoginResponse.fromAuthToken(authToken));
+            return Ok(AuthResponse.fromAuthToken(authToken));
         }
 
         /// <summary>
@@ -73,7 +73,7 @@ namespace CRM.Api.Controllers
         }
 
         [HttpPost("refresh")]
-        [ProducesResponseType(typeof(LoginResponse), 200)]
+        [ProducesResponseType(typeof(AuthResponse), 200)]
         public async Task<IActionResult> RefreshToken([FromBody] RefreshTokenRequest request)
         {
             var authResult = await this.authenticationCommandHandler.RefreshToken(
@@ -84,7 +84,7 @@ namespace CRM.Api.Controllers
                     UserAgent = HttpContext.GetUserAgent()
                 });
 
-            return Ok(RefreshTokenResponse.fromAuthToken(authResult));
+            return Ok(AuthResponse.fromAuthToken(authResult));
         }
 
         [HttpPost("me")]

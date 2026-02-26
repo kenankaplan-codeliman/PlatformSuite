@@ -30,6 +30,7 @@ export const entitySearchService = {
       [EntityType.Lead]: ServicePath.Lead.Search,
       [EntityType.Account]: ServicePath.Account.Search,
       [EntityType.Contact]: ServicePath.Contact.Search,
+      [EntityType.Product]: ServicePath.Product.Search,
       [EntityType.Opportunity]: '',
       [EntityType.Email]: '',
       [EntityType.PhoneCall]: '',

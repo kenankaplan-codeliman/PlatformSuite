@@ -1,6 +1,6 @@
 import axios from 'axios';
 import { ServicePath } from '@/config/service.paths';
-import type { LoginRequest, LoginResponse, MsalRequest, RefreshTokenRequest, AccessTokenRequest, User } from '@/types/auth.types';
+import type { LoginRequest, LoginResponse as AuthResponse, MsalRequest, RefreshTokenRequest, AccessTokenRequest, User } from '@/types/auth.types';
 
 
 export const authService = {
@@ -11,14 +11,14 @@ export const authService = {
   login: async (
     email: string, 
     password: string
-  ): Promise<LoginResponse> => {
+  ): Promise<AuthResponse> => {
 
     const request : LoginRequest = {
       email: email,
       password: password
     };
 
-    const response = await axios.post<LoginResponse>(
+    const response = await axios.post<AuthResponse>(
       `${ServicePath.Auth.Login}`,
       request
     );
@@ -33,13 +33,13 @@ export const authService = {
    * 
    * @param msalToken - MSAL access token from Microsoft
    */
-  loginWithMicrosoft: async (msalToken: string): Promise<LoginResponse> =>{
+  loginWithMicrosoft: async (msalToken: string): Promise<AuthResponse> =>{
 
       const request : MsalRequest = {
           msalToken: msalToken  
       };
 
-      const response = await axios.post<LoginResponse>(
+      const response = await axios.post<AuthResponse>(
         `${ServicePath.Auth.MicrosoftCallback}`,
         request
       );
@@ -50,13 +50,13 @@ export const authService = {
   /**
    * Refresh access token using refresh token
    */
-  refreshToken: async (refreshToken: string): Promise<LoginResponse> => {
+  refreshToken: async (refreshToken: string): Promise<AuthResponse> => {
 
     const request : RefreshTokenRequest = {
           refreshToken: refreshToken    
       };
     
-    const response = await axios.post<LoginResponse>(
+    const response = await axios.post<AuthResponse>(
         `${ServicePath.Auth.RefreshToken}`,
         request
       );
