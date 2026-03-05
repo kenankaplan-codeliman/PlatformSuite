@@ -1,69 +1,75 @@
-﻿
-using CRM.Application.Exceptions;
+﻿using CRM.Application.Exceptions;
 using CRM.Application.Interfaces;
 using CRM.Application.Modals.ActivityModal;
 using CRM.Application.Modals.Common;
 using CRM.Domain.Entities.Activities;
+using CRM.Domain.Entities.Common;
 using CRM.Domain.Enums;
-using System.ComponentModel.Design;
-using System.Threading.Tasks;
 
 namespace CRM.Application.CommandHandler;
 
 public class ActivityCommandHandler
 {
     private readonly IUnitOfWork unitOfWork;
-    private readonly IActivityRepository activityRepository;
     private readonly IReferenceRepository referenceRepository;
+    private readonly IActivityRepository activityRepository;
+    private readonly IEmailActivityRepository emailActivityRepository;
+    private readonly IAppointmentActivityRepository appointmentActivityRepository;
+    private readonly ITaskActivityRepository taskActivityRepository;
+    private readonly IPhoneCallActivityRepository phoneCallActivityRepository;
 
-    public ActivityCommandHandler(IActivityRepository activityRepository, IUnitOfWork unitOfWork, IReferenceRepository referenceRepository)
+    public ActivityCommandHandler(
+        IUnitOfWork unitOfWork,
+        IReferenceRepository referenceRepository,
+        IActivityRepository activityRepository,
+        IEmailActivityRepository emailActivityRepository,
+        IAppointmentActivityRepository appointmentActivityRepository,
+        ITaskActivityRepository taskActivityRepository,
+        IPhoneCallActivityRepository phoneCallActivityRepository)
     {
-        this.activityRepository = activityRepository;
         this.unitOfWork = unitOfWork;
         this.referenceRepository = referenceRepository;
+        this.activityRepository = activityRepository;
+        this.emailActivityRepository = emailActivityRepository;
+        this.appointmentActivityRepository = appointmentActivityRepository;
+        this.taskActivityRepository = taskActivityRepository;
+        this.phoneCallActivityRepository = phoneCallActivityRepository;
     }
 
-    public async Task<List<ActivityListItem>> Calendar(ActivityListFilters? filters, DateTime startDate, DateTime endDate)
+    // ── Calendar & List ───────────────────────────────────────────────────
+
+    public async Task<List<ActivityListItem>> Calendar(
+        ActivityListFilters filters, DateTime startDate, DateTime endDate,
+        CancellationToken cancellationToken = default)
     {
-        var result = activityRepository.Calendar(filters, startDate, endDate);
-
-        return result;
+        return await activityRepository.CalendarAsync(filters, startDate, endDate, cancellationToken);
     }
 
-    public async Task<ActivityListResponse> List(ActivityListFilters? filters, PaginationInfo? paginationInfo)
+    public async Task<ActivityListResponse> List(
+        ActivityListFilters filters, PaginationInfo paginationInfo,
+        CancellationToken cancellationToken = default)
     {
-        var result = activityRepository.List(filters, paginationInfo);
-
-        return result;
+        return await activityRepository.ListAsync(filters, paginationInfo, cancellationToken);
     }
 
+    // ── Task ──────────────────────────────────────────────────────────────
 
-    #region Task
-
-    public async Task<TaskModal> TaskRead(Guid Id)
+    public async Task<TaskModal> TaskRead(Guid id, CancellationToken cancellationToken = default)
     {
-        var entity = activityRepository.GetTask(Id);
-
-        var modal = MapToTaskModal(entity);
-
-        return modal;
+        var entity = await taskActivityRepository.GetAsync(id, cancellationToken)
+            ?? throw new NotFoundException();
+        return MapToTaskModal(entity);
     }
 
-    public async Task<TaskModal> TaskCreate(TaskModal task)
+    public async Task<TaskModal> TaskCreate(TaskModal task, CancellationToken cancellationToken = default)
     {
         try
         {
-            var entity = MapToTaskEntity(task);
-
+            var entity = await MapToTaskEntity(task, cancellationToken);
             await unitOfWork.BeginTransactionAsync();
-
-            var createdEntity = activityRepository.CreateTask(entity);
-
+            var created = await taskActivityRepository.CreateAsync(entity, cancellationToken);
             await unitOfWork.CommitTransactionAsync();
-
-            var createdModal = MapToTaskModal(createdEntity);
-
-            return createdModal;
+            return MapToTaskModal(created);
         }
         catch
         {
@@ -72,21 +78,15 @@ public class ActivityCommandHandler
         }
     }
 
-    public async Task<TaskModal> TaskUpdate(TaskModal task)
+    public async Task<TaskModal> TaskUpdate(TaskModal task, CancellationToken cancellationToken = default)
     {
         try
         {
-            var entity = MapToTaskEntity(task);
-
+            var entity = await MapToTaskEntity(task, cancellationToken);
             await unitOfWork.BeginTransactionAsync();
-
-            var updatedEntity = activityRepository.UpdateTask(entity);
-
+            var updated = await taskActivityRepository.UpdateAsync(entity, cancellationToken);
             await unitOfWork.CommitTransactionAsync();
-
-            var updatedModal = MapToTaskModal(updatedEntity);
-
-            return updatedModal;
+            return MapToTaskModal(updated);
         }
         catch
         {
@@ -95,65 +95,50 @@ public class ActivityCommandHandler
         }
     }
 
-    private TaskActivity MapToTaskEntity(TaskModal modal)
+    private async Task<TaskActivity> MapToTaskEntity(
+        TaskModal modal, CancellationToken cancellationToken = default)
     {
-        TaskActivity entity;
-
-        if (modal.Id == Guid.Empty)
-            entity = new TaskActivity();
-        else
-            entity = activityRepository.GetTask(modal.Id);
+        TaskActivity entity = modal.Id == Guid.Empty
+            ? new TaskActivity()
+            : await taskActivityRepository.GetAsync(modal.Id, cancellationToken)
+                ?? throw new NotFoundException();
 
         SetToActivityBaseEntity(entity, modal);
-
         entity.TaskDescription = modal.TaskDescription;
         entity.PercentComplete = modal.PercentComplete;
         entity.ReminderAt = modal.ReminderAt;
-
         return entity;
     }
 
     private TaskModal MapToTaskModal(TaskActivity entity)
     {
-        TaskModal modal = new TaskModal();
-
+        var modal = new TaskModal();
         SetActivityBaseModal(modal, entity);
-
         modal.TaskDescription = entity.TaskDescription;
         modal.PercentComplete = entity.PercentComplete;
         modal.ReminderAt = entity.ReminderAt;
-
         return modal;
     }
 
-    #endregion
+    // ── PhoneCall ─────────────────────────────────────────────────────────
 
-    #region PhoneCall
-
-    public async Task<PhoneCallModal> PhoneCallRead(Guid Id)
+    public async Task<PhoneCallModal> PhoneCallRead(Guid id, CancellationToken cancellationToken = default)
     {
-        var entity = activityRepository.GetPhoneCall(Id);
-
-        var modal = MapToPhoneCallModal(entity);
-
-        return modal;
+        var entity = await phoneCallActivityRepository.GetAsync(id, cancellationToken)
+            ?? throw new NotFoundException();
+        return MapToPhoneCallModal(entity);
     }
 
-    public async Task<PhoneCallModal> PhoneCallCreate(PhoneCallModal phonecall)
+    public async Task<PhoneCallModal> PhoneCallCreate(
+        PhoneCallModal phonecall, CancellationToken cancellationToken = default)
     {
         try
         {
-            var entity = MapToPhoneCallEntity(phonecall);
-
+            var entity = await MapToPhoneCallEntity(phonecall, cancellationToken);
             await unitOfWork.BeginTransactionAsync();
-
-            var createdEntity = activityRepository.CreatePhoneCall(entity);
-
+            var created = await phoneCallActivityRepository.CreateAsync(entity, cancellationToken);
             await unitOfWork.CommitTransactionAsync();
-
-            var createdModal = MapToPhoneCallModal(createdEntity);
-
-            return createdModal;
+            return MapToPhoneCallModal(created);
         }
         catch
         {
@@ -162,21 +147,16 @@ public class ActivityCommandHandler
         }
     }
 
-    public async Task<PhoneCallModal> PhoneCallUpdate(PhoneCallModal phonecall)
+    public async Task<PhoneCallModal> PhoneCallUpdate(
+        PhoneCallModal phonecall, CancellationToken cancellationToken = default)
     {
         try
         {
-            var entity = MapToPhoneCallEntity(phonecall);
-
+            var entity = await MapToPhoneCallEntity(phonecall, cancellationToken);
             await unitOfWork.BeginTransactionAsync();
-
-            var updatedEntity = activityRepository.UpdatePhoneCall(entity);
-
+            var updated = await phoneCallActivityRepository.UpdateAsync(entity, cancellationToken);
             await unitOfWork.CommitTransactionAsync();
-
-            var updatedModal = MapToPhoneCallModal(updatedEntity);
-
-            return updatedModal;
+            return MapToPhoneCallModal(updated);
         }
         catch
         {
@@ -185,99 +165,68 @@ public class ActivityCommandHandler
         }
     }
 
-    private PhoneCall MapToPhoneCallEntity(PhoneCallModal modal)
+    private async Task<PhoneCallActivity> MapToPhoneCallEntity(
+        PhoneCallModal modal, CancellationToken cancellationToken = default)
     {
-        PhoneCall entity;
-
-        if (modal.Id == Guid.Empty)
-            entity = new PhoneCall();
-        else
-            entity = activityRepository.GetPhoneCall(modal.Id);
+        PhoneCallActivity entity = modal.Id == Guid.Empty
+            ? new PhoneCallActivity()
+            : await phoneCallActivityRepository.GetAsync(modal.Id, cancellationToken)
+                ?? throw new NotFoundException();
 
         SetToActivityBaseEntity(entity, modal);
-
         entity.CallDirection = modal.Direction;
         entity.CallNotes = modal.CallNotes;
         entity.RecordingUrl = modal.RecordingUrl;
 
-
         if (modal.Caller != null)
-        {
-            entity.SetCaller(new ActivityParty
-            {
-                ParticipantType = Enum.Parse<ActivityParticipantType>(modal.Caller!.EntityType.ToString()),
-                ParticipantId = modal.Caller?.Id
-            });
-        }
+            entity.SetCaller(ToActivityParty(modal.Caller));
 
         if (modal.Recipient != null)
-        {
-            entity.SetRecipient(new ActivityParty
-            {
-                ParticipantType = Enum.Parse<ActivityParticipantType>(modal.Recipient!.EntityType.ToString()),
-                ParticipantId = modal.Recipient?.Id
-            });
-        }
+            entity.SetRecipient(ToActivityParty(modal.Recipient));
 
         return entity;
-
     }
 
-    private PhoneCallModal MapToPhoneCallModal(PhoneCall entity)
+    private PhoneCallModal MapToPhoneCallModal(PhoneCallActivity entity)
     {
-        PhoneCallModal modal = new PhoneCallModal();
-
+        var modal = new PhoneCallModal();
         SetActivityBaseModal(modal, entity);
 
         if (entity.Caller != null)
-        {
             modal.Caller = referenceRepository.GetReference(
                 Enum.Parse<EntityType>(entity.Caller.ParticipantType.ToString()),
                 entity.Caller.ParticipantId!.Value);
-        }
 
         if (entity.Recipient != null)
-        {
             modal.Recipient = referenceRepository.GetReference(
                 Enum.Parse<EntityType>(entity.Recipient.ParticipantType.ToString()),
                 entity.Recipient.ParticipantId!.Value);
-        }
 
         modal.Direction = entity.CallDirection;
         modal.CallNotes = entity.CallNotes;
         modal.RecordingUrl = entity.RecordingUrl;
-
         return modal;
     }
 
-    #endregion
+    // ── Appointment ───────────────────────────────────────────────────────
 
-    #region Appointment
-
-    public async Task<AppointmentModal> AppointmentRead(Guid Id)
+    public async Task<AppointmentModal> AppointmentRead(Guid id, CancellationToken cancellationToken = default)
     {
-        var entity = activityRepository.GetAppointment(Id);
-
-        var modal = MapToAppointmentModal(entity);
-
-        return modal;
+        var entity = await appointmentActivityRepository.GetAsync(id, cancellationToken)
+            ?? throw new NotFoundException();
+        return MapToAppointmentModal(entity);
     }
 
-    public async Task<AppointmentModal> AppointmentCreate(AppointmentModal appointment)
+    public async Task<AppointmentModal> AppointmentCreate(
+        AppointmentModal appointment, CancellationToken cancellationToken = default)
     {
         try
         {
-            var entity = MapToAppointmentEntity(appointment);
-
+            var entity = await MapToAppointmentEntity(appointment, cancellationToken);
             await unitOfWork.BeginTransactionAsync();
-
-            var createdEntity = activityRepository.CreateAppointment(entity);
-
+            var created = await appointmentActivityRepository.CreateAsync(entity, cancellationToken);
             await unitOfWork.CommitTransactionAsync();
-
-            var createdModal = MapToAppointmentModal(createdEntity);
-
-            return createdModal;
+            return MapToAppointmentModal(created);
         }
         catch
         {
@@ -286,22 +235,16 @@ public class ActivityCommandHandler
         }
     }
 
-
-    public async Task<AppointmentModal> AppointmentUpdate(AppointmentModal appointment)
+    public async Task<AppointmentModal> AppointmentUpdate(
+        AppointmentModal appointment, CancellationToken cancellationToken = default)
     {
         try
         {
-            var entity = MapToAppointmentEntity(appointment);
-
+            var entity = await MapToAppointmentEntity(appointment, cancellationToken);
             await unitOfWork.BeginTransactionAsync();
-
-            var updatedEntity = activityRepository.UpdateAppointment(entity);
-
+            var updated = await appointmentActivityRepository.UpdateAsync(entity, cancellationToken);
             await unitOfWork.CommitTransactionAsync();
-
-            var updatedModal = MapToAppointmentModal(updatedEntity);
-
-            return updatedModal;
+            return MapToAppointmentModal(updated);
         }
         catch
         {
@@ -310,14 +253,49 @@ public class ActivityCommandHandler
         }
     }
 
-
-    private AppointmentModal MapToAppointmentModal(Appointment entity)
+    private async Task<AppointmentActivity> MapToAppointmentEntity(
+        AppointmentModal modal, CancellationToken cancellationToken = default)
     {
-        AppointmentModal modal = new AppointmentModal();
+        AppointmentActivity entity = modal.Id == Guid.Empty
+            ? new AppointmentActivity()
+            : await appointmentActivityRepository.GetAsync(modal.Id, cancellationToken)
+                ?? throw new NotFoundException();
 
+        SetToActivityBaseEntity(entity, modal);
+        entity.IsAllDay = modal.IsAllDay;
+        entity.MeetingNotes = modal.MeetingNotes;
+        entity.ReminderMinutesBefore = modal.ReminderMinutesBefore;
+        entity.RecurrenceRule = modal.RecurrenceRule;
+        entity.IsRecurring = modal.IsRecurring;
+        entity.Location = modal.Location;
+        entity.IsOnline = modal.IsOnline;
+        entity.MeetingUrl = modal.MeetingUrl;
+
+        if (!string.IsNullOrEmpty(entity.MeetingUrl))
+            entity.IsOnline = true;
+
+        if (modal.Organizer != null)
+            entity.SetOrganizer(ToActivityParty(modal.Organizer));
+
+        foreach (var attendee in modal.Attendees)
+        {
+            if (entity.Attendees.Any(p => p.ParticipantId == attendee.Id))
+                continue;
+            entity.AddAttendee(ToActivityParty(attendee));
+        }
+
+        entity.Attendees
+            .Where(p => !modal.Attendees.Any(m => m.Id == p.ParticipantId))
+            .ToList()
+            .ForEach(p => entity.Parties.Remove(p));
+
+        return entity;
+    }
+
+    private AppointmentModal MapToAppointmentModal(AppointmentActivity entity)
+    {
+        var modal = new AppointmentModal();
         SetActivityBaseModal(modal, entity);
-
-        #region Appointment
 
         modal.Location = entity.Location;
         modal.IsOnline = entity.IsOnline;
@@ -327,45 +305,28 @@ public class ActivityCommandHandler
         modal.RecurrenceRule = entity.RecurrenceRule;
         modal.IsRecurring = entity.IsRecurring;
 
-        #endregion
-        var organizer = entity.Organizer;
-        if (organizer != null && organizer.ParticipantType == ActivityParticipantType.User)
-        {
-            modal.Organizer = referenceRepository.GetReference(EntityType.User, organizer.ParticipantId!.Value);
-        }
-
-        var attendeesList = entity.Attendees;
+        if (entity.Organizer?.ParticipantType == ActivityParticipantType.User)
+            modal.Organizer = referenceRepository.GetReference(EntityType.User, entity.Organizer.ParticipantId!.Value);
 
         modal.Attendees = new List<EntityReference>();
 
-        foreach (var attendees in attendeesList)
+        foreach (var attendee in entity.Attendees)
         {
-            EntityReference? entityReference = null;
-
-            if (attendees.ParticipantType == ActivityParticipantType.User && attendees.ParticipantId != null)
+            EntityReference? entityReference = attendee.ParticipantType switch
             {
-                entityReference = referenceRepository.GetReference(EntityType.User, attendees.ParticipantId.Value);
-            }
-            else if (attendees.ParticipantType == ActivityParticipantType.Account)
-            {
-                throw new NotImplementedException();
-
-            }
-            else if (attendees.ParticipantType == ActivityParticipantType.Contact)
-            {
-                throw new NotImplementedException();
-            }
-            else if (attendees.ParticipantType == ActivityParticipantType.External)
-            {
-                entityReference = new EntityReference(EntityType.None)
-                {
-                    Name = attendees.Name ?? string.Empty,
-                    Email = attendees.Email,
-                    Phone = attendees.PhoneNumber,
-                };
-            }
-            else
-                throw new BusinessException("Invalid attendees type");
+                ActivityParticipantType.User when attendee.ParticipantId != null =>
+                    referenceRepository.GetReference(EntityType.User, attendee.ParticipantId.Value),
+                ActivityParticipantType.External =>
+                    new EntityReference(EntityType.None)
+                    {
+                        Name = attendee.Name ?? string.Empty,
+                        Email = attendee.Email,
+                        Phone = attendee.PhoneNumber,
+                    },
+                ActivityParticipantType.Account => throw new NotImplementedException(),
+                ActivityParticipantType.Contact => throw new NotImplementedException(),
+                _ => throw new BusinessException("Invalid attendees type")
+            };
 
             modal.Attendees.Add(entityReference);
         }
@@ -373,99 +334,24 @@ public class ActivityCommandHandler
         return modal;
     }
 
-    private Appointment MapToAppointmentEntity(AppointmentModal modal)
+    // ── Email ─────────────────────────────────────────────────────────────
+
+    public async Task<EmailModal> EmailRead(Guid id, CancellationToken cancellationToken = default)
     {
-
-        Appointment entity;
-
-        if (modal.Id == Guid.Empty)
-            entity = new Appointment();
-        else
-            entity = activityRepository.GetAppointment(modal.Id);
-
-        SetToActivityBaseEntity(entity, modal);
-
-
-        #region Appointment
-
-
-        entity.IsAllDay = modal.IsAllDay;
-        entity.MeetingNotes = modal.MeetingNotes;
-        entity.ReminderMinutesBefore = modal.ReminderMinutesBefore;
-        entity.RecurrenceRule = modal.RecurrenceRule;
-        entity.IsRecurring = modal.IsRecurring;
-
-        entity.Location = modal.Location;
-        entity.IsOnline = modal.IsOnline;
-        entity.MeetingUrl = modal.MeetingUrl;
-
-        if (!string.IsNullOrEmpty(entity.MeetingUrl))
-            entity.IsOnline = true;
-
-        #endregion
-
-        #region Organizer & Attendees
-
-        if (modal.Organizer != null)
-        {
-            entity.SetOrganizer(new ActivityParty
-            {
-                ParticipantType = Enum.Parse<ActivityParticipantType>(modal.Organizer.EntityType.ToString()),
-                ParticipantId = modal.Organizer.Id
-            });
-        }
-
-        foreach (var attende in modal.Attendees)
-        {
-            if (entity.Attendees.Any(p => p.ParticipantId == attende.Id))
-                continue;
-
-            entity.AddAttendee(new ActivityParty
-            {
-                ParticipantType = Enum.Parse<ActivityParticipantType>(attende.EntityType.ToString()),
-                ParticipantId = attende.Id
-            });
-        }
-
-        // Remove Not Exist Attendess
-        entity.Attendees
-            .Where(p => !modal.Attendees.Any(m => m.Id == p.ParticipantId))
-            .ToList()
-            .ForEach(p => entity.Parties.Remove(p));
-
-        #endregion
-
-        return entity;
+        var entity = await emailActivityRepository.GetAsync(id, cancellationToken)
+            ?? throw new NotFoundException();
+        return MapToEmailModal(entity);
     }
 
-    #endregion
-
-    #region Email
-
-    public async Task<EmailModal> EmailRead(Guid Id)
-    {
-        var entity = activityRepository.GetEmail(Id);
-
-        var modal = MapToEmailModal(entity);
-
-        return modal;
-    }
-
-    public async Task<EmailModal> EmailCreate(EmailModal task)
+    public async Task<EmailModal> EmailCreate(EmailModal email, CancellationToken cancellationToken = default)
     {
         try
         {
-            var entity = MapToEmailEntity(task);
-
+            var entity = await MapToEmailEntity(email, cancellationToken);
             await unitOfWork.BeginTransactionAsync();
-
-            var createdEntity = activityRepository.CreateEmail(entity);
-
+            var created = await emailActivityRepository.CreateAsync(entity, cancellationToken);
             await unitOfWork.CommitTransactionAsync();
-
-            var createdModal = MapToEmailModal(createdEntity);
-
-            return createdModal;
+            return MapToEmailModal(created);
         }
         catch
         {
@@ -474,21 +360,15 @@ public class ActivityCommandHandler
         }
     }
 
-    public async Task<EmailModal> EmailUpdate(EmailModal task)
+    public async Task<EmailModal> EmailUpdate(EmailModal email, CancellationToken cancellationToken = default)
     {
         try
         {
-            var entity = MapToEmailEntity(task);
-
+            var entity = await MapToEmailEntity(email, cancellationToken);
             await unitOfWork.BeginTransactionAsync();
-
-            var updatedEntity = activityRepository.UpdateEmail(entity);
-
+            var updated = await emailActivityRepository.UpdateAsync(entity, cancellationToken);
             await unitOfWork.CommitTransactionAsync();
-
-            var updatedModal = MapToEmailModal(updatedEntity);
-
-            return updatedModal;
+            return MapToEmailModal(updated);
         }
         catch
         {
@@ -497,196 +377,244 @@ public class ActivityCommandHandler
         }
     }
 
-    private EmailActivity MapToEmailEntity(EmailModal modal)
+    private async Task<EmailActivity> MapToEmailEntity(
+        EmailModal modal, CancellationToken cancellationToken = default)
     {
-        EmailActivity entity;
-
-        if (modal.Id == Guid.Empty)
-            entity = new EmailActivity();
-        else
-            entity = activityRepository.GetEmail(modal.Id);
+        EmailActivity entity = modal.Id == Guid.Empty
+            ? new EmailActivity()
+            : await emailActivityRepository.GetAsync(modal.Id, cancellationToken)
+                ?? throw new NotFoundException();
 
         SetToActivityBaseEntity(entity, modal);
 
-
-        entity.SetFrom(new ActivityParty
-        {
-            ParticipantType = Enum.Parse<ActivityParticipantType>(modal.From.EntityType.ToString()),
-            ParticipantId = modal.From.Id
-        });
-
+        entity.SetFrom(ToActivityParty(modal.From));
         entity.Body = modal.Body;
-
         entity.IsHtml = modal.IsHtml;
         entity.IsSent = modal.IsSent;
         entity.IsRead = modal.IsRead;
         entity.ReadDate = modal.ReadDate;
 
-
-        #region To 
-        foreach (var toItem in modal.To)
-        {
-            if (entity.ToRecipients.Any(p => p.ParticipantId == toItem.Id))
-                continue;
-
-            entity.AddTo(new ActivityParty
-            {
-                ParticipantType = Enum.Parse<ActivityParticipantType>(toItem.EntityType.ToString()),
-                ParticipantId = toItem.Id
-            });
-        }
-
-        // Remove Not Exist
-        entity.ToRecipients
-            .Where(p => !modal.To.Any(m => m.Id == p.ParticipantId))
-            .ToList()
-            .ForEach(p => entity.Parties.Remove(p));
-
-        #endregion
-
-        #region Cc
-        if (modal.Cc != null)
-        {
-            foreach (var toItem in modal.Cc)
-            {
-                if (entity.CcRecipients.Any(p => p.ParticipantId == toItem.Id))
-                    continue;
-
-                entity.AddCc(new ActivityParty
-                {
-                    ParticipantType = Enum.Parse<ActivityParticipantType>(toItem.EntityType.ToString()),
-                    ParticipantId = toItem.Id
-                });
-            }
-
-            // Remove Not Exist
-            entity.CcRecipients
-                .Where(p => !modal.Cc.Any(m => m.Id == p.ParticipantId))
-                .ToList()
-                .ForEach(p => entity.Parties.Remove(p));
-        }
-        else
-        {
-            entity.CcRecipients
-               .ToList()
-               .ForEach(p => entity.Parties.Remove(p));
-        }
-        #endregion
-
-        #region Bcc
-        if (modal.Bcc != null)
-        {
-            foreach (var toItem in modal.Bcc)
-            {
-                if (entity.BccRecipients.Any(p => p.ParticipantId == toItem.Id))
-                    continue;
-
-                entity.AddBcc(new ActivityParty
-                {
-                    ParticipantType = Enum.Parse<ActivityParticipantType>(toItem.EntityType.ToString()),
-                    ParticipantId = toItem.Id
-                });
-            }
-
-            // Remove Not Exist
-            entity.BccRecipients
-                .Where(p => !modal.To.Any(m => m.Id == p.ParticipantId))
-                .ToList()
-                .ForEach(p => entity.Parties.Remove(p));
-        }
-        else
-        {
-            entity.BccRecipients
-               .ToList()
-               .ForEach(p => entity.Parties.Remove(p));
-        }
-        #endregion
-
+        SyncPartyList(entity, entity.ToRecipients, modal.To, entity.AddTo);
+        SyncPartyList(entity, entity.CcRecipients, modal.Cc ?? new List<EntityReference>(), entity.AddCc);
+        SyncPartyList(entity, entity.BccRecipients, modal.Bcc ?? new List<EntityReference>(), entity.AddBcc);
 
         return entity;
     }
 
+    private static void SyncPartyList(
+        EmailActivity entity,
+        IEnumerable<ActivityParty> existingParties,
+        List<EntityReference> modalItems,
+        Action<ActivityParty> addAction)
+    {
+        foreach (var item in modalItems)
+        {
+            if (existingParties.Any(p => p.ParticipantId == item.Id))
+                continue;
+            addAction(ToActivityParty(item));
+        }
+
+        existingParties
+            .Where(p => !modalItems.Any(m => m.Id == p.ParticipantId))
+            .ToList()
+            .ForEach(p => entity.Parties.Remove(p));
+    }
+
     private EmailModal MapToEmailModal(EmailActivity entity)
     {
-        EmailModal modal = new EmailModal();
-
+        var modal = new EmailModal();
         SetActivityBaseModal(modal, entity);
 
         modal.Body = entity.Body;
-
         modal.IsHtml = entity.IsHtml;
         modal.IsSent = entity.IsSent;
         modal.IsRead = entity.IsRead;
         modal.ReadDate = entity.ReadDate;
 
         if (entity.From != null)
-        {
             modal.From = referenceRepository.GetReference(
-                   Enum.Parse<EntityType>(entity.From.ParticipantType.ToString()),
-                   entity.From.ParticipantId!.Value);
-        }
+                Enum.Parse<EntityType>(entity.From.ParticipantType.ToString()),
+                entity.From.ParticipantId!.Value);
 
-        #region To 
+        modal.To = entity.ToRecipients
+            .Select(p => referenceRepository.GetReference(Enum.Parse<EntityType>(p.ParticipantType.ToString()), p.ParticipantId!.Value))
+            .ToList();
 
-        modal.To = new List<EntityReference>();
+        modal.Cc = entity.CcRecipients
+            .Select(p => referenceRepository.GetReference(
+                Enum.Parse<EntityType>(p.ParticipantType.ToString()), p.ParticipantId!.Value))
+            .ToList();
 
-        foreach (var item in entity.ToRecipients)
-        {
-            var entityRef = referenceRepository.GetReference(
-                Enum.Parse<EntityType>(item.ParticipantType.ToString()),
-                item.ParticipantId!.Value);
-
-            modal.To.Add(entityRef);
-        }
-
-        #endregion
-
-
-
-        #region Cc
-
-        modal.Cc = new List<EntityReference>();
-
-        foreach (var item in entity.CcRecipients)
-        {
-            var entityRef = referenceRepository.GetReference(
-                Enum.Parse<EntityType>(item.ParticipantType.ToString()),
-                item.ParticipantId!.Value);
-
-            modal.Cc.Add(entityRef);
-        }
-
-        #endregion
-
-        #region Bcc
-
-        modal.Bcc = new List<EntityReference>();
-
-        foreach (var item in entity.BccRecipients)
-        {
-            var entityRef = referenceRepository.GetReference(
-                Enum.Parse<EntityType>(item.ParticipantType.ToString()),
-                item.ParticipantId!.Value);
-
-            modal.Cc.Add(entityRef);
-        }
-
-        #endregion
-
+        modal.Bcc = entity.BccRecipients
+            .Select(p => referenceRepository.GetReference(
+                Enum.Parse<EntityType>(p.ParticipantType.ToString()), p.ParticipantId!.Value))
+            .ToList();
 
         return modal;
     }
 
-    #endregion
+    // ── Complete / Cancel / Delete ────────────────────────────────────────
 
-    #region ActivityBase Helper
+    public async Task<ActivityBaseModal> Complete(Guid id, CancellationToken cancellationToken = default)
+    {
+        try
+        {
+            await unitOfWork.BeginTransactionAsync();
+            var result = await ExecuteOnActivity(id, e => e.Completed(), cancellationToken);
+            await unitOfWork.CommitTransactionAsync();
+            return result;
+        }
+        catch
+        {
+            await unitOfWork.RollbackTransactionAsync();
+            throw;
+        }
+    }
+
+    public async Task<ActivityBaseModal> Cancel(Guid id, CancellationToken cancellationToken = default)
+    {
+        try
+        {
+            await unitOfWork.BeginTransactionAsync();
+            var result = await ExecuteOnActivity(id, e => e.Cancel(), cancellationToken);
+            await unitOfWork.CommitTransactionAsync();
+            return result;
+        }
+        catch
+        {
+            await unitOfWork.RollbackTransactionAsync();
+            throw;
+        }
+    }
+
+    public async Task<ActivityBaseModal> Delete(Guid id, CancellationToken cancellationToken = default)
+    {
+        try
+        {
+            await unitOfWork.BeginTransactionAsync();
+            var activityType = await activityRepository.GetActivityTypeAsync(id, cancellationToken);
+            ActivityBaseModal result = activityType switch
+            {
+                ActivityType.Task => MapToTaskModal(
+                    await DeleteEntity(taskActivityRepository, id, cancellationToken)),
+                ActivityType.PhoneCall => MapToPhoneCallModal(
+                    await DeleteEntity(phoneCallActivityRepository, id, cancellationToken)),
+                ActivityType.Appointment => MapToAppointmentModal(
+                    await DeleteEntity(appointmentActivityRepository, id, cancellationToken)),
+                ActivityType.Email => MapToEmailModal(
+                    await DeleteEntity(emailActivityRepository, id, cancellationToken)),
+                _ => throw new BusinessException("Invalid activity type")
+            };
+            await unitOfWork.CommitTransactionAsync();
+            return result;
+        }
+        catch
+        {
+            await unitOfWork.RollbackTransactionAsync();
+            throw;
+        }
+    }
+
+    // ── Bulk Operations ───────────────────────────────────────────────────
+
+    public async Task BulkDelete(List<Guid> ids, CancellationToken cancellationToken = default)
+    {
+        try
+        {
+            await unitOfWork.BeginTransactionAsync();
+            foreach (var id in ids)
+                await Delete(id, cancellationToken);
+            await unitOfWork.CommitTransactionAsync();
+        }
+        catch
+        {
+            await unitOfWork.RollbackTransactionAsync();
+            throw;
+        }
+    }
+
+    public async Task BulkUpdateStatus(
+        List<Guid> ids, ActivityStatus status, CancellationToken cancellationToken = default)
+    {
+        try
+        {
+            await unitOfWork.BeginTransactionAsync();
+            foreach (var id in ids)
+            {
+                switch (status)
+                {
+                    case ActivityStatus.Completed:
+                        await ExecuteOnActivity(id, e => e.Completed(), cancellationToken);
+                        break;
+                    case ActivityStatus.Cancelled:
+                        await ExecuteOnActivity(id, e => e.Cancel(), cancellationToken);
+                        break;
+                    case ActivityStatus.NotStarted:
+                    case ActivityStatus.InProgress:
+                        await ExecuteOnActivity(id, e => e.Status = status, cancellationToken);
+                        break;
+                    default:
+                        throw new BusinessException("Invalid status");
+                }
+            }
+            await unitOfWork.CommitTransactionAsync();
+        }
+        catch
+        {
+            await unitOfWork.RollbackTransactionAsync();
+            throw;
+        }
+    }
+
+    // ── Private Helpers ───────────────────────────────────────────────────
+
+    private async Task<ActivityBaseModal> ExecuteOnActivity(
+        Guid id, Action<ActivityBase> action, CancellationToken cancellationToken)
+    {
+        var activityType = await activityRepository.GetActivityTypeAsync(id, cancellationToken);
+        return activityType switch
+        {
+            ActivityType.Task => MapToTaskModal(
+                await UpdateEntity(taskActivityRepository, id, action, cancellationToken)),
+            ActivityType.PhoneCall => MapToPhoneCallModal(
+                await UpdateEntity(phoneCallActivityRepository, id, action, cancellationToken)),
+            ActivityType.Appointment => MapToAppointmentModal(
+                await UpdateEntity(appointmentActivityRepository, id, action, cancellationToken)),
+            ActivityType.Email => MapToEmailModal(
+                await UpdateEntity(emailActivityRepository, id, action, cancellationToken)),
+            _ => throw new BusinessException("Invalid activity type")
+        };
+    }
+
+    private static async Task<T> UpdateEntity<T>(
+        IEntityRepository<T> repository, Guid id,
+        Action<ActivityBase> action, CancellationToken cancellationToken)
+        where T : ActivityBase, IBaseEntity
+    {
+        var entity = await repository.GetAsync(id, cancellationToken) ?? throw new NotFoundException();
+        action(entity);
+        return await repository.UpdateAsync(entity, cancellationToken);
+    }
+
+    private static async Task<T> DeleteEntity<T>(
+        IEntityRepository<T> repository, Guid id, CancellationToken cancellationToken)
+        where T : ActivityBase, IBaseEntity
+    {
+        var entity = await repository.GetAsync(id, cancellationToken) ?? throw new NotFoundException();
+        return await repository.DeleteAsync(entity, cancellationToken);
+    }
+
+    private static ActivityParty ToActivityParty(EntityReference reference) =>
+        new ActivityParty
+        {
+            ParticipantType = (ActivityParticipantType)reference.EntityType,
+            ParticipantId = reference.Id
+        };
+
     private void SetToActivityBaseEntity(ActivityBase entity, ActivityBaseModal modal)
     {
-
         entity.Subject = modal.Subject;
         entity.Priority = modal.Priority;
-
-
         entity.StartDate = modal.StartDate;
         entity.DueDate = modal.DueDate;
         entity.EndDate = modal.EndDate;
@@ -696,11 +624,9 @@ public class ActivityCommandHandler
             case ActivityStatus.Completed:
                 entity.Completed();
                 break;
-
             case ActivityStatus.Cancelled:
                 entity.Cancel();
                 break;
-
             default:
                 entity.Status = modal.Status;
                 entity.EndDate = null;
@@ -724,217 +650,9 @@ public class ActivityCommandHandler
         modal.DueDate = entity.DueDate;
         modal.EndDate = entity.EndDate;
         modal.Status = entity.Status;
+
         if (entity.RegardingEntityType != null && entity.RegardingEntityId != null)
-        {
-            modal.RegardingEntity = referenceRepository.GetReference(entity.RegardingEntityType.Value, entity.RegardingEntityId.Value);
-        }
+            modal.RegardingEntity = referenceRepository.GetReference(
+                entity.RegardingEntityType.Value, entity.RegardingEntityId.Value);
     }
-
-    public async Task<ActivityBaseModal> Complete(Guid Id)
-    {
-        try
-        {
-            await unitOfWork.BeginTransactionAsync();
-
-            var activityType = activityRepository.GetActivityType(Id);
-            switch (activityType)
-            {
-                case ActivityType.Task:
-                    var taskEntity = activityRepository.GetTask(Id);
-                    taskEntity.Completed();
-                    var updatedTask = activityRepository.UpdateTask(taskEntity);
-                    return MapToTaskModal(updatedTask);
-                case ActivityType.PhoneCall:
-                    var phoneCallEntity = activityRepository.GetPhoneCall(Id);
-                    phoneCallEntity.Completed();
-                    var updatedPhoneCall = activityRepository.UpdatePhoneCall(phoneCallEntity);
-                    return MapToPhoneCallModal(updatedPhoneCall);
-                case ActivityType.Appointment:
-                    var appointmentEntity = activityRepository.GetAppointment(Id);
-                    appointmentEntity.Completed();
-                    var updatedAppointment = activityRepository.UpdateAppointment(appointmentEntity);
-                    return MapToAppointmentModal(updatedAppointment);
-                case ActivityType.Email:
-                    var emailEntity = activityRepository.GetEmail(Id);
-                    emailEntity.Completed();
-                    var updatedEmail = activityRepository.UpdateEmail(emailEntity);
-                    return MapToEmailModal(updatedEmail);
-                default:
-                    throw new BusinessException("Invalid activity type");
-            }
-        }
-        catch
-        {
-            await unitOfWork.RollbackTransactionAsync();
-            throw;
-        }
-        finally
-        {
-            await unitOfWork.CommitTransactionAsync();
-        }
-    }
-
-    public async Task<ActivityBaseModal> Cancel(Guid Id)
-    {
-        try
-        {
-            await unitOfWork.BeginTransactionAsync();
-            var activityType = activityRepository.GetActivityType(Id);
-
-            switch (activityType)
-            {
-                case ActivityType.Task:
-                    var taskEntity = activityRepository.GetTask(Id);
-                    taskEntity.Cancel();
-                    var updatedTask = activityRepository.UpdateTask(taskEntity);
-                    return MapToTaskModal(updatedTask);
-                case ActivityType.PhoneCall:
-                    var phoneCallEntity = activityRepository.GetPhoneCall(Id);
-                    phoneCallEntity.Cancel();
-                    var updatedPhoneCall = activityRepository.UpdatePhoneCall(phoneCallEntity);
-                    return MapToPhoneCallModal(updatedPhoneCall);
-                case ActivityType.Appointment:
-                    var appointmentEntity = activityRepository.GetAppointment(Id);
-                    appointmentEntity.Cancel();
-                    var updatedAppointment = activityRepository.UpdateAppointment(appointmentEntity);
-                    return MapToAppointmentModal(updatedAppointment);
-                case ActivityType.Email:
-                    var emailEntity = activityRepository.GetEmail(Id);
-                    emailEntity.Cancel();
-                    var updatedEmail = activityRepository.UpdateEmail(emailEntity);
-                    return MapToEmailModal(updatedEmail);
-                default:
-                    throw new BusinessException("Invalid activity type");
-            }
-        }
-        catch
-        {
-            await unitOfWork.RollbackTransactionAsync();
-            throw;
-        }
-        finally
-        {
-            await unitOfWork.CommitTransactionAsync();
-        }
-    }
-
-    public async Task<ActivityBaseModal> Delete(Guid Id)
-    {
-        try
-        {
-            await unitOfWork.BeginTransactionAsync();
-
-            var activityType = activityRepository.GetActivityType(Id);
-
-            switch (activityType)
-            {
-                case ActivityType.Task:
-                    var taskEntity = activityRepository.GetTask(Id);
-                    var deletedTask = activityRepository.DeleteTask(taskEntity);
-                    return MapToTaskModal(deletedTask);
-                case ActivityType.PhoneCall:
-                    var phoneCallEntity = activityRepository.GetPhoneCall(Id);
-                    var deletedPhoneCall = activityRepository.DeletePhoneCall(phoneCallEntity);
-                    return MapToPhoneCallModal(deletedPhoneCall);
-                case ActivityType.Appointment:
-                    var appointmentEntity = activityRepository.GetAppointment(Id);
-                    var deletedAppointment = activityRepository.DeleteAppointment(appointmentEntity);
-                    return MapToAppointmentModal(deletedAppointment);
-                case ActivityType.Email:
-                    var emailEntity = activityRepository.GetEmail(Id);
-                    var deletedEmail = activityRepository.DeleteEmail(emailEntity);
-                    return MapToEmailModal(deletedEmail);
-                default:
-                    throw new BusinessException("Invalid activity type");
-            }
-
-
-        }
-        catch
-        {
-            await unitOfWork.RollbackTransactionAsync();
-            throw;
-        }
-        finally
-        {
-            await unitOfWork.CommitTransactionAsync();
-        }
-    }
-
-    public async Task BulkDelete(List<Guid> Ids)
-    {
-        foreach (var id in Ids)
-        {
-            _ = await Delete(id);
-        }
-    }
-
-    public async Task BulkUpdateStatus(List<Guid> Ids, ActivityStatus status)
-    {
-        foreach (var id in Ids)
-        {
-            switch (status)
-            {
-                case ActivityStatus.Completed:
-                    _ = await Complete(id);
-                    break;
-                case ActivityStatus.Cancelled:
-                    _ = await Cancel(id);
-                    break;
-                case ActivityStatus.NotStarted:
-                case ActivityStatus.InProgress:
-                    await UpdateStatus(id, status);
-                    break;
-                default:
-                    throw new BusinessException("Invalid status");
-            }
-        }
-    }
-
-    private async Task UpdateStatus(Guid Id, ActivityStatus status)
-    {
-        try
-        {
-            await unitOfWork.BeginTransactionAsync();
-
-            var activityType = activityRepository.GetActivityType(Id);
-            switch (activityType)
-            {
-                case ActivityType.Task:
-                    var taskEntity = activityRepository.GetTask(Id);
-                    taskEntity.Status = status;
-                    activityRepository.UpdateTask(taskEntity);
-                    break;
-                case ActivityType.PhoneCall:
-                    var phoneCallEntity = activityRepository.GetPhoneCall(Id);
-                    phoneCallEntity.Status = status;
-                    activityRepository.UpdatePhoneCall(phoneCallEntity);
-                    break;
-                case ActivityType.Appointment:
-                    var appointmentEntity = activityRepository.GetAppointment(Id);
-                    appointmentEntity.Status = status;
-                    activityRepository.UpdateAppointment(appointmentEntity);
-                    break;
-                case ActivityType.Email:
-                    var emailEntity = activityRepository.GetEmail(Id);
-                    emailEntity.Status = status;
-                    activityRepository.UpdateEmail(emailEntity);
-                    break;
-                default:
-                    throw new BusinessException("Invalid activity type");
-            }
-
-            await unitOfWork.CommitTransactionAsync();
-        }
-        catch
-        {
-            await unitOfWork.RollbackTransactionAsync();
-            throw;
-        }
-    }
-
-    #endregion
-
-
-
 }

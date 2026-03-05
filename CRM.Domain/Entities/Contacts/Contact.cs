@@ -24,8 +24,10 @@ public class Contact :
     public DateTime? BirthDate { get; set; }
     public string? Description { get; set; }
 
-    public Guid OwnerId { get; set; }
-    public Guid OrganizationId { get; set; }
+    #region IOwnedEntity
+    public Guid OwnerId { get; private set; }
+    public Guid OrganizationId { get; private set; }
+    #endregion
 
     public ICollection<AccountContact> AccountContacts { get;} = new List<AccountContact>();
     public ICollection<ContactEmail> Emails { get;} = new List<ContactEmail>();

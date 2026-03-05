@@ -84,4 +84,12 @@ public class OpportunityController : ControllerBase
         await opportunityCommandHandler.BulkDelete(idListRequest.Ids);
         return Ok();
     }
+
+    [HttpPost("assign")]
+    [PrivilegeAuthorize(PrivilegeCodes.OpportunityPrivilegeCodes.Delete)]
+    public async Task<IActionResult> Assign(AssignRequest request)
+    {
+        await opportunityCommandHandler.Assign(request.EntityId, request.OwnerId);
+        return Ok();
+    }
 }

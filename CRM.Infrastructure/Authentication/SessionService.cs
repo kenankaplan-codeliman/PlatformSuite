@@ -70,9 +70,9 @@ namespace CRM.Infrastructure.Authentication
             dbContext.AppLogin.Add(loginHistory);
             await dbContext.SaveChangesAsync();
 
-            var orgMap = organizationRepository.GetOrganizationHierarchy(user.OrganizationId);
-            var usrPrivileges = userRepository.GetUserPrivileges(user.Id);
-
+            var orgMap = await organizationRepository.GetOrganizationHierarchyAsync(user.OrganizationId);
+            var usrPrivileges = await userRepository.GetUserPrivilegesAsync(user.Id);
+            
             var contextUser = new ContextUser()
             {
                 UserId = user.Id,
@@ -114,9 +114,9 @@ namespace CRM.Infrastructure.Authentication
 
 
             //New Context User
-            var user = userRepository.Get(appLogin.UserId);
-            var orgMap = organizationRepository.GetOrganizationHierarchy(user.OrganizationId);
-            var usrPrivileges = userRepository.GetUserPrivileges(user.Id);
+            var user = await userRepository.GetAsync(appLogin.UserId) ?? throw new NotFoundException();
+            var orgMap = await organizationRepository.GetOrganizationHierarchyAsync(user.OrganizationId);
+            var usrPrivileges = await userRepository.GetUserPrivilegesAsync(user.Id);
 
             var newContextUser = new ContextUser()
             {

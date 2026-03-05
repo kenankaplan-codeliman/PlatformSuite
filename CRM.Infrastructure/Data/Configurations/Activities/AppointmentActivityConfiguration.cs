@@ -4,9 +4,9 @@ using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
 namespace CRM.Infrastructure.Data.Configurations.Activities;
 
-public class AppointmentConfiguration : IEntityTypeConfiguration<Appointment>
+public class AppointmentActivityConfiguration : IEntityTypeConfiguration<AppointmentActivity>
 {
-    public void Configure(EntityTypeBuilder<Appointment> builder)
+    public void Configure(EntityTypeBuilder<AppointmentActivity> builder)
     {
         builder.ToTable("activity_appointment");
 

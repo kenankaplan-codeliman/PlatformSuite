@@ -8,17 +8,12 @@ namespace CRM.Application.Interfaces
 {
     public interface IRoleRepository : IEntityRepository<AppRole>
     {
-        Task CreatePrivileges();
-        Task<AppRole> GetOrCreateAsync(string roleName, AccessLevel accessLevel, bool isDefault = false);
-        AppRole? GetDefaultRole();
+        Task CreatePrivileges(CancellationToken cancellationToken = default);
+        Task<AppRole> GetOrCreateAsync(string roleName, AccessLevel accessLevel, bool isDefault = false, CancellationToken cancellationToken = default);
+        Task<AppRole?> GetDefaultRole(CancellationToken cancellationToken = default);
 
-        //User Role
-        List<AppRole> GetUserRole(Guid userId);
-        //Role Privileges
+        Task<List<AppRole>> GetUserRole(Guid userId, CancellationToken cancellationToken = default);
 
-        void AddUserRole(Guid userId, List<Guid> roleIds);
-
-
-       
+        Task AddUserRole(Guid userId, List<Guid> roleIds, CancellationToken cancellationToken = default);
     }
 }

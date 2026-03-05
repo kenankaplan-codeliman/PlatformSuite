@@ -50,15 +50,9 @@ public class OpportunityCommandHandler
 
     public async Task<OpportunityDetailItem> Get(Guid Id)
     {
-        var result = opportunityRepository.Get(Id);
-        if (result != null)
-        {
-            var modal = result.ToModal();
+        var result = await opportunityRepository.GetAsync(Id) ?? throw new NotFoundException();
 
-            return modal;
-        }
-        else
-            throw new BusinessException("Contact not found.");
+        return result.ToModal();
     }
 
     public async Task<OpportunityDetailItem> Create(OpportunityDetailItem opportunityDetailItem)
@@ -70,10 +64,10 @@ public class OpportunityCommandHandler
             Opportunity entity = new Opportunity();
             entity.UpdateFrom(opportunityDetailItem);
 
-            opportunityRepository.Create(entity);
+            await opportunityRepository.CreateAsync(entity);
             await unitOfWork.CommitTransactionAsync();
 
-            entity = opportunityRepository.Get(entity.Id);
+            entity = await opportunityRepository.GetAsync(entity.Id) ?? throw new NotFoundException();
             return entity.ToModal();
         }
         catch
@@ -89,14 +83,14 @@ public class OpportunityCommandHandler
         {
             await unitOfWork.BeginTransactionAsync();
 
-            var entity = opportunityRepository.Get(opportunityDetailItem.Id);
+            var entity = await opportunityRepository.GetAsync(opportunityDetailItem.Id) ?? throw new NotFoundException();
             entity.UpdateFrom(opportunityDetailItem);
 
-            opportunityRepository.Update(entity);
+            await opportunityRepository.UpdateAsync(entity);
 
             await unitOfWork.CommitTransactionAsync();
 
-            entity = opportunityRepository.Get(entity.Id);
+            entity = await opportunityRepository.GetAsync(entity.Id) ?? throw new NotFoundException();
             return entity.ToModal();
         }
         catch
@@ -112,9 +106,27 @@ public class OpportunityCommandHandler
         {
             await unitOfWork.BeginTransactionAsync();
 
-            var entity = opportunityRepository.Get(Id);
+            var entity = await opportunityRepository.GetAsync(Id) ?? throw new NotFoundException();
 
-            opportunityRepository.Delete(entity);
+            await opportunityRepository.DeleteAsync(entity);
+
+            await unitOfWork.CommitTransactionAsync();
+
+        }
+        catch
+        {
+            await unitOfWork.RollbackTransactionAsync();
+            throw;
+        }
+    }
+
+    public async Task Assign(Guid entityId, Guid ownerId)
+    {
+        try
+        {
+            await unitOfWork.BeginTransactionAsync();
+
+            await opportunityRepository.AssignAsync(entityId, ownerId);
 
             await unitOfWork.CommitTransactionAsync();
 

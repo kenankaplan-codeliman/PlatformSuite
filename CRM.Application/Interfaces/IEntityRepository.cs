@@ -1,19 +1,19 @@
-﻿using CRM.Application.Modals.Common;
-using CRM.Domain.Entities.Identities;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
+﻿using CRM.Domain.Entities.Common;
 
-namespace CRM.Application.Interfaces
+namespace CRM.Application.Interfaces;
+
+
+
+public interface IEntityRepository<T> where T : class, IBaseEntity
 {
-    public interface IEntityRepository<T>
-    {
-        T Get(Guid Id);
-        T Update(T entity);
-        T Create(T entity);
-        T Delete(T entity);
+    // Her entity repository'si kendi implementasyonunu sağlar
+    Task<T?> GetAsync(Guid Id, CancellationToken cancellationToken = default);
 
+    // Ortak implementasyonlar BaseEntityRepository'de
+    Task<T> CreateAsync(T entity, CancellationToken cancellationToken = default);
+    Task<T> UpdateAsync(T entity, CancellationToken cancellationToken = default);
+    Task<T> DeleteAsync(T entity, CancellationToken cancellationToken = default);
 
-    }
+    // Sadece IOwnedEntity'ler için — servis katmanında rol kontrolü yapıldıktan sonra çağrılır
+    Task AssignAsync(Guid entityId, Guid ownerId, CancellationToken cancellationToken = default);
 }

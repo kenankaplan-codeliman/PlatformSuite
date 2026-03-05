@@ -105,7 +105,7 @@ export const ServicePath = {
         Update: `${ControllerPaths.OpportunityPath}/update`,
         Delete: `${ControllerPaths.OpportunityPath}/delete`,
         BulkDelete: `${ControllerPaths.OpportunityPath}/bulk-delete`,
-        Export: `${ControllerPaths.OpportunityPath}/export`,
+        Assign: `${ControllerPaths.OpportunityPath}/assign`,
     }
 
 };

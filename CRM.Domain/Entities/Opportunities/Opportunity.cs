@@ -59,10 +59,10 @@ public class Opportunity :
     /// <summary>Fırsata eklenen ürün/hizmet kalemleri</summary>
     public ICollection<OpportunityProduct> OpportunityProducts { get; set; } = new List<OpportunityProduct>();
 
-    // ── IOwnedEntity ──────────────────────────────────────────────────────
-
-    public Guid OwnerId { get; set; }
-    public Guid OrganizationId { get; set; }
+    #region IOwnedEntity
+    public Guid OwnerId { get; private set; }
+    public Guid OrganizationId { get; private set; }
+    #endregion
 
     // ── IAuditableEntity ──────────────────────────────────────────────────
 

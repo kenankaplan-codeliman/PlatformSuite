@@ -7,5 +7,5 @@ namespace CRM.Application.Interfaces;
 
 public interface IOpportunityRepository : IEntityRepository<Opportunity>
 {
-    Task<PaginationResult<OpportunityListItem>> List(OpportunityListFilters filter, PaginationInfo paginationInfo);
+    Task<PaginationResult<OpportunityListItem>> List(OpportunityListFilters filter, PaginationInfo paginationInfo, CancellationToken cancellationToken = default);
 }

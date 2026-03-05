@@ -48,15 +48,9 @@ namespace CRM.Application.CommandHandler
 
         public async Task<AccountDetailItem> Get(Guid Id)
         {
-            var result = accountRepository.Get(Id);
-            if (result != null)
-            {
-                var modal = result.ToModal();
+            var entity = await accountRepository.GetAsync(Id) ?? throw new NotFoundException();
 
-                return modal;
-            }
-            else
-                throw new BusinessException("Contact not found.");
+            return entity.ToModal();
         }
 
         public async Task<AccountDetailItem> Create(AccountDetailItem accountDetailItem)
@@ -68,7 +62,7 @@ namespace CRM.Application.CommandHandler
                 Account entity = new Account();
                 entity.UpdateFrom(accountDetailItem);   
 
-                accountRepository.Create(entity);
+                await accountRepository.CreateAsync(entity);
 
                 await unitOfWork.CommitTransactionAsync();
 
@@ -87,10 +81,11 @@ namespace CRM.Application.CommandHandler
             {
                 await unitOfWork.BeginTransactionAsync();
                 
-                var entity = accountRepository.Get(accountDetailItem.Id);  
+                var entity = await accountRepository.GetAsync(accountDetailItem.Id) ?? throw new NotFoundException();
+
                 entity.UpdateFrom(accountDetailItem);
 
-                accountRepository.Update(entity);
+                await accountRepository.UpdateAsync(entity);
 
                 await unitOfWork.CommitTransactionAsync();
 
@@ -109,9 +104,9 @@ namespace CRM.Application.CommandHandler
             {
                 await unitOfWork.BeginTransactionAsync();
 
-                var entity = accountRepository.Get(Id);
+                var entity = await accountRepository.GetAsync(Id) ?? throw new NotFoundException();
 
-                accountRepository.Delete(entity);
+                await accountRepository.DeleteAsync(entity);
 
                 await unitOfWork.CommitTransactionAsync();
 

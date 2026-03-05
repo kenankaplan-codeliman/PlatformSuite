@@ -48,6 +48,10 @@ export interface EntityLookupProps {
 
   // Modal başlığı
   modalTitle?: string;
+
+  // Controlled modal modu (trigger input render edilmez, sadece modal yönetilir)
+  open?: boolean;
+  onOpenChange?: (open: boolean) => void;
 }
 
 
@@ -116,7 +120,11 @@ const EntityLookup: React.FC<EntityLookupProps> = ({
   style,
   className,
   modalTitle = 'Kayıt seçin...',
+  open: controlledOpen,
+  onOpenChange,
 }) => {
+  // Controlled mod: open prop verilmişse dışarıdan yönetilir
+  const isControlled = controlledOpen !== undefined;
 
   // Local state
   const [modalVisible, setModalVisible] = useState(false);
@@ -154,28 +162,39 @@ const EntityLookup: React.FC<EntityLookupProps> = ({
   // Handle modal open
   const handleOpenModal = useCallback(() => {
     if (disabled) return;
-    setModalVisible(true);
+    if (isControlled) {
+      onOpenChange?.(true);
+    } else {
+      setModalVisible(true);
+    }
     setSearchText('');
     clearSearchResults();
     setPage(1);
     setSelectedEntityType(entityTypes[0]);
-  }, [disabled, entityTypes, clearSearchResults]);
+  }, [disabled, isControlled, onOpenChange, entityTypes, clearSearchResults]);
 
   // Handle modal close
   const handleCloseModal = useCallback(() => {
-    setModalVisible(false);
+    if (isControlled) {
+      onOpenChange?.(false);
+    } else {
+      setModalVisible(false);
+    }
     setSearchText('');
     clearSearchResults();
-  }, [clearSearchResults]);
+  }, [isControlled, onOpenChange, clearSearchResults]);
+
+  // Aktif modal görünürlüğü
+  const isModalVisible = isControlled ? (controlledOpen ?? false) : modalVisible;
 
   // Focus search input when modal opens
   useEffect(() => {
-    if (modalVisible && searchInputRef.current) {
+    if (isModalVisible && searchInputRef.current) {
       setTimeout(() => {
         searchInputRef.current?.focus();
       }, 100);
     }
-  }, [modalVisible]);
+  }, [isModalVisible]);
 
   // Perform search - parametreleri dışarıdan alır (stale closure önlemi)
   const performSearch = useCallback(
@@ -389,35 +408,37 @@ const EntityLookup: React.FC<EntityLookupProps> = ({
 
   return (
     <>
-      {/* Input Field */}
-      <div
-        className={`entity-lookup-input ${disabled ? 'disabled' : ''} ${className || ''}`}
-        style={style}
-        onClick={handleOpenModal}
-        role="button"
-        tabIndex={disabled ? -1 : 0}
-        onKeyDown={(e) => {
-          if (e.key === 'Enter' || e.key === ' ') {
-            handleOpenModal();
-          }
-        }}
-      >
-        {selectedEntities.length > 0 ? (
-          <div className="entity-lookup-tags">
-            {selectedEntities.map((entity) => (
-              <SelectedEntityTag
-                key={entity.id}
-                entity={entity}
-                onRemove={handleRemoveEntity}
-                disabled={disabled}
-              />
-            ))}
-          </div>
-        ) : (
-          <span className="entity-lookup-placeholder">{modalTitle}</span>
-        )}
-        <SearchOutlined className="entity-lookup-search-icon" />
-      </div>
+      {/* Input Field — sadece uncontrolled modda render edilir */}
+      {!isControlled && (
+        <div
+          className={`entity-lookup-input ${disabled ? 'disabled' : ''} ${className || ''}`}
+          style={style}
+          onClick={handleOpenModal}
+          role="button"
+          tabIndex={disabled ? -1 : 0}
+          onKeyDown={(e) => {
+            if (e.key === 'Enter' || e.key === ' ') {
+              handleOpenModal();
+            }
+          }}
+        >
+          {selectedEntities.length > 0 ? (
+            <div className="entity-lookup-tags">
+              {selectedEntities.map((entity) => (
+                <SelectedEntityTag
+                  key={entity.id}
+                  entity={entity}
+                  onRemove={handleRemoveEntity}
+                  disabled={disabled}
+                />
+              ))}
+            </div>
+          ) : (
+            <span className="entity-lookup-placeholder">{modalTitle}</span>
+          )}
+          <SearchOutlined className="entity-lookup-search-icon" />
+        </div>
+      )}
 
       {/* Lookup Modal */}
       <Modal
@@ -427,7 +448,7 @@ const EntityLookup: React.FC<EntityLookupProps> = ({
             <span>{modalTitle}</span>
           </Space>
         }
-        open={modalVisible}
+        open={isModalVisible}
         onCancel={handleCloseModal}
         width={700}
         footer={
@@ -449,7 +470,7 @@ const EntityLookup: React.FC<EntityLookupProps> = ({
       >
       
         {/* Search Bar */}
-      {modalVisible && (
+      {isModalVisible && (
          <>
         <div className="entity-lookup-search-bar">
           {entityTypes.length > 1 && (

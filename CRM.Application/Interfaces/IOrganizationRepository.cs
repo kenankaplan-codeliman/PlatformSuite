@@ -7,9 +7,9 @@ namespace CRM.Application.Interfaces
 {
     public interface IOrganizationRepository : IEntityRepository<AppOrganization>
     {
-        AppOrganization? GetDefaultOrganization();
-        Task<AppOrganization> GetOrCreateDefaultOrganization();
-        Dictionary<Guid, string> GetOrganizationHierarchy(Guid organizationId);
+        Task<AppOrganization?> GetDefaultOrganization(CancellationToken cancellationToken = default);
+        Task<AppOrganization> GetOrCreateDefaultOrganization(CancellationToken cancellationToken = default);
+        Task<Dictionary<Guid, string>> GetOrganizationHierarchyAsync(Guid organizationId, CancellationToken cancellationToken = default);
     }
 
 

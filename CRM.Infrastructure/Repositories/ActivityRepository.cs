@@ -19,13 +19,20 @@ public class ActivityRepository : IActivityRepository
         this.dbContext = dbContext;
     }
 
-    public ActivityType GetActivityType(Guid Id) { 
-        var activity = this.dbContext.Activity.AsNoTracking().Where(a => a.Id == Id).Select(a=> new { a.ActivityType }).FirstOrDefault() ?? throw new NotFoundException();
-        return activity.ActivityType;   
-    }
-    #region Query Methods
+    public async Task<ActivityType> GetActivityTypeAsync(Guid id, CancellationToken cancellationToken = default)
+    {
+        var activity = await dbContext.Activity
+            .AsNoTracking()
+            .Where(a => a.Id == id)
+            .Select(a => new { a.ActivityType })
+            .FirstOrDefaultAsync(cancellationToken)
+            ?? throw new NotFoundException();
 
-    public ActivityListResponse List(ActivityListFilters? filters, PaginationInfo? paginationInfo)
+        return activity.ActivityType;
+    }
+
+    public async Task<ActivityListResponse> ListAsync(
+        ActivityListFilters filters, PaginationInfo paginationInfo, CancellationToken cancellationToken = default)
     {
         var query = BuildFilteredQuery(filters);
 
@@ -34,12 +41,11 @@ public class ActivityRepository : IActivityRepository
             var pageIndex = Math.Max(0, paginationInfo.Page - 1);
             var skipCount = pageIndex * paginationInfo.PageSize;
 
-            var projectedQuery = query
+            var results = await query
                 .Skip(skipCount)
-                .Take(paginationInfo.PageSize + 1);
-                
+                .Take(paginationInfo.PageSize + 1)
+                .ToListAsync(cancellationToken);
 
-            var results = projectedQuery.ToList();
             var hasMore = results.Count > paginationInfo.PageSize;
 
             return new ActivityListResponse
@@ -51,23 +57,7 @@ public class ActivityRepository : IActivityRepository
             };
         }
 
-        var allResults = query
-            .Select(a => new ActivityProjection
-            {
-                Id = a.Id,
-                ActivityType = a.ActivityType,
-                Subject = a.Subject,
-                Status = a.Status,
-                Priority = a.Priority,
-                StartDate = a.StartDate,
-                EndDate = a.EndDate,
-                DueDate = a.DueDate,
-                IsActive = a.IsActive,
-                OwnerId = a.OwnerId,
-                RegardingEntityType = a.RegardingEntityType,
-                RegardingEntityId = a.RegardingEntityId
-            })
-            .ToList();
+        var allResults = await query.ToListAsync(cancellationToken); // ← fazladan projeksiyon kaldırıldı
 
         return new ActivityListResponse
         {
@@ -78,22 +68,22 @@ public class ActivityRepository : IActivityRepository
         };
     }
 
-    public List<ActivityListItem> Calendar(ActivityListFilters? filters, DateTime startDate, DateTime endDate)
+    public async Task<List<ActivityListItem>> CalendarAsync(ActivityListFilters filters, DateTime startDate, DateTime endDate, CancellationToken cancellationToken = default)
     {
-        var query = BuildFilteredQuery(filters);
-
-        var results = query
+        var results = await BuildFilteredQuery(filters)
             .Where(a =>
                 (a.StartDate != null && a.StartDate <= endDate && (a.EndDate == null || a.EndDate >= startDate)) ||
                 (a.StartDate == null && a.EndDate != null && a.EndDate >= startDate && a.EndDate <= endDate))
-            .ToList();
+            .ToListAsync(cancellationToken);
 
         return results.Select(MapToModal).ToList();
     }
 
     
 
-    private IQueryable<ActivityProjection> BuildFilteredQuery(ActivityListFilters? filters)
+
+
+    private IQueryable<InternalActivityListModal> BuildFilteredQuery(ActivityListFilters? filters)
     {
         var query =
             from a in dbContext.Activity.AsNoTracking().IgnoreAutoIncludes()
@@ -136,7 +126,7 @@ public class ActivityRepository : IActivityRepository
                 query = query.Where(q => q.Activity.IsActive == filters.IsActive);
         }
 
-        return query.Select(q => new ActivityProjection
+        return query.Select(q => new InternalActivityListModal
         {
             Id = q.Activity.Id,
             ActivityType = q.Activity.ActivityType,
@@ -154,7 +144,7 @@ public class ActivityRepository : IActivityRepository
     }
 
 
-    private static ActivityListItem MapToModal(ActivityProjection p)
+    private static ActivityListItem MapToModal(InternalActivityListModal p)
     {
         var modal = new ActivityListItem(p.ActivityType)
         {
@@ -166,7 +156,8 @@ public class ActivityRepository : IActivityRepository
             EndDate = p.EndDate,
             DueDate = p.DueDate,
             IsActive = p.IsActive,
-            Owner = new EntityReference(EntityType.User) { 
+            Owner = new EntityReference(EntityType.User)
+            {
                 Id = p.OwnerId ?? Guid.Empty,
                 Name = $"{p.OwnerIdFirstName} {p.OwnerIdLastName}".Trim()
             }
@@ -175,11 +166,10 @@ public class ActivityRepository : IActivityRepository
         return modal;
     }
 
-    #endregion
 
-    #region Inner Classes
 
-    private class ActivityProjection
+
+    private class InternalActivityListModal
     {
         public Guid Id { get; set; }
         public ActivityType ActivityType { get; set; }
@@ -197,116 +187,7 @@ public class ActivityRepository : IActivityRepository
         public Guid? RegardingEntityId { get; set; }
     }
 
-    #endregion
 
 
-    #region Appointment Methods
-
-    public Appointment CreateAppointment(Appointment entity)
-    {
-        var entry = this.dbContext.Appointment.Add(entity);
-        return entry.Entity;
-    }
-
-    public Appointment UpdateAppointment(Appointment entity)
-    {
-        var entry = this.dbContext.Appointment.Update(entity);
-        return entry.Entity;
-    }
-
-    public Appointment DeleteAppointment(Appointment entity)
-    {
-        var entry = this.dbContext.Appointment.Remove(entity);
-        return entry.Entity;
-    }
-
-    public Appointment GetAppointment(Guid Id)
-    {
-        var entity = this.dbContext.Appointment.FirstOrDefault(e => e.Id == Id) ?? throw new NotFoundException();
-        return entity;
-    }
-
-    #endregion
-
-    #region PhoneCall Methods
-    public PhoneCall CreatePhoneCall(PhoneCall entity)
-    {
-        var entry = this.dbContext.PhoneCall.Add(entity);
-        return entry.Entity;
-    }
-
-    public PhoneCall UpdatePhoneCall(PhoneCall entity)
-    {
-        var entry = this.dbContext.PhoneCall.Update(entity);
-        return entry.Entity;
-    }
-
-    public PhoneCall DeletePhoneCall(PhoneCall entity)
-    {
-        var entry = this.dbContext.PhoneCall.Remove(entity);
-        return entry.Entity;
-    }
-
-    public PhoneCall GetPhoneCall(Guid Id)
-    {
-        var entity = this.dbContext.PhoneCall.FirstOrDefault(e => e.Id == Id) ?? throw new NotFoundException();
-        return entity;
-    }
-
-    #endregion
-
-    #region Task Methods
-    public TaskActivity CreateTask(TaskActivity entity)
-    {
-        var entry = this.dbContext.TaskActivity.Add(entity);
-        return entry.Entity;
-    }
-
-    public TaskActivity UpdateTask(TaskActivity entity)
-    {
-        var entry = this.dbContext.TaskActivity.Update(entity);
-        return entry.Entity;
-    }
-
-    public TaskActivity DeleteTask(TaskActivity entity)
-    {
-        var entry = this.dbContext.TaskActivity.Remove(entity);
-        return entry.Entity;
-    }
-
-    public TaskActivity GetTask(Guid Id)
-    {
-        var entity = this.dbContext.TaskActivity.FirstOrDefault(e => e.Id == Id) ?? throw new NotFoundException();
-        return entity;
-    }
-
-    #endregion
-
-    #region Email Methods
-    public EmailActivity CreateEmail(EmailActivity entity)
-    {
-        var entry = this.dbContext.EmailActivity.Add(entity);
-        return entry.Entity;
-    }
-
-    public EmailActivity UpdateEmail(EmailActivity entity)
-    {
-        var entry = this.dbContext.EmailActivity.Update(entity);
-        return entry.Entity;
-    }
-
-    public EmailActivity DeleteEmail(EmailActivity entity)
-    {
-        var entry = this.dbContext.EmailActivity.Remove(entity);
-        return entry.Entity;
-    }
-
-    public EmailActivity GetEmail(Guid Id)
-    {
-        var entity = this.dbContext.EmailActivity.FirstOrDefault(e => e.Id == Id) ?? throw new NotFoundException();
-        return entity;
-    }
-
-    #endregion
-
+   
 }

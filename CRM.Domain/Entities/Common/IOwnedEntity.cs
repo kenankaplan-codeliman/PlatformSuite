@@ -6,7 +6,7 @@ namespace CRM.Domain.Entities.Common
 {
     public interface IOwnedEntity
     {
-        Guid OwnerId { get; set; }
-        Guid OrganizationId { get; set; }
+        Guid OwnerId { get; }
+        Guid OrganizationId { get; }
     }
 }

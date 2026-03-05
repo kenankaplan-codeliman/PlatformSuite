@@ -32,63 +32,6 @@ namespace CRM.Application.Modals.LeadModal
         public DateTime? UpdatedAt { get; set; }
         public DateTime? ConvertedDate { get; set; }
         public bool IsActive { get; set; }
-        public static LeadDetailItem fromEntity(Lead entity)
-        {
-            return new LeadDetailItem()
-            {
-                Id = entity.Id,
-                CompanyName = entity.CompanyName,
-                FirstName = entity.FirstName,
-                LastName = entity.LastName,
-                JobTitle = entity.JobTitle,
-                Email = entity.Email,
-                Phone = entity.Phone,
-                MobilePhone = entity.MobilePhone,
-                Website = entity.Website,
-                Address = entity.Address,
-                Description = entity.Description,
-                Industry = entity.Industry,
-                NumberOfEmployees = entity.NumberOfEmployees,
-                LeadSource = entity.LeadSource,
-                LeadStatus = entity.LeadStatus,
-                LeadRating = entity.LeadRating,
-                AnnualRevenue = entity.AnnualRevenue,
-                EstimatedValue = entity.EstimatedValue,
-                CreatedAt = entity.CreatedAt,
-                UpdatedAt = entity.UpdatedAt,
-                ConvertedDate = entity.ConvertedDate,
-                IsActive = entity.IsActive,
-
-            };
-        }
-
-        public static Lead toEntity(LeadDetailItem modal, Lead? entity = null)
-        {
-            if (modal == null)
-                throw new InvalidEnumArgumentException("modal is null");
-
-            Lead lead = (entity == null) ? new Lead() : entity;
-
-            lead.CompanyName = modal.CompanyName ?? "";
-            lead.FirstName = modal.FirstName ?? "";
-            lead.LastName = modal.LastName ?? "";
-            lead.JobTitle = modal.JobTitle;
-            lead.Email = modal.Email;
-            lead.Phone = modal.Phone;
-            lead.MobilePhone = modal.MobilePhone;
-            lead.Website = modal.Website;
-            lead.Address = modal.Address;
-            lead.Description = modal.Description;
-            lead.Industry = modal.Industry;
-            lead.NumberOfEmployees = modal.NumberOfEmployees;
-            lead.LeadSource = modal.LeadSource;
-            lead.LeadStatus = modal.LeadStatus;
-            lead.LeadRating = modal.LeadRating;
-            lead.AnnualRevenue = modal.AnnualRevenue;
-            lead.EstimatedValue = modal.EstimatedValue;
-            lead.IsActive = modal.IsActive;
-
-            return lead;
-        }
+        
     }
 }

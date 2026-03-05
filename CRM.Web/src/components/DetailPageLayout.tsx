@@ -136,6 +136,7 @@ const DetailPageLayout: React.FC<DetailPageLayoutProps> = ({
             <Space>
               {isViewMode && !isNew && (
                 <>
+                  {renderExtraViewActions?.()}
                   <Popconfirm
                     title={deleteConfirm.title}
                     description={deleteConfirm.description}
@@ -148,7 +149,6 @@ const DetailPageLayout: React.FC<DetailPageLayoutProps> = ({
                       Sil
                     </Button>
                   </Popconfirm>
-                  {renderExtraViewActions?.()}
                   <Button type="primary" icon={<EditOutlined />} onClick={onEdit}>
                     Düzenle
                   </Button>

@@ -26,6 +26,7 @@ interface OpportunityState {
   // Actions
   fetchOpportunities: () => Promise<void>;
   fetchOpportunityById: (id: string) => Promise<void>;
+  assignOpportunity:(opportunityId: string, userId: string) => Promise<void>;
   setPagination: (params: PaginationParams) => void;
   setFilters: (filters: OpportunityListFilters) => void;
   resetFilters: () => void;
@@ -75,6 +76,19 @@ export const useOpportunityStore = create<OpportunityState>()(
         }
       },
 
+      assignOpportunity: async(opportunityId: string, userId: string) => {
+         const { setState, clearState } = useProcessState.getState();
+
+        try {
+          setState(StateType.Loading, 'Fırsat detayı yükleniyor...', 'Lütfen bekleyiniz...');
+          await opportunityService.assignOpportunity(opportunityId, userId);
+          clearState();
+        } catch (error) {
+          const errorMessage = handleError(error);
+          setState(StateType.Error, 'Fırsat detayı yüklenemedi', errorMessage);
+        }
+      },
+      
       fetchOpportunityById: async (id: string) => {
         const { setState, clearState } = useProcessState.getState();
 

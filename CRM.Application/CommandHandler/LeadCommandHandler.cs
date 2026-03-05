@@ -3,6 +3,8 @@ using CRM.Application.Exceptions;
 using CRM.Application.Interfaces;
 using CRM.Application.Modals.Common;
 using CRM.Application.Modals.LeadModal;
+using CRM.Application.Modals.OpportunityModal;
+using CRM.Domain.Entities.Leads;
 using CRM.Domain.Enums;
 
 namespace CRM.Application.CommandHandler
@@ -22,15 +24,13 @@ namespace CRM.Application.CommandHandler
             this.unitOfWork = unitOfWork;
             this.referenceRepository = referenceRepository;
         }
-        public async Task<LeadListResponse> List(LeadListFilter? filter, PaginationInfo? paginationInfo)
+        public async Task<LeadListResponse> List(LeadListFilter filter, PaginationInfo paginationInfo)
         {
-            var result = leadRepository.List(filter, paginationInfo);
-
-            var modalList = result.Data.Select(e => LeadListItem.fromEntity(e)).ToList();
+            var result = await leadRepository.List(filter, paginationInfo);
 
             return new LeadListResponse()
             {
-                Data = modalList,
+                Data = result.Data,
                 HasMore = result.HasMore,
                 Page = result.Page,
                 PageSize = result.PageSize,
@@ -51,40 +51,25 @@ namespace CRM.Application.CommandHandler
 
         public async Task<LeadDetailItem> Get(Guid Id)
         {
-            var result = leadRepository.Get(Id);
-            if (result != null)
-            {
-                var modal = LeadDetailItem.fromEntity(result);
+            var result = await leadRepository.GetAsync(Id) ?? throw new NotFoundException();
 
-                return modal;
-            }
-            else
-                throw new BusinessException("Lead not found.");
+            return result.ToModal();
         }
 
-        public async Task<LeadDetailItem> Create(LeadDetailItem leadDetail)
+        public async Task<LeadDetailItem> Create(LeadDetailItem leadDetailItem)
         {
             try
             {
                 await unitOfWork.BeginTransactionAsync();
 
-                var entity = LeadDetailItem.toEntity(leadDetail);
+                Lead entity = new Lead();
+                entity.UpdateFrom(leadDetailItem);
 
-                leadRepository.Create(entity);
-
+                await leadRepository.CreateAsync(entity);
                 await unitOfWork.CommitTransactionAsync();
 
-                var resultEntity = leadRepository.Get(entity.Id);
-
-                if (resultEntity == null)
-                {
-                    await unitOfWork.RollbackTransactionAsync();
-                    throw new BusinessException($"Can not create Lead (Id:{entity.Id})");
-                }
-
-                var modal = LeadDetailItem.fromEntity(resultEntity);
-
-                return modal;
+                entity = await leadRepository.GetAsync(entity.Id) ?? throw new NotFoundException();
+                return entity.ToModal();
             }
             catch
             {
@@ -93,23 +78,20 @@ namespace CRM.Application.CommandHandler
             }
         }
 
-        public async Task<LeadDetailItem> Update(LeadDetailItem leadDetail)
+        public async Task<LeadDetailItem> Update(LeadDetailItem leadDetailItem)
         {
             try
             {
                 await unitOfWork.BeginTransactionAsync();
 
-                var entity = leadRepository.Get(leadDetail.Id);
+                var entity = await leadRepository.GetAsync(leadDetailItem.Id) ?? throw new NotFoundException();
+                entity.UpdateFrom(leadDetailItem);
 
-                entity = LeadDetailItem.toEntity(leadDetail, entity);
-
-                leadRepository.Update(entity);
-
+                await leadRepository.UpdateAsync(entity);
                 await unitOfWork.CommitTransactionAsync();
 
-                var modal = LeadDetailItem.fromEntity(entity);
-
-                return modal;
+                entity = await leadRepository.GetAsync(entity.Id) ?? throw new NotFoundException();
+                return entity.ToModal();
             }
             catch
             {
@@ -125,13 +107,9 @@ namespace CRM.Application.CommandHandler
             {
                 await unitOfWork.BeginTransactionAsync();
 
-                var entity = leadRepository.Get(Id);
+                var entity = await leadRepository.GetAsync(Id) ?? throw new NotFoundException();
 
-                if (entity == null)
-                    throw new BusinessException("Lead not found.");
-
-                leadRepository.Delete(entity);
-
+                await leadRepository.DeleteAsync(entity);
                 await unitOfWork.CommitTransactionAsync();
 
             }
@@ -150,12 +128,8 @@ namespace CRM.Application.CommandHandler
 
                 foreach (var Id in Ids)
                 {
-                    var entity = leadRepository.Get(Id);
-
-                    if (entity == null)
-                        throw new BusinessException("Lead not found.");
-
-                    leadRepository.Delete(entity);
+                    var entity = await leadRepository.GetAsync(Id) ?? throw new NotFoundException();
+                    await leadRepository.DeleteAsync(entity);
                 }
 
                 await unitOfWork.CommitTransactionAsync();
@@ -175,15 +149,10 @@ namespace CRM.Application.CommandHandler
 
                 foreach (var Id in Ids)
                 {
-                    var entity = leadRepository.Get(Id);
-
-                    if (entity == null)
-                        throw new BusinessException("Lead not found.");
-
-
+                    var entity =await leadRepository.GetAsync(Id) ?? throw new NotFoundException();
                     entity.LeadStatus = status;
 
-                    leadRepository.Update(entity);
+                    await leadRepository.UpdateAsync(entity);
                 }
 
                 await unitOfWork.CommitTransactionAsync();

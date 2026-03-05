@@ -20,23 +20,5 @@ namespace CRM.Application.Modals.LeadModal
         public string? Industry { get; set; }
         public decimal? EstimatedValue { get; set; }
         public bool IsActive { get; set; }
-
-        public static LeadListItem fromEntity(Lead entity)
-        {
-            return new LeadListItem()
-            {
-                id = entity.Id,
-                CompanyName = entity.CompanyName,
-                FirstName = entity.FirstName,
-                LastName = entity.LastName,
-                Email = entity.Email,
-                MobilePhone = entity.MobilePhone,
-                LeadStatus = entity.LeadStatus,
-                LeadRating = entity.LeadRating,
-                Industry = entity.Industry,
-                EstimatedValue = entity.EstimatedValue,
-                IsActive = entity.IsActive
-            };
-        }
     }
 }

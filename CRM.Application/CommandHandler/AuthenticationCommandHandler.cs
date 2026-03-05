@@ -32,7 +32,7 @@ namespace CRM.Application.CommandHandler
         public async Task<AuthenticationToken> LoginAsync(string email, string password, ClientInfo? clientInfo = null)
         {
 
-            var user = userRepository.GetByEmail(email);
+            var user = await userRepository.GetByEmailAsync(email);
 
             if (user == null || !user.IsActive)
                 throw new UnAuthenticatedException("User not found or in active");

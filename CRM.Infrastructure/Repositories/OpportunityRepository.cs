@@ -5,22 +5,21 @@ using CRM.Application.Modals.Common;
 using CRM.Application.Modals.OpportunityModal;
 using CRM.Domain.Entities.Opportunities;
 using CRM.Infrastructure.Data;
+using CRM.Infrastructure.Data.Repositories;
 using Microsoft.EntityFrameworkCore;
 
 namespace CRM.Infrastructure.Repositories;
 
-public class OpportunityRepository : IOpportunityRepository
+public class OpportunityRepository : BaseEntityRepository<Opportunity>, IOpportunityRepository
 {
-    private readonly DatabaseContext dbContext;
-
-    public OpportunityRepository(DatabaseContext dbContext)
+    public OpportunityRepository(DatabaseContext dbContext) : base(dbContext)
     {
-        this.dbContext = dbContext;
     }
 
     public async Task<PaginationResult<OpportunityListItem>> List(
         OpportunityListFilters filter,
-        PaginationInfo paginationInfo)
+        PaginationInfo paginationInfo
+        ,CancellationToken cancellationToken = default)
     {
         var query = this.dbContext.Opportunity.AsNoTracking();
             
@@ -60,7 +59,6 @@ public class OpportunityRepository : IOpportunityRepository
         var skipVal = pageIndex * paginationInfo.PageSize;
 
         var items = await query
-            .OrderByDescending(o => o.CreatedAt)
             .Skip(skipVal)
             .Take(paginationInfo.PageSize + 1)
             .Select(o => new OpportunityListItem
@@ -80,7 +78,7 @@ public class OpportunityRepository : IOpportunityRepository
                 ContactName = o.Contact != null ? $"{o.Contact.FirstName} {o.Contact.LastName}" : null,
                 IsActive = o.IsActive
             })
-            .ToListAsync();
+            .ToListAsync(cancellationToken);
 
         var hasMore = items.Count > paginationInfo.PageSize;
 
@@ -96,33 +94,13 @@ public class OpportunityRepository : IOpportunityRepository
         };
     }
 
-    public Opportunity Get(Guid id)
+    public override async Task<Opportunity?> GetAsync(Guid Id, CancellationToken cancellationToken = default)
     {
-        var entity = this.dbContext.Opportunity
-            .Include(o => o.OpportunityProducts).ThenInclude(op=> op.Product)
+        return await dbContext.Opportunity
+            .Include(o => o.OpportunityProducts).ThenInclude(op => op.Product)
             .Include(o => o.Account)
             .Include(o => o.Contact)
-            .FirstOrDefault(o => o.Id == id)
-            ?? throw new NotFoundException();
-
-        return entity;
+            .FirstOrDefaultAsync(o => o.Id == Id, cancellationToken);
     }
-
-    public Opportunity Create(Opportunity entity)
-    {
-        var entry = this.dbContext.Opportunity.Add(entity);
-        return entry.Entity;
-    }
-
-    public Opportunity Update(Opportunity entity)
-    {
-        var entry = this.dbContext.Opportunity.Update(entity);
-        return entry.Entity;
-    }
-
-    public Opportunity Delete(Opportunity entity)
-    {
-        var entry = this.dbContext.Opportunity.Remove(entity);
-        return entry.Entity;
-    }
+  
 }

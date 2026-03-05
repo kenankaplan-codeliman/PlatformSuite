@@ -39,8 +39,11 @@ namespace CRM.Domain.Entities.Leads
         public bool IsDeleted { get; set; }
         public Guid? DeletedBy { get; set; }
         public DateTime? DeletedAt { get; set; }
-        public Guid OwnerId { get; set; }
-        public Guid OrganizationId { get; set; }
-        
+
+        #region IOwnedEntity
+        public Guid OwnerId { get; private set; }
+        public Guid OrganizationId { get; private set; }
+        #endregion
+
     }
 }

@@ -9,7 +9,6 @@ using CRM.Domain.Entities.Leads;
 using CRM.Domain.Entities.Opportunities;
 using CRM.Domain.Entities.Products;
 using CRM.Infrastructure.Data.Configurations;
-using CRM.Infrastructure.Data.Configurations.Accounts;
 using Microsoft.EntityFrameworkCore;
 using AppRole = CRM.Domain.Entities.Identities.AppRole;
 
@@ -33,9 +32,9 @@ public class DatabaseContext : DbContext
     public DbSet<ActivityBase> Activity { get; set; }
     public DbSet<ActivityParty> ActivityParty{ get; set; }
     public DbSet<EmailActivity> EmailActivity { get; set; }
-    public DbSet<PhoneCall> PhoneCall{ get; set; }
+    public DbSet<PhoneCallActivity> PhoneCallActivity{ get; set; }
     public DbSet<TaskActivity> TaskActivity{ get; set; }
-    public DbSet<Appointment> Appointment { get; set; }
+    public DbSet<AppointmentActivity> AppointmentActivity { get; set; }
 
     // ======= Account =======
     public DbSet<Account> Account { get; set; }
@@ -87,18 +86,18 @@ public class DatabaseContext : DbContext
 
     public override int SaveChanges()
     {
-        ApplyAuditAndSoftDelete();
+        ApplySaveChangeRules();
         return base.SaveChanges();
     }
 
     public override Task<int> SaveChangesAsync(
         CancellationToken cancellationToken = default)
     {
-        ApplyAuditAndSoftDelete();
+        ApplySaveChangeRules();
         return base.SaveChangesAsync(cancellationToken);
     }
 
-    private void ApplyAuditAndSoftDelete()
+    private void ApplySaveChangeRules()
     {
         var now = DateTime.UtcNow;
 
@@ -126,12 +125,16 @@ public class DatabaseContext : DbContext
             // ======= Owned Entity =======
             if (contextUser != null && entry.Entity is IOwnedEntity ownedEntity)
             {
-                if (entry.State == EntityState.Added && 
-                    ownedEntity.OwnerId==Guid.Empty && 
-                    ownedEntity.OrganizationId == Guid.Empty)
+                if (entry.State == EntityState.Added && ownedEntity.OwnerId == Guid.Empty && ownedEntity.OrganizationId == Guid.Empty)
                 {
-                    ownedEntity.OwnerId = contextUser.UserId;
-                    ownedEntity.OrganizationId = contextUser.OrganizationId;
+                    entry.Property(nameof(IOwnedEntity.OwnerId)).CurrentValue = contextUser.UserId;
+                    entry.Property(nameof(IOwnedEntity.OrganizationId)).CurrentValue = contextUser.OrganizationId;
+                }
+                else if (entry.State == EntityState.Modified)
+                {
+                    // Update'te degisimi engelle
+                    entry.Property(nameof(IOwnedEntity.OwnerId)).IsModified = false;
+                    entry.Property(nameof(IOwnedEntity.OrganizationId)).IsModified = false;
                 }
             }
 

@@ -27,9 +27,10 @@ public class Account :
     public Account? ParentAccount { get; set; }
     public ICollection<Account> ChildAccounts { get; } = new List<Account>();
 
-    // Multi Tenant
-    public Guid OwnerId { get; set; }
-    public Guid OrganizationId { get; set; }
+    #region IOwnedEntity
+    public Guid OwnerId { get; private set; }
+    public Guid OrganizationId { get; private set; }
+    #endregion
 
     // Navigation
     public virtual ICollection<AccountEmail> Emails { get; } = new List<AccountEmail>();

@@ -5,17 +5,15 @@ using CRM.Application.Modals.ContactModal;
 using CRM.Domain.Entities.Contacts;
 using CRM.Domain.Entities.Leads;
 using CRM.Infrastructure.Data;
+using CRM.Infrastructure.Data.Repositories;
 using Microsoft.EntityFrameworkCore;
 
 namespace CRM.Infrastructure.Repositories;
 
-public class ContactRepository : IContactRepository
+public class ContactRepository : BaseEntityRepository<Contact>, IContactRepository
 {
-    private readonly DatabaseContext dbContext;
-
-    public ContactRepository(DatabaseContext dbContext)
+    public ContactRepository(DatabaseContext dbContext) : base(dbContext)
     {
-        this.dbContext = dbContext;
     }
 
     public async Task<PaginationResult<ContactListItem>> List(ContactListFilters filter, PaginationInfo paginationInfo)
@@ -101,34 +99,13 @@ public class ContactRepository : IContactRepository
         };
     }
 
-    public Contact Get(Guid id)
+    public override async Task<Contact?> GetAsync(Guid Id, CancellationToken cancellationToken = default)
     {
-        var entity = this.dbContext.Contact
+        return await this.dbContext.Contact
             .Include(c => c.Emails)
             .Include(c => c.Phones)
             .Include(c => c.Addresses)
             .Include(c => c.AccountContacts).ThenInclude(ac => ac.Account)
-            .FirstOrDefault(c => c.Id == id)
-            ?? throw new NotFoundException();
-
-        return entity;
-    }
-
-    public Contact Create(Contact entity)
-    {
-        var entry = this.dbContext.Contact.Add(entity);
-        return entry.Entity;
-    }
-
-    public Contact Delete(Contact entity)
-    {
-        var entry = this.dbContext.Contact.Remove(entity);
-        return entry.Entity;
-    }
-
-    public Contact Update(Contact entity)
-    {
-        var entry = this.dbContext.Contact.Update(entity);
-        return entry.Entity;
+            .FirstOrDefaultAsync(e => e.Id == Id, cancellationToken);
     }
 }

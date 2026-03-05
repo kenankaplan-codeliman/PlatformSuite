@@ -7,6 +7,6 @@ namespace CRM.Application.Interfaces
 {
     public interface IAccountRepository : IEntityRepository<Account>
     {
-        Task<PaginationResult<AccountListItem>> List(AccountListFilter filter, PaginationInfo paginationInfo);
+        Task<PaginationResult<AccountListItem>> List(AccountListFilter filter, PaginationInfo paginationInfocancellationToken, CancellationToken cancellationToken = default);
     }
 }

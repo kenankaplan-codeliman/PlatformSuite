@@ -10,3 +10,12 @@ export interface IdRequest {
 export interface IdListRequest {
   ids: string[];
 }
+
+export interface AssignRequest {
+  entityId: string;
+  ownerId: string;
+}
+
+export interface AssignListRequest {
+  owners: AssignRequest[];
+}

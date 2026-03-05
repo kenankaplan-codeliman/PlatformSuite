@@ -6,9 +6,9 @@ namespace CRM.Domain.Entities.Activities;
 /// Randevu / Toplantı Aktivitesi
 /// Katılımcılar (Organizer, Attendees) ActivityParty tablosunda tutulur.
 /// </summary>
-public class Appointment : ActivityBase
+public class AppointmentActivity : ActivityBase
 {
-    public Appointment() : base(ActivityType.Appointment)
+    public AppointmentActivity() : base(ActivityType.Appointment)
     {
     }
 

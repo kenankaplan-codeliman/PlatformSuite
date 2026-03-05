@@ -6,9 +6,9 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 namespace CRM.Infrastructure.Data.Configurations.Activities;
 
-public class PhoneCallConfiguration : IEntityTypeConfiguration<PhoneCall>
+public class PhoneCallActivityConfiguration : IEntityTypeConfiguration<PhoneCallActivity>
 {
-    public void Configure(EntityTypeBuilder<PhoneCall> builder)
+    public void Configure(EntityTypeBuilder<PhoneCallActivity> builder)
     {
         builder.ToTable("activity_phone_call");
 

@@ -7,8 +7,8 @@ namespace CRM.Api.Contracts.Requests.Lead;
 
 public class ActivityListRequest
 {
-  public int Page { get; set; }
-  public int PageSize { get; set; }
-  public ActivityListFilters? Filters { get; set; }
-    
+    public int Page { get; set; }
+    public int PageSize { get; set; }
+    public ActivityListFilters Filters { get; set; } = new();
+
 }

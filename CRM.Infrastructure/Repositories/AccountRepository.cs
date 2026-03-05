@@ -4,7 +4,9 @@ using CRM.Application.Modals.AccountModal;
 using CRM.Application.Modals.Common;
 using CRM.Domain.Entities.Accounts;
 using CRM.Domain.Entities.Leads;
+using CRM.Domain.Entities.Opportunities;
 using CRM.Infrastructure.Data;
+using CRM.Infrastructure.Data.Repositories;
 using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
@@ -14,16 +16,14 @@ using System.Threading;
 namespace CRM.Infrastructure.Repositories;
 
 
-public class AccountRepository : IAccountRepository
+public class AccountRepository : BaseEntityRepository<Account>, IAccountRepository
 {
-    private readonly DatabaseContext dbContext;
 
-    public AccountRepository(DatabaseContext dbContext)
+    public AccountRepository(DatabaseContext dbContext) : base(dbContext)
     {
-        this.dbContext = dbContext;
     }
 
-    public async Task<PaginationResult<AccountListItem>> List(AccountListFilter filter, PaginationInfo paginationInfo)
+    public async Task<PaginationResult<AccountListItem>> List(AccountListFilter filter, PaginationInfo paginationInfo, CancellationToken cancellationToken = default)
     {
         var query = this.dbContext.Account.AsNoTracking();
 
@@ -51,7 +51,7 @@ public class AccountRepository : IAccountRepository
 
         var skipVal = pageIndex * paginationInfo.PageSize;
 
-        var items = query
+        var items = await query
           .Skip(skipVal)
           .Take(paginationInfo.PageSize + 1)
           .Select(acc => new AccountListItem
@@ -77,7 +77,7 @@ public class AccountRepository : IAccountRepository
                   .FirstOrDefault(),
               IsActive = acc.IsActive
           })
-          .ToList();
+          .ToListAsync(cancellationToken);
 
 
 
@@ -95,34 +95,13 @@ public class AccountRepository : IAccountRepository
         };
     }
 
-    public Account Get(Guid Id)
+    public override async Task<Account?> GetAsync(Guid Id, CancellationToken cancellationToken = default)
     {
-        var entity = this.dbContext.Account
+        return await this.dbContext.Account
             .Include(a => a.Emails)
             .Include(a => a.Phones)
             .Include(a => a.Addresses)
-            .Include(a => a.AccountContacts).ThenInclude(ac=> ac.Contact)
-            .FirstOrDefault(e => e.Id == Id) 
-            ?? throw new NotFoundException();
-
-        return entity;
-    }
-
-    public Account Create(Account entity)
-    {
-        var entry = this.dbContext.Account.Add(entity);
-        return entry.Entity;
-    }
-
-    public Account Delete(Account entity)
-    {
-        var entry = this.dbContext.Account.Remove(entity);
-        return entry.Entity;
-    }
-
-    public Account Update(Account entity)
-    {
-        var entry = this.dbContext.Account.Update(entity);
-        return entry.Entity;
+            .Include(a => a.AccountContacts).ThenInclude(ac => ac.Contact)
+            .FirstOrDefaultAsync(e => e.Id == Id, cancellationToken);
     }
 }

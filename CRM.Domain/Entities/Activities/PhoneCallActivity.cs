@@ -6,9 +6,9 @@ namespace CRM.Domain.Entities.Activities;
 /// Telefon Görüşmesi Aktivitesi
 /// Katılımcılar (Caller, Recipient) ActivityParty tablosunda tutulur.
 /// </summary>
-public class PhoneCall : ActivityBase
+public class PhoneCallActivity : ActivityBase
 {
-    public PhoneCall() : base(ActivityType.PhoneCall)
+    public PhoneCallActivity() : base(ActivityType.PhoneCall)
     {
     }
 

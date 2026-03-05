@@ -1,45 +1,27 @@
 ﻿using CRM.Application.Exceptions;
 using CRM.Application.Interfaces;
+using CRM.Domain.Entities.Identities;
 using CRM.Domain.Entities.Products;
 using CRM.Infrastructure.Data;
+using CRM.Infrastructure.Data.Repositories;
+using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
 using System.Text;
 
 namespace CRM.Infrastructure.Repositories
 {
-    public class ProductRepository : IProductRepository
+    public class ProductRepository : BaseEntityRepository<Product>, IProductRepository
     {
-        private readonly DatabaseContext dbContext;
-
-        public ProductRepository(DatabaseContext dbContext)
-        {
-            this.dbContext = dbContext;
-        }
-
-        public Product Get(Guid Id)
-        {
-            return dbContext.Product.FirstOrDefault(x => x.Id == Id) ?? throw new NotFoundException();
-        }
-
-        public Product Create(Product entity)
-        {
-            var entry = this.dbContext.Product.Add(entity);
-            return entry.Entity;
-        }
-
-        public Product Delete(Product entity)
-        {
-            var entry = this.dbContext.Product.Remove(entity);
-            return entry.Entity;
-        }
-
         
 
-        public Product Update(Product entity)
+        public ProductRepository(DatabaseContext dbContext) : base(dbContext) { }
+        
+        
+        public override async Task<Product?> GetAsync(Guid Id, CancellationToken cancellationToken = default)
         {
-            var entry = this.dbContext.Product.Update(entity);
-            return entry.Entity;
+            return await dbContext.Product.FirstOrDefaultAsync(x => x.Id == Id, cancellationToken);
         }
+       
     }
 }

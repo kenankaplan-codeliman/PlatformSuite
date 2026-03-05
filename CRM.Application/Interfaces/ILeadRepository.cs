@@ -10,6 +10,6 @@ namespace CRM.Application.Interfaces
 {
     public interface ILeadRepository : IEntityRepository<Lead>
     {
-        PaginationResult<Lead> List(LeadListFilter? filter, PaginationInfo? paginationInfo);
+        Task<PaginationResult<LeadListItem>> List(LeadListFilter filter, PaginationInfo paginationInfo, CancellationToken cancellationToken = default);
     }
 }

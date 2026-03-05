@@ -26,12 +26,17 @@ public static class DependencyInjection
         services.AddScoped<IMicrosoftGraphService, MicrosoftGraphService>();
 
         // Entity Repository
+        services.AddScoped<IActivityRepository, ActivityRepository>();
+        services.AddScoped<IEmailActivityRepository, EmailActivityRepository>();
+        services.AddScoped<IAppointmentActivityRepository, AppointmentActivityRepository>();
+        services.AddScoped<ITaskActivityRepository, TaskActivityRepository>();
+        services.AddScoped<IPhoneCallActivityRepository, PhoneCallActivityRepository>();
+
         services.AddScoped<IReferenceRepository, ReferenceRepository>();
         services.AddScoped<IUserRepository, UserRepository>();
         services.AddScoped<IOrganizationRepository, OrganizationRepository>();
         services.AddScoped<IRoleRepository, RoleRepository>();
         services.AddScoped<ILeadRepository, LeadRepository>();
-        services.AddScoped<IActivityRepository, ActivityRepository>();
         services.AddScoped<IAccountRepository, AccountRepository>();
         services.AddScoped<IContactRepository, ContactRepository>();
         services.AddScoped<IOpportunityRepository, OpportunityRepository>();
