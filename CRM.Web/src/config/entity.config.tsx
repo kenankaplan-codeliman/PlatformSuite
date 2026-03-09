@@ -3,7 +3,7 @@ import {
   ScheduleOutlined, RocketOutlined, UserOutlined, ContactsOutlined,
   EllipsisOutlined, DashboardOutlined, BankOutlined,
   SettingOutlined, BarChartOutlined,
-  CrownOutlined, ShoppingOutlined, AppstoreOutlined,
+  CrownOutlined,
   ProductOutlined,
 } from '@ant-design/icons';
 

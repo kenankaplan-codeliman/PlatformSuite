@@ -40,12 +40,12 @@ import {
 } from '@/types/activity.types';
 import { useActivityStore } from '@/stores/activity.store';
 import { entitySearchService } from '@/services/entity.search.service';
-import EntityLookup, { EntityTypeConfig } from '@/components/EntityLookup';
+import EntityLookup from '@/components/EntityLookup';
 import { toLocalISO } from '@/util/dateHelper';
 
 import { useDetailPage, type DetailPageProps } from '@/hooks/useDetailPage';
 import DetailPageLayout from '@/components/DetailPageLayout';
-import { getEntityIcon } from '@/config/entity.config';
+import { EntityTypeConfig, getEntityIcon } from '@/config/entity.config';
 
 const { Title } = Typography;
 const { TextArea } = Input;
