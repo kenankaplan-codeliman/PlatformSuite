@@ -60,7 +60,7 @@ public class ContactRepository : BaseEntityRepository<Contact>, IContactReposito
                 Id = c.Id,
                 FirstName = c.FirstName,
                 LastName = c.LastName,
-                FullName = $"{c.FirstName} {c.LastName}",
+                FullName = c.DisplayName,
                 Title = c.Title,
                 Department = c.Department,
                 PrimaryAccount = c.AccountContacts

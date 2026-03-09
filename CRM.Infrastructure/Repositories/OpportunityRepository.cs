@@ -75,7 +75,7 @@ public class OpportunityRepository : BaseEntityRepository<Opportunity>, IOpportu
                 AccountId = o.AccountId,
                 AccountName = o.Account.AccountName,
                 ContactId = o.ContactId,
-                ContactName = o.Contact != null ? $"{o.Contact.FirstName} {o.Contact.LastName}" : null,
+                ContactName = o.Contact != null ? o.Contact.DisplayName : null,
                 IsActive = o.IsActive
             })
             .ToListAsync(cancellationToken);

@@ -27,7 +27,7 @@ public static class OpportunityMappingExtensions
             AccountName = entity.Account?.AccountName,
             ContactId = entity.ContactId,
             ContactName = entity.Contact != null
-                                ? $"{entity.Contact.FirstName} {entity.Contact.LastName}"
+                                ? entity.Contact.DisplayName
                                 : null,
             Products = entity.OpportunityProducts.Select(p => p.ToModal()).ToList(),
             CreatedAt = entity.CreatedAt,
