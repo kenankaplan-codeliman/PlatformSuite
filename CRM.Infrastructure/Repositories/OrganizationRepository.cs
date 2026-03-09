@@ -16,10 +16,11 @@ namespace CRM.Infrastructure.Repositories
 {
     public class OrganizationRepository : BaseEntityRepository<AppOrganization>, IOrganizationRepository
     {
-       
+
         private readonly IConfiguration config;
 
-        public OrganizationRepository(DatabaseContext dbContext, IConfiguration config) : base(dbContext)
+        public OrganizationRepository(DatabaseContext dbContext,
+            IConfiguration config) : base(dbContext)
         {
             this.config = config;
         }
@@ -30,14 +31,13 @@ namespace CRM.Infrastructure.Repositories
         }
 
         public async Task<Dictionary<Guid, string>> GetOrganizationHierarchyAsync(
-    Guid organizationId, CancellationToken cancellationToken = default)
+        Guid organizationId, CancellationToken cancellationToken = default)
         {
             var organizations = await dbContext.AppOrganization
-                .IgnoreQueryFilters()
-                .AsNoTracking()
-                .Where(o => !o.IsDeleted && o.IsActive)
-                .Select(o => new { o.Id, o.ParentOrganizationId, o.OrganizationName })
-                .ToListAsync(cancellationToken);
+            .AsNoTracking()
+            .Where(o => !o.IsDeleted && o.IsActive)
+            .Select(o => new { o.Id, o.ParentOrganizationId, o.OrganizationName })
+            .ToListAsync(cancellationToken);
 
             if (!organizations.Any(o => o.Id == organizationId))
                 return new Dictionary<Guid, string>();
@@ -74,17 +74,15 @@ namespace CRM.Infrastructure.Repositories
         public async Task<AppOrganization?> GetDefaultOrganization(CancellationToken cancellationToken = default)
         {
             return await dbContext.AppOrganization
-                .IgnoreQueryFilters()
-                .AsNoTracking()
-                .FirstOrDefaultAsync(o => !o.IsDeleted && o.IsDefault, cancellationToken);
+            .AsNoTracking()
+            .FirstOrDefaultAsync(o => !o.IsDeleted && o.IsDefault, cancellationToken);
         }
 
         public async Task<AppOrganization> GetOrCreateDefaultOrganization(CancellationToken cancellationToken = default)
         {
             var defaultOrganization = await dbContext.AppOrganization
-                .IgnoreQueryFilters()
-                .Where(o => o.IsActive && !o.IsDeleted && o.IsDefault)
-                .FirstOrDefaultAsync(cancellationToken);
+            .Where(o => o.IsActive && !o.IsDeleted && o.IsDefault)
+            .FirstOrDefaultAsync(cancellationToken);
 
             if (defaultOrganization != null)
                 return defaultOrganization;

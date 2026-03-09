@@ -16,13 +16,13 @@ public abstract class BaseEntityRepository<T> : IEntityRepository<T>
         dbSet = context.Set<T>();
     }
 
+
+
     // ── Abstract: Her repository kendi sorgusunu yazar ────────────────────
 
     public abstract Task<T?> GetAsync(Guid id, CancellationToken cancellationToken = default);
 
     // ── Ortak Implementasyonlar ───────────────────────────────────────────
-    // OwnerId ve OrganizationId koruması DatabaseContext.ApplyAuditAndSoftDelete()
-    // içinde merkezi olarak yönetilir. Burada ek bir işlem gerekmez.
 
     public virtual async Task<T> CreateAsync(T entity, CancellationToken cancellationToken = default)
     {
@@ -45,28 +45,72 @@ public abstract class BaseEntityRepository<T> : IEntityRepository<T>
         return entity;
     }
 
-    // ── Assign: Sadece IOwnedEntity'ler için ─────────────────────────────
-
-    public virtual async Task AssignAsync(Guid entityId, Guid ownerId, CancellationToken cancellationToken = default)
+    // ── Ownership WHERE koşulu — IOwnedEntity ise filtre ekler ───────────
+    protected IQueryable<T> WithOwnerFilter(IQueryable<T> query)
     {
         if (!typeof(IOwnedEntity).IsAssignableFrom(typeof(T)))
-            throw new InvalidOperationException($"{typeof(T).Name} does not implement IOwnedEntity.");
+            return query;
+
+        // dbContext.IsUserAccess / IsOrgAccess / CurrentUserId / OrgIds
+        // PrivilegeAuthorizationHandler'da set edilen değerler — request'e özel
+        if (dbContext.IsUserAccess)
+            return query.Where(e =>
+                EF.Property<Guid>(e, nameof(IOwnedEntity.OwnerId)) == dbContext.CurrentUserId);
+
+        if (dbContext.IsOrgAccess)
+            return query.Where(e =>
+                dbContext.OrgIds.Contains(EF.Property<Guid>(e, nameof(IOwnedEntity.OrganizationId))));
+
+        return query; // AccessLevel.All — filtre yok
+    }
+
+    // ── SetStatusAsync ────────────────────────────────────────────────────
+    public virtual async Task SetStatusAsync(
+        IEnumerable<Guid> entityIds, bool isActive, CancellationToken cancellationToken = default)
+    {
+        var query = dbSet.Where(e => entityIds.Contains(e.Id));
+
+        // IOwnedEntity ise ownership koşulu eklenir
+        query = WithOwnerFilter(query);
+
+        var updated = await query.ExecuteUpdateAsync(
+            s => s.SetProperty(
+                e => EF.Property<bool>(e, nameof(IBaseEntity.IsActive)), isActive),
+            cancellationToken);
+
+        if (updated == 0)
+            throw new KeyNotFoundException(
+                $"{typeof(T).Name} not found or access denied.");
+    }
+
+    // ── AssignAsync ───────────────────────────────────────────────────────
+    public virtual async Task AssignAsync(
+        IEnumerable<Guid> entityIds, Guid newOwnerId, CancellationToken cancellationToken = default)
+    {
+        if (!typeof(IOwnedEntity).IsAssignableFrom(typeof(T)))
+            throw new InvalidOperationException(
+                $"{typeof(T).Name} does not implement IOwnedEntity.");
 
         var user = await dbContext.AppUser
             .AsNoTracking()
-            .Where(u => u.Id == ownerId)
+            .Where(u => u.Id == newOwnerId)
             .Select(u => new { u.OrganizationId })
             .FirstOrDefaultAsync(cancellationToken)
-            ?? throw new KeyNotFoundException($"User with id {ownerId} not found.");
+            ?? throw new KeyNotFoundException($"User with id {newOwnerId} not found.");
 
-        var updated = await dbSet
-            .Where(e => e.Id == entityId)
-            .ExecuteUpdateAsync(s => s
-                .SetProperty(e => EF.Property<Guid>(e, nameof(IOwnedEntity.OwnerId)), ownerId)
+        var query = dbSet.Where(e => entityIds.Contains(e.Id));
+
+        // Assign'dan önce mevcut kaydın sahibi olup olmadığı kontrol edilir
+        query = WithOwnerFilter(query);
+
+        var updated = await query.ExecuteUpdateAsync(
+            s => s
+                .SetProperty(e => EF.Property<Guid>(e, nameof(IOwnedEntity.OwnerId)), newOwnerId)
                 .SetProperty(e => EF.Property<Guid>(e, nameof(IOwnedEntity.OrganizationId)), user.OrganizationId),
             cancellationToken);
 
         if (updated == 0)
-            throw new KeyNotFoundException($"{typeof(T).Name} with id {entityId} not found.");
+            throw new KeyNotFoundException(
+                $"{typeof(T).Name} not found or access denied.");
     }
 }

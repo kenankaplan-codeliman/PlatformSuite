@@ -1,4 +1,4 @@
-﻿using CRM.Domain.Entities.Accounts;
+using CRM.Domain.Entities.Accounts;
 using CRM.Domain.Entities.Common;
 using System;
 using System.Collections.Generic;
@@ -14,7 +14,7 @@ public class Contact :
 {
     #region IBaseEntity
     public Guid Id { get; set; }
-    public bool IsActive { get; set; } = true;
+    public bool IsActive { get; private set; } = true;
     #endregion
 
     public string FirstName { get; set; } = default!;
@@ -34,12 +34,12 @@ public class Contact :
     public ICollection<ContactPhone> Phones { get;} = new List<ContactPhone>();
     public ICollection<ContactAddress> Addresses { get; } = new List<ContactAddress>();
 
-    public Guid CreatedBy { get; set; }
-    public DateTime CreatedAt { get; set; }
-    public Guid? UpdatedBy { get; set; }
-    public DateTime? UpdatedAt { get; set; }
+    public Guid CreatedBy { get; private set; }
+    public DateTime CreatedAt { get; private set; }
+    public Guid? UpdatedBy { get; private set; }
+    public DateTime? UpdatedAt { get; private set; }
 
-    public bool IsDeleted { get; set; }
-    public Guid? DeletedBy { get; set; }
-    public DateTime? DeletedAt { get; set; }
+    public bool IsDeleted { get; private set; }
+    public Guid? DeletedBy { get; private set; }
+    public DateTime? DeletedAt { get; private set; }
 }

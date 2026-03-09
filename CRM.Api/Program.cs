@@ -1,17 +1,16 @@
-using Microsoft.EntityFrameworkCore;
-
-using CRM.Api.Middleware;
-using CRM.Infrastructure.Data;
-
 using CRM.Api.Configuration;
 using CRM.Api.HostedServices;
+using CRM.Api.Middleware;
+using CRM.Infrastructure.Data;
+using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
 
+
 builder.Services.AddDbContext<DatabaseContext>(
-    options => options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")),
-    ServiceLifetime.Scoped
+    (sp, options) => options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection"))
 );
+
 
 builder.AddCustomLogging();
 
@@ -27,6 +26,8 @@ builder.Services
     .AddPrivilegeAuthorization()
     .AddHostedService<DbInitializerHostedService>()
     .AddHostedService<ElasticIndexTemplateHostedService>();
+
+
 
 var app = builder.Build();
 

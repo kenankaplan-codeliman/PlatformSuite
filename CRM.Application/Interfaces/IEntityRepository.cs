@@ -15,5 +15,7 @@ public interface IEntityRepository<T> where T : class, IBaseEntity
     Task<T> DeleteAsync(T entity, CancellationToken cancellationToken = default);
 
     // Sadece IOwnedEntity'ler için — servis katmanında rol kontrolü yapıldıktan sonra çağrılır
-    Task AssignAsync(Guid entityId, Guid ownerId, CancellationToken cancellationToken = default);
+    Task AssignAsync(IEnumerable<Guid> entityIds, Guid ownerId, CancellationToken cancellationToken = default);
+
+    Task SetStatusAsync(IEnumerable<Guid> entityIds, bool isActive, CancellationToken cancellationToken = default);
 }

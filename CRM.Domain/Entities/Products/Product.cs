@@ -1,4 +1,4 @@
-﻿using CRM.Domain.Entities.Common;
+using CRM.Domain.Entities.Common;
 using CRM.Domain.Entities.Opportunities;
 using CRM.Domain.Enums;
 using System;
@@ -13,7 +13,7 @@ public class Product :
 {
     #region IBaseEntity
     public Guid Id { get; set; }
-    public bool IsActive { get; set; } = true;
+    public bool IsActive { get; private set; } = true;
     #endregion
 
     // ── Temel Bilgiler ────────────────────────────────────────────────────
@@ -42,14 +42,14 @@ public class Product :
 
     // ── IAuditableEntity ──────────────────────────────────────────────────
 
-    public Guid CreatedBy { get; set; }
-    public DateTime CreatedAt { get; set; }
-    public Guid? UpdatedBy { get; set; }
-    public DateTime? UpdatedAt { get; set; }
+    public Guid CreatedBy { get; private set; }
+    public DateTime CreatedAt { get; private set; }
+    public Guid? UpdatedBy { get; private set; }
+    public DateTime? UpdatedAt { get; private set; }
 
     // ── ISoftDeleteEntity ─────────────────────────────────────────────────
 
-    public bool IsDeleted { get; set; }
-    public Guid? DeletedBy { get; set; }
-    public DateTime? DeletedAt { get; set; }
+    public bool IsDeleted { get; private set; }
+    public Guid? DeletedBy { get; private set; }
+    public DateTime? DeletedAt { get; private set; }
 }

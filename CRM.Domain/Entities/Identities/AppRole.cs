@@ -1,4 +1,4 @@
-﻿using CRM.Domain.Entities.Common;
+using CRM.Domain.Entities.Common;
 using System;
 using System.Collections.Generic;
 using System.Text;
@@ -12,11 +12,11 @@ namespace CRM.Domain.Entities.Identities
         public required string RoleName { get; set; }
         public string? Description { get; set; }
         public bool IsDefault { get; set; } = false;
-        public bool IsActive { get; set; } = true;
-        public Guid CreatedBy { get; set; }
-        public DateTime CreatedAt { get; set; }
-        public Guid? UpdatedBy { get; set; }
-        public DateTime? UpdatedAt { get; set; }
+        public bool IsActive { get; private set; } = true;
+        public Guid CreatedBy { get; private set; }
+        public DateTime CreatedAt { get; private set; }
+        public Guid? UpdatedBy { get; private set; }
+        public DateTime? UpdatedAt { get; private set; }
     }
 
 }

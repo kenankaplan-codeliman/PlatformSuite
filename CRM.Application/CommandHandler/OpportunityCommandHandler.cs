@@ -126,7 +126,7 @@ public class OpportunityCommandHandler
         {
             await unitOfWork.BeginTransactionAsync();
 
-            await opportunityRepository.AssignAsync(entityId, ownerId);
+            await opportunityRepository.AssignAsync(new[] { entityId }, ownerId);
 
             await unitOfWork.CommitTransactionAsync();
 

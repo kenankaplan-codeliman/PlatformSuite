@@ -1,4 +1,4 @@
-﻿using CRM.Domain.Entities.Common;
+using CRM.Domain.Entities.Common;
 using System;
 
 namespace CRM.Domain.Entities.Opportunities;
@@ -11,7 +11,7 @@ public class OpportunityProduct : IBaseEntity, IAuditableEntity
 {
     #region IBaseEntity
     public Guid Id { get; set; }
-    public bool IsActive { get; set; } = true;
+    public bool IsActive { get; private set; } = true;
     #endregion
 
     // ── İlişkiler ─────────────────────────────────────────────────────────
@@ -25,8 +25,8 @@ public class OpportunityProduct : IBaseEntity, IAuditableEntity
 
     // ── IAuditableEntity ──────────────────────────────────────────────────
 
-    public Guid CreatedBy { get; set; }
-    public DateTime CreatedAt { get; set; }
-    public Guid? UpdatedBy { get; set; }
-    public DateTime? UpdatedAt { get; set; }
+    public Guid CreatedBy { get; private set; }
+    public DateTime CreatedAt { get; private set; }
+    public Guid? UpdatedBy { get; private set; }
+    public DateTime? UpdatedAt { get; private set; }
 }

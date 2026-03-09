@@ -8,6 +8,6 @@ namespace CRM.Application.Modals.Authentication;
 
 public class ContextAuthorization : IContextAuthorization
 {
-    public string PrivilegeCode { get; set; } = string.Empty;
-    public AccessLevel AccessLevel { get; set; } = AccessLevel.None;
+    public string PrivilegeCode { get; set; } = default!;
+    public AccessLevel AccessLevel { get; set; }
 }

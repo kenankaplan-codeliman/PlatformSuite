@@ -6,8 +6,8 @@ namespace CRM.Domain.Entities.Common
 {
     public interface ISoftDeleteEntity
     {
-        bool IsDeleted { get; set; }
-        Guid? DeletedBy { get; set; }
-        DateTime? DeletedAt { get; set; }
+        bool IsDeleted { get; }
+        Guid? DeletedBy { get; }
+        DateTime? DeletedAt { get; }
     }
 }

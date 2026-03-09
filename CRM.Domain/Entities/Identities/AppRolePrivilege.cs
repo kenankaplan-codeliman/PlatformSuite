@@ -1,4 +1,4 @@
-﻿using CRM.Domain.Entities.Common;
+using CRM.Domain.Entities.Common;
 using CRM.Domain.Enums;
 using System;
 using System.Collections.Generic;
@@ -12,7 +12,7 @@ namespace CRM.Domain.Entities.Identities
         public required Guid RoleId { get; set; }
         public required string PrivilegeCode { get; set; }
         public required AccessLevel AccessLevel { get; set; } = AccessLevel.None;
-        public bool IsActive { get; set; } = true;
+        public bool IsActive { get; private set; } = true;
 
     }
 }

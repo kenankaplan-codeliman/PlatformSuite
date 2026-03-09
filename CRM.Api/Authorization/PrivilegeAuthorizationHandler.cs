@@ -5,7 +5,7 @@ using CRM.Application.Modals;
 using CRM.Application.Modals.Authentication;
 using CRM.Domain.Authorization;
 using CRM.Domain.Enums;
-
+using CRM.Infrastructure.Data;
 using Microsoft.AspNetCore.Authorization;
 using System;
 
@@ -56,7 +56,7 @@ public class PrivilegeAuthorizationHandler : AuthorizationHandler<PrivilegeAutho
         {
             var contextUserSrv = httpContext.RequestServices.GetRequiredService<IContextUser>();
             var contextAuthSrv = httpContext.RequestServices.GetRequiredService<IContextAuthorization>();
-
+            
             contextUserSrv.PrivilegesCodes.TryGetValue(requiredPrivilegeCode, out var accessLevel);
 
             if (AccessLevel.None.Equals(accessLevel))

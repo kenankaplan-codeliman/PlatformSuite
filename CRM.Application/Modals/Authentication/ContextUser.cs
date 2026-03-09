@@ -11,5 +11,5 @@ public class ContextUser : IContextUser
     public Guid OrganizationId { get; set; }
     public string OrganizationName { get; set; } = default!;
     public List<Guid> AccessibleOrganizationList { get; set; } = default!;
-    public Dictionary<string, AccessLevel> PrivilegesCodes { get; set; } = new Dictionary<String, AccessLevel>();
+    public Dictionary<string, AccessLevel> PrivilegesCodes { get; set; } = new();
 }

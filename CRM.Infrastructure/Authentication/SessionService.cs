@@ -4,8 +4,10 @@ using CRM.Application.Modals;
 using CRM.Domain.Entities.Identities;
 using CRM.Domain.Enums;
 using CRM.Infrastructure.Data;
+using CRM.Infrastructure.Repositories;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Graph.Models;
 using System.Runtime.CompilerServices;
 
 
@@ -18,7 +20,8 @@ namespace CRM.Infrastructure.Authentication
         private readonly IUserRepository userRepository;
         private readonly IOrganizationRepository organizationRepository;
         private readonly ITokenService tokenService;
-        private readonly DatabaseContext dbContext;
+        private readonly IAppLoginRepository appLoginRepository;
+        
         private const string SESSION_PREFIX = "session:";
 
         public SessionService(
@@ -28,14 +31,14 @@ namespace CRM.Infrastructure.Authentication
             IOrganizationRepository organizationRepository,
             IRoleRepository roleRepository,
             ITokenService tokenService,
-            DatabaseContext dbContext)
+            IAppLoginRepository appLoginRepository)
         {
             this.config = config;
             this.cache = cache;
             this.userRepository = userRepository;
             this.organizationRepository = organizationRepository;
             this.tokenService = tokenService;
-            this.dbContext = dbContext;
+            this.appLoginRepository = appLoginRepository;
         }
 
         public async Task<AuthenticationToken> CreateSessionAsync(AppUser user, ClientInfo? clientInfo = null)
@@ -63,12 +66,10 @@ namespace CRM.Infrastructure.Authentication
                 RefreshCount = 0,
                 IpAddress = clientInfo?.IpAddress,
                 UserAgent = clientInfo?.UserAgent,
-                IsActive = true
             };
 
-
-            dbContext.AppLogin.Add(loginHistory);
-            await dbContext.SaveChangesAsync();
+            await appLoginRepository.CreateAsync(loginHistory);
+            
 
             var orgMap = await organizationRepository.GetOrganizationHierarchyAsync(user.OrganizationId);
             var usrPrivileges = await userRepository.GetUserPrivilegesAsync(user.Id);
@@ -98,7 +99,7 @@ namespace CRM.Infrastructure.Authentication
             string refreshTokenId = tokenService.ValidateAccessToken(refreshToken);
 
 
-            var appLogin = dbContext.AppLogin.FirstOrDefault(lh => lh.RefreshTokenId == refreshTokenId && lh.IsActive);
+            var appLogin = await appLoginRepository.GetByRefreshTokenAsync(refreshTokenId);
 
             if (appLogin == null)
                 throw new UnAuthenticatedException("User Login not fount.");
@@ -138,8 +139,7 @@ namespace CRM.Infrastructure.Authentication
             appLogin.IpAddress = clientInfo?.IpAddress;
             appLogin.UserAgent = clientInfo?.UserAgent;
 
-            dbContext.AppLogin.Update(appLogin);
-            await dbContext.SaveChangesAsync();
+            await appLoginRepository.UpdateAsync(appLogin);
 
             var authenticationToken = AuthenticationToken.Create(newAccessToken, newAccessTokenExp, refreshToken, appLogin.RefreshTokenExpiresAt);
 
@@ -152,16 +152,12 @@ namespace CRM.Infrastructure.Authentication
 
             RemoveSessionUser(accessTokenId);
 
-            var appLogin = dbContext.AppLogin.FirstOrDefault(lh => lh.AccessTokenId == accessTokenId && lh.IsActive);
+            var appLogin = await appLoginRepository.GetByAccessTokenAsync(accessTokenId);
 
             if (appLogin != null)
             {
-                appLogin.IsActive = false;
-                appLogin.LogoutDate = DateTime.UtcNow;
-                dbContext.AppLogin.Update(appLogin);
-                await dbContext.SaveChangesAsync();
+                await appLoginRepository.SetStatusAsync(new[] { appLogin.Id }, false);
             }
-            
         }
 
         public IContextUser? GetSessionUser(string accessTokenId)
@@ -169,23 +165,10 @@ namespace CRM.Infrastructure.Authentication
             var cacheKey = generateKey(accessTokenId);
             return cache.Get<IContextUser>(cacheKey);
         }
-        public List<SessionInfo> GetUserActiveSessions(Guid userId)
+        public async Task<List<SessionInfo>> GetUserActiveSessionsAsync(Guid userId)
         {
 
-            // DB'den kullanıcının tüm aktif session'larını al
-            var sessions = dbContext.AppLogin.AsNoTracking()
-                   .Where(lh => lh.UserId == userId && lh.IsActive)
-                   .Select(lh => new SessionInfo()
-                   {
-                       LoginHistoryId = lh.Id,
-                       AccessTokenId = lh.AccessTokenId,
-                       LoginDate = lh.LoginDate,
-                       AccessTokenExpiresAt = lh.AccessTokenExpiresAt,
-                       RefreshTokenId = lh.RefreshTokenId,
-                       RefreshTokenExpiresAt = lh.RefreshTokenExpiresAt
-
-                   })
-                   .ToList();
+            var sessions = await appLoginRepository.GetUserActiveSessionsAsync(userId);
 
             return sessions;
         }
@@ -206,21 +189,18 @@ namespace CRM.Infrastructure.Authentication
 
         public async Task RevokeAllUserSessionsAsync(Guid userId)
         {
-            List<SessionInfo> sessions = GetUserActiveSessions(userId);
+            List<SessionInfo> sessions = await GetUserActiveSessionsAsync(userId);
 
             var sessionKeys = sessions.Select(session => generateKey(session.AccessTokenId)).ToList();
+
+            var sessionIds = sessions.Select(session => session.LoginHistoryId).ToList();
 
             foreach (var sessionkey in sessionKeys)
             {
                 cache.Remove(sessionkey);
             }
 
-            // DB update
-            dbContext.AppLogin
-                .Where(lh => lh.UserId == userId && lh.IsActive)
-                .ExecuteUpdate(s => s
-                    .SetProperty(lh => lh.IsActive, false)
-                    .SetProperty(lh => lh.LogoutDate, DateTime.UtcNow));
+            await appLoginRepository.SetStatusAsync(sessionIds, false);
         }
 
         private string generateKey(string accessTokenId)

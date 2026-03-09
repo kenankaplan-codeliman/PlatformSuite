@@ -6,7 +6,6 @@ using CRM.Infrastructure.Authentication;
 using CRM.Infrastructure.Cache;
 using CRM.Infrastructure.Data;
 using CRM.Infrastructure.Repositories;
-using System;
 
 namespace CRM.Api.Configuration;
 
@@ -14,13 +13,16 @@ public static class DependencyInjection
 {
     public static IServiceCollection AddDependencies(this IServiceCollection services)
     {
+        // ======= Rules =======
+
         services.AddMemoryCache();//Redis Kullandığın da bunu kaldır
         services.AddScoped<ICacheService, MemoryCacheService>();
         services.AddScoped<ISessionService, SessionService>();
 
         //Auth
-        services.AddScoped<IContextUser, ContextUser>();
-        services.AddScoped<IContextAuthorization, ContextAuthorization>();
+        services.AddSingleton<IContextUser, ContextUser>();
+        services.AddSingleton<IContextAuthorization, ContextAuthorization>();
+
         services.AddScoped<ITokenService, JwtTokenService>();
         services.AddScoped<IUnitOfWork, UnitOfWork>();
         services.AddScoped<IMicrosoftGraphService, MicrosoftGraphService>();
@@ -53,6 +55,9 @@ public static class DependencyInjection
         services.AddScoped<ContactCommandHandler>();
         services.AddScoped<OpportunityCommandHandler>();
         services.AddScoped<ProductCommandHandler>();
+
+
+  
 
         return services;
     }

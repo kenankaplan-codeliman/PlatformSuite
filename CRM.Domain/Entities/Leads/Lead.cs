@@ -31,14 +31,14 @@ namespace CRM.Domain.Entities.Leads
         public Guid? ConvertedAccountId { get; set; }
         public Guid? ConvertedContactId { get; set; }
         public Guid? ConvertedOpportunityId { get; set; }
-        public bool IsActive { get; set; } = true;
-        public Guid CreatedBy { get; set; }
-        public DateTime CreatedAt { get; set; }
-        public Guid? UpdatedBy { get; set; }
-        public DateTime? UpdatedAt { get; set; }
-        public bool IsDeleted { get; set; }
-        public Guid? DeletedBy { get; set; }
-        public DateTime? DeletedAt { get; set; }
+        public bool IsActive { get; private set; } = true;
+        public Guid CreatedBy { get; private set; }
+        public DateTime CreatedAt { get; private set; }
+        public Guid? UpdatedBy { get; private set; }
+        public DateTime? UpdatedAt { get; private set; }
+        public bool IsDeleted { get; private set; }
+        public Guid? DeletedBy { get; private set; }
+        public DateTime? DeletedAt { get; private set; }
 
         #region IOwnedEntity
         public Guid OwnerId { get; private set; }

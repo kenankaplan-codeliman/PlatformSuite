@@ -17,6 +17,6 @@ namespace CRM.Application.Interfaces
 
         Task RevokeAllUserSessionsAsync(Guid userId);
         
-        List<SessionInfo> GetUserActiveSessions(Guid userId);
+        Task<List<SessionInfo>> GetUserActiveSessionsAsync(Guid userId);
     }
 }

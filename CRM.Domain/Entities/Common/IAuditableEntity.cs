@@ -6,9 +6,9 @@ namespace CRM.Domain.Entities.Common
 {
     public interface IAuditableEntity
     {
-        Guid CreatedBy { get; set; }
-        DateTime CreatedAt { get; set; }
-        Guid? UpdatedBy { get; set; }
-        DateTime? UpdatedAt { get; set; }
+        Guid CreatedBy { get; }
+        DateTime CreatedAt { get; }
+        Guid? UpdatedBy { get; }
+        DateTime? UpdatedAt { get; }
     }
 }

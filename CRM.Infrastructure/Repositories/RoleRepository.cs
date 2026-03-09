@@ -7,17 +7,14 @@ using CRM.Domain.Enums;
 using CRM.Infrastructure.Data;
 using CRM.Infrastructure.Data.Repositories;
 using Microsoft.EntityFrameworkCore;
-using System;
-using System.Collections.Generic;
-using System.Security.Cryptography;
-using System.Text;
 
 namespace CRM.Infrastructure.Repositories
 {
     public class RoleRepository : BaseEntityRepository<AppRole>, IRoleRepository
     {
-
-        public RoleRepository(DatabaseContext dbContext) : base(dbContext) { }
+        public RoleRepository(DatabaseContext dbContext) : base(dbContext)
+        {
+        }
 
         public override async Task<AppRole?> GetAsync(Guid Id, CancellationToken cancellationToken = default)
         {
@@ -33,11 +30,11 @@ namespace CRM.Infrastructure.Repositories
         public async Task<List<AppRole>> GetUserRole(Guid userId, CancellationToken cancellationToken = default)
         {
             return await (
-                        from ur in dbContext.AppUserRole.AsNoTracking()
-                        join r in dbContext.AppRole on ur.RoleId equals r.Id
-                        where r.IsActive && ur.IsActive && ur.UserId == userId
-                        select r
-                        ).ToListAsync(cancellationToken);
+                    from ur in dbContext.AppUserRole.AsNoTracking()
+                    join r in dbContext.AppRole on ur.RoleId equals r.Id
+                    where r.IsActive && ur.IsActive && ur.UserId == userId
+                    select r
+                    ).ToListAsync(cancellationToken);
         }
 
         public async Task AddUserRole(Guid userId, List<Guid> roleIds, CancellationToken cancellationToken = default)
@@ -65,9 +62,8 @@ namespace CRM.Infrastructure.Repositories
                                                      CancellationToken cancellationToken = default)
         {
             var role = await dbContext.AppRole
-                .IgnoreQueryFilters()
-                .Where(o => o.IsActive && o.RoleName == roleName)
-                .FirstOrDefaultAsync(cancellationToken);
+            .Where(o => o.IsActive && o.RoleName == roleName)
+            .FirstOrDefaultAsync(cancellationToken);
 
             if (role != null)
             {
@@ -86,7 +82,7 @@ namespace CRM.Infrastructure.Repositories
 
             await dbContext.SaveChangesAsync(cancellationToken);
 
-            await CreateRolePrivileges(role.Id, accessLevel, cancellationToken); 
+            await CreateRolePrivileges(role.Id, accessLevel, cancellationToken);
 
             return role;
         }
@@ -94,12 +90,12 @@ namespace CRM.Infrastructure.Repositories
         private async Task CreateRolePrivileges(Guid roleId, AccessLevel accessLevel, CancellationToken cancellationToken = default)
         {
             var templateRolePrivileges = PrivilegeRegistry.All
-                .Select(privCode => new AppRolePrivilege
-                {
-                    AccessLevel = accessLevel,
-                    RoleId = roleId,
-                    PrivilegeCode = privCode,
-                }).ToList();
+            .Select(privCode => new AppRolePrivilege
+            {
+                AccessLevel = accessLevel,
+                RoleId = roleId,
+                PrivilegeCode = privCode,
+            }).ToList();
 
             var existPrivCodes = (await dbContext.AppRolePrivilege
                 .Where(rp => rp.RoleId == roleId)
@@ -121,11 +117,11 @@ namespace CRM.Infrastructure.Repositories
         public async Task CreatePrivileges(CancellationToken cancellationToken = default)
         {
             var templatePrivileges = PrivilegeRegistry.All
-                .Select(privCode => new AppPrivilege
-                {
-                    PrivilegeCode = privCode,
-                    PrivilegeName = privCode,
-                }).ToList();
+            .Select(privCode => new AppPrivilege
+            {
+                PrivilegeCode = privCode,
+                PrivilegeName = privCode,
+            }).ToList();
 
             var existPrivCodes = (await dbContext.AppPrivilege
                 .Select(p => p.PrivilegeCode)

@@ -62,11 +62,10 @@ public class UserRepository : BaseEntityRepository<AppUser>, IUserRepository
             throw new ArgumentNullException();
 
         var user = await dbContext.AppUser
-            .IgnoreQueryFilters()
-            .FirstOrDefaultAsync(x => !x.IsDeleted &&
-                (EF.Functions.ILike(x.Email, email) ||
-                (azureUserId != null && EF.Functions.ILike(x.AzureUserId!, azureUserId))),
-                cancellationToken);
+        .FirstOrDefaultAsync(x =>
+            (EF.Functions.ILike(x.Email, email) ||
+            (azureUserId != null && EF.Functions.ILike(x.AzureUserId!, azureUserId))),
+            cancellationToken);
 
         if (user != null)
             return user;

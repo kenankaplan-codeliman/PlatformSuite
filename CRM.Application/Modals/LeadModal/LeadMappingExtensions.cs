@@ -60,6 +60,5 @@ public static class LeadMappingExtensions
         entity.LeadRating = modal.LeadRating;
         entity.AnnualRevenue = modal.AnnualRevenue;
         entity.EstimatedValue = modal.EstimatedValue;
-        entity.IsActive = modal.IsActive;
     }
 }

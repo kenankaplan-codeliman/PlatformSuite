@@ -1,4 +1,4 @@
-﻿using CRM.Domain.Entities.Common;
+using CRM.Domain.Entities.Common;
 using CRM.Domain.Enums;
 
 namespace CRM.Domain.Entities.Activities;
@@ -11,7 +11,7 @@ public class ActivityParty : IBaseEntity
 {
     #region IBaseEntity
     public Guid Id { get; set; }
-    public bool IsActive { get; set; } = true;
+    public bool IsActive { get; private set; } = true;
     #endregion
 
     #region Relationships

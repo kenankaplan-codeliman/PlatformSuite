@@ -1,5 +1,4 @@
-﻿
-using CRM.Application.Interfaces;
+﻿using CRM.Application.Interfaces;
 using CRM.Domain.Entities.Accounts;
 using CRM.Domain.Entities.Activities;
 using CRM.Domain.Entities.Common;
@@ -8,8 +7,10 @@ using CRM.Domain.Entities.Identities;
 using CRM.Domain.Entities.Leads;
 using CRM.Domain.Entities.Opportunities;
 using CRM.Domain.Entities.Products;
+using CRM.Domain.Enums;
 using CRM.Infrastructure.Data.Configurations;
 using Microsoft.EntityFrameworkCore;
+using System.Linq.Expressions;
 using AppRole = CRM.Domain.Entities.Identities.AppRole;
 
 namespace CRM.Infrastructure.Data;
@@ -18,6 +19,19 @@ public class DatabaseContext : DbContext
 {
     private readonly IContextUser contextUser;
     private readonly IContextAuthorization contextAuthorization;
+
+
+    
+
+    public DatabaseContext(
+        DbContextOptions<DatabaseContext> options,
+        IContextUser contextUser,
+        IContextAuthorization contextAuthorization)
+        : base(options)
+    {
+        this.contextUser = contextUser;
+        this.contextAuthorization = contextAuthorization;
+    }
 
     // ======= Identity =======
     public DbSet<AppOrganization> AppOrganization { get; set; }
@@ -30,10 +44,10 @@ public class DatabaseContext : DbContext
 
     // ======= Activity =======
     public DbSet<ActivityBase> Activity { get; set; }
-    public DbSet<ActivityParty> ActivityParty{ get; set; }
+    public DbSet<ActivityParty> ActivityParty { get; set; }
     public DbSet<EmailActivity> EmailActivity { get; set; }
-    public DbSet<PhoneCallActivity> PhoneCallActivity{ get; set; }
-    public DbSet<TaskActivity> TaskActivity{ get; set; }
+    public DbSet<PhoneCallActivity> PhoneCallActivity { get; set; }
+    public DbSet<TaskActivity> TaskActivity { get; set; }
     public DbSet<AppointmentActivity> AppointmentActivity { get; set; }
 
     // ======= Account =======
@@ -59,102 +73,149 @@ public class DatabaseContext : DbContext
     public DbSet<Opportunity> Opportunity { get; set; }
     public DbSet<OpportunityProduct> OpportunityProduct { get; set; }
 
-
-
-    public DatabaseContext(DbContextOptions<DatabaseContext> options, IContextUser currentUserContext, IContextAuthorization contextAuthorization)
-        : base(options)
-    {
-        this.contextUser = currentUserContext;
-        this.contextAuthorization = contextAuthorization;
-    }
-
     protected override void ConfigureConventions(ModelConfigurationBuilder builder)
     {
         builder.SetTypeConverter();
     }
 
+
+    #region Global Query
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);
-
-        modelBuilder.SetGlobalFilter(contextUser, contextAuthorization);
-
         modelBuilder.ApplyConfigurationsFromAssembly(typeof(DatabaseContext).Assembly);
 
-    }
-  
+        foreach (var entityType in modelBuilder.Model.GetEntityTypes())
+        {
+            if (entityType.BaseType != null) continue;
 
+            var clrType = entityType.ClrType;
+            var param = Expression.Parameter(clrType, "e");
+            var body = (Expression)Expression.Constant(true);
+
+            if (typeof(ISoftDeleteEntity).IsAssignableFrom(clrType))
+                body = Expression.AndAlso(body, BuildSoftDeleteBody(param));
+
+            if (typeof(IOwnedEntity).IsAssignableFrom(clrType))
+                body = Expression.AndAlso(body, BuildOwnerBody(param));
+
+            if (body is ConstantExpression) continue;
+
+            modelBuilder.Entity(clrType)
+                .HasQueryFilter(Expression.Lambda(body, param));
+        }
+    }
+
+    private static Expression BuildSoftDeleteBody(ParameterExpression param) =>
+        Expression.Not(
+            Expression.Property(param, nameof(ISoftDeleteEntity.IsDeleted)));
+
+    private Expression BuildOwnerBody(ParameterExpression param)
+    {
+        var ownerIdProp = Expression.Property(param, nameof(IOwnedEntity.OwnerId));
+        var orgIdProp = Expression.Property(param, nameof(IOwnedEntity.OrganizationId));
+
+        var contextConst = Expression.Constant(this);
+        var isUserAccess = Expression.Property(contextConst, nameof(IsUserAccess));
+        var isOrgAccess = Expression.Property(contextConst, nameof(IsOrgAccess));
+        var currentUserId = Expression.Property(contextConst, nameof(CurrentUserId));
+        var orgIds = Expression.Property(contextConst, nameof(OrgIds));
+
+        var userCheck = Expression.OrElse(
+            Expression.Not(isUserAccess),
+            Expression.Equal(ownerIdProp, currentUserId));
+
+        var orgCheck = Expression.OrElse(
+            Expression.Not(isOrgAccess),
+            Expression.Call(
+                orgIds,
+                typeof(List<Guid>).GetMethod(nameof(List<Guid>.Contains))!,
+                orgIdProp));
+
+        return Expression.AndAlso(userCheck, orgCheck);
+    }
+
+    public Guid CurrentUserId => contextUser.UserId;
+    public List<Guid> OrgIds => contextUser.AccessibleOrganizationList;
+    public bool IsUserAccess => contextAuthorization.AccessLevel == AccessLevel.User;
+    public bool IsOrgAccess => contextAuthorization.AccessLevel == AccessLevel.Organization;
+
+
+    #endregion Global Query
+
+    #region Save Changes
     public override int SaveChanges()
     {
-        ApplySaveChangeRules();
+        ApplySaveRules();
         return base.SaveChanges();
     }
 
-    public override Task<int> SaveChangesAsync(
-        CancellationToken cancellationToken = default)
+    public override Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
     {
-        ApplySaveChangeRules();
+        ApplySaveRules();
         return base.SaveChangesAsync(cancellationToken);
     }
 
-    private void ApplySaveChangeRules()
+    private void ApplySaveRules()
     {
         var now = DateTime.UtcNow;
 
         foreach (var entry in ChangeTracker.Entries())
         {
+            if (entry.State == EntityState.Unchanged) continue;
+
             // ======= Audit =======
-            if (contextUser != null && entry.Entity is IAuditableEntity audit)
+            if (entry.Entity is IAuditableEntity audit)
             {
-                // ======= Create =======
                 if (entry.State == EntityState.Added)
                 {
-                    audit.CreatedAt = now;
-                    audit.CreatedBy = contextUser.UserId;
-
+                    entry.Property(nameof(IAuditableEntity.CreatedAt)).CurrentValue = now;
+                    entry.Property(nameof(IAuditableEntity.CreatedBy)).CurrentValue = contextUser.UserId;
                 }
-
-                // ======= Update =======
-                if (entry.State == EntityState.Modified)
+                else if (entry.State == EntityState.Modified)
                 {
-                    audit.UpdatedAt = now;
-                    audit.UpdatedBy = contextUser.UserId;
+                    entry.Property(nameof(IAuditableEntity.UpdatedAt)).CurrentValue = now;
+                    entry.Property(nameof(IAuditableEntity.UpdatedBy)).CurrentValue = contextUser.UserId;
                 }
             }
 
-            // ======= Owned Entity =======
-            if (contextUser != null && entry.Entity is IOwnedEntity ownedEntity)
+            // ======= OwnedEntity =======
+            if (entry.Entity is IOwnedEntity owned)
             {
-                if (entry.State == EntityState.Added && ownedEntity.OwnerId == Guid.Empty && ownedEntity.OrganizationId == Guid.Empty)
+                // Added: OwnerId boşsa infrastructure set eder
+                if (entry.State == EntityState.Added && owned.OwnerId == Guid.Empty)
                 {
                     entry.Property(nameof(IOwnedEntity.OwnerId)).CurrentValue = contextUser.UserId;
                     entry.Property(nameof(IOwnedEntity.OrganizationId)).CurrentValue = contextUser.OrganizationId;
                 }
-                else if (entry.State == EntityState.Modified)
+
+                // Modified / Deleted: sahiplik kontrolü
+                if (entry.State is EntityState.Modified or EntityState.Deleted)
                 {
-                    // Update'te degisimi engelle
-                    entry.Property(nameof(IOwnedEntity.OwnerId)).IsModified = false;
-                    entry.Property(nameof(IOwnedEntity.OrganizationId)).IsModified = false;
+                    var violation = contextAuthorization.AccessLevel switch
+                    {
+                        AccessLevel.User => owned.OwnerId != contextUser.UserId,
+                        AccessLevel.Organization => !contextUser.AccessibleOrganizationList.Contains(owned.OrganizationId),
+                        _ => false
+                    };
+
+                    if (violation)
+                        throw new UnauthorizedAccessException(
+                            $"{entry.Entity.GetType().Name}: Bu kayıt üzerinde yetkiniz yok.");
                 }
             }
 
-
-            // ======= Soft Delete =======
-            if (contextUser != null && entry.Entity is ISoftDeleteEntity softDelete)
+            // ======= SoftDelete =======
+            if (entry.Entity is ISoftDeleteEntity && entry.State == EntityState.Deleted)
             {
-                entry.Property(nameof(ISoftDeleteEntity.IsDeleted)).IsModified = false;
-                entry.Property(nameof(ISoftDeleteEntity.DeletedBy)).IsModified = false;
-                entry.Property(nameof(ISoftDeleteEntity.DeletedAt)).IsModified = false;
-
-                if (entry.State == EntityState.Deleted)
-                {
-                    entry.State = EntityState.Modified;
-                    softDelete.IsDeleted = true;
-                    softDelete.DeletedAt = now;
-                    softDelete.DeletedBy = contextUser.UserId;
-                }
+                entry.State = EntityState.Modified;
+                entry.Property(nameof(ISoftDeleteEntity.IsDeleted)).CurrentValue = true;
+                entry.Property(nameof(ISoftDeleteEntity.DeletedAt)).CurrentValue = now;
+                entry.Property(nameof(ISoftDeleteEntity.DeletedBy)).CurrentValue = contextUser.UserId;
             }
         }
     }
 
+    #endregion Save Changes
 }

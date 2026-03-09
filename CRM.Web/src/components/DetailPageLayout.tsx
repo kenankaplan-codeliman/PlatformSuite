@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import {
   Card,
   Button,
@@ -16,8 +16,12 @@ import {
   SaveOutlined,
   CloseOutlined,
   DeleteOutlined,
+  UserAddOutlined,
 } from '@ant-design/icons';
 import type { DetailMode } from '@/hooks/useDetailPage';
+import EntityLookup from '@/components/EntityLookup';
+import { EntityType, type EntityReference } from '@/types/entity.lookup.types';
+import { entitySearchService } from '@/services/entity.search.service';
 
 const { Title, Text } = Typography;
 
@@ -50,6 +54,12 @@ export interface DetailPageLayoutProps {
   onDelete: () => void;
   onBack: () => void;
 
+  /**
+   * Kullanıcı atama handler'ı.
+   * Tanımlandığında toolbar'da "Ata" butonu ve kullanıcı seçim modalı otomatik gösterilir.
+   */
+  onAssign?: (entity: EntityReference | EntityReference[] | null) => void | Promise<void>;
+
   /** Entity bulunamadı ekranı mesajları */
   notFoundTitle: string;
   notFoundDescription: string;
@@ -80,6 +90,7 @@ const DetailPageLayout: React.FC<DetailPageLayoutProps> = ({
   onSave,
   onDelete,
   onBack,
+  onAssign,
   notFoundTitle,
   notFoundDescription,
   entityExists,
@@ -87,6 +98,14 @@ const DetailPageLayout: React.FC<DetailPageLayoutProps> = ({
   renderEditMode,
   renderExtraViewActions,
 }) => {
+  const [assignModalOpen, setAssignModalOpen] = useState(false);
+
+  const handleAssignChange = async (entity: EntityReference | EntityReference[] | null) => {
+    if (!onAssign) return;
+    await onAssign(entity);
+    setAssignModalOpen(false);
+  };
+
   // ─── Not Found ──────────────────────────────────────────────────────────
   if (!entityExists && !isNew && !isLoading) {
     return (
@@ -137,6 +156,28 @@ const DetailPageLayout: React.FC<DetailPageLayoutProps> = ({
               {isViewMode && !isNew && (
                 <>
                   {renderExtraViewActions?.()}
+
+                  {/* ─── Assign Button ──────────────────────────────────── */}
+                  {onAssign && (
+                    <>
+                      <Button
+                        icon={<UserAddOutlined />}
+                        onClick={() => setAssignModalOpen(true)}
+                      >
+                        Ata
+                      </Button>
+                      <EntityLookup
+                        open={assignModalOpen}
+                        onOpenChange={setAssignModalOpen}
+                        onSearch={entitySearchService.search}
+                        entityTypes={[EntityType.User]}
+                        multiple={false}
+                        modalTitle="Kullanıcı ata..."
+                        onChange={handleAssignChange}
+                      />
+                    </>
+                  )}
+
                   <Popconfirm
                     title={deleteConfirm.title}
                     description={deleteConfirm.description}

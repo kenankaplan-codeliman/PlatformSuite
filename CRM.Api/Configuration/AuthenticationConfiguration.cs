@@ -1,9 +1,10 @@
 
 using CRM.Application.Interfaces;
 using CRM.Application.Modals;
+using CRM.Application.Modals.Authentication;
 using CRM.Domain.Enums;
 using CRM.Infrastructure.Authentication;
-
+using CRM.Infrastructure.Data;
 using CRM.Infrastructure.Repositories;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.Extensions.Caching.Memory;
@@ -75,7 +76,8 @@ public static class AuthenticationConfiguration
                             user.OrganizationName = cachedSessionUser.OrganizationName;
                             user.AccessibleOrganizationList = cachedSessionUser.AccessibleOrganizationList;
                             user.PrivilegesCodes = cachedSessionUser.PrivilegesCodes;
-}
+
+                        }
                         else
                         {
                             context.Fail("Session is not valid");

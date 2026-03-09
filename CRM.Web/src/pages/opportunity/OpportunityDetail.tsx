@@ -14,13 +14,11 @@ import {
   Badge,
   Tabs,
   DatePicker,
-  Button,
 } from 'antd';
 import {
   RiseOutlined,
   BankOutlined,
   UserOutlined,
-  UserAddOutlined,
   FileTextOutlined,
   CalendarOutlined,
   ClockCircleOutlined,
@@ -73,8 +71,6 @@ const OpportunityDetail: React.FC<DetailPageProps<OpportunityDetailItem>> = (pro
 
   const [activeTab, setActiveTab] = useState<string>('details');
   const handleTabChange = useCallback((key: string) => setActiveTab(key), []);
-
-  const [assignModalOpen, setAssignModalOpen] = useState(false);
 
   const detail = useDetailPage<OpportunityDetailItem>(
     {
@@ -146,12 +142,8 @@ const OpportunityDetail: React.FC<DetailPageProps<OpportunityDetailItem>> = (pro
   const handleAssign = useCallback(async (entity: EntityReference | EntityReference[] | null) => {
     if (!entity || !currentOpportunity?.id) return;
     const user = Array.isArray(entity) ? entity[0] : entity;
-    try {
-      await store.assignOpportunity(currentOpportunity.id, user.id);
-      await store.fetchOpportunityById(currentOpportunity.id);
-    } finally {
-      setAssignModalOpen(false);
-    }
+    await store.assignOpportunity(currentOpportunity.id, user.id);
+    await store.fetchOpportunityById(currentOpportunity.id);
   }, [currentOpportunity?.id, store]);
 
   // ─── View Mode ──────────────────────────────────────────────────────────
@@ -577,25 +569,7 @@ const OpportunityDetail: React.FC<DetailPageProps<OpportunityDetailItem>> = (pro
       onBack={detail.handleBack}
       renderViewMode={renderViewMode}
       renderEditMode={renderEditMode}
-      renderExtraViewActions={() => (
-        <>
-          <Button
-            icon={<UserAddOutlined />}
-            onClick={() => setAssignModalOpen(true)}
-          >
-            Ata
-          </Button>
-          <EntityLookup
-            open={assignModalOpen}
-            onOpenChange={setAssignModalOpen}
-            onSearch={entitySearchService.search}
-            entityTypes={[EntityType.User]}
-            multiple={false}
-            modalTitle="Kullanıcı ata..."
-            onChange={handleAssign}
-          />
-        </>
-      )}
+      onAssign={handleAssign}
     />
   );
 };
