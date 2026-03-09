@@ -29,6 +29,7 @@ vi CRM.API/appsettings.json
 
 # Update connection string:
 "DefaultConnection": "Host=localhost;Database=crm_db;Username=crm_user;Password=your_password"
+Database Script Files are inside the "CRM.Database" folder
 ```
 ### **4. Run Application:**
 ```bash
