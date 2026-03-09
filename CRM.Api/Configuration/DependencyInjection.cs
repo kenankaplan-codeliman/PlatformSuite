@@ -43,6 +43,7 @@ public static class DependencyInjection
         services.AddScoped<IContactRepository, ContactRepository>();
         services.AddScoped<IOpportunityRepository, OpportunityRepository>();
         services.AddScoped<IProductRepository, ProductRepository>();
+        services.AddScoped<IAppLoginRepository, AppLoginRepository>();
 
 
         //Command Handler
