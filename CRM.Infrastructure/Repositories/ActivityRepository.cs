@@ -79,9 +79,21 @@ public class ActivityRepository : IActivityRepository
         return results.Select(MapToModal).ToList();
     }
 
-    
+    public async Task<List<ActivityListItem>> UpcomingActivitiesAsync(CancellationToken cancellationToken = default)
+    {
+        var today = DateTime.UtcNow;
+        var upcomingStatuses = new[] { ActivityStatus.NotStarted, ActivityStatus.InProgress };
 
 
+        var results = await BuildFilteredQuery(new ActivityListFilters())
+            .Where(a => upcomingStatuses.Contains(a.Status)
+                     && (a.DueDate ?? a.StartDate) > today)
+            .OrderBy(a => a.DueDate ?? a.StartDate)
+            .Take(5)
+            .ToListAsync(cancellationToken);
+
+        return results.Select(MapToModal).ToList();
+    }
 
     private IQueryable<InternalActivityListModal> BuildFilteredQuery(ActivityListFilters? filters)
     {

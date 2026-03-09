@@ -6,8 +6,6 @@ import type {
 } from '@/types/dashboard.types';
 import type { LeadListItem } from '@/types/lead.types';
 import type { ActivityListItem } from '@/types/activity.types';
-import { ActivityStatus, type ActivityListResponse } from '@/types/activity.types';
-import type { LeadListResponse } from '@/types/lead.types';
 import apiClient from '@/services/api.client';
 import { ServicePath } from '@/config/service.paths';
 
@@ -43,35 +41,20 @@ export const dashboardService = {
 
   // ── Liste panelleri ──────────────────────────────────────────────────────────
 
-  getRecentLeads: async (limit = 5): Promise<LeadListItem[]> => {
-    const response = await apiClient.post<LeadListResponse>(ServicePath.Lead.List, {
-      page: 1,
-      pageSize: limit,
-    });
-    return response.data.data;
+  getRecentLeads: async (): Promise<LeadListItem[]> => {
+    const response = await apiClient.get<LeadListItem[]>(
+      ServicePath.Dashboard.RecentLeads
+    );
+    return response.data;
+
   },
 
-  getUpcomingActivities: async (limit = 5): Promise<ActivityListItem[]> => {
-    const [notStarted, inProgress] = await Promise.all([
-      apiClient.post<ActivityListResponse>(ServicePath.Activity.List, {
-        page: 1,
-        pageSize: limit,
-        filters: { status: ActivityStatus.NotStarted },
-      }),
-      apiClient.post<ActivityListResponse>(ServicePath.Activity.List, {
-        page: 1,
-        pageSize: limit,
-        filters: { status: ActivityStatus.InProgress },
-      }),
-    ]);
-
-    return [...notStarted.data.data, ...inProgress.data.data]
-      .sort((a, b) => {
-        if (!a.dueDate) return 1;
-        if (!b.dueDate) return -1;
-        return new Date(a.dueDate).getTime() - new Date(b.dueDate).getTime();
-      })
-      .slice(0, limit);
+  getUpcomingActivities: async (): Promise<ActivityListItem[]> => {
+    
+    const response = await apiClient.get<ActivityListItem[]>(
+      ServicePath.Dashboard.UpcomingActivities
+    );
+    return response.data;
   },
 };
 

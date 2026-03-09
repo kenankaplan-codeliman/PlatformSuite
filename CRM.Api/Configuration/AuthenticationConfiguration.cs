@@ -1,21 +1,11 @@
 
 using CRM.Application.Interfaces;
 using CRM.Application.Modals;
-using CRM.Application.Modals.Authentication;
-using CRM.Domain.Enums;
-using CRM.Infrastructure.Authentication;
-using CRM.Infrastructure.Data;
-using CRM.Infrastructure.Repositories;
+using CRM.Infrastructure.Services;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
-using Microsoft.Extensions.Caching.Memory;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Graph.Models.CallRecords;
 using Microsoft.IdentityModel.Tokens;
-using System;
 using System.IdentityModel.Tokens.Jwt;
-using System.Security.Claims;
 using System.Text;
-using static CRM.Infrastructure.Authentication.JwtTokenService;
 
 namespace CRM.Api.Configuration;
 
@@ -51,7 +41,7 @@ public static class AuthenticationConfiguration
                         var sessionService = context.HttpContext.RequestServices.GetRequiredService<ISessionService>();
                         var currentUserContext = context.HttpContext.RequestServices.GetRequiredService<IContextUser>();
 
-                        var accessTokenId = context.Principal?.FindFirst(TokenKeys.sub)?.Value;
+                        var accessTokenId = context.Principal?.FindFirst(JwtTokenService.TokenKeys.sub)?.Value;
 
                         if (string.IsNullOrEmpty(accessTokenId))
                         {

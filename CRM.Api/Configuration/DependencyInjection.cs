@@ -2,10 +2,9 @@
 using CRM.Application.Interfaces;
 using CRM.Application.Modals;
 using CRM.Application.Modals.Authentication;
-using CRM.Infrastructure.Authentication;
-using CRM.Infrastructure.Cache;
 using CRM.Infrastructure.Data;
 using CRM.Infrastructure.Repositories;
+using CRM.Infrastructure.Services;
 
 namespace CRM.Api.Configuration;
 
@@ -44,6 +43,7 @@ public static class DependencyInjection
         services.AddScoped<IOpportunityRepository, OpportunityRepository>();
         services.AddScoped<IProductRepository, ProductRepository>();
         services.AddScoped<IAppLoginRepository, AppLoginRepository>();
+        services.AddScoped<IDashboardStats, DashboardStatsQueryService>();
 
 
         //Command Handler
@@ -56,9 +56,10 @@ public static class DependencyInjection
         services.AddScoped<ContactCommandHandler>();
         services.AddScoped<OpportunityCommandHandler>();
         services.AddScoped<ProductCommandHandler>();
+        services.AddScoped<DashboardStatsCommandHandler>();
 
 
-  
+
 
         return services;
     }

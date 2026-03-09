@@ -7,13 +7,13 @@ using System.Security.Claims;
 using System.Text;
 
 
-namespace CRM.Infrastructure.Authentication;
+namespace CRM.Infrastructure.Services;
 
 public class JwtTokenService : ITokenService
 {
     private readonly IConfiguration _config;
 
-    public sealed class TokenKeys
+    public static class TokenKeys
     {
         public readonly static string sub = "sub";
     }

@@ -222,7 +222,7 @@ const DashboardPage: React.FC = () => {
   const fetchRecentLeads = useCallback(async () => {
     setRecentLeads((p) => ({ ...p, loading: true, error: null }));
     try {
-      setRecentLeads({ data: await dashboardService.getRecentLeads(5), loading: false, error: null });
+      setRecentLeads({ data: await dashboardService.getRecentLeads(), loading: false, error: null });
     } catch {
       setRecentLeads((p) => ({ ...p, loading: false, error: 'Hata' }));
     }
@@ -231,7 +231,7 @@ const DashboardPage: React.FC = () => {
   const fetchUpcomingActivities = useCallback(async () => {
     setUpcomingActivities((p) => ({ ...p, loading: true, error: null }));
     try {
-      setUpcomingActivities({ data: await dashboardService.getUpcomingActivities(5), loading: false, error: null });
+      setUpcomingActivities({ data: await dashboardService.getUpcomingActivities(), loading: false, error: null });
     } catch {
       setUpcomingActivities((p) => ({ ...p, loading: false, error: 'Hata' }));
     }

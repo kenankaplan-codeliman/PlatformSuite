@@ -1,14 +1,4 @@
-﻿
-using CRM.Application.CommandHandler;
-using CRM.Application.Interfaces;
-using CRM.Infrastructure.Authentication;
-using CRM.Infrastructure.Cache;
-using CRM.Infrastructure.Data;
-
-using CRM.Infrastructure.Repositories;
-using System;
-
-namespace CRM.Api.Configuration;
+﻿namespace CRM.Api.Configuration;
 
 public static class CorsConfiguration
 {

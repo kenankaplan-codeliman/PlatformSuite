@@ -4,12 +4,8 @@ using CRM.Application.Interfaces;
 using CRM.Application.Modals;
 using Microsoft.Extensions.Logging;
 using Microsoft.Graph;
-using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Text;
 
-namespace CRM.Infrastructure.Authentication
+namespace CRM.Infrastructure.Services
 {
     public class MicrosoftGraphService : IMicrosoftGraphService
     {

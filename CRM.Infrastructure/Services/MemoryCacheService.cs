@@ -1,13 +1,8 @@
 ﻿using CRM.Application.Interfaces;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Logging;
-using System;
-using System.Collections.Concurrent;
-using System.Collections.Generic;
-using System.Text;
-using System.Text.RegularExpressions;
 
-namespace CRM.Infrastructure.Cache;
+namespace CRM.Infrastructure.Services;
 
 public class MemoryCacheService : ICacheService
 {

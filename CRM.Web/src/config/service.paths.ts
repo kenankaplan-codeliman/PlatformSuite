@@ -19,6 +19,8 @@ export const ServicePath = {
         AccountStats: `${ControllerPaths.Dashboard}/account-stats`,
         OpportunityStats: `${ControllerPaths.Dashboard}/opportunity-stats`,
         RevenueStats: `${ControllerPaths.Dashboard}/revenue-stats`,
+        RecentLeads:`${ControllerPaths.Dashboard}/recent-leads`,
+        UpcomingActivities: `${ControllerPaths.Dashboard}/upcoming-activities`,
     },
 
     Auth: {
