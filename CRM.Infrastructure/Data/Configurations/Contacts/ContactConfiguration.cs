@@ -110,5 +110,8 @@ public class ContactConfiguration : IEntityTypeConfiguration<Contact>
             .WithOne(ac => ac.Contact)
             .HasForeignKey(ac => ac.ContactId)
             .OnDelete(DeleteBehavior.Cascade);
+
+        // Ignored computed properties
+        builder.Ignore(e => e.DisplayName);
     }
 }

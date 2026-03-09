@@ -81,6 +81,11 @@ CREATE TABLE opportunity_product (
     created_at          TIMESTAMPTZ     NOT NULL DEFAULT NOW(),
     updated_by          UUID,
     updated_at          TIMESTAMPTZ,
+    
+     -- ISoftDeleteEntity
+    is_deleted          BOOLEAN         NOT NULL DEFAULT FALSE,
+    deleted_by          UUID,
+    deleted_at          TIMESTAMPTZ,
 
     CONSTRAINT pk_opportunity_product           PRIMARY KEY (id),
     CONSTRAINT uq_opportunity_product           UNIQUE (opportunity_id, product_id),

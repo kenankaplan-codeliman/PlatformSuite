@@ -7,7 +7,7 @@ namespace CRM.Domain.Entities.Opportunities;
 /// Opportunity ile Product arasındaki many-to-many ilişki tablosu.
 /// Her satır bir fırsattaki ürün/hizmet kalemini temsil eder.
 /// </summary>
-public class OpportunityProduct : IBaseEntity, IAuditableEntity
+public class OpportunityProduct : IBaseEntity, IAuditableEntity, ISoftDeleteEntity
 {
     #region IBaseEntity
     public Guid Id { get; set; }
@@ -29,4 +29,10 @@ public class OpportunityProduct : IBaseEntity, IAuditableEntity
     public DateTime CreatedAt { get; private set; }
     public Guid? UpdatedBy { get; private set; }
     public DateTime? UpdatedAt { get; private set; }
+
+    // ── ISoftDeleteEntity ─────────────────────────────────────────────────
+
+    public bool IsDeleted { get; private set; }
+    public Guid? DeletedBy { get; private set; }
+    public DateTime? DeletedAt { get; private set; }
 }

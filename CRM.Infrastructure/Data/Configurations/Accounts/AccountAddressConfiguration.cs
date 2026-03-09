@@ -88,9 +88,5 @@ public class AccountAddressConfiguration : IEntityTypeConfiguration<AccountAddre
         builder.Property(a => a.DeletedAt)
             .HasColumnName("deleted_at");
 
-        // Index
-        builder.HasIndex(a => a.AccountId)
-            .HasDatabaseName("ix_account_address_account");
-
     }
 }

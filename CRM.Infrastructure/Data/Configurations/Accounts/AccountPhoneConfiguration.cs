@@ -70,9 +70,5 @@ public class AccountPhoneConfiguration : IEntityTypeConfiguration<AccountPhone>
         builder.Property(p => p.DeletedAt)
             .HasColumnName("deleted_at");
 
-        // Index
-        builder.HasIndex(p => p.AccountId)
-            .HasDatabaseName("ix_account_phones_account");
-
     }
 }

@@ -77,7 +77,7 @@ public static class AccountMappingExtensions
         {
             Id = entity.Id,
             ContactId = entity.ContactId,
-            ContactName = $"{entity.Contact?.FirstName} {entity.Contact?.LastName}",
+            ContactName = entity.Contact.DisplayName,
             Role = entity.Role,
             IsPrimary = entity.IsPrimary
         };

@@ -73,9 +73,5 @@ public class ContactPhoneConfiguration : IEntityTypeConfiguration<ContactPhone>
 
         builder.Property(x => x.DeletedAt)
             .HasColumnName("deleted_at");
-
-        // Indexes
-        builder.HasIndex(x => x.ContactId)
-            .HasDatabaseName("ix_contact_phone_contact");
     }
 }

@@ -29,11 +29,6 @@ public class ProductConfiguration : IEntityTypeConfiguration<Product>
             .HasColumnName("sku")
             .HasMaxLength(100);
 
-        builder.HasIndex(x => x.SKU)
-            .IsUnique()
-            .HasDatabaseName("uq_product_sku")
-            .HasFilter("sku IS NOT NULL");
-
         builder.Property(x => x.Category)
             .HasColumnName("category")
             .HasConversion<string>()

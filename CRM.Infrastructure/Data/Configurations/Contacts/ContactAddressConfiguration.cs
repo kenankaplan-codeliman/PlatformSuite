@@ -93,9 +93,5 @@ public class ContactAddressConfiguration : IEntityTypeConfiguration<ContactAddre
 
         builder.Property(x => x.DeletedAt)
             .HasColumnName("deleted_at");
-
-        // Indexes
-        builder.HasIndex(x => x.ContactId)
-            .HasDatabaseName("ix_contact_address_contact");
     }
 }

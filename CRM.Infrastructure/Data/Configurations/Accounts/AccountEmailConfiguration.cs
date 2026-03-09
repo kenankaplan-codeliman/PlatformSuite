@@ -70,9 +70,5 @@ public class AccountEmailConfiguration : IEntityTypeConfiguration<AccountEmail>
         builder.Property(e => e.DeletedAt)
             .HasColumnName("deleted_at");
 
-        // Index
-        builder.HasIndex(e => e.AccountId)
-            .HasDatabaseName("ix_account_email_account");
-
     }
 }

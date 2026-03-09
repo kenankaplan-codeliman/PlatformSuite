@@ -16,11 +16,6 @@ public class OpportunityProductConfiguration : IEntityTypeConfiguration<Opportun
         builder.Property(x => x.Id)
             .HasColumnName("id");
 
-        // Composite index — bir fırsatta aynı ürün tekrar eklenemesin
-        builder.HasIndex(x => new { x.OpportunityId, x.ProductId })
-            .IsUnique()
-            .HasDatabaseName("uq_opportunity_product");
-
         // FK alanlar
         builder.Property(x => x.OpportunityId)
             .HasColumnName("opportunity_id")

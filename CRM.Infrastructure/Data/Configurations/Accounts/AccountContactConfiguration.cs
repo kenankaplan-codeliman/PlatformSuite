@@ -67,11 +67,6 @@ public class AccountContactConfiguration : IEntityTypeConfiguration<AccountConta
         builder.Property(ac => ac.DeletedAt)
             .HasColumnName("deleted_at");
 
-        // Unique Index - aynı account-contact çifti tekrar edemez
-        builder.HasIndex(ac => new { ac.AccountId, ac.ContactId })
-            .IsUnique()
-            .HasDatabaseName("ix_account_contact_account_contact_unique");
-
         // Relationships
         builder.HasOne(ac => ac.Account)
             .WithMany(a => a.AccountContacts)

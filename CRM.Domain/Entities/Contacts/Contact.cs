@@ -1,8 +1,10 @@
 using CRM.Domain.Entities.Accounts;
 using CRM.Domain.Entities.Common;
+using CRM.Domain.Enums;
 using System;
 using System.Collections.Generic;
 using System.Text;
+using System.Xml.Linq;
 
 namespace CRM.Domain.Entities.Contacts;
 
@@ -19,6 +21,8 @@ public class Contact :
 
     public string FirstName { get; set; } = default!;
     public string LastName { get; set; } = default!;
+    public string DisplayName => $"{FirstName} {LastName}";
+
     public string? Title { get; set; }
     public string? Department { get; set; }
     public DateTime? BirthDate { get; set; }

@@ -63,9 +63,6 @@ public class ActivityPartyConfiguration : IEntityTypeConfiguration<ActivityParty
             .HasColumnName("is_active")
             .IsRequired();
 
-        // Index
-        builder.HasIndex(e => e.ActivityId);
-
         // Ignored computed properties
         builder.Ignore(e => e.DisplayName);
         builder.Ignore(e => e.IsExternal);
