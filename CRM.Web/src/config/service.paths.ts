@@ -31,18 +31,6 @@ export const ServicePath = {
         Me: `${ControllerPaths.AuthPath}/me`,
     },
 
-    
-    Lead: {
-        List: `${ControllerPaths.LeadPath}/list`,
-        Search: `${ControllerPaths.LeadPath}/search`,
-        Get: `${ControllerPaths.LeadPath}/get`,
-        Create: `${ControllerPaths.LeadPath}/create`,
-        Update: `${ControllerPaths.LeadPath}/update`,
-        Delete: `${ControllerPaths.LeadPath}/delete`,
-        BulkDelete: `${ControllerPaths.LeadPath}/bulk-delete`,
-        BulkUpdateStatus: `${ControllerPaths.LeadPath}/bulk-update-status`,
-    },
-
     Activity: {
         List: `${ControllerPaths.ActivityPath}/list`,
         Calendar: `${ControllerPaths.ActivityPath}/calendar`,
@@ -63,16 +51,27 @@ export const ServicePath = {
         GetAppointment: `${ControllerPaths.ActivityPath}/get/appointment`,
         
         Delete: `${ControllerPaths.ActivityPath}/delete`,
-        BulkDelete: `${ControllerPaths.ActivityPath}/bulk-delete`,
         BulkUpdateStatus: `${ControllerPaths.ActivityPath}/bulk-update-status`,
         Complete: `${ControllerPaths.ActivityPath}/complete`,
         Cancel: `${ControllerPaths.ActivityPath}/cancel`,
-        
-        Export: `${ControllerPaths.ActivityPath}/export`,
+        Assign: `${ControllerPaths.ActivityPath}/assign`,
+        State: `${ControllerPaths.ActivityPath}/set-state`,
     },
 
     User: {
         Search: `${ControllerPaths.UserPath}/search`,
+    },
+
+     Lead: {
+        List: `${ControllerPaths.LeadPath}/list`,
+        Search: `${ControllerPaths.LeadPath}/search`,
+        Get: `${ControllerPaths.LeadPath}/get`,
+        Create: `${ControllerPaths.LeadPath}/create`,
+        Update: `${ControllerPaths.LeadPath}/update`,
+        Delete: `${ControllerPaths.LeadPath}/delete`,
+        Assign: `${ControllerPaths.LeadPath}/assign`,
+        Status: `${ControllerPaths.LeadPath}/set-state`,
+        UpdateStatus:`${ControllerPaths.LeadPath}/bulk-update-status`,
     },
 
     Account:{
@@ -82,7 +81,8 @@ export const ServicePath = {
         Create: `${ControllerPaths.AccountPath}/create`,
         Update: `${ControllerPaths.AccountPath}/update`,
         Delete: `${ControllerPaths.AccountPath}/delete`,
-        BulkDelete: `${ControllerPaths.AccountPath}/bulk-delete`,
+        Assign: `${ControllerPaths.AccountPath}/assign`,
+        Status: `${ControllerPaths.AccountPath}/set-state`,
     },
 
     Contact:{
@@ -92,7 +92,8 @@ export const ServicePath = {
         Create: `${ControllerPaths.ContactPath}/create`,
         Update: `${ControllerPaths.ContactPath}/update`,
         Delete: `${ControllerPaths.ContactPath}/delete`,
-        BulkDelete: `${ControllerPaths.ContactPath}/bulk-delete`,
+        Assign: `${ControllerPaths.ContactPath}/assign`,
+        Status: `${ControllerPaths.ContactPath}/set-state`,
     },
 
     Product:{
@@ -106,8 +107,8 @@ export const ServicePath = {
         Create: `${ControllerPaths.OpportunityPath}/create`,
         Update: `${ControllerPaths.OpportunityPath}/update`,
         Delete: `${ControllerPaths.OpportunityPath}/delete`,
-        BulkDelete: `${ControllerPaths.OpportunityPath}/bulk-delete`,
         Assign: `${ControllerPaths.OpportunityPath}/assign`,
+        Status: `${ControllerPaths.OpportunityPath}/set-state`,
     }
 
 };

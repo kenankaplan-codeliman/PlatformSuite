@@ -100,15 +100,19 @@ public class OpportunityCommandHandler
         }
     }
 
-    public async Task Delete(Guid Id)
+    public async Task Delete(List<Guid> Ids)
     {
         try
         {
             await unitOfWork.BeginTransactionAsync();
 
-            var entity = await opportunityRepository.GetAsync(Id) ?? throw new NotFoundException();
+            foreach (var id in Ids)
+            {
+                var entity = await opportunityRepository.GetAsync(id) ?? throw new NotFoundException();
 
-            await opportunityRepository.DeleteAsync(entity);
+                await opportunityRepository.DeleteAsync(entity);
+            }
+           
 
             await unitOfWork.CommitTransactionAsync();
 
@@ -120,13 +124,13 @@ public class OpportunityCommandHandler
         }
     }
 
-    public async Task Assign(Guid entityId, Guid ownerId)
+    public async Task AssignAsync(List<Guid> Ids, Guid ownerId)
     {
         try
         {
             await unitOfWork.BeginTransactionAsync();
 
-            await opportunityRepository.AssignAsync(new[] { entityId }, ownerId);
+            await opportunityRepository.AssignAsync(Ids, ownerId);
 
             await unitOfWork.CommitTransactionAsync();
 
@@ -138,11 +142,21 @@ public class OpportunityCommandHandler
         }
     }
 
-    public async Task BulkDelete(List<Guid> Ids)
+    public async Task SetStateAsync(List<Guid> Ids, bool isActive)
     {
-        foreach (var id in Ids)
+        try
         {
-            await Delete(id);
+            await unitOfWork.BeginTransactionAsync();
+
+            await opportunityRepository.SetStateAsync(Ids, isActive);
+
+            await unitOfWork.CommitTransactionAsync();
+
+        }
+        catch
+        {
+            await unitOfWork.RollbackTransactionAsync();
+            throw;
         }
     }
 

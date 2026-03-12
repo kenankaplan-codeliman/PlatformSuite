@@ -22,8 +22,10 @@ public class ContactRepository : BaseEntityRepository<Contact>, IContactReposito
 
         if (!string.IsNullOrWhiteSpace(filter.ContactName))
         {
-            var name = filter.ContactName.Trim().ToLower();
-            query = query.Where(x => EF.Functions.ILike($"{x.FirstName} {x.LastName}", $"%{filter.ContactName}%"));
+            var pattern = $"%{filter.ContactName}%";
+
+            query = query.Where(x => EF.Functions.ILike(
+                x.FirstName + " " + x.LastName, pattern));
         }
 
         if (filter.AccountId!=null && !Guid.Empty.Equals(filter.AccountId))

@@ -2,13 +2,9 @@ import { useCallback, useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { RoutePaths } from '@/config/route.paths';
 import {
-  Card,
   Button,
   Space,
-  Input,
   Select,
-  Row,
-  Col,
   Tooltip,
   Typography,
   Flex,
@@ -18,20 +14,14 @@ import {
   ConfigProvider,
   DatePicker,
   Avatar,
+  Checkbox,
 } from 'antd';
 import type { Dayjs } from 'dayjs';
+import type { MenuProps } from 'antd';
 import dayjs from 'dayjs';
 import 'dayjs/locale/tr';
 import trTR from 'antd/locale/tr_TR';
-import {
-  FilterOutlined,
-  ReloadOutlined,
-  SearchOutlined,
-  ClearOutlined,
-  CalendarOutlined,
-  LeftOutlined,
-  RightOutlined,
-} from '@ant-design/icons';
+import { LeftOutlined, RightOutlined, CheckCircleOutlined, CloseCircleOutlined } from '@ant-design/icons';
 import {
   getActivityTypeColor,
   getActivityTypeLabel,
@@ -39,6 +29,7 @@ import {
   type ActivityTypeValue,
   type ActivityListFilters,
   getActivityTypeIcon,
+  ActivityStatus,
 } from '@/types/activity.types';
 import {
   ActivityType,
@@ -50,181 +41,166 @@ import {
 import activityService from '@/services/activity.service';
 import { handleError } from '@/hooks/useHandleError';
 import { StateType, useProcessState } from '@/stores/process.state.store';
+import { useActivityStore } from '@/stores/activity.store';
+import ListPageLayout from '@/components/ListPageLayout';
 
 const { Text } = Typography;
-const { Search } = Input;
 
-// Helper function to get activity detail path
+// ─── Helper ───────────────────────────────────────────────────────────────────
+
 const getActivityDetailPath = (
   activityType: ActivityTypeValue,
   id: string,
   mode: 'view' | 'edit'
 ): string => {
   const modeParam = `?mode=${mode}`;
-
   switch (activityType) {
-    case ActivityType.Email:
-      return RoutePaths.Activity.Email.Detail(id) + modeParam;
-    case ActivityType.PhoneCall:
-      return RoutePaths.Activity.PhoneCall.Detail(id) + modeParam;
-    case ActivityType.Task:
-      return RoutePaths.Activity.Task.Detail(id) + modeParam;
-    case ActivityType.Appointment:
-      return RoutePaths.Activity.Appointment.Detail(id) + modeParam;
-    default:
-      return RoutePaths.Activity.List;
+    case ActivityType.Email:       return RoutePaths.Activity.Email.Detail(id) + modeParam;
+    case ActivityType.PhoneCall:   return RoutePaths.Activity.PhoneCall.Detail(id) + modeParam;
+    case ActivityType.Task:        return RoutePaths.Activity.Task.Detail(id) + modeParam;
+    case ActivityType.Appointment: return RoutePaths.Activity.Appointment.Detail(id) + modeParam;
+    default:                       return RoutePaths.Activity.List;
   }
 };
 
+// ─── Props ────────────────────────────────────────────────────────────────────
+
 export interface ActivityCalendarViewProps {
   initialFilters?: Partial<ActivityListFilters>;
-  showFilters?: boolean;
 }
+
+// ─── Component ────────────────────────────────────────────────────────────────
 
 const ActivityCalendarView: React.FC<ActivityCalendarViewProps> = ({
   initialFilters = {},
-  showFilters = true,
 }) => {
   const navigate = useNavigate();
 
-  // ========== COMPONENT STATE ==========
+  const {
+    selectedRowKeys,
+    setSelectedRowKeys,
+    clearSelectedRowKeys,
+    bulkDeleteActivities,
+    bulkActivateActivities,
+    bulkDeactivateActivities,
+    bulkAssignActivities,
+    bulkUpdateStatus,
+  } = useActivityStore();
+
+  // ── State ──────────────────────────────────────────────────────────────────
   const [calendarActivities, setCalendarActivities] = useState<ActivityListItem[]>([]);
   const [calendarDate, setCalendarDate] = useState<Date>(new Date());
-  const [filters, setFilters] = useState<ActivityListFilters>({
-    ...initialFilters,
-  });
-  const [filterVisible, setFilterVisible] = useState(false);
-  const [searchText, setSearchText] = useState(filters.subject || '');
+  const [filters, setFiltersState] = useState<ActivityListFilters>({ ...initialFilters });
 
-  // ✅ FIX: Ref'ler ile kontrol
   const isFirstRender = useRef(true);
   const isFetching = useRef(false);
   const filtersRef = useRef<ActivityListFilters>(filters);
 
-  // ✅ FIX: filters ref'ini her zaman güncel tut
-  useEffect(() => {
-    filtersRef.current = filters;
-  }, [filters]);
+  useEffect(() => { filtersRef.current = filters; }, [filters]);
 
-  // ========== DATA FETCHING ==========
-  // ✅ FIX: fetchCalendarActivities - useCallback KULLANMA, normal async fonksiyon yap
+  // ── Fetch ──────────────────────────────────────────────────────────────────
   const fetchCalendarActivities = async (startDate: string, endDate: string) => {
     if (isFetching.current) return;
-    
     isFetching.current = true;
     const { setState, clearState } = useProcessState.getState();
-
     try {
       setState(StateType.Loading, 'Takvim aktiviteleri yükleniyor...', 'Lütfen bekleyiniz...');
-
-      // ✅ FIX: ref'ten güncel filters'ı al
       const activities = await activityService.getActivitiesForCalendar(
-        startDate,
-        endDate,
-        filtersRef.current
+        startDate, endDate, filtersRef.current
       );
       setCalendarActivities(activities);
-
       clearState();
     } catch (error) {
-      const errorMessage = handleError(error);
-      setState(StateType.Error, 'Takvim aktiviteleri yüklenemedi', errorMessage);
+      setState(StateType.Error, 'Takvim aktiviteleri yüklenemedi', handleError(error));
     } finally {
       isFetching.current = false;
     }
   };
 
-  // ✅ FIX: Mount'ta 1 kez fetch
   useEffect(() => {
     if (isFirstRender.current) {
       isFirstRender.current = false;
-      const startOfMonth = dayjs(calendarDate).startOf('month').format('YYYY-MM-DD');
-      const endOfMonth = dayjs(calendarDate).endOf('month').format('YYYY-MM-DD');
-      fetchCalendarActivities(startOfMonth, endOfMonth);
+      fetchCalendarActivities(
+        dayjs(calendarDate).startOf('month').format('YYYY-MM-DD'),
+        dayjs(calendarDate).endOf('month').format('YYYY-MM-DD')
+      );
     }
-  }, []); // Empty deps - sadece mount'ta
-
-  // ✅ FIX: Filters değişince fetch (ilk render skip)
-  useEffect(() => {
-    if (!isFirstRender.current) {
-      const startOfMonth = dayjs(calendarDate).startOf('month').format('YYYY-MM-DD');
-      const endOfMonth = dayjs(calendarDate).endOf('month').format('YYYY-MM-DD');
-      fetchCalendarActivities(startOfMonth, endOfMonth);
-    }
-  }, [JSON.stringify(filters), calendarDate]); // ✅ calendarDate de dependency
-
-  // ========== HANDLERS ==========
-
-  // Handle search
-  const handleSearch = useCallback((value: string) => {
-    setSearchText(value);
-    setFilters(prev => ({
-      ...prev,
-      subject: value || undefined,
-    }));
   }, []);
 
-  const handleFilterChange = useCallback((field: string, value: any) => {
-    setFilters(prev => ({
+  useEffect(() => {
+    if (!isFirstRender.current) {
+      fetchCalendarActivities(
+        dayjs(calendarDate).startOf('month').format('YYYY-MM-DD'),
+        dayjs(calendarDate).endOf('month').format('YYYY-MM-DD')
+      );
+    }
+  }, [JSON.stringify(filters), calendarDate]);
+
+  // ── Filter handlers ────────────────────────────────────────────────────────
+  const handleSearch = useCallback((value: string) => {
+    setFiltersState(prev => ({ ...prev, subject: value || undefined }));
+  }, []);
+
+  const handleFilterChange = useCallback((field: string, value: unknown) => {
+    setFiltersState(prev => ({
       ...prev,
-      [field]: value === '' || value === null ? undefined : value,
+      [field]: value === '' || value === null || value === undefined ? undefined : value,
     }));
   }, []);
 
   const handleResetFilters = useCallback(() => {
-    setFilters({ ...initialFilters });
-    setSearchText('');
+    setFiltersState({ ...initialFilters });
   }, [initialFilters]);
 
-  const handleMonthChange = useCallback(
-    (startDate: string, endDate: string) => {
-      fetchCalendarActivities(startDate, endDate);
-    },
-    [] 
-  );
-
   const handleRefresh = useCallback(() => {
-    const startOfMonth = dayjs(calendarDate).startOf('month').format('YYYY-MM-DD');
-    const endOfMonth = dayjs(calendarDate).endOf('month').format('YYYY-MM-DD');
-    fetchCalendarActivities(startOfMonth, endOfMonth);
-  }, [calendarDate]); 
+    fetchCalendarActivities(
+      dayjs(calendarDate).startOf('month').format('YYYY-MM-DD'),
+      dayjs(calendarDate).endOf('month').format('YYYY-MM-DD')
+    );
+  }, [calendarDate]);
 
-  // ========== CALENDAR RENDERING ==========
+  // ── Checkbox toggle ────────────────────────────────────────────────────────
+  const handleCheckboxToggle = (id: string, checked: boolean) => {
+    if (checked) {
+      setSelectedRowKeys([...selectedRowKeys, id]);
+    } else {
+      setSelectedRowKeys(selectedRowKeys.filter(k => k !== id));
+    }
+  };
 
-  // Get activities for a specific date
-  const getActivitiesForDate = useCallback(
-    (date: Dayjs): ActivityListItem[] => {
-      const dateStr = date.format('YYYY-MM-DD');
-      return calendarActivities.filter((activity) => {
-        const activityDate = dayjs(activity.dueDate).format('YYYY-MM-DD');
-        return activityDate === dateStr;
-      });
-    },
-    [calendarActivities]
-  );
+  // ── Calendar rendering ─────────────────────────────────────────────────────
+  const getActivitiesForDate = useCallback((date: Dayjs): ActivityListItem[] => {
+    const dateStr = date.format('YYYY-MM-DD');
+    return calendarActivities.filter(a => dayjs(a.dueDate).format('YYYY-MM-DD') === dateStr);
+  }, [calendarActivities]);
 
-  // Calendar date cell render
-  const calendarDateCellRender = useCallback(
-    (value: Dayjs) => {
-      const activities = getActivitiesForDate(value);
+  const calendarDateCellRender = useCallback((value: Dayjs) => {
+    const activities = getActivitiesForDate(value);
+    if (activities.length === 0) return null;
 
-      if (activities.length === 0) return null;
-
-      return (
-        <List
-          size="small"
-          dataSource={activities.slice(0, 3)}
-          renderItem={(activity) => (
-            <List.Item
-              style={{ padding: '2px 8px', cursor: 'pointer' }}
-              onClick={(e) => {
-                e.stopPropagation();
-                const path = getActivityDetailPath(activity.activityType, activity.id, 'view');
-                navigate(path);
-              }}
-            >
-              <Space size={4}>
-                <Badge color={getActivityStatusColor(activity.status)} style={{ fontSize: 8 }} />
+    return (
+      <List
+        size="small"
+        dataSource={activities.slice(0, 3)}
+        renderItem={(activity) => (
+          <List.Item style={{ padding: '2px 4px' }}>
+            <Flex align="center" gap={4} style={{ width: '100%' }}>
+              <Checkbox
+                checked={selectedRowKeys.includes(activity.id)}
+                onClick={(e) => e.stopPropagation()}
+                onChange={(e) => handleCheckboxToggle(activity.id, e.target.checked)}
+                style={{ flexShrink: 0 }}
+              />
+              <Flex
+                align="center"
+                gap={4}
+                style={{ flex: 1, cursor: 'pointer', overflow: 'hidden' }}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  navigate(getActivityDetailPath(activity.activityType, activity.id, 'view'));
+                }}
+              >
+                <Badge color={getActivityStatusColor(activity.status)} />
                 <Tooltip title={getActivityTypeLabel(activity.activityType)}>
                   <Avatar
                     size="small"
@@ -232,151 +208,123 @@ const ActivityCalendarView: React.FC<ActivityCalendarViewProps> = ({
                       backgroundColor: 'transparent',
                       color: getActivityTypeColor(activity.activityType),
                       fontSize: 14,
+                      flexShrink: 0,
                     }}
                     icon={getActivityTypeIcon(activity.activityType)}
                   />
                 </Tooltip>
-                <Text ellipsis style={{ fontSize: 12, maxWidth: 150 }}>
-                  {activity.subject}
-                </Text>
-              </Space>
-            </List.Item>
-          )}
-        />
-      );
-    },
-    [calendarActivities, navigate, getActivitiesForDate]
-  );
+                <Text ellipsis style={{ fontSize: 12 }}>{activity.subject}</Text>
+              </Flex>
+            </Flex>
+          </List.Item>
+        )}
+      />
+    );
+  }, [calendarActivities, navigate, selectedRowKeys]);
 
-  // Calendar header render
   const calendarHeaderRender = useCallback(
     ({ value, onChange }: { value: Dayjs; onChange: (date: Dayjs) => void }) => {
+      const changeMonth = (newDate: Dayjs) => {
+        onChange(newDate);
+        setCalendarDate(newDate.toDate());
+        fetchCalendarActivities(
+          newDate.startOf('month').format('YYYY-MM-DD'),
+          newDate.endOf('month').format('YYYY-MM-DD')
+        );
+      };
       return (
         <Flex justify="space-between" align="center" style={{ padding: '8px 16px' }}>
           <Space>
-            <Button
-              icon={<LeftOutlined />}
-              onClick={() => {
-                const newDate = value.subtract(1, 'month');
-                onChange(newDate);
-                setCalendarDate(newDate.toDate());
-
-                const startOfMonth = newDate.startOf('month').format('YYYY-MM-DD');
-                const endOfMonth = newDate.endOf('month').format('YYYY-MM-DD');
-                handleMonthChange(startOfMonth, endOfMonth);
-              }}
-            />
-            <Button
-              icon={<RightOutlined />}
-              onClick={() => {
-                const newDate = value.add(1, 'month');
-                onChange(newDate);
-                setCalendarDate(newDate.toDate());
-
-                const startOfMonth = newDate.startOf('month').format('YYYY-MM-DD');
-                const endOfMonth = newDate.endOf('month').format('YYYY-MM-DD');
-                handleMonthChange(startOfMonth, endOfMonth);
-              }}
-            />
+            <Button icon={<LeftOutlined />}  onClick={() => changeMonth(value.subtract(1, 'month'))} />
+            <Button icon={<RightOutlined />} onClick={() => changeMonth(value.add(1, 'month'))} />
           </Space>
-
           <DatePicker
-            value={value}
-            picker="month"
-            onChange={(date) => {
-              if (date) {
-                onChange(date);
-                setCalendarDate(date.toDate());
-
-                const startOfMonth = date.startOf('month').format('YYYY-MM-DD');
-                const endOfMonth = date.endOf('month').format('YYYY-MM-DD');
-                handleMonthChange(startOfMonth, endOfMonth);
-              }
-            }}
-            format="MMMM YYYY"
-            allowClear={false}
+            value={value} picker="month" allowClear={false} format="MMMM YYYY"
+            onChange={(date) => { if (date) changeMonth(date); }}
           />
         </Flex>
       );
     },
-    [handleMonthChange]
+    []
   );
 
+  // ── Bulk: aktiviteye özgü durum menüsü ────────────────────────────────────
+  const extraBulkItems = useCallback((): MenuProps['items'] => [
+    {
+      key: 'complete',
+      label: 'Tamamlandı Olarak İşaretle',
+      icon: <CheckCircleOutlined />,
+      onClick: () => bulkUpdateStatus(ActivityStatus.Completed),
+    },
+    {
+      key: 'cancel',
+      label: 'İptal Et',
+      icon: <CloseCircleOutlined />,
+      onClick: () => bulkUpdateStatus(ActivityStatus.Cancelled),
+    },
+  ], [bulkUpdateStatus]);
+
+  const hasActiveFilters = !!(
+    filters.subject ||
+    filters.activityType !== undefined ||
+    filters.status !== undefined ||
+    filters.priority !== undefined
+  );
+
+  // ── Render ─────────────────────────────────────────────────────────────────
   return (
-    <>
-      {/* Filters Card */}
-      {showFilters && (
-        <Card style={{ marginBottom: 16 }} styles={{ body: { padding: '16px 24px' } }}>
-          <Row gutter={[16, 16]} align="middle">
-            <Col flex="auto">
-              <Space size="middle" wrap>
-                <Search
-                  placeholder="Konu ara..."
-                  allowClear
-                  value={searchText}
-                  onChange={(e) => setSearchText(e.target.value)}
-                  onSearch={handleSearch}
-                  style={{ width: 280 }}
-                  prefix={<SearchOutlined />}
-                />
-                {filterVisible && (
-                  <>
-                    <Select
-                      placeholder="Aktivite Tipi"
-                      allowClear
-                      style={{ width: 160 }}
-                      value={filters.activityType}
-                      onChange={(value) => handleFilterChange('activityType', value)}
-                      options={activityTypeOptions}
-                    />
-                    <Select
-                      placeholder="Durum"
-                      allowClear
-                      style={{ width: 140 }}
-                      value={filters.status}
-                      onChange={(value) => handleFilterChange('status', value)}
-                      options={activityStatusOptions}
-                    />
-                    <Select
-                      placeholder="Öncelik"
-                      allowClear
-                      style={{ width: 130 }}
-                      value={filters.priority}
-                      onChange={(value) => handleFilterChange('priority', value)}
-                      options={activityPriorityOptions}
-                    />
-                  </>
-                )}
-              </Space>
-            </Col>
-            <Col>
-              <Space>
-                <Tooltip title={filterVisible ? 'Filtreleri Gizle' : 'Filtreleri Göster'}>
-                  <Button
-                    icon={<FilterOutlined />}
-                    type={filterVisible ? 'primary' : 'default'}
-                    onClick={() => setFilterVisible(!filterVisible)}
-                  />
-                </Tooltip>
-                {(filters.subject ||
-                  filters.activityType !== undefined ||
-                  filters.status !== undefined ||
-                  filters.priority !== undefined) && (
-                  <Tooltip title="Filtreleri Temizle">
-                    <Button icon={<ClearOutlined />} onClick={handleResetFilters} />
-                  </Tooltip>
-                )}
-                <Tooltip title="Yenile">
-                  <Button icon={<ReloadOutlined />} onClick={handleRefresh} />
-                </Tooltip>
-              </Space>
-            </Col>
-          </Row>
-        </Card>
+    <ListPageLayout
+      title=""
+      subtitle=""
+
+      // Arama & filtreler
+      searchPlaceholder="Konu ara..."
+      searchValue={filters.subject ?? ''}
+      onSearch={handleSearch}
+      hasActiveFilters={hasActiveFilters}
+      onResetFilters={handleResetFilters}
+      onRefresh={handleRefresh}
+      renderExtraFilters={() => (
+        <>
+          <Select
+            placeholder="Aktivite Tipi" allowClear style={{ width: 160 }}
+            value={filters.activityType}
+            onChange={(val) => handleFilterChange('activityType', val)}
+            options={activityTypeOptions}
+          />
+          <Select
+            placeholder="Durum" allowClear style={{ width: 140 }}
+            value={filters.status}
+            onChange={(val) => handleFilterChange('status', val)}
+            options={activityStatusOptions}
+          />
+          <Select
+            placeholder="Öncelik" allowClear style={{ width: 130 }}
+            value={filters.priority}
+            onChange={(val) => handleFilterChange('priority', val)}
+            options={activityPriorityOptions}
+          />
+        </>
       )}
 
-      {/* Calendar */}
-      <Card styles={{ body: { padding: 0 } }}>
+      // Seçim & bulk işlemler
+      selectedRowKeys={selectedRowKeys}
+      onSelectionChange={setSelectedRowKeys}
+      onClearSelection={clearSelectedRowKeys}
+      onBulkDelete={{
+        handler: bulkDeleteActivities,
+        confirm: {
+          title: 'Toplu Silme',
+          content: (count) => `Seçili ${count} aktivite silinecek. Onaylıyor musunuz?`,
+        },
+      }}
+      onBulkActivate={{ handler: bulkActivateActivities }}
+      onBulkDeactivate={{ handler: bulkDeactivateActivities }}
+      onBulkAssign={{ handler: bulkAssignActivities }}
+      extraBulkItems={extraBulkItems}
+
+      // Takvim içeriği
+      renderContent={() => (
         <ConfigProvider locale={trTR}>
           <Calendar
             cellRender={(current, info) => {
@@ -388,8 +336,8 @@ const ActivityCalendarView: React.FC<ActivityCalendarViewProps> = ({
             onSelect={(date) => setCalendarDate(date.toDate())}
           />
         </ConfigProvider>
-      </Card>
-    </>
+      )}
+    />
   );
 };
 

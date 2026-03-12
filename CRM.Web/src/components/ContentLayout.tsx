@@ -13,7 +13,7 @@ export default function ContentLayout() {
   const selectedKey = (location.pathname === "/") ? "/search" : location.pathname;
 
   return (
-    <Layout style={{ minHeight: "100%" }}>
+    <Layout style={{ height: "100%" }}>          {/* minHeight: "100%"  →  height: "100%" */}
       {/* SIDEBAR */}
       <Sider
         theme="light"
@@ -22,7 +22,7 @@ export default function ContentLayout() {
           background: "#fff"
         }}
         collapsible
-        trigger={undefined}   
+        trigger={undefined}
       >
         <Menu
           theme="light"
@@ -79,7 +79,9 @@ export default function ContentLayout() {
         style={{
           padding: 16,
           background: "#f5f5f5",
-          minHeight: "100vh"
+          flex: 1,
+          minHeight: 0,        // "100vh" kaldır, bu ekle
+          overflowY: "auto",   // scroll sadece taşınca çıksın
         }}
       >
         <Outlet />

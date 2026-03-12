@@ -4,7 +4,6 @@ import {
   type ActivityListResponse,
   type ActivityListRequest,
   type ActivityRequest,
-  type ActivityBulkDeleteRequest as ActivityBulkRequest,
   type ActivityBulkUpdateStatusRequest,
   type ActivityStatusValue,
   type ActivityCalendarRequest,
@@ -14,8 +13,9 @@ import {
 } from '@/types/activity.types';
 import apiClient from '@/services/api.client';
 import { ServicePath } from '@/config/service.paths';
+import type { AssignRequest, IdListRequest, StatusRequest } from '@/types/common.types';
 
-
+// ─── Endpoint Maps ────────────────────────────────────────────────────────────
 
 const activityCreateEndpointMap: Record<ActivityTypeValue, string> = {
   [ActivityType.Email]: ServicePath.Activity.CreateEmail,
@@ -38,122 +38,80 @@ const activityGetEndpointMap: Record<ActivityTypeValue, string> = {
   [ActivityType.Appointment]: ServicePath.Activity.GetAppointment,
 };
 
+// ─── Service ──────────────────────────────────────────────────────────────────
 
 export const activityService = {
-  // Get paginated list of activities with optional filters
+
   getActivities: async (
     page: number = 1,
     pageSize: number = 10,
     filters?: ActivityListFilters
   ): Promise<ActivityListResponse> => {
-    const request: ActivityListRequest = {
-      page: page,
-      pageSize: pageSize,
-      filters: filters,
-    };
-
+    const request: ActivityListRequest = { page, pageSize, filters };
     const response = await apiClient.post<ActivityListResponse>(
       ServicePath.Activity.List,
       request
     );
-
     return response.data;
   },
 
-  // Get activities for calendar view (date range)
   getActivitiesForCalendar: async (
     startDate: string,
     endDate: string,
     filters?: ActivityListFilters
   ): Promise<ActivityListItem[]> => {
-    const request: ActivityCalendarRequest = {
-      startDate,
-      endDate,
-      filters,
-    };
-
-    const response = await apiClient.post<ActivityBase[]>(
+    const request: ActivityCalendarRequest = { startDate, endDate, filters };
+    const response = await apiClient.post<ActivityListItem[]>(
       ServicePath.Activity.Calendar,
       request
     );
     return response.data;
   },
 
-  // Get single activity by ID
   getActivityById: async (id: string, activityType: ActivityTypeValue): Promise<ActivityBase> => {
-    const request: ActivityRequest = {
-      id: id,
-    };
-
-    const endpoint = activityGetEndpointMap[activityType]
-
-    const response = await apiClient.post<ActivityBase>(
-      endpoint,
-      request
-    );
+    const request: ActivityRequest = { id };
+    const endpoint = activityGetEndpointMap[activityType];
+    const response = await apiClient.post<ActivityBase>(endpoint, request);
     return response.data;
   },
 
-  // Create new activity
   createActivity: async <T extends ActivityBase>(
     activity: Omit<T, 'id' | 'createdAt' | 'createdBy'>
   ): Promise<T> => {
-
     const endpoint = activityCreateEndpointMap[activity.activityType];
-
-    const response = await apiClient.post<T>(
-      endpoint,
-      activity
-    );
+    const response = await apiClient.post<T>(endpoint, activity);
     return response.data;
   },
 
-  // Update existing activity
-updateActivity: async <T extends ActivityBase>(
-  activity: Partial<T> & { activityType: T['activityType'] }
-): Promise<T> => {
-  
-  const endpoint = activityUpdateEndpointMap[activity.activityType];
+  updateActivity: async <T extends ActivityBase>(
+    activity: Partial<T> & { activityType: T['activityType'] }
+  ): Promise<T> => {
+    const endpoint = activityUpdateEndpointMap[activity.activityType];
+    const response = await apiClient.post<T>(endpoint, activity);
+    return response.data;
+  },
 
-  const response = await apiClient.post<T>(endpoint, activity);
-  return response.data;
-},
-
-  // Delete activity (soft delete)
-  deleteActivity: async (id: string): Promise<void> => {
-    const request: ActivityRequest = {
-      id: id,
-    };
-
+  // Tekil ve bulk silme aynı endpoint — ids dizisiyle çalışır
+  deleteActivity: async (request: IdListRequest): Promise<void> => {
     await apiClient.post(ServicePath.Activity.Delete, request);
   },
 
-  // Bulk delete activities
-  bulkDeleteActivities: async (ids: string[]): Promise<void> => {
-    const request: ActivityBulkRequest = {
-      ids: ids,
-    };
-
-    await apiClient.post(ServicePath.Activity.BulkDelete, request);
+  setStatusActivity: async (request: StatusRequest): Promise<void> => {
+    await apiClient.post(ServicePath.Activity.State, request);
   },
 
-  // Bulk update activity status
-  bulkUpdateStatus: async (ids: string[], status: ActivityStatusValue): Promise<void> => {
-    const request: ActivityBulkUpdateStatusRequest = {
-      ids: ids,
-      status: status,
-    };
+  assignActivity: async (request: AssignRequest): Promise<void> => {
+    await apiClient.post(ServicePath.Activity.Assign, request);
+  },
 
+  // Aktiviteye özgü: durum güncelleme (Completed, Cancelled vb.)
+  bulkUpdateStatus: async (ids: string[], status: ActivityStatusValue): Promise<void> => {
+    const request: ActivityBulkUpdateStatusRequest = { ids, status };
     await apiClient.post(ServicePath.Activity.BulkUpdateStatus, request);
   },
 
-  // Mark activity as completed
   completeActivity: async (id: string): Promise<ActivityBase> => {
-     
-    const request: ActivityRequest = {
-      id: id,
-    };
-
+    const request: ActivityRequest = { id };
     const response = await apiClient.post<ActivityBase>(
       ServicePath.Activity.Complete,
       request
@@ -161,29 +119,11 @@ updateActivity: async <T extends ActivityBase>(
     return response.data;
   },
 
-  // Cancel activity
   cancelActivity: async (id: string): Promise<ActivityBase> => {
-      
-    const request: ActivityRequest = {
-      id: id,
-    };
-
+    const request: ActivityRequest = { id };
     const response = await apiClient.post<ActivityBase>(
       ServicePath.Activity.Cancel,
       request
-    );
-    return response.data;
-  },
-
-
-  // Export activities to Excel
-  exportActivities: async (filters?: ActivityListFilters): Promise<Blob> => {
-    const request = { filters };
-
-    const response = await apiClient.post(
-      ServicePath.Activity.Export,
-      request,
-      { responseType: 'blob' }
     );
     return response.data;
   },

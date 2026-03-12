@@ -76,17 +76,9 @@ public class LeadController : ControllerBase
 
     [HttpPost("delete")]
     [PrivilegeAuthorize(PrivilegeCodes.LeadPrivilegeCodes.Delete)]
-    public async Task<IActionResult> delete(IdRequest idRequest)
+    public async Task<IActionResult> delete(IdListRequest request)
     {
-        await leadCommandHandler.Delete(idRequest.Id);
-        return Ok();
-    }
-
-    [HttpPost("bulk-delete")]
-    [PrivilegeAuthorize(PrivilegeCodes.LeadPrivilegeCodes.Delete)]
-    public async Task<IActionResult> bulkdelete(IdListRequest request)
-    {
-        await leadCommandHandler.BulkDelete(request.Ids);
+        await leadCommandHandler.Delete(request.Ids);
         return Ok();
     }
 
@@ -94,7 +86,23 @@ public class LeadController : ControllerBase
     [PrivilegeAuthorize(PrivilegeCodes.LeadPrivilegeCodes.Delete)]
     public async Task<IActionResult> bulkUpdateStatus(LeadBulkUpdateStatusRequest request)
     {
-        await leadCommandHandler.BulkUpdateStatus(request.Ids, request.Status);
+        await leadCommandHandler.BulkUpdateStatusAsync(request.Ids, request.Status);
+        return Ok();
+    }
+
+    [HttpPost("assign")]
+    [PrivilegeAuthorize(PrivilegeCodes.LeadPrivilegeCodes.Assign)]
+    public async Task<IActionResult> AssignAsync(AssignRequest request)
+    {
+        await leadCommandHandler.AssignAsync(request.Ids, request.OwnerId);
+        return Ok();
+    }
+
+    [HttpPost("set-state")]
+    [PrivilegeAuthorize(PrivilegeCodes.LeadPrivilegeCodes.State)]
+    public async Task<IActionResult> SetStateAsync(StatusRequest request)
+    {
+        await leadCommandHandler.SetStateAsync(request.Ids, request.IsActive);
         return Ok();
     }
 

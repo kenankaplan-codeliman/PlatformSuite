@@ -1,117 +1,74 @@
-import type { LeadDetailItem, LeadListRequest,LeadListFilters, LeadListResponse, LeadStatusValue, LeadBulkUpdateStatusRequest } from '@/types/lead.types';
-import apiClient from "@/services/api.client";
+import type {
+  LeadDetailItem,
+  LeadListRequest,
+  LeadListFilters,
+  LeadListResponse,
+  LeadStatusValue,
+} from '@/types/lead.types';
+import apiClient from '@/services/api.client';
 import { ServicePath } from '@/config/service.paths';
-import type { IdListRequest, IdRequest } from '@/types/common.types';
-
+import type { AssignRequest, IdListRequest, IdRequest, StatusRequest } from '@/types/common.types';
 
 export const leadService = {
-  // Get paginated list of leads with optional filters
+
   getLeads: async (
     page: number = 1,
     pageSize: number = 10,
     filters?: LeadListFilters
   ): Promise<LeadListResponse> => {
-    
-    const request : LeadListRequest = {
-      page: page,
-      pageSize: pageSize,
-      filters: filters,
-    };
-
+    const request: LeadListRequest = { page, pageSize, filters };
     const response = await apiClient.post<LeadListResponse>(
-      ServicePath.Lead.List, 
-      request);
-
+      ServicePath.Lead.List,
+      request
+    );
     return response.data;
   },
 
-  // Get single lead by ID
   getLeadById: async (id: string): Promise<LeadDetailItem> => {
-
-    const request : IdRequest = {
-      id: id,
-      };
-    
+    const request: IdRequest = { id };
     const response = await apiClient.post<LeadDetailItem>(
-      ServicePath.Lead.Get, 
-      request);
+      ServicePath.Lead.Get,
+      request
+    );
     return response.data;
   },
 
-  // Create new lead
-  createLead: async (lead: Omit<Partial<LeadDetailItem>, 'id' | 'createdAt' | 'createdBy'>): Promise<LeadDetailItem> => {
-    
+  createLead: async (
+    lead: Omit<Partial<LeadDetailItem>, 'id' | 'createdAt' | 'updatedAt'>
+  ): Promise<LeadDetailItem> => {
     const response = await apiClient.post<LeadDetailItem>(
-      ServicePath.Lead.Create
-      , lead);
+      ServicePath.Lead.Create,
+      lead
+    );
     return response.data;
   },
 
-  // Update existing lead
   updateLead: async (lead: Partial<LeadDetailItem>): Promise<LeadDetailItem> => {
-
     const response = await apiClient.post<LeadDetailItem>(
-      ServicePath.Lead.Update
-      , lead);
-
+      ServicePath.Lead.Update,
+      lead
+    );
     return response.data;
   },
 
-  // Delete lead (soft delete)
-  deleteLead: async (id: string): Promise<void> => {
-    const request : IdRequest = {
-      id: id,
-      };
-
+  // Tekil ve bulk silme aynı endpoint — ids dizisiyle çalışır
+  deleteLead: async (request: IdListRequest): Promise<void> => {
     await apiClient.post(ServicePath.Lead.Delete, request);
   },
 
-  // Bulk delete leads
-  bulkDeleteLeads: async (ids: string[]): Promise<void> => {
-
-    const request : IdListRequest = {
-          ids: ids,
-          };
-
-    await apiClient.post(ServicePath.Lead.BulkDelete, request);
+  setStatusLead: async (request: StatusRequest): Promise<void> => {
+    await apiClient.post(ServicePath.Lead.Status, request);
   },
 
-  // Bulk update lead status
-  bulkUpdateStatus: async (ids: string[], status: LeadStatusValue): Promise<void> => {
-    const request : LeadBulkUpdateStatusRequest = {
-          ids: ids,
-          status: status,
-          };
-
-    await apiClient.post(ServicePath.Lead.BulkUpdateStatus, request);
+  // Lead'e özgü: durum güncelleme (New, Contacted, Qualified vb.)
+  updateLeadStatus: async (ids: string[], status: LeadStatusValue): Promise<void> => {
+    await apiClient.post(ServicePath.Lead.UpdateStatus, { ids, status });
   },
 
-  // Convert lead to account/contact/opportunity
-  convertLead: async (id: string): Promise<{
-    accountId: string;
-    contactId: string;
-    opportunityId: string;
-  }> => {
-    const response = await apiClient.post(`/${id}/convert`);
-    return response.data;
-  },
+  assignLead: async (request: AssignRequest): Promise<void> => {
+    await apiClient.post(ServicePath.Lead.Assign, request);
+  }
 
-  // Export leads to Excel
-  exportLeads: async (filters?: LeadListFilters): Promise<Blob> => {
-    const params = new URLSearchParams();
-    if (filters) {
-      Object.entries(filters).forEach(([key, value]) => {
-        if (value !== undefined && value !== null && value !== '') {
-          params.append(key, String(value));
-        }
-      });
-    }
-
-    const response = await apiClient.get(`/export?${params.toString()}`, {
-      responseType: 'blob',
-    });
-    return response.data;
-  },
 };
 
 export default leadService;

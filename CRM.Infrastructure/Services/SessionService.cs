@@ -155,7 +155,7 @@ public class SessionService : ISessionService
 
         if (appLogin != null)
         {
-            await appLoginRepository.SetStatusAsync(new[] { appLogin.Id }, false);
+            await appLoginRepository.SetStateAsync(new[] { appLogin.Id }, false);
         }
     }
 
@@ -199,7 +199,7 @@ public class SessionService : ISessionService
             cache.Remove(sessionkey);
         }
 
-        await appLoginRepository.SetStatusAsync(sessionIds, false);
+        await appLoginRepository.SetStateAsync(sessionIds, false);
     }
 
     private string generateKey(string accessTokenId)

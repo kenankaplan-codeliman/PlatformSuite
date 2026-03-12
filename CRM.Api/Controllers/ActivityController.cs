@@ -1,5 +1,6 @@
 ﻿using CRM.Api.Authorization;
 using CRM.Api.Contracts.Requests.Activity;
+using CRM.Api.Contracts.Requests.Common;
 using CRM.Api.Contracts.Requests.Lead;
 using CRM.Application.CommandHandler;
 using CRM.Application.Modals.ActivityModal;
@@ -174,19 +175,10 @@ public class ActivityController : ControllerBase
     #region Common Function
 
     [HttpPost("delete")]
-    [ProducesResponseType(typeof(ActivityBaseModal), 200)]
     [PrivilegeAuthorize(PrivilegeCodes.ActivityPrivilegeCodes.Delete)]
-    public async Task<IActionResult> Delete(ActivityRequest request)
+    public async Task<IActionResult> Delete(IdListRequest request)
     {
-        var response = await activityCommandHandler.Delete(request.Id);
-        return Ok(response);
-    }
-
-    [HttpPost("bulk-delete")]
-    [PrivilegeAuthorize(PrivilegeCodes.ActivityPrivilegeCodes.Delete)]
-    public async Task<IActionResult> BulkDelete(ActivityBulkRequest request)
-    {
-        await activityCommandHandler.BulkDelete(request.Ids);
+        await activityCommandHandler.Delete(request.Ids);
         return Ok();
     }
 
@@ -214,6 +206,22 @@ public class ActivityController : ControllerBase
     public async Task<IActionResult> BulkUpdateStatus(ActivityBulkUpdateStatusRequest request)
     {
         await activityCommandHandler.BulkUpdateStatus(request.Ids, request.Status);
+        return Ok();
+    }
+
+    [HttpPost("assign")]
+    [PrivilegeAuthorize(PrivilegeCodes.AccountPrivilegeCodes.Assign)]
+    public async Task<IActionResult> Assign(AssignRequest request)
+    {
+        await activityCommandHandler.AssignAsync(request.Ids, request.OwnerId);
+        return Ok();
+    }
+
+    [HttpPost("set-state")]
+    [PrivilegeAuthorize(PrivilegeCodes.AccountPrivilegeCodes.State)]
+    public async Task<IActionResult> SetStateAsync(StatusRequest request)
+    {
+        await activityCommandHandler.SetStateAsync(request.Ids, request.IsActive);
         return Ok();
     }
 

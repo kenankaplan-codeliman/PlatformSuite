@@ -11,8 +11,8 @@ import activityService from '@/services/activity.service';
 import { handleError } from '@/hooks/useHandleError';
 import { StateType, useProcessState } from '@/stores/process.state.store';
 import type { PaginationParams } from '@/types/common.types';
+import type { EntityReference } from '@/types/entity.lookup.types';
 
-// View Mode Type
 export type ActivityViewMode = 'list' | 'calendar';
 
 interface ActivityState {
@@ -48,12 +48,25 @@ interface ActivityState {
   createActivity: <T extends ActivityBase>(
     activity: Omit<T, 'id' | 'createdAt' | 'createdBy'>
   ) => Promise<T>;
-  updateActivity: <T extends ActivityBase>(activity: Partial<T>) => Promise<T>;
+  updateActivity: <T extends ActivityBase>(
+    activity: Partial<T> & { activityType: T['activityType'] }
+  ) => Promise<T>;
   deleteActivity: (id: string) => Promise<void>;
+
+  // Bulk actions
   bulkDeleteActivities: () => Promise<void>;
+  bulkActivateActivities: () => Promise<void>;
+  bulkDeactivateActivities: () => Promise<void>;
   bulkUpdateStatus: (status: ActivityStatusValue) => Promise<void>;
+  bulkAssignActivities: (entity: EntityReference | EntityReference[] | null) => Promise<void>;
+
+  // Row-level actions
+  activateActivity: (id: string) => Promise<void>;
+  deactivateActivity: (id: string) => Promise<void>;
+  assignActivity: (id: string, entity: EntityReference | EntityReference[] | null) => Promise<void>;
   completeActivity: (id: string) => Promise<void>;
   cancelActivity: (id: string) => Promise<void>;
+
   setCurrentActivity: (activity: ActivityBase | null) => void;
 }
 
@@ -73,7 +86,7 @@ const initialFilters: ActivityListFilters = {
 export const useActivityStore = create<ActivityState>()(
   devtools(
     (set, get) => ({
-      // Initial state
+      // ── Initial state ──────────────────────────────────────────────────
       viewMode: 'list',
       activities: [],
       hasMore: false,
@@ -85,102 +98,70 @@ export const useActivityStore = create<ActivityState>()(
       calendarDate: new Date(),
       currentActivity: null,
 
-      // Set view mode
-      setViewMode: (mode: ActivityViewMode) => {
-        set({ viewMode: mode });
-      },
+      // ── View mode ──────────────────────────────────────────────────────
+      setViewMode: (mode: ActivityViewMode) => set({ viewMode: mode }),
 
-      // Fetch activities list
+      // ── Fetch ──────────────────────────────────────────────────────────
       fetchActivities: async () => {
         const { page, pageSize, filters } = get();
         const { setState, clearState } = useProcessState.getState();
-
         try {
           setState(StateType.Loading, 'Aktivite listesi yükleniyor...', 'Lütfen bekleyiniz...');
-
           const response = await activityService.getActivities(page, pageSize, filters);
           set({
             activities: response.data,
             hasMore: response.hasMore ?? (response.data.length === pageSize),
           });
-
           clearState();
         } catch (error) {
-          const errorMessage = handleError(error);
-          setState(StateType.Error, 'Aktivite listesi yüklenemedi', errorMessage);
+          setState(StateType.Error, 'Aktivite listesi yüklenemedi', handleError(error));
         }
       },
 
-      // Fetch activities for calendar
       fetchCalendarActivities: async (startDate: string, endDate: string) => {
         const { filters } = get();
         const { setState, clearState } = useProcessState.getState();
-
         try {
           setState(StateType.Loading, 'Takvim aktiviteleri yükleniyor...', 'Lütfen bekleyiniz...');
-
           const response = await activityService.getActivitiesForCalendar(
             startDate,
             endDate,
             filters
           );
-          set({
-            calendarActivities: response,
-          });
-
+          set({ calendarActivities: response });
           clearState();
         } catch (error) {
-          const errorMessage = handleError(error);
-          setState(StateType.Error, 'Takvim aktiviteleri yüklenemedi', errorMessage);
+          setState(StateType.Error, 'Takvim aktiviteleri yüklenemedi', handleError(error));
         }
       },
 
-      // Fetch single activity
       fetchActivityById: async (id: string, activityType: ActivityTypeValue) => {
         const { setState, clearState } = useProcessState.getState();
-
         try {
           setState(StateType.Loading, 'Aktivite detayı yükleniyor...', 'Lütfen bekleyiniz...');
-
           const activity = await activityService.getActivityById(id, activityType);
-          set({
-            currentActivity: activity,
-          });
-
+          set({ currentActivity: activity });
           clearState();
         } catch (error) {
-          const errorMessage = handleError(error);
-          setState(StateType.Error, 'Aktivite detayı yüklenemedi', errorMessage);
+          setState(StateType.Error, 'Aktivite detayı yüklenemedi', handleError(error));
         }
       },
 
-      // Pagination - tek metod ile page ve pageSize güncelleme (Lead store ile aynı)
+      // ── Pagination ─────────────────────────────────────────────────────
       setPagination: (params: PaginationParams) => {
-        const currentState = get();
-        const newPage = params.page ?? currentState.page;
-        const newPageSize = params.pageSize ?? currentState.pageSize;
-
-        // pageSize değiştiyse sayfa 1'e dön
-        const finalPage =
-          params.pageSize !== undefined && params.pageSize !== currentState.pageSize
-            ? 1
-            : newPage;
-
-        set({
-          page: finalPage,
-          pageSize: newPageSize,
-        });
-
-        // Tek bir fetchActivities çağrısı
+        const { page, pageSize } = get();
+        const newPageSize = params.pageSize ?? pageSize;
+        const finalPage = params.pageSize !== undefined && params.pageSize !== pageSize
+          ? 1
+          : (params.page ?? page);
+        set({ page: finalPage, pageSize: newPageSize });
         get().fetchActivities();
       },
 
-      // Calendar date
-      setCalendarDate: (date: Date) => {
-        set({ calendarDate: date });
-      },
+      // ── Calendar date ──────────────────────────────────────────────────
+      setCalendarDate: (date: Date) => set({ calendarDate: date }),
 
-      // Filters
+      // ── Filters ────────────────────────────────────────────────────────
       setFilters: (filters: ActivityListFilters) => {
         set({ filters, page: 1 });
         get().fetchActivities();
@@ -191,21 +172,15 @@ export const useActivityStore = create<ActivityState>()(
         get().fetchActivities();
       },
 
-      // Selection
-      setSelectedRowKeys: (keys: string[]) => {
-        set({ selectedRowKeys: keys });
-      },
+      // ── Selection ──────────────────────────────────────────────────────
+      setSelectedRowKeys: (keys: string[]) => set({ selectedRowKeys: keys }),
+      clearSelectedRowKeys: () => set({ selectedRowKeys: [] }),
 
-      clearSelectedRowKeys: () => {
-        set({ selectedRowKeys: [] });
-      },
-
-      // CRUD operations
+      // ── CRUD ───────────────────────────────────────────────────────────
       createActivity: async <T extends ActivityBase>(
         activityData: Omit<T, 'id' | 'createdAt' | 'createdBy'>
       ) => {
         const { setState, clearState } = useProcessState.getState();
-
         try {
           setState(StateType.Loading, 'Aktivite oluşturuluyor...', 'Lütfen bekleyiniz...');
           const newActivity = await activityService.createActivity<T>(activityData);
@@ -213,115 +188,186 @@ export const useActivityStore = create<ActivityState>()(
           clearState();
           return newActivity;
         } catch (error) {
-          const errorMessage = handleError(error);
-          setState(StateType.Error, 'Aktivite oluşturulamadı', errorMessage);
+          setState(StateType.Error, 'Aktivite oluşturulamadı', handleError(error));
           throw error;
         }
       },
 
       updateActivity: async <T extends ActivityBase>(
-        activityData: Partial<T>  & { activityType: T['activityType'] }
+        activityData: Partial<T> & { activityType: T['activityType'] }
       ) => {
         const { setState, clearState } = useProcessState.getState();
-
         try {
           setState(StateType.Loading, 'Aktivite güncelleniyor...', 'Lütfen bekleyiniz...');
-          const updatedActivity = await activityService.updateActivity<T>(activityData);
-          set({ currentActivity: updatedActivity });
+          const updated = await activityService.updateActivity<T>(activityData);
+          set({ currentActivity: updated });
           clearState();
-          return updatedActivity;
+          return updated;
         } catch (error) {
-          const errorMessage = handleError(error);
-          setState(StateType.Error, 'Aktivite güncellenemedi', errorMessage);
+          setState(StateType.Error, 'Aktivite güncellenemedi', handleError(error));
           throw error;
         }
       },
 
       deleteActivity: async (id: string) => {
         const { setState } = useProcessState.getState();
-
         try {
           setState(StateType.Loading, 'Aktivite siliniyor...', 'Lütfen bekleyiniz...');
-          await activityService.deleteActivity(id);
+          await activityService.deleteActivity({ ids: [id] });
           await get().fetchActivities();
           get().clearSelectedRowKeys();
         } catch (error) {
-          const errorMessage = handleError(error);
-          setState(StateType.Error, 'Aktivite silinemedi', errorMessage);
+          setState(StateType.Error, 'Aktivite silinemedi', handleError(error));
           throw error;
         }
       },
 
+      // ── Bulk Actions ───────────────────────────────────────────────────
       bulkDeleteActivities: async () => {
         const { selectedRowKeys } = get();
-        if (selectedRowKeys.length === 0) return;
-
+        if (!selectedRowKeys.length) return;
         const { setState } = useProcessState.getState();
-
         try {
-          setState(StateType.Loading, "Aktiviteler siliniyor...", 'Lütfen bekleyiniz...');
-          await activityService.bulkDeleteActivities(selectedRowKeys);
+          setState(StateType.Loading, 'Aktiviteler siliniyor...', 'Lütfen bekleyiniz...');
+          await activityService.deleteActivity({ ids: selectedRowKeys });
           await get().fetchActivities();
           get().clearSelectedRowKeys();
         } catch (error) {
-          const errorMessage = handleError(error);
-          setState(StateType.Error, "Aktiviteler silinemedi", errorMessage);
+          setState(StateType.Error, 'Aktiviteler silinemedi', handleError(error));
         }
       },
 
+      bulkActivateActivities: async () => {
+        const { selectedRowKeys } = get();
+        if (!selectedRowKeys.length) return;
+        const { setState, clearState } = useProcessState.getState();
+        try {
+          setState(StateType.Loading, 'Aktiviteler etkinleştiriliyor...', 'Lütfen bekleyiniz...');
+          await activityService.setStatusActivity({ ids: selectedRowKeys, isActive: true });
+          await get().fetchActivities();
+          get().clearSelectedRowKeys();
+          clearState();
+        } catch (error) {
+          setState(StateType.Error, 'Aktiviteler etkinleştirilemedi', handleError(error));
+        }
+      },
+
+      bulkDeactivateActivities: async () => {
+        const { selectedRowKeys } = get();
+        if (!selectedRowKeys.length) return;
+        const { setState, clearState } = useProcessState.getState();
+        try {
+          setState(StateType.Loading, 'Aktiviteler pasifleştiriliyor...', 'Lütfen bekleyiniz...');
+          await activityService.setStatusActivity({ ids: selectedRowKeys, isActive: false });
+          await get().fetchActivities();
+          get().clearSelectedRowKeys();
+          clearState();
+        } catch (error) {
+          setState(StateType.Error, 'Aktiviteler pasifleştirilemedi', handleError(error));
+        }
+      },
+
+      // Aktiviteye özgü: toplu durum güncelleme
       bulkUpdateStatus: async (status: ActivityStatusValue) => {
         const { selectedRowKeys } = get();
-        if (selectedRowKeys.length === 0) return;
-
-        const { setState } = useProcessState.getState();
-
+        if (!selectedRowKeys.length) return;
+        const { setState, clearState } = useProcessState.getState();
         try {
-          setState(StateType.Loading, "Aktiviteler güncelleniyor...", 'Lütfen bekleyiniz...');
+          setState(StateType.Loading, 'Aktiviteler güncelleniyor...', 'Lütfen bekleyiniz...');
           await activityService.bulkUpdateStatus(selectedRowKeys, status);
           await get().fetchActivities();
           get().clearSelectedRowKeys();
+          clearState();
         } catch (error) {
-          const errorMessage = handleError(error);
-          setState(StateType.Error, "Aktiviteler güncellenemedi", errorMessage);
-          throw error;
+          setState(StateType.Error, 'Aktiviteler güncellenemedi', handleError(error));
+        }
+      },
+
+      bulkAssignActivities: async (entity) => {
+        const { selectedRowKeys } = get();
+        if (!selectedRowKeys.length) return;
+        const { setState, clearState } = useProcessState.getState();
+        try {
+          setState(StateType.Loading, 'Aktiviteler atanıyor...', 'Lütfen bekleyiniz...');
+          const ownerId = Array.isArray(entity) ? entity[0]?.id : entity?.id;
+          if (!ownerId) return;
+          await activityService.assignActivity({ ids: selectedRowKeys, ownerId });
+          await get().fetchActivities();
+          get().clearSelectedRowKeys();
+          clearState();
+        } catch (error) {
+          setState(StateType.Error, 'Aktiviteler atanamadı', handleError(error));
+        }
+      },
+
+      // ── Row-level Actions ──────────────────────────────────────────────
+      activateActivity: async (id: string) => {
+        const { setState, clearState } = useProcessState.getState();
+        try {
+          setState(StateType.Loading, 'Aktivite etkinleştiriliyor...', 'Lütfen bekleyiniz...');
+          await activityService.setStatusActivity({ ids: [id], isActive: true });
+          await get().fetchActivities();
+          clearState();
+        } catch (error) {
+          setState(StateType.Error, 'Aktivite etkinleştirilemedi', handleError(error));
+        }
+      },
+
+      deactivateActivity: async (id: string) => {
+        const { setState, clearState } = useProcessState.getState();
+        try {
+          setState(StateType.Loading, 'Aktivite pasifleştiriliyor...', 'Lütfen bekleyiniz...');
+          await activityService.setStatusActivity({ ids: [id], isActive: false });
+          await get().fetchActivities();
+          clearState();
+        } catch (error) {
+          setState(StateType.Error, 'Aktivite pasifleştirilemedi', handleError(error));
+        }
+      },
+
+      assignActivity: async (id: string, entity) => {
+        const { setState, clearState } = useProcessState.getState();
+        try {
+          setState(StateType.Loading, 'Aktivite atanıyor...', 'Lütfen bekleyiniz...');
+          const ownerId = Array.isArray(entity) ? entity[0]?.id : entity?.id;
+          if (!ownerId) return;
+          await activityService.assignActivity({ ids: [id], ownerId });
+          await get().fetchActivities();
+          clearState();
+        } catch (error) {
+          setState(StateType.Error, 'Aktivite atanamadı', handleError(error));
         }
       },
 
       completeActivity: async (id: string) => {
         const { setState, clearState } = useProcessState.getState();
-
         try {
           setState(StateType.Loading, 'Aktivite tamamlanıyor...', 'Lütfen bekleyiniz...');
-          const updatedActivity = await activityService.completeActivity(id);
-          set({ currentActivity: updatedActivity });
+          const updated = await activityService.completeActivity(id);
+          set({ currentActivity: updated });
           await get().fetchActivities();
           clearState();
         } catch (error) {
-          const errorMessage = handleError(error);
-          setState(StateType.Error, 'Aktivite tamamlanamadı', errorMessage);
+          setState(StateType.Error, 'Aktivite tamamlanamadı', handleError(error));
           throw error;
         }
       },
 
       cancelActivity: async (id: string) => {
         const { setState, clearState } = useProcessState.getState();
-
         try {
           setState(StateType.Loading, 'Aktivite iptal ediliyor...', 'Lütfen bekleyiniz...');
-          const updatedActivity = await activityService.cancelActivity(id);
-          set({ currentActivity: updatedActivity });
+          const updated = await activityService.cancelActivity(id);
+          set({ currentActivity: updated });
           await get().fetchActivities();
           clearState();
         } catch (error) {
-          const errorMessage = handleError(error);
-          setState(StateType.Error, 'Aktivite iptal edilemedi', errorMessage);
+          setState(StateType.Error, 'Aktivite iptal edilemedi', handleError(error));
           throw error;
         }
       },
 
-      setCurrentActivity: (activity: ActivityBase | null) => {
-        set({ currentActivity: activity });
-      },
+      setCurrentActivity: (activity: ActivityBase | null) => set({ currentActivity: activity }),
     }),
     { name: 'activity-store' }
   )

@@ -6,10 +6,10 @@ import type {
 } from '@/types/opportunity.types';
 import apiClient from '@/services/api.client';
 import { ServicePath } from '@/config/service.paths';
-import type { AssignRequest, IdListRequest, IdRequest } from '@/types/common.types';
+import type { AssignRequest, IdListRequest, IdRequest, StatusRequest } from '@/types/common.types';
 
 export const opportunityService = {
-  // Fırsat listesini sayfalı olarak getir
+
   getOpportunities: async (
     page: number = 1,
     pageSize: number = 50,
@@ -23,11 +23,6 @@ export const opportunityService = {
     return response.data;
   },
 
-  assignOpportunity: async (opportunityId: string, userId: string) => {
-    const request: AssignRequest = { entityId: opportunityId, ownerId: userId };
-    await apiClient.post(ServicePath.Opportunity.Assign, request);
-  },
-
   getOpportunityById: async (id: string): Promise<OpportunityDetailItem> => {
     const request: IdRequest = { id };
     const response = await apiClient.post<OpportunityDetailItem>(
@@ -37,7 +32,6 @@ export const opportunityService = {
     return response.data;
   },
 
-  // Yeni fırsat oluştur
   createOpportunity: async (
     opportunity: Omit<Partial<OpportunityDetailItem>, 'id' | 'createdAt' | 'updatedAt'>
   ): Promise<OpportunityDetailItem> => {
@@ -48,7 +42,6 @@ export const opportunityService = {
     return response.data;
   },
 
-  // Fırsatı güncelle
   updateOpportunity: async (
     opportunity: Partial<OpportunityDetailItem>
   ): Promise<OpportunityDetailItem> => {
@@ -59,18 +52,17 @@ export const opportunityService = {
     return response.data;
   },
 
-  // Fırsatı sil (soft delete)
-  deleteOpportunity: async (id: string): Promise<void> => {
-    const request: IdRequest = { id };
+  deleteOpportunity: async (request: IdListRequest): Promise<void> => {
     await apiClient.post(ServicePath.Opportunity.Delete, request);
   },
 
-  // Toplu sil
-  bulkDeleteOpportunities: async (ids: string[]): Promise<void> => {
-    const request: IdListRequest = { ids };
-    await apiClient.post(ServicePath.Opportunity.BulkDelete, request);
+  setStatusOpportunity: async (request: StatusRequest): Promise<void> => {
+    await apiClient.post(ServicePath.Opportunity.Status, request);
   },
 
+  assignOpportunity: async (request: AssignRequest): Promise<void> => {
+    await apiClient.post(ServicePath.Opportunity.Assign, request);
+  },
 };
 
 export default opportunityService;

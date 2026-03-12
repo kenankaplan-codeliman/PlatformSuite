@@ -20,7 +20,7 @@ namespace CRM.Application.CommandHandler
             this.unitOfWork = unitOfWork;
         }
 
-        public async Task<AccountListResponse> List(AccountListFilter filter, PaginationInfo paginationInfo)
+        public async Task<AccountListResponse> ListAsync(AccountListFilter filter, PaginationInfo paginationInfo)
         {
             var result = await accountRepository.List(filter, paginationInfo);
 
@@ -33,7 +33,7 @@ namespace CRM.Application.CommandHandler
             };
         }
 
-        public async Task<EntityReferenceList> LookupReference(string searchText, PaginationInfo paginationInfo)
+        public async Task<EntityReferenceList> SearchAsync(string searchText, PaginationInfo paginationInfo)
         {
             var result = referenceRepository.LookupReference(EntityType.Account, searchText, paginationInfo);
 
@@ -46,21 +46,21 @@ namespace CRM.Application.CommandHandler
             };
         }
 
-        public async Task<AccountDetailItem> Get(Guid Id)
+        public async Task<AccountDetailItem> GetAsync(Guid Id)
         {
             var entity = await accountRepository.GetAsync(Id) ?? throw new NotFoundException();
 
             return entity.ToModal();
         }
 
-        public async Task<AccountDetailItem> Create(AccountDetailItem accountDetailItem)
+        public async Task<AccountDetailItem> CreateAsync(AccountDetailItem accountDetailItem)
         {
             try
             {
                 await unitOfWork.BeginTransactionAsync();
 
                 Account entity = new Account();
-                entity.UpdateFrom(accountDetailItem);   
+                entity.UpdateFrom(accountDetailItem);
 
                 await accountRepository.CreateAsync(entity);
 
@@ -75,12 +75,12 @@ namespace CRM.Application.CommandHandler
             }
         }
 
-        public async Task<AccountDetailItem> Update(AccountDetailItem accountDetailItem)
+        public async Task<AccountDetailItem> UpdateAsync(AccountDetailItem accountDetailItem)
         {
             try
             {
                 await unitOfWork.BeginTransactionAsync();
-                
+
                 var entity = await accountRepository.GetAsync(accountDetailItem.Id) ?? throw new NotFoundException();
 
                 entity.UpdateFrom(accountDetailItem);
@@ -98,15 +98,17 @@ namespace CRM.Application.CommandHandler
             }
         }
 
-        public async Task Delete(Guid Id)
+        public async Task DeleteAsync(List<Guid> Ids)
         {
             try
             {
                 await unitOfWork.BeginTransactionAsync();
 
-                var entity = await accountRepository.GetAsync(Id) ?? throw new NotFoundException();
-
-                await accountRepository.DeleteAsync(entity);
+                foreach (var id in Ids)
+                {
+                    var entity = await accountRepository.GetAsync(id) ?? throw new NotFoundException();
+                    await accountRepository.DeleteAsync(entity);
+                }
 
                 await unitOfWork.CommitTransactionAsync();
 
@@ -118,11 +120,39 @@ namespace CRM.Application.CommandHandler
             }
         }
 
-        public async Task BulkDelete(List<Guid> Ids)
+        public async Task AssignAsync(List<Guid> Ids, Guid ownerId)
         {
-            foreach (var id in Ids)
+            try
             {
-                await Delete(id);
+                await unitOfWork.BeginTransactionAsync();
+
+                await accountRepository.AssignAsync(Ids, ownerId);
+
+                await unitOfWork.CommitTransactionAsync();
+
+            }
+            catch
+            {
+                await unitOfWork.RollbackTransactionAsync();
+                throw;
+            }
+        }
+
+        public async Task SetStateAsync(List<Guid> Ids, bool isActive)
+        {
+            try
+            {
+                await unitOfWork.BeginTransactionAsync();
+
+                await accountRepository.SetStateAsync(Ids, isActive);
+
+                await unitOfWork.CommitTransactionAsync();
+
+            }
+            catch
+            {
+                await unitOfWork.RollbackTransactionAsync();
+                throw;
             }
         }
 

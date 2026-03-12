@@ -6,10 +6,10 @@ import type {
   AccountListFilters,
 } from '@/types/account.types';
 import accountService from '@/services/account.service';
-
 import { handleError } from '@/hooks/useHandleError';
 import { StateType, useProcessState } from '@/stores/process.state.store';
 import type { PaginationParams } from '@/types/common.types';
+import type { EntityReference } from '@/types/entity.lookup.types';
 
 interface AccountState {
   // List state
@@ -36,7 +36,18 @@ interface AccountState {
   ) => Promise<AccountDetailItem>;
   updateAccount: (account: Partial<AccountDetailItem>) => Promise<AccountDetailItem>;
   deleteAccount: (id: string) => Promise<void>;
+
+  // Bulk actions
   bulkDeleteAccounts: () => Promise<void>;
+  bulkActivateAccounts: () => Promise<void>;
+  bulkDeactivateAccounts: () => Promise<void>;
+  bulkAssignAccounts: (entity: EntityReference | EntityReference[] | null) => Promise<void>;
+
+  // Row-level actions
+  activateAccount: (id: string) => Promise<void>;
+  deactivateAccount: (id: string) => Promise<void>;
+  assignAccount: (id: string, entity: EntityReference | EntityReference[] | null) => Promise<void>;
+
   setCurrentAccount: (account: AccountDetailItem | null) => void;
 }
 
@@ -50,7 +61,7 @@ const initialFilters: AccountListFilters = {
 export const useAccountStore = create<AccountState>()(
   devtools(
     (set, get) => ({
-      // Initial state
+      // ── Initial state ──────────────────────────────────────────────────
       accounts: [],
       hasMore: false,
       page: 1,
@@ -59,68 +70,42 @@ export const useAccountStore = create<AccountState>()(
       selectedRowKeys: [],
       currentAccount: null,
 
-      // Fetch accounts list
+      // ── Fetch ──────────────────────────────────────────────────────────
       fetchAccounts: async () => {
         const { page, pageSize, filters } = get();
         const { setState, clearState } = useProcessState.getState();
-
         try {
           setState(StateType.Loading, 'Firma listesi yükleniyor...', 'Lütfen bekleyiniz...');
-
           const response = await accountService.getAccounts(page, pageSize, filters);
-          set({
-            accounts: response.data,
-            hasMore: response.hasMore,
-          });
-
+          set({ accounts: response.data, hasMore: response.hasMore });
           clearState();
         } catch (error) {
-          const errorMessage = handleError(error);
-          setState(StateType.Error, 'Firma listesi yüklenemedi', errorMessage);
+          setState(StateType.Error, 'Firma listesi yüklenemedi', handleError(error));
         }
       },
 
-      // Fetch single account
       fetchAccountById: async (id: string) => {
         const { setState, clearState } = useProcessState.getState();
-
         try {
           setState(StateType.Loading, 'Firma detayı yükleniyor...', 'Lütfen bekleyiniz...');
-
           const account = await accountService.getAccountById(id);
-
-          set({
-            currentAccount: account,
-          });
-
+          set({ currentAccount: account });
           clearState();
         } catch (error) {
-          const errorMessage = handleError(error);
-          setState(StateType.Error, 'Firma detayı yüklenemedi', errorMessage);
+          setState(StateType.Error, 'Firma detayı yüklenemedi', handleError(error));
         }
       },
 
-      // Pagination
+      // ── Pagination ─────────────────────────────────────────────────────
       setPagination: (params: PaginationParams) => {
-        const currentState = get();
-        const newPage = params.page ?? currentState.page;
-        const newPageSize = params.pageSize ?? currentState.pageSize;
-
-        // pageSize değiştiyse sayfa 1'e dön
-        const finalPage =
-          params.pageSize !== undefined && params.pageSize !== currentState.pageSize
-            ? 1
-            : newPage;
-
-        set({
-          page: finalPage,
-          pageSize: newPageSize,
-        });
-
+        const { page, pageSize } = get();
+        const newPageSize = params.pageSize ?? pageSize;
+        const finalPage = params.pageSize !== undefined && params.pageSize !== pageSize ? 1 : (params.page ?? page);
+        set({ page: finalPage, pageSize: newPageSize });
         get().fetchAccounts();
       },
 
-      // Filters
+      // ── Filters ────────────────────────────────────────────────────────
       setFilters: (filters: AccountListFilters) => {
         set({ filters, page: 1 });
         get().fetchAccounts();
@@ -131,19 +116,13 @@ export const useAccountStore = create<AccountState>()(
         get().fetchAccounts();
       },
 
-      // Selection
-      setSelectedRowKeys: (keys: string[]) => {
-        set({ selectedRowKeys: keys });
-      },
+      // ── Selection ──────────────────────────────────────────────────────
+      setSelectedRowKeys: (keys: string[]) => set({ selectedRowKeys: keys }),
+      clearSelectedRowKeys: () => set({ selectedRowKeys: [] }),
 
-      clearSelectedRowKeys: () => {
-        set({ selectedRowKeys: [] });
-      },
-
-      // CRUD operations
+      // ── CRUD ───────────────────────────────────────────────────────────
       createAccount: async (accountData) => {
         const { setState, clearState } = useProcessState.getState();
-
         try {
           setState(StateType.Loading, 'Firma oluşturuluyor...', 'Lütfen bekleyiniz...');
           const newAccount = await accountService.createAccount(accountData);
@@ -151,15 +130,13 @@ export const useAccountStore = create<AccountState>()(
           clearState();
           return newAccount;
         } catch (error) {
-          const errorMessage = handleError(error);
-          setState(StateType.Error, 'Firma oluşturulamadı', errorMessage);
+          setState(StateType.Error, 'Firma oluşturulamadı', handleError(error));
           throw error;
         }
       },
 
       updateAccount: async (accountData: Partial<AccountDetailItem>) => {
         const { setState, clearState } = useProcessState.getState();
-
         try {
           setState(StateType.Loading, 'Firma güncelleniyor...', 'Lütfen bekleyiniz...');
           const updatedAccount = await accountService.updateAccount(accountData);
@@ -167,8 +144,7 @@ export const useAccountStore = create<AccountState>()(
           clearState();
           return updatedAccount;
         } catch (error) {
-          const errorMessage = handleError(error);
-          setState(StateType.Error, 'Firma güncellenemedi', errorMessage);
+          setState(StateType.Error, 'Firma güncellenemedi', handleError(error));
           throw error;
         }
       },
@@ -177,35 +153,128 @@ export const useAccountStore = create<AccountState>()(
         const { setState } = useProcessState.getState();
         try {
           setState(StateType.Loading, 'Firma siliniyor...', 'Lütfen bekleyiniz...');
-          await accountService.deleteAccount(id);
+          await accountService.deleteAccount({ids:[id]});
           await get().fetchAccounts();
           get().clearSelectedRowKeys();
         } catch (error) {
-          const errorMessage = handleError(error);
-          setState(StateType.Error, 'Firma silinemedi', errorMessage);
+          setState(StateType.Error, 'Firma silinemedi', handleError(error));
           throw error;
         }
       },
 
+      // ── Bulk Actions ───────────────────────────────────────────────────
       bulkDeleteAccounts: async () => {
         const { selectedRowKeys } = get();
-        if (selectedRowKeys.length === 0) return;
-
+        if (!selectedRowKeys.length) return;
         const { setState } = useProcessState.getState();
         try {
-          setState(StateType.Loading, "Firmalar siliniyor...", 'Lütfen bekleyiniz...');
-          await accountService.bulkDeleteAccounts(selectedRowKeys);
+          setState(StateType.Loading, 'Firmalar siliniyor...', 'Lütfen bekleyiniz...');
+          await accountService.deleteAccount({ids:selectedRowKeys});
           await get().fetchAccounts();
           get().clearSelectedRowKeys();
         } catch (error) {
-          const errorMessage = handleError(error);
-          setState(StateType.Error, "Firmalar silinemedi", errorMessage);
+          setState(StateType.Error, 'Firmalar silinemedi', handleError(error));
         }
       },
 
-      setCurrentAccount: (account: AccountDetailItem | null) => {
-        set({ currentAccount: account });
+      bulkActivateAccounts: async () => {
+        const { selectedRowKeys } = get();
+        if (!selectedRowKeys.length) return;
+        const { setState, clearState } = useProcessState.getState();
+        try {
+          setState(StateType.Loading, 'Firmalar etkinleştiriliyor...', 'Lütfen bekleyiniz...');
+          await accountService.setStatusAccount({ids: selectedRowKeys, isActive:true});
+          await get().fetchAccounts();
+          get().clearSelectedRowKeys();
+          clearState();
+        } catch (error) {
+          setState(StateType.Error, 'Firmalar etkinleştirilemedi', handleError(error));
+        }
       },
+
+      bulkDeactivateAccounts: async () => {
+        const { selectedRowKeys } = get();
+        if (!selectedRowKeys.length) return;
+        const { setState, clearState } = useProcessState.getState();
+        try {
+          setState(StateType.Loading, 'Firmalar pasifleştiriliyor...', 'Lütfen bekleyiniz...');
+          await accountService.setStatusAccount({ids: selectedRowKeys, isActive:false});
+          await get().fetchAccounts();
+          get().clearSelectedRowKeys();
+          clearState();
+        } catch (error) {
+          setState(StateType.Error, 'Firmalar pasifleştirilemedi', handleError(error));
+        }
+      },
+
+      bulkAssignAccounts: async (entity) => {
+        const { selectedRowKeys } = get();
+        if (!selectedRowKeys.length) return;
+        const { setState, clearState } = useProcessState.getState();
+        try {
+          setState(StateType.Loading, 'Firmalar atanıyor...', 'Lütfen bekleyiniz...');
+
+          const ownerId = Array.isArray(entity)
+            ? entity[0]?.id
+            : entity?.id;
+
+          if (!ownerId) return;
+
+          await accountService.assignAccount({ids:selectedRowKeys, ownerId: ownerId});
+          await get().fetchAccounts();
+          get().clearSelectedRowKeys();
+          clearState();
+        } catch (error) {
+          setState(StateType.Error, 'Firmalar atanamadı', handleError(error));
+        }
+      },
+
+      // ── Row-level Actions ──────────────────────────────────────────────
+      activateAccount: async (id: string) => {
+        const { setState, clearState } = useProcessState.getState();
+        try {
+          setState(StateType.Loading, 'Firma etkinleştiriliyor...', 'Lütfen bekleyiniz...');
+          await accountService.setStatusAccount({ids:[id], isActive:true});
+          await get().fetchAccounts();
+          clearState();
+        } catch (error) {
+          setState(StateType.Error, 'Firma etkinleştirilemedi', handleError(error));
+        }
+      },
+
+      deactivateAccount: async (id: string) => {
+        const { setState, clearState } = useProcessState.getState();
+        try {
+          setState(StateType.Loading, 'Firma pasifleştiriliyor...', 'Lütfen bekleyiniz...');
+          await accountService.setStatusAccount({ids:[id], isActive:false});
+          await get().fetchAccounts();
+          clearState();
+        } catch (error) {
+          setState(StateType.Error, 'Firma pasifleştirilemedi', handleError(error));
+        }
+      },
+
+      assignAccount: async (id: string, entity) => {
+        const { setState, clearState } = useProcessState.getState();
+        try {
+          setState(StateType.Loading, 'Firma atanıyor...', 'Lütfen bekleyiniz...');
+
+           const ownerId = Array.isArray(entity)
+            ? entity[0]?.id
+            : entity?.id;
+
+          if (!ownerId) return;
+
+          await accountService.assignAccount({ids:[id], ownerId: ownerId});
+
+          await get().fetchAccounts();
+          clearState();
+        } catch (error) {
+          setState(StateType.Error, 'Firma atanamadı', handleError(error));
+        }
+      },
+
+      setCurrentAccount: (account: AccountDetailItem | null) => set({ currentAccount: account }),
     }),
     { name: 'account-store' }
   )

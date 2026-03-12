@@ -101,38 +101,20 @@ namespace CRM.Application.CommandHandler
         }
 
 
-        public async Task Delete(Guid Id)
+        public async Task Delete(List<Guid> Ids)
         {
             try
             {
                 await unitOfWork.BeginTransactionAsync();
 
-                var entity = await leadRepository.GetAsync(Id) ?? throw new NotFoundException();
-
-                await leadRepository.DeleteAsync(entity);
-                await unitOfWork.CommitTransactionAsync();
-
-            }
-            catch
-            {
-                await unitOfWork.RollbackTransactionAsync();
-                throw;
-            }
-        }
-
-        public async Task BulkDelete(List<Guid> Ids)
-        {
-            try
-            {
-                await unitOfWork.BeginTransactionAsync();
-
-                foreach (var Id in Ids)
+                foreach (var id in Ids)
                 {
-                    var entity = await leadRepository.GetAsync(Id) ?? throw new NotFoundException();
+                    var entity = await leadRepository.GetAsync(id) ?? throw new NotFoundException();
+
                     await leadRepository.DeleteAsync(entity);
                 }
-
                 await unitOfWork.CommitTransactionAsync();
+
             }
             catch
             {
@@ -141,7 +123,7 @@ namespace CRM.Application.CommandHandler
             }
         }
 
-        public async Task BulkUpdateStatus(List<Guid> Ids, LeadStatus status)
+        public async Task BulkUpdateStatusAsync(List<Guid> Ids, LeadStatus status)
         {
             try
             {
@@ -156,6 +138,42 @@ namespace CRM.Application.CommandHandler
                 }
 
                 await unitOfWork.CommitTransactionAsync();
+            }
+            catch
+            {
+                await unitOfWork.RollbackTransactionAsync();
+                throw;
+            }
+        }
+
+        public async Task AssignAsync(List<Guid> Ids, Guid ownerId)
+        {
+            try
+            {
+                await unitOfWork.BeginTransactionAsync();
+
+                await leadRepository.AssignAsync(Ids, ownerId);
+
+                await unitOfWork.CommitTransactionAsync();
+
+            }
+            catch
+            {
+                await unitOfWork.RollbackTransactionAsync();
+                throw;
+            }
+        }
+
+        public async Task SetStateAsync(List<Guid> Ids, bool isActive)
+        {
+            try
+            {
+                await unitOfWork.BeginTransactionAsync();
+
+                await leadRepository.SetStateAsync(Ids, isActive);
+
+                await unitOfWork.CommitTransactionAsync();
+
             }
             catch
             {

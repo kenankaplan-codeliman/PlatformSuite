@@ -1,8 +1,7 @@
-﻿namespace CRM.Api.Contracts.Requests.Common
+﻿namespace CRM.Api.Contracts.Requests.Common;
+
+public class AssignRequest
 {
-    public class AssignRequest
-    {
-        public Guid EntityId { get; set; }
-        public Guid OwnerId { get; set; }
-    }
+    public List<Guid> Ids { get; set; } = new();
+    public Guid OwnerId { get; set; }
 }

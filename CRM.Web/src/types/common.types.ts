@@ -12,10 +12,11 @@ export interface IdListRequest {
 }
 
 export interface AssignRequest {
-  entityId: string;
+  ids: string[];
   ownerId: string;
 }
 
-export interface AssignListRequest {
-  owners: AssignRequest[];
+export interface StatusRequest {
+  ids: string[];
+  isActive: boolean;
 }

@@ -334,16 +334,10 @@ export interface ActivityCalendarRequest {
   filters?: ActivityListFilters;
 }
 
-export interface ActivityBulkDeleteRequest {
-  ids: string[];
-}
-
 export interface ActivityBulkUpdateStatusRequest {
   ids: string[];
   status: ActivityStatusValue;
 }
-
-
 
 // ============================================
 // RESPONSE TYPES

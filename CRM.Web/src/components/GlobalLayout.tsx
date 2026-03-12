@@ -11,70 +11,71 @@ const { Text } = Typography;
 
 const GlobalLayout = () => {
 
-    const { state, title, message } = useProcessState();
+  const { state, title, message } = useProcessState();
 
-      const {
-        showLoading,
-        showSuccess,
-        showError,
-        closeLoading,
-      } = useLoadingModal();
-    
-    useEffect(() => {
-        if (state === StateType.Loading) {
-          showLoading(
-            title || 'Loading',
-            message || 'Please wait...',
-          );
-    
-        } else if (state === StateType.Success) { 
-          showSuccess(
-            title || 'Success',
-            message || 'Operation completed successfully.',
-          );
-    
-        } else if (state === StateType.Error) {
-        showError(  
-          title || 'Error',
-          message || 'An error occurred.'
-         );
-        }
-        else {
-          closeLoading();
-        }
-      }, [state]);
+  const {
+    showLoading,
+    showSuccess,
+    showError,
+    closeLoading,
+  } = useLoadingModal();
 
-    return (
-        <Layout style={{ minHeight: "100vh" }}>
-            <Header
+  useEffect(() => {
+    if (state === StateType.Loading) {
+      showLoading(
+        title || 'Loading',
+        message || 'Please wait...',
+      );
 
-                style={{
-                    background: "#001529",
-                    display: "flex",
-                    justifyContent: "space-between",
-                    alignItems: "center",
-                    paddingInline: 24
-                }}
-            >
-                <Text style={{ color: "white", fontSize: 18, fontWeight: 600 }}>
-                    CRM
-                </Text>
+    } else if (state === StateType.Success) {
+      showSuccess(
+        title || 'Success',
+        message || 'Operation completed successfully.',
+      );
 
-                <UserPanel />
-            </Header>
+    } else if (state === StateType.Error) {
+      showError(
+        title || 'Error',
+        message || 'An error occurred.'
+      );
+    }
+    else {
+      closeLoading();
+    }
+  }, [state]);
 
-            <Content
-                style={{
-                    padding: 0,
-                    flex: 1,
-                    display: "flex"
-                }}
-            >
-                <Outlet />
-            </Content>
+  return (
+    <Layout style={{ height: "100vh", overflow: "hidden" }}>
+      <Header
+        style={{
+          background: "#001529",
+          display: "flex",
+          justifyContent: "space-between",
+          alignItems: "center",
+          paddingInline: 24
+        }}
+      >
+        <Text style={{ color: "white", fontSize: 18, fontWeight: 600 }}>
+          CRM
+        </Text>
 
-        </Layout>
-    );
+        <UserPanel />
+      </Header>
+
+      <Content
+        style={{
+          padding: 0,
+          flex: 1,
+          minHeight: 0,        // "calc(100vh - 150px)" kaldır
+          overflow: "hidden",
+          display: "flex",
+        }}
+      >
+        <Outlet />
+      </Content>
+
+    </Layout>
+  );
 }
 
 export default GlobalLayout;

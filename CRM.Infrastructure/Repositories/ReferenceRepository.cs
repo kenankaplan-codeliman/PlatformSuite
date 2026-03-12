@@ -3,14 +3,8 @@ using CRM.Application.Interfaces;
 using CRM.Application.Modals.Common;
 using CRM.Domain.Enums;
 using CRM.Infrastructure.Data;
-using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
-using Microsoft.Graph.Models.ExternalConnectors;
-using Microsoft.IdentityModel.Tokens;
-using System;
-using System.Collections.Generic;
-using System.Text;
 
 namespace CRM.Infrastructure.Repositories
 {
@@ -320,7 +314,8 @@ namespace CRM.Infrastructure.Repositories
 
             if (!string.IsNullOrEmpty(searchText))
             {
-                tempQuery = tempQuery.Where(cnt => EF.Functions.ILike($"{cnt.FirstName} {cnt.LastName}", $"%{searchText}%"));
+                var pattern = $"%{searchText}%";
+                tempQuery = tempQuery.Where(x => EF.Functions.ILike(x.FirstName + " " + x.LastName, pattern));
             }
 
             var query = tempQuery.Select(cnt => new

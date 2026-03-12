@@ -25,25 +25,25 @@ public class AccountController : ControllerBase
     [PrivilegeAuthorize(PrivilegeCodes.AccountPrivilegeCodes.Read)]
     public async Task<IActionResult> List(AccountListRequest request)
     {
-        var response = await accountCommandHandler.List(request.Filters, new PaginationInfo(request.Page, request.PageSize));
+        var response = await accountCommandHandler.ListAsync(request.Filters, new PaginationInfo(request.Page, request.PageSize));
         return Ok(response);
     }
 
     [HttpPost("search")]
     [ProducesResponseType(typeof(EntityReferenceList), 200)]
     [PrivilegeAuthorize(PrivilegeCodes.AccountPrivilegeCodes.Read)]
-    public async Task<IActionResult> BulkUpdateStatus(SearchRequest request)
+    public async Task<IActionResult> SearchAsync(SearchRequest request)
     {
-        var response = await accountCommandHandler.LookupReference(request.SearchText, new PaginationInfo(request.Page, request.PageSize));
+        var response = await accountCommandHandler.SearchAsync(request.SearchText, new PaginationInfo(request.Page, request.PageSize));
         return Ok(response);
     }
 
     [HttpPost("get")]
     [ProducesResponseType(typeof(AccountDetailItem), 200)]
     [PrivilegeAuthorize(PrivilegeCodes.AccountPrivilegeCodes.Read)]
-    public async Task<IActionResult> Get(IdRequest idRequest)
+    public async Task<IActionResult> GetAsync(IdRequest idRequest)
     {
-        var account = await accountCommandHandler.Get(idRequest.Id);
+        var account = await accountCommandHandler.GetAsync(idRequest.Id);
         return Ok(account);
     }
 
@@ -53,7 +53,7 @@ public class AccountController : ControllerBase
     [PrivilegeAuthorize(PrivilegeCodes.AccountPrivilegeCodes.Create)]
     public async Task<IActionResult> Create(AccountDetailItem accDetail)
     {
-        var account = await accountCommandHandler.Create(accDetail);
+        var account = await accountCommandHandler.CreateAsync(accDetail);
         return Ok(account);
     }
 
@@ -62,26 +62,32 @@ public class AccountController : ControllerBase
     [PrivilegeAuthorize(PrivilegeCodes.AccountPrivilegeCodes.Update)]
     public async Task<IActionResult> Update(AccountDetailItem accDetail)
     {
-        var lead = await accountCommandHandler.Update(accDetail);
+        var lead = await accountCommandHandler.UpdateAsync(accDetail);
         return Ok(lead);
     }
 
     [HttpPost("delete")]
     [PrivilegeAuthorize(PrivilegeCodes.AccountPrivilegeCodes.Delete)]
-    public async Task<IActionResult> Delete(IdRequest idRequest)
+    public async Task<IActionResult> Delete(IdListRequest idListRequest)
     {
-        await accountCommandHandler.Delete(idRequest.Id);
+        await accountCommandHandler.DeleteAsync(idListRequest.Ids);
         return Ok();
     }
 
-    [HttpPost("bulk-delete")]
-    [PrivilegeAuthorize(PrivilegeCodes.AccountPrivilegeCodes.Delete)]
-    public async Task<IActionResult> BulkDelete(IdListRequest idListRequest)
+    [HttpPost("assign")]
+    [PrivilegeAuthorize(PrivilegeCodes.AccountPrivilegeCodes.Assign)]
+    public async Task<IActionResult> Assign(AssignRequest request)
     {
-        await accountCommandHandler.BulkDelete(idListRequest.Ids);
+        await accountCommandHandler.AssignAsync(request.Ids, request.OwnerId);
         return Ok();
     }
 
-
+    [HttpPost("set-state")]
+    [PrivilegeAuthorize(PrivilegeCodes.AccountPrivilegeCodes.State)]
+    public async Task<IActionResult> SetStateAsync(StatusRequest request)
+    {
+        await accountCommandHandler.SetStateAsync(request.Ids, request.IsActive);
+        return Ok();
+    }
 
 }

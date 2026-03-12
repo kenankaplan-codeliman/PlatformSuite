@@ -1,40 +1,13 @@
-import { useEffect, useState, useCallback, useRef } from 'react';
+import { useEffect, useCallback, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { RoutePaths } from '@/config/route.paths';
+import { Badge, Input, Select, Space, Tag, Typography } from 'antd';
+import type { TableProps } from 'antd';
 import {
-  Table,
-  Card,
-  Button,
-  Space,
-  Tag,
-  Input,
-  Select,
-  Row,
-  Col,
-  Dropdown,
-  Modal,
-  Tooltip,
-  Badge,
-  Typography,
-  Flex,
-} from 'antd';
-import type { TableProps, MenuProps } from 'antd';
-import type { ColumnsType, TableRowSelection } from 'antd/es/table/interface';
-import {
-  PlusOutlined,
-  DeleteOutlined,
-  EditOutlined,
-  ExportOutlined,
-  FilterOutlined,
-  ReloadOutlined,
-  MoreOutlined,
-  SearchOutlined,
-  ClearOutlined,
-  CheckCircleOutlined,
-  UserOutlined,
-  PhoneOutlined,
   MailOutlined,
+  PhoneOutlined,
 } from '@ant-design/icons';
+import type { ColumnsType } from 'antd/es/table/interface';
 import type { LeadListItem, LeadStatusValue, LeadRatingValue, LeadSourceValue } from '@/types/lead.types';
 import {
   LeadStatus,
@@ -50,22 +23,15 @@ import {
   leadRatingFilters,
 } from '@/types/lead.types';
 import { useLeadStore } from '@/stores/lead.store';
-import leadService from '@/services/lead.service';
-import CustomPagination from '@/components/CustomPagination';
-import { handleError } from '@/hooks/useHandleError';
-import { StateType, useProcessState } from "@/stores/process.state.store";
+import ListPageLayout from '@/components/ListPageLayout';
+import { CheckCircleOutlined } from '@ant-design/icons';
+import type { MenuProps } from 'antd';
 
-const { Title, Text } = Typography;
-const { Search } = Input;
+const { Text } = Typography;
 
 const LeadList: React.FC = () => {
   const navigate = useNavigate();
-  const [filterVisible, setFilterVisible] = useState(false);
-  const [searchText, setSearchText] = useState('');
 
-  
-
-  // Store state and actions
   const {
     leads,
     hasMore,
@@ -79,12 +45,18 @@ const LeadList: React.FC = () => {
     resetFilters,
     setSelectedRowKeys,
     clearSelectedRowKeys,
+    deleteLead,
     bulkDeleteLeads,
+    bulkActivateLeads,
+    bulkDeactivateLeads,
     bulkUpdateStatus,
+    bulkAssignLeads,
+    activateLead,
+    deactivateLead,
+    assignLead,
   } = useLeadStore();
 
   const isFirstRender = useRef(true);
-
   useEffect(() => {
     if (isFirstRender.current) {
       isFirstRender.current = false;
@@ -92,125 +64,45 @@ const LeadList: React.FC = () => {
     }
   }, [fetchLeads]);
 
+  // ── Handlers ────────────────────────────────────────────────────────────────
 
-  // Handle row click - navigate to detail/edit page
-  const handleRowClick = useCallback(
-    (record: LeadListItem) => {
-      navigate(RoutePaths.Lead.View(record.id));
-    },
-    [navigate]
-  );
-
-  // Handle view (read mode)
-  const handleView = useCallback(
-    (record: LeadListItem) => {
-      navigate(RoutePaths.Lead.View(record.id));
-    },
-    [navigate]
-  );
-  
-  // Handle edit
-  const handleEdit = useCallback(
-    (record: LeadListItem) => {
-      navigate(RoutePaths.Lead.Edit(record.id));
-    },
-    [navigate]
-  );
-
-  // Handle create new lead
-  const handleCreate = useCallback(() => {
-    navigate(RoutePaths.Lead.New);
-  }, [navigate]);
-
-  // Handle search
   const handleSearch = useCallback(
-    (value: string) => {
-      setSearchText(value);
-      setFilters({
-        ...filters,
-        companyName: value || undefined,
-      });
-    },
+    (value: string) => setFilters({ ...filters, companyName: value || undefined }),
     [filters, setFilters]
   );
 
-  // Handle filter change
   const handleFilterChange = useCallback(
-    (field: string, value: unknown) => {
+    (field: string, value: unknown) =>
       setFilters({
         ...filters,
-        [field]: value === '' || value === null ? undefined : value,
-      });
-    },
+        [field]: value === '' || value === null || value === undefined ? undefined : value,
+      }),
     [filters, setFilters]
   );
 
-  // Handle bulk delete
-  const handleBulkDelete = useCallback(() => {
-    Modal.confirm({
-      title: 'Toplu Silme',
-      content: `Seçili ${selectedRowKeys.length} lead silinecek. Onaylıyor musunuz?`,
-      okText: 'Sil',
-      okType: 'danger',
-      cancelText: 'İptal',
-      onOk: async () => {
-         
-          await bulkDeleteLeads();
-      },
+  // Table onChange — kolon filtreleri
+  const handleTableChange: TableProps<LeadListItem>['onChange'] = (_pagination, tableFilters) => {
+    setFilters({
+      ...filters,
+      leadStatus: tableFilters.leadStatus?.[0] as LeadStatusValue ?? undefined,
+      leadRating: tableFilters.leadRating?.[0] as LeadRatingValue ?? undefined,
+      isActive: (tableFilters.isActive?.length ?? 0) > 0
+        ? tableFilters.isActive![0] as boolean
+        : undefined,
     });
-  }, [selectedRowKeys.length, bulkDeleteLeads]);
+  };
 
-  // Handle bulk status update
-  const handleBulkStatusUpdate = useCallback(
-    async (status: LeadStatusValue) => {
-        
-        await bulkUpdateStatus(status);
-    },
-    [selectedRowKeys.length, bulkUpdateStatus]
+  // ── hasActiveFilters ────────────────────────────────────────────────────────
+  const hasActiveFilters = !!(
+    filters.companyName ||
+    filters.leadStatus !== undefined ||
+    filters.leadRating !== undefined ||
+    filters.leadSource !== undefined ||
+    filters.industry
   );
 
-  // Handle export
-  const handleExport = useCallback(async () => {
-    
-    const { setState } = useProcessState.getState();
-
-    try {
-      setState(StateType.Loading, "Dışa Aktarılıyor", "Lead listesi hazırlanıyor...");
-    
-      const blob = await leadService.exportLeads(filters);
-      const url = window.URL.createObjectURL(blob);
-      const link = document.createElement('a');
-      link.href = url;
-      link.download = `leads_${new Date().toISOString().split('T')[0]}.xlsx`;
-      link.click();
-      window.URL.revokeObjectURL(url);
-      
-      setState(StateType.Success, "Dışa Aktarıldı", "Lead listesi dışa aktarıldı");
-      
-   } catch (error) {
-          const errorMessage = handleError(error);
-          setState(StateType.Error, "Lead listesi dışa aktarılamadı", errorMessage);
-  }
-  }, [filters]);
-
-  // Handle page change (for CustomPagination)
-  const handlePageChange = useCallback(
-    (newPage: number) => {
-      setPagination({ page: newPage });
-    },
-    [setPagination]
-  );
-
-  // Handle page size change (for CustomPagination)
-  const handlePageSizeChange = useCallback(
-    (newPageSize: number) => {
-      setPagination({ pageSize: newPageSize });
-    },
-    [setPagination]
-  );
-
-  // Bulk action menu items
-  const bulkActionItems: MenuProps['items'] = [
+  // ── Bulk: durum değiştir — extraBulkItems ────────────────────────────────────
+  const extraBulkItems = useCallback((): MenuProps['items'] => [
     {
       key: 'status',
       label: 'Durum Değiştir',
@@ -219,88 +111,28 @@ const LeadList: React.FC = () => {
         {
           key: `status-${LeadStatus.New}`,
           label: getLeadStatusLabel(LeadStatus.New),
-          onClick: () => handleBulkStatusUpdate(LeadStatus.New),
+          onClick: () => bulkUpdateStatus(LeadStatus.New),
         },
         {
           key: `status-${LeadStatus.Contacted}`,
           label: getLeadStatusLabel(LeadStatus.Contacted),
-          onClick: () => handleBulkStatusUpdate(LeadStatus.Contacted),
+          onClick: () => bulkUpdateStatus(LeadStatus.Contacted),
         },
         {
           key: `status-${LeadStatus.Qualified}`,
           label: getLeadStatusLabel(LeadStatus.Qualified),
-          onClick: () => handleBulkStatusUpdate(LeadStatus.Qualified),
+          onClick: () => bulkUpdateStatus(LeadStatus.Qualified),
         },
         {
           key: `status-${LeadStatus.Unqualified}`,
           label: getLeadStatusLabel(LeadStatus.Unqualified),
-          onClick: () => handleBulkStatusUpdate(LeadStatus.Unqualified),
+          onClick: () => bulkUpdateStatus(LeadStatus.Unqualified),
         },
       ],
     },
-    { type: 'divider' },
-    {
-      key: 'delete',
-      label: 'Seçilenleri Sil',
-      icon: <DeleteOutlined />,
-      danger: true,
-      onClick: handleBulkDelete,
-    },
-  ];
+  ], [bulkUpdateStatus]);
 
-  // Row action menu
-  const getRowActionItems = (record: LeadListItem): MenuProps['items'] => [
-    {
-      key: 'view',
-      label: 'Görüntüle',
-      icon: <UserOutlined />,
-      onClick: (info) => {
-        info.domEvent.stopPropagation();
-        handleView(record);
-      },
-    },
-    {
-      key: 'edit',
-      label: 'Düzenle',
-      icon: <EditOutlined />,
-      onClick: (info) => {
-        info.domEvent.stopPropagation();
-        handleEdit(record);
-      },
-    },
-    { type: 'divider' },
-    {
-      key: 'delete',
-      label: 'Sil',
-      icon: <DeleteOutlined />,
-      danger: true,
-      onClick: (info) => {
-        info.domEvent.stopPropagation();
-
-      const { setState } = useProcessState.getState();
-
-        Modal.confirm({
-          title: 'Lead Silme',
-          content: `"${record.companyName}" lead'i silinecek. Onaylıyor musunuz?`,
-          okText: 'Sil',
-          okType: 'danger',
-          cancelText: 'İptal',
-          onOk: async () => {
-            try {
-             
-              await leadService.deleteLead(record.id);
-             
-            } catch (error) {
-              const errorMessage = handleError(error);
-              setState(StateType.Error, "Silme Başarısız", errorMessage);
-            }
-          },
-        });
-      },
-    },
-  ];
-
-  // Table columns
+  // ── Columns ─────────────────────────────────────────────────────────────────
   const columns: ColumnsType<LeadListItem> = [
     {
       title: 'Şirket Adı',
@@ -309,10 +141,8 @@ const LeadList: React.FC = () => {
       sorter: true,
       width: 200,
       render: (text: string, record: LeadListItem) => (
-        <Space orientation="vertical" size={0}>
-          <Text strong style={{ cursor: 'pointer', color: '#1890ff' }}>
-            {text}
-          </Text>
+        <Space direction="vertical" size={0}>
+          <Text strong style={{ cursor: 'pointer', color: '#1890ff' }}>{text}</Text>
           <Text type="secondary" style={{ fontSize: 12 }}>
             {record.firstName} {record.lastName}
           </Text>
@@ -325,7 +155,7 @@ const LeadList: React.FC = () => {
       key: 'contact',
       width: 220,
       render: (_: unknown, record: LeadListItem) => (
-        <Space orientation="vertical" size={2}>
+        <Space direction="vertical" size={2}>
           {record.email && (
             <Space size={4}>
               <MailOutlined style={{ color: '#8c8c8c', fontSize: 12 }} />
@@ -382,8 +212,7 @@ const LeadList: React.FC = () => {
       width: 130,
       align: 'right',
       sorter: true,
-      render: (value: number) =>
-        value ? `₺${value.toLocaleString('tr-TR')}` : '-',
+      render: (value: number) => (value ? `₺${value.toLocaleString('tr-TR')}` : '-'),
     },
     {
       title: 'Aktif',
@@ -399,219 +228,97 @@ const LeadList: React.FC = () => {
         <Badge status={isActive ? 'success' : 'default'} text={isActive ? 'Evet' : 'Hayır'} />
       ),
     },
-    {
-      title: '',
-      key: 'actions',
-      width: 60,
-      fixed: 'right',
-      render: (_: unknown, record: LeadListItem) => (
-        <Dropdown menu={{ items: getRowActionItems(record) }} trigger={['click']}>
-          <Button type="text" icon={<MoreOutlined />} onClick={(e) => e.stopPropagation()} />
-        </Dropdown>
-      ),
-    },
   ];
 
-  // Row selection config
-  const rowSelection: TableRowSelection<LeadListItem> = {
-    selectedRowKeys,
-    onChange: (keys) => setSelectedRowKeys(keys as string[]),
-    preserveSelectedRowKeys: true,
-  };
-
-  // Table change handler - sadece filter değişikliklerini handle ediyor
-  const handleTableChange: TableProps<LeadListItem>['onChange'] = (_pagination, tableFilters) => {
-    const newFilters = { ...filters };
-
-    if (tableFilters.leadStatus) {
-      newFilters.leadStatus = tableFilters.leadStatus[0] as LeadStatusValue;
-    } else {
-      newFilters.leadStatus = undefined;
-    }
-
-    if (tableFilters.leadRating) {
-      newFilters.leadRating = tableFilters.leadRating[0] as LeadRatingValue;
-    } else {
-      newFilters.leadRating = undefined;
-    }
-
-    if (tableFilters.isActive !== undefined && tableFilters.isActive !== null && tableFilters.isActive.length > 0) {
-      newFilters.isActive = tableFilters.isActive[0] as boolean;
-    } else {
-      newFilters.isActive = undefined;
-    }
-
-    setFilters(newFilters);
-  };
-
+  // ── Render ───────────────────────────────────────────────────────────────────
   return (
-    <div style={{ padding: 24 }}>
-      {/* Page Header */}
-      <Flex justify="space-between" align="center" style={{ marginBottom: 24 }}>
-        <div>
-          <Title level={3} style={{ margin: 0 }}>
-            Lead Yönetimi
-          </Title>
-          <Text type="secondary">Potansiyel müşterilerinizi yönetin</Text>
-        </div>
-        <Space>
-          <Button icon={<ExportOutlined />} onClick={handleExport}>
-            Dışa Aktar
-          </Button>
-          <Button type="primary" icon={<PlusOutlined />} onClick={handleCreate}>
-            Yeni Lead
-          </Button>
-        </Space>
-      </Flex>
+    <ListPageLayout<LeadListItem>
+      title="Lead Yönetimi"
+      subtitle="Potansiyel müşterilerinizi yönetin"
+      createButtonLabel="Yeni Lead"
+      onCreate={() => navigate(RoutePaths.Lead.New)}
 
-      {/* Filters Card */}
-      <Card style={{ marginBottom: 16 }} styles={{ body: { padding: '16px 24px' } }}>
-        <Row gutter={[16, 16]} align="middle">
-          <Col flex="auto">
-            <Space size="middle" wrap>
-              <Search
-                placeholder="Şirket adı ara..."
-                allowClear
-                value={searchText}
-                onChange={(e) => setSearchText(e.target.value)}
-                onSearch={handleSearch}
-                style={{ width: 280 }}
-                prefix={<SearchOutlined />}
-              />
-
-              {filterVisible && (
-                <>
-                  <Select
-                    placeholder="Durum"
-                    allowClear
-                    style={{ width: 160 }}
-                    value={filters.leadStatus}
-                    onChange={(value) => handleFilterChange('leadStatus', value)}
-                    options={leadStatusOptions}
-                  />
-
-                  <Select
-                    placeholder="Değerlendirme"
-                    allowClear
-                    style={{ width: 140 }}
-                    value={filters.leadRating}
-                    onChange={(value) => handleFilterChange('leadRating', value)}
-                    options={leadRatingOptions}
-                  />
-
-                  <Select
-                    placeholder="Kaynak"
-                    allowClear
-                    style={{ width: 150 }}
-                    value={filters.leadSource}
-                    onChange={(value) => handleFilterChange('leadSource', value)}
-                    options={leadSourceOptions}
-                  />
-
-                  <Input
-                    placeholder="Sektör"
-                    allowClear
-                    style={{ width: 150 }}
-                    value={filters.industry || ''}
-                    onChange={(e) => handleFilterChange('industry', e.target.value)}
-                  />
-                </>
-              )}
-            </Space>
-          </Col>
-
-          <Col>
-            <Space>
-              <Tooltip title={filterVisible ? 'Filtreleri Gizle' : 'Filtreleri Göster'}>
-                <Button
-                  icon={<FilterOutlined />}
-                  type={filterVisible ? 'primary' : 'default'}
-                  onClick={() => setFilterVisible(!filterVisible)}
-                />
-              </Tooltip>
-
-              {(filters.companyName ||
-                filters.leadStatus !== undefined ||
-                filters.leadRating !== undefined ||
-                filters.leadSource !== undefined ||
-                filters.industry) && (
-                <Tooltip title="Filtreleri Temizle">
-                  <Button
-                    icon={<ClearOutlined />}
-                    onClick={() => {
-                      resetFilters();
-                      setSearchText('');
-                    }}
-                  />
-                </Tooltip>
-              )}
-
-              <Tooltip title="Yenile">
-                <Button icon={<ReloadOutlined />} onClick={() => fetchLeads()} />
-              </Tooltip>
-            </Space>
-          </Col>
-        </Row>
-      </Card>
-
-      {/* Bulk Actions Bar */}
-      {selectedRowKeys.length > 0 && (
-        <Card
-          style={{ marginBottom: 16, background: '#e6f7ff', borderColor: '#91d5ff' }}
-          styles={{ body: { padding: '12px 24px' } }}
-        >
-          <Flex justify="space-between" align="center">
-            <Space>
-              <Text strong>{selectedRowKeys.length} öğe seçildi</Text>
-              <Button type="link" size="small" onClick={clearSelectedRowKeys}>
-                Seçimi Temizle
-              </Button>
-            </Space>
-
-            <Space>
-              <Dropdown menu={{ items: bulkActionItems }} trigger={['click']}>
-                <Button type="primary">
-                  <Space>
-                    Toplu İşlemler
-                    <MoreOutlined />
-                  </Space>
-                </Button>
-              </Dropdown>
-            </Space>
-          </Flex>
-        </Card>
+      searchPlaceholder="Şirket adı ara..."
+      searchValue={filters.companyName ?? ''}
+      onSearch={handleSearch}
+      hasActiveFilters={hasActiveFilters}
+      onResetFilters={resetFilters}
+      onRefresh={fetchLeads}
+      renderExtraFilters={() => (
+        <>
+          <Select
+            placeholder="Durum" allowClear style={{ width: 160 }}
+            value={filters.leadStatus}
+            onChange={(val) => handleFilterChange('leadStatus', val)}
+            options={leadStatusOptions}
+          />
+          <Select
+            placeholder="Değerlendirme" allowClear style={{ width: 140 }}
+            value={filters.leadRating}
+            onChange={(val) => handleFilterChange('leadRating', val)}
+            options={leadRatingOptions}
+          />
+          <Select
+            placeholder="Kaynak" allowClear style={{ width: 150 }}
+            value={filters.leadSource}
+            onChange={(val) => handleFilterChange('leadSource', val)}
+            options={leadSourceOptions}
+          />
+          <Input
+            placeholder="Sektör" allowClear style={{ width: 150 }}
+            value={filters.industry || ''}
+            onChange={(e) => handleFilterChange('industry', e.target.value)}
+          />
+        </>
       )}
 
-      {/* Data Table */}
-      <Card styles={{ body: { padding: 0 } }}>
-        <Table<LeadListItem>
-          rowKey="id"
-          columns={columns}
-          dataSource={leads}
-          loading={false}
-          rowSelection={rowSelection}
-          pagination={false}
-          onChange={handleTableChange}
-          onRow={(record) => ({
-            onClick: () => handleRowClick(record),
-            style: { cursor: 'pointer' },
-          })}
-          scroll={{ x: 1300 }}
-          size="middle"
-        />
+      selectedRowKeys={selectedRowKeys}
+      onSelectionChange={setSelectedRowKeys}
+      onClearSelection={clearSelectedRowKeys}
 
-        {/* Custom Pagination */}
-        <CustomPagination
-          current={page}
-          pageSize={pageSize}
-          hasMore={hasMore}
-          totalItems={leads?.length ?? 0}
-          pageSizeOptions={[10, 20, 50, 100]}
-          onPageChange={handlePageChange}
-          onPageSizeChange={handlePageSizeChange}
-        />
-      </Card>
-    </div>
+      onBulkDelete={{
+        handler: bulkDeleteLeads,
+        confirm: {
+          title: 'Toplu Silme',
+          content: (count) => `Seçili ${count} lead silinecek. Onaylıyor musunuz?`,
+        },
+      }}
+      onBulkActivate={{ handler: bulkActivateLeads }}
+      onBulkDeactivate={{ handler: bulkDeactivateLeads }}
+      onBulkAssign={{ handler: bulkAssignLeads }}
+      extraBulkItems={extraBulkItems}
+
+      rowActions={{
+        onView: (record) => navigate(RoutePaths.Lead.View(record.id)),
+        onEdit: (record) => navigate(RoutePaths.Lead.Edit(record.id)),
+        isActiveResolver: (record) => record.isActive,
+        onActivate: { handler: (record) => activateLead(record.id) },
+        onDeactivate: { handler: (record) => deactivateLead(record.id) },
+        onAssign: { handler: (record, entity) => assignLead(record.id, entity) },
+        onDelete: {
+          handler: (record) => deleteLead(record.id),
+          confirm: {
+            title: 'Lead Silme',
+            content: (record) => `"${record.companyName}" lead'i silinecek. Onaylıyor musunuz?`,
+          },
+        },
+      }}
+
+      dataSource={leads}
+      columns={columns}
+      rowKey="id"
+      tableScrollX={1300}
+      onTableChange={handleTableChange}
+      onRowClick={(record) => navigate(RoutePaths.Lead.View(record.id))}
+
+      page={page}
+      pageSize={pageSize}
+      hasMore={hasMore}
+      totalItems={leads?.length ?? 0}
+      pageSizeOptions={[10, 20, 50, 100]}
+      onPageChange={(p) => setPagination({ page: p })}
+      onPageSizeChange={(ps) => setPagination({ pageSize: ps })}
+    />
   );
 };
 

@@ -65,7 +65,7 @@ public abstract class BaseEntityRepository<T> : IEntityRepository<T>
     }
 
     // ── SetStatusAsync ────────────────────────────────────────────────────
-    public virtual async Task SetStatusAsync(
+    public virtual async Task SetStateAsync(
         IEnumerable<Guid> entityIds, bool isActive, CancellationToken cancellationToken = default)
     {
         var query = dbSet.Where(e => entityIds.Contains(e.Id));

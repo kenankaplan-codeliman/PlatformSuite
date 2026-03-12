@@ -46,6 +46,18 @@ public class OpportunityProductConfiguration : IEntityTypeConfiguration<Opportun
         builder.Property(x => x.UpdatedAt)
             .HasColumnName("updated_at");
 
+        // ISoftDeleteEntity
+        builder.Property(x => x.IsDeleted)
+            .HasColumnName("is_deleted")
+            .IsRequired()
+            .HasDefaultValue(false);
+
+        builder.Property(x => x.DeletedBy)
+            .HasColumnName("deleted_by");
+
+        builder.Property(x => x.DeletedAt)
+            .HasColumnName("deleted_at");
+
         // Relationships — FK'lar üst tablolarda tanımlıdır; burada sadece navigation açıklanır
         builder.HasOne(x => x.Opportunity)
             .WithMany(x => x.OpportunityProducts)

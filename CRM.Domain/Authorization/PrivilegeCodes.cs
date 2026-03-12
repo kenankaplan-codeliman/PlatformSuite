@@ -29,6 +29,8 @@ namespace CRM.Domain.Authorization
             public const string Create = "Lead.Create";
             public const string Update = "Lead.Update";
             public const string Delete = "Lead.Delete";
+            public const string Assign = "Lead.Assign";
+            public const string State = "Lead.State";
         }
 
         public static class AccountPrivilegeCodes
@@ -37,6 +39,8 @@ namespace CRM.Domain.Authorization
             public const string Create = "Account.Create";
             public const string Update = "Account.Update";
             public const string Delete = "Account.Delete";
+            public const string Assign = "Account.Assign";
+            public const string State = "Account.State";
         }
 
         public static class ContactPrivilegeCodes
@@ -45,6 +49,8 @@ namespace CRM.Domain.Authorization
             public const string Create = "Contact.Create";
             public const string Update = "Contact.Update";
             public const string Delete = "Contact.Delete";
+            public const string Assign = "Contact.Assign";
+            public const string State = "Contact.State";
         }
 
         public static class OpportunityPrivilegeCodes
@@ -53,6 +59,8 @@ namespace CRM.Domain.Authorization
             public const string Create = "Opportunity.Create";
             public const string Update = "Opportunity.Update";
             public const string Delete = "Opportunity.Delete";
+            public const string Assign = "Opportunity.Assign";
+            public const string State = "Opportunity.State";
         }
 
         public static class ProductPrivilegeCodes

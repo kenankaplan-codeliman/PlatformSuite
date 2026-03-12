@@ -49,7 +49,7 @@ public class AppLoginRepository : BaseEntityRepository<AppLogin>, IAppLoginRepos
     }
 
 
-    public override async Task SetStatusAsync(IEnumerable<Guid> entityIds, bool isActive, CancellationToken cancellationToken = default)
+    public override async Task SetStateAsync(IEnumerable<Guid> entityIds, bool isActive, CancellationToken cancellationToken = default)
     {
         var query = dbSet.Where(e => entityIds.Contains(e.Id));
         

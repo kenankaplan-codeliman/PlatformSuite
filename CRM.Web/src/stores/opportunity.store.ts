@@ -5,11 +5,11 @@ import type {
   OpportunityDetailItem,
   OpportunityListFilters,
 } from '@/types/opportunity.types';
-
 import opportunityService from '@/services/opportunity.service';
 import { handleError } from '@/hooks/useHandleError';
 import { StateType, useProcessState } from '@/stores/process.state.store';
 import type { PaginationParams } from '@/types/common.types';
+import type { EntityReference } from '@/types/entity.lookup.types';
 
 interface OpportunityState {
   // List state
@@ -26,7 +26,6 @@ interface OpportunityState {
   // Actions
   fetchOpportunities: () => Promise<void>;
   fetchOpportunityById: (id: string) => Promise<void>;
-  assignOpportunity:(opportunityId: string, userId: string) => Promise<void>;
   setPagination: (params: PaginationParams) => void;
   setFilters: (filters: OpportunityListFilters) => void;
   resetFilters: () => void;
@@ -37,7 +36,18 @@ interface OpportunityState {
   ) => Promise<OpportunityDetailItem>;
   updateOpportunity: (opportunity: Partial<OpportunityDetailItem>) => Promise<OpportunityDetailItem>;
   deleteOpportunity: (id: string) => Promise<void>;
+
+  // Bulk actions
   bulkDeleteOpportunities: () => Promise<void>;
+  bulkActivateOpportunities: () => Promise<void>;
+  bulkDeactivateOpportunities: () => Promise<void>;
+  bulkAssignOpportunities: (entity: EntityReference | EntityReference[] | null) => Promise<void>;
+
+  // Row-level actions
+  activateOpportunity: (id: string) => Promise<void>;
+  deactivateOpportunity: (id: string) => Promise<void>;
+  assignOpportunity: (id: string, entity: EntityReference | EntityReference[] | null) => Promise<void>;
+
   setCurrentOpportunity: (opportunity: OpportunityDetailItem | null) => void;
 }
 
@@ -52,69 +62,53 @@ const initialFilters: OpportunityListFilters = {
 export const useOpportunityStore = create<OpportunityState>()(
   devtools(
     (set, get) => ({
-      // Initial state
+      // ── Initial state ──────────────────────────────────────────────────
       opportunities: [],
       hasMore: false,
       page: 1,
-      pageSize: 50,       
+      pageSize: 50,
       filters: initialFilters,
       selectedRowKeys: [],
       currentOpportunity: null,
 
+      // ── Fetch ──────────────────────────────────────────────────────────
       fetchOpportunities: async () => {
         const { page, pageSize, filters } = get();
         const { setState, clearState } = useProcessState.getState();
-
         try {
           setState(StateType.Loading, 'Fırsatlar yükleniyor...', 'Lütfen bekleyiniz...');
           const response = await opportunityService.getOpportunities(page, pageSize, filters);
           set({ opportunities: response.data, hasMore: response.hasMore });
           clearState();
         } catch (error) {
-          const errorMessage = handleError(error);
-          setState(StateType.Error, 'Fırsatlar yüklenemedi', errorMessage);
+          setState(StateType.Error, 'Fırsatlar yüklenemedi', handleError(error));
         }
       },
 
-      assignOpportunity: async(opportunityId: string, userId: string) => {
-         const { setState, clearState } = useProcessState.getState();
-
-        try {
-          setState(StateType.Loading, 'Fırsat detayı yükleniyor...', 'Lütfen bekleyiniz...');
-          await opportunityService.assignOpportunity(opportunityId, userId);
-          clearState();
-        } catch (error) {
-          const errorMessage = handleError(error);
-          setState(StateType.Error, 'Fırsat detayı yüklenemedi', errorMessage);
-        }
-      },
-      
       fetchOpportunityById: async (id: string) => {
         const { setState, clearState } = useProcessState.getState();
-
         try {
           setState(StateType.Loading, 'Fırsat detayı yükleniyor...', 'Lütfen bekleyiniz...');
           const opportunity = await opportunityService.getOpportunityById(id);
           set({ currentOpportunity: opportunity });
           clearState();
         } catch (error) {
-          const errorMessage = handleError(error);
-          setState(StateType.Error, 'Fırsat detayı yüklenemedi', errorMessage);
+          setState(StateType.Error, 'Fırsat detayı yüklenemedi', handleError(error));
         }
       },
 
+      // ── Pagination ─────────────────────────────────────────────────────
       setPagination: (params: PaginationParams) => {
-        const currentState = get();
-        const newPage = params.page ?? currentState.page;
-        const newPageSize = params.pageSize ?? currentState.pageSize;
-        const finalPage =
-          params.pageSize !== undefined && params.pageSize !== currentState.pageSize
-            ? 1
-            : newPage;
+        const { page, pageSize } = get();
+        const newPageSize = params.pageSize ?? pageSize;
+        const finalPage = params.pageSize !== undefined && params.pageSize !== pageSize
+          ? 1
+          : (params.page ?? page);
         set({ page: finalPage, pageSize: newPageSize });
         get().fetchOpportunities();
       },
 
+      // ── Filters ────────────────────────────────────────────────────────
       setFilters: (filters: OpportunityListFilters) => {
         set({ filters, page: 1 });
         get().fetchOpportunities();
@@ -125,9 +119,11 @@ export const useOpportunityStore = create<OpportunityState>()(
         get().fetchOpportunities();
       },
 
+      // ── Selection ──────────────────────────────────────────────────────
       setSelectedRowKeys: (keys: string[]) => set({ selectedRowKeys: keys }),
       clearSelectedRowKeys: () => set({ selectedRowKeys: [] }),
 
+      // ── CRUD ───────────────────────────────────────────────────────────
       createOpportunity: async (opportunityData) => {
         const { setState, clearState } = useProcessState.getState();
         try {
@@ -137,8 +133,7 @@ export const useOpportunityStore = create<OpportunityState>()(
           clearState();
           return newOpportunity;
         } catch (error) {
-          const errorMessage = handleError(error);
-          setState(StateType.Error, 'Fırsat oluşturulamadı', errorMessage);
+          setState(StateType.Error, 'Fırsat oluşturulamadı', handleError(error));
           throw error;
         }
       },
@@ -152,8 +147,7 @@ export const useOpportunityStore = create<OpportunityState>()(
           clearState();
           return updated;
         } catch (error) {
-          const errorMessage = handleError(error);
-          setState(StateType.Error, 'Fırsat güncellenemedi', errorMessage);
+          setState(StateType.Error, 'Fırsat güncellenemedi', handleError(error));
           throw error;
         }
       },
@@ -162,34 +156,118 @@ export const useOpportunityStore = create<OpportunityState>()(
         const { setState } = useProcessState.getState();
         try {
           setState(StateType.Loading, 'Fırsat siliniyor...', 'Lütfen bekleyiniz...');
-          await opportunityService.deleteOpportunity(id);
+          await opportunityService.deleteOpportunity({ ids: [id] });
           await get().fetchOpportunities();
           get().clearSelectedRowKeys();
         } catch (error) {
-          const errorMessage = handleError(error);
-          setState(StateType.Error, 'Fırsat silinemedi', errorMessage);
+          setState(StateType.Error, 'Fırsat silinemedi', handleError(error));
           throw error;
         }
       },
 
+      // ── Bulk Actions ───────────────────────────────────────────────────
       bulkDeleteOpportunities: async () => {
         const { selectedRowKeys } = get();
-        if (selectedRowKeys.length === 0) return;
+        if (!selectedRowKeys.length) return;
         const { setState } = useProcessState.getState();
         try {
           setState(StateType.Loading, 'Fırsatlar siliniyor...', 'Lütfen bekleyiniz...');
-          await opportunityService.bulkDeleteOpportunities(selectedRowKeys);
+          await opportunityService.deleteOpportunity({ ids: selectedRowKeys });
           await get().fetchOpportunities();
           get().clearSelectedRowKeys();
         } catch (error) {
-          const errorMessage = handleError(error);
-          setState(StateType.Error, 'Fırsatlar silinemedi', errorMessage);
+          setState(StateType.Error, 'Fırsatlar silinemedi', handleError(error));
         }
       },
 
-      setCurrentOpportunity: (opportunity: OpportunityDetailItem | null) => {
-        set({ currentOpportunity: opportunity });
+      bulkActivateOpportunities: async () => {
+        const { selectedRowKeys } = get();
+        if (!selectedRowKeys.length) return;
+        const { setState, clearState } = useProcessState.getState();
+        try {
+          setState(StateType.Loading, 'Fırsatlar etkinleştiriliyor...', 'Lütfen bekleyiniz...');
+          await opportunityService.setStatusOpportunity({ ids: selectedRowKeys, isActive: true });
+          await get().fetchOpportunities();
+          get().clearSelectedRowKeys();
+          clearState();
+        } catch (error) {
+          setState(StateType.Error, 'Fırsatlar etkinleştirilemedi', handleError(error));
+        }
       },
+
+      bulkDeactivateOpportunities: async () => {
+        const { selectedRowKeys } = get();
+        if (!selectedRowKeys.length) return;
+        const { setState, clearState } = useProcessState.getState();
+        try {
+          setState(StateType.Loading, 'Fırsatlar pasifleştiriliyor...', 'Lütfen bekleyiniz...');
+          await opportunityService.setStatusOpportunity({ ids: selectedRowKeys, isActive: false });
+          await get().fetchOpportunities();
+          get().clearSelectedRowKeys();
+          clearState();
+        } catch (error) {
+          setState(StateType.Error, 'Fırsatlar pasifleştirilemedi', handleError(error));
+        }
+      },
+
+      bulkAssignOpportunities: async (entity) => {
+        const { selectedRowKeys } = get();
+        if (!selectedRowKeys.length) return;
+        const { setState, clearState } = useProcessState.getState();
+        try {
+          setState(StateType.Loading, 'Fırsatlar atanıyor...', 'Lütfen bekleyiniz...');
+          const ownerId = Array.isArray(entity) ? entity[0]?.id : entity?.id;
+          if (!ownerId) return;
+          await opportunityService.assignOpportunity({ ids: selectedRowKeys, ownerId });
+          await get().fetchOpportunities();
+          get().clearSelectedRowKeys();
+          clearState();
+        } catch (error) {
+          setState(StateType.Error, 'Fırsatlar atanamadı', handleError(error));
+        }
+      },
+
+      // ── Row-level Actions ──────────────────────────────────────────────
+      activateOpportunity: async (id: string) => {
+        const { setState, clearState } = useProcessState.getState();
+        try {
+          setState(StateType.Loading, 'Fırsat etkinleştiriliyor...', 'Lütfen bekleyiniz...');
+          await opportunityService.setStatusOpportunity({ ids: [id], isActive: true });
+          await get().fetchOpportunities();
+          clearState();
+        } catch (error) {
+          setState(StateType.Error, 'Fırsat etkinleştirilemedi', handleError(error));
+        }
+      },
+
+      deactivateOpportunity: async (id: string) => {
+        const { setState, clearState } = useProcessState.getState();
+        try {
+          setState(StateType.Loading, 'Fırsat pasifleştiriliyor...', 'Lütfen bekleyiniz...');
+          await opportunityService.setStatusOpportunity({ ids: [id], isActive: false });
+          await get().fetchOpportunities();
+          clearState();
+        } catch (error) {
+          setState(StateType.Error, 'Fırsat pasifleştirilemedi', handleError(error));
+        }
+      },
+
+      assignOpportunity: async (id: string, entity) => {
+        const { setState, clearState } = useProcessState.getState();
+        try {
+          setState(StateType.Loading, 'Fırsat atanıyor...', 'Lütfen bekleyiniz...');
+          const ownerId = Array.isArray(entity) ? entity[0]?.id : entity?.id;
+          if (!ownerId) return;
+          await opportunityService.assignOpportunity({ ids: [id], ownerId });
+          await get().fetchOpportunities();
+          clearState();
+        } catch (error) {
+          setState(StateType.Error, 'Fırsat atanamadı', handleError(error));
+        }
+      },
+
+      setCurrentOpportunity: (opportunity: OpportunityDetailItem | null) =>
+        set({ currentOpportunity: opportunity }),
     }),
     { name: 'opportunity-store' }
   )

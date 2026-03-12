@@ -487,26 +487,30 @@ public class ActivityCommandHandler
         }
     }
 
-    public async Task<ActivityBaseModal> Delete(Guid id, CancellationToken cancellationToken = default)
+    public async Task Delete(List<Guid> Ids, CancellationToken cancellationToken = default)
     {
         try
         {
             await unitOfWork.BeginTransactionAsync();
-            var activityType = await activityRepository.GetActivityTypeAsync(id, cancellationToken);
-            ActivityBaseModal result = activityType switch
+
+            foreach (var id in Ids)
             {
-                ActivityType.Task => MapToTaskModal(
-                    await DeleteEntity(taskActivityRepository, id, cancellationToken)),
-                ActivityType.PhoneCall => MapToPhoneCallModal(
-                    await DeleteEntity(phoneCallActivityRepository, id, cancellationToken)),
-                ActivityType.Appointment => MapToAppointmentModal(
-                    await DeleteEntity(appointmentActivityRepository, id, cancellationToken)),
-                ActivityType.Email => MapToEmailModal(
-                    await DeleteEntity(emailActivityRepository, id, cancellationToken)),
-                _ => throw new BusinessException("Invalid activity type")
-            };
+                var activityType = await activityRepository.GetActivityTypeAsync(id, cancellationToken);
+                ActivityBaseModal result = activityType switch
+                {
+                    ActivityType.Task => MapToTaskModal(
+                        await DeleteEntity(taskActivityRepository, id, cancellationToken)),
+                    ActivityType.PhoneCall => MapToPhoneCallModal(
+                        await DeleteEntity(phoneCallActivityRepository, id, cancellationToken)),
+                    ActivityType.Appointment => MapToAppointmentModal(
+                        await DeleteEntity(appointmentActivityRepository, id, cancellationToken)),
+                    ActivityType.Email => MapToEmailModal(
+                        await DeleteEntity(emailActivityRepository, id, cancellationToken)),
+                    _ => throw new BusinessException("Invalid activity type")
+                };
+            }
+
             await unitOfWork.CommitTransactionAsync();
-            return result;
         }
         catch
         {
@@ -516,22 +520,6 @@ public class ActivityCommandHandler
     }
 
     // ── Bulk Operations ───────────────────────────────────────────────────
-
-    public async Task BulkDelete(List<Guid> ids, CancellationToken cancellationToken = default)
-    {
-        try
-        {
-            await unitOfWork.BeginTransactionAsync();
-            foreach (var id in ids)
-                await Delete(id, cancellationToken);
-            await unitOfWork.CommitTransactionAsync();
-        }
-        catch
-        {
-            await unitOfWork.RollbackTransactionAsync();
-            throw;
-        }
-    }
 
     public async Task BulkUpdateStatus(
         List<Guid> ids, ActivityStatus status, CancellationToken cancellationToken = default)
@@ -558,6 +546,42 @@ public class ActivityCommandHandler
                 }
             }
             await unitOfWork.CommitTransactionAsync();
+        }
+        catch
+        {
+            await unitOfWork.RollbackTransactionAsync();
+            throw;
+        }
+    }
+
+    public async Task AssignAsync(List<Guid> Ids, Guid ownerId)
+    {
+        try
+        {
+            await unitOfWork.BeginTransactionAsync();
+
+            await activityRepository.AssignAsync(Ids, ownerId);
+
+            await unitOfWork.CommitTransactionAsync();
+
+        }
+        catch
+        {
+            await unitOfWork.RollbackTransactionAsync();
+            throw;
+        }
+    }
+
+    public async Task SetStateAsync(List<Guid> Ids, bool isActive)
+    {
+        try
+        {
+            await unitOfWork.BeginTransactionAsync();
+
+            await activityRepository.SetStateAsync(Ids, isActive);
+
+            await unitOfWork.CommitTransactionAsync();
+
         }
         catch
         {
@@ -643,7 +667,6 @@ public class ActivityCommandHandler
     private void SetActivityBaseModal(ActivityBaseModal modal, ActivityBase entity)
     {
         modal.Id = entity.Id;
-        modal.IsActive = entity.IsActive;
         modal.Subject = entity.Subject;
         modal.Priority = entity.Priority;
         modal.StartDate = entity.StartDate;

@@ -5,18 +5,17 @@ using CRM.Application.Modals.Common;
 using CRM.Domain.Entities.Activities;
 using CRM.Domain.Enums;
 using CRM.Infrastructure.Data;
+using CRM.Infrastructure.Data.Repositories;
 using Microsoft.EntityFrameworkCore;
 using EntityType = CRM.Domain.Enums.EntityType;
 
 namespace CRM.Infrastructure.Repositories;
 
-public class ActivityRepository : IActivityRepository
-{
-    private readonly DatabaseContext dbContext;
+public class ActivityRepository : BaseEntityRepository<ActivityBase>, IActivityRepository
+{   
 
-    public ActivityRepository(DatabaseContext dbContext)
+    public ActivityRepository(DatabaseContext dbContext): base(dbContext)
     {
-        this.dbContext = dbContext;
     }
 
     public async Task<ActivityType> GetActivityTypeAsync(Guid id, CancellationToken cancellationToken = default)
@@ -178,8 +177,26 @@ public class ActivityRepository : IActivityRepository
         return modal;
     }
 
+    
+    public override Task<ActivityBase?> GetAsync(Guid Id, CancellationToken cancellationToken = default)
+    {
+        throw new NotImplementedException();
+    }
 
+    public override Task<ActivityBase> CreateAsync(ActivityBase entity, CancellationToken cancellationToken = default)
+    {
+        throw new NotImplementedException();
+    }
 
+    public override Task<ActivityBase> UpdateAsync(ActivityBase entity, CancellationToken cancellationToken = default)
+    {
+        throw new NotImplementedException();
+    }
+
+    public override Task<ActivityBase> DeleteAsync(ActivityBase entity, CancellationToken cancellationToken = default)
+    {
+        throw new NotImplementedException();
+    }
 
     private class InternalActivityListModal
     {

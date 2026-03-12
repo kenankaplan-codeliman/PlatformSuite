@@ -21,7 +21,7 @@ public class ContactCommandHandler
         this.unitOfWork = unitOfWork;
     }
 
-    public async Task<ContactListResponse> List(ContactListFilters filter, PaginationInfo paginationInfo)
+    public async Task<ContactListResponse> ListAsync(ContactListFilters filter, PaginationInfo paginationInfo)
     {
         var result = await contactRepository.List(filter, paginationInfo);
 
@@ -34,7 +34,7 @@ public class ContactCommandHandler
         };
     }
 
-    public async Task<EntityReferenceList> LookupReference(string searchText, PaginationInfo paginationInfo)
+    public async Task<EntityReferenceList> SearchAsync(string searchText, PaginationInfo paginationInfo)
     {
         var result = referenceRepository.LookupReference(EntityType.Contact, searchText, paginationInfo);
 
@@ -47,7 +47,7 @@ public class ContactCommandHandler
         };
     }
 
-    public async Task<ContactDetailItem> Get(Guid Id)
+    public async Task<ContactDetailItem> GetAsync(Guid Id)
     {
         var result = await contactRepository.GetAsync(Id) ?? throw new NotFoundException();
 
@@ -55,7 +55,7 @@ public class ContactCommandHandler
 
     }
 
-    public async Task<ContactDetailItem> Create(ContactDetailItem contactDetailItem)
+    public async Task<ContactDetailItem> CreateAsync(ContactDetailItem contactDetailItem)
     {
         try
         {
@@ -77,7 +77,7 @@ public class ContactCommandHandler
         }
     }
 
-    public async Task<ContactDetailItem> Update(ContactDetailItem contactDetailItem)
+    public async Task<ContactDetailItem> UpdateAsync(ContactDetailItem contactDetailItem)
     {
         try
         {
@@ -99,15 +99,17 @@ public class ContactCommandHandler
         }
     }
 
-    public async Task Delete(Guid Id)
+    public async Task DeleteAsync(List<Guid> Ids)
     {
         try
         {
             await unitOfWork.BeginTransactionAsync();
 
-            var entity = await contactRepository.GetAsync(Id) ?? throw new NotFoundException();
-
-            await contactRepository.DeleteAsync(entity);
+            foreach (var id in Ids)
+            {
+                var entity = await contactRepository.GetAsync(id) ?? throw new NotFoundException();
+                await contactRepository.DeleteAsync(entity);
+            }
 
             await unitOfWork.CommitTransactionAsync();
 
@@ -119,12 +121,42 @@ public class ContactCommandHandler
         }
     }
 
-    public async Task BulkDelete(List<Guid> Ids)
+    public async Task AssignAsync(List<Guid> Ids, Guid ownerId)
     {
-        foreach (var id in Ids)
+        try
         {
-            await Delete(id);
+            await unitOfWork.BeginTransactionAsync();
+
+            await contactRepository.AssignAsync(Ids, ownerId);
+
+            await unitOfWork.CommitTransactionAsync();
+
+        }
+        catch
+        {
+            await unitOfWork.RollbackTransactionAsync();
+            throw;
         }
     }
+
+    public async Task SetStateAsync(List<Guid> Ids, bool isActive)
+    {
+        try
+        {
+            await unitOfWork.BeginTransactionAsync();
+
+            await contactRepository.SetStateAsync(Ids, isActive);
+
+            await unitOfWork.CommitTransactionAsync();
+
+        }
+        catch
+        {
+            await unitOfWork.RollbackTransactionAsync();
+            throw;
+        }
+    }
+
+
 
 }

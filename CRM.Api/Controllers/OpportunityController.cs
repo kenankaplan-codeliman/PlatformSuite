@@ -71,25 +71,25 @@ public class OpportunityController : ControllerBase
 
     [HttpPost("delete")]
     [PrivilegeAuthorize(PrivilegeCodes.OpportunityPrivilegeCodes.Delete)]
-    public async Task<IActionResult> Delete(IdRequest idRequest)
+    public async Task<IActionResult> Delete(IdListRequest idListRequest)
     {
-        await opportunityCommandHandler.Delete(idRequest.Id);
-        return Ok();
-    }
-
-    [HttpPost("bulk-delete")]
-    [PrivilegeAuthorize(PrivilegeCodes.OpportunityPrivilegeCodes.Delete)]
-    public async Task<IActionResult> BulkDelete(IdListRequest idListRequest)
-    {
-        await opportunityCommandHandler.BulkDelete(idListRequest.Ids);
+        await opportunityCommandHandler.Delete(idListRequest.Ids);
         return Ok();
     }
 
     [HttpPost("assign")]
-    [PrivilegeAuthorize(PrivilegeCodes.OpportunityPrivilegeCodes.Delete)]
-    public async Task<IActionResult> Assign(AssignRequest request)
+    [PrivilegeAuthorize(PrivilegeCodes.OpportunityPrivilegeCodes.Assign)]
+    public async Task<IActionResult> AssignAsync(AssignRequest request)
     {
-        await opportunityCommandHandler.Assign(request.EntityId, request.OwnerId);
+        await opportunityCommandHandler.AssignAsync(request.Ids, request.OwnerId);
+        return Ok();
+    }
+
+    [HttpPost("set-state")]
+    [PrivilegeAuthorize(PrivilegeCodes.OpportunityPrivilegeCodes.State)]
+    public async Task<IActionResult> SetStateAsync(StatusRequest request)
+    {
+        await opportunityCommandHandler.SetStateAsync(request.Ids, request.IsActive);
         return Ok();
     }
 }

@@ -62,7 +62,7 @@ public class AccountConfiguration : IEntityTypeConfiguration<Account>
             .OnDelete(DeleteBehavior.Restrict)
             .IsRequired(false);
 
-        // Multi Tenant
+        // Owner
         builder.Property(a => a.OwnerId)
             .HasColumnName("owner_id")
             .IsRequired();
