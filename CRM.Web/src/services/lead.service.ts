@@ -57,7 +57,7 @@ export const leadService = {
   },
 
   setStatusLead: async (request: StatusRequest): Promise<void> => {
-    await apiClient.post(ServicePath.Lead.Status, request);
+    await apiClient.post(ServicePath.Lead.State, request);
   },
 
   // Lead'e özgü: durum güncelleme (New, Contacted, Qualified vb.)

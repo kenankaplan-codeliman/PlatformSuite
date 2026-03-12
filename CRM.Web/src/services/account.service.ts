@@ -69,7 +69,7 @@ export const accountService = {
   },
 
   setStatusAccount: async (request: StatusRequest): Promise<void> => {
-    await apiClient.post(ServicePath.Account.Status, request);
+    await apiClient.post(ServicePath.Account.State, request);
   },
 
   assignAccount: async (request: AssignRequest): Promise<void> => {

@@ -57,7 +57,7 @@ export const opportunityService = {
   },
 
   setStatusOpportunity: async (request: StatusRequest): Promise<void> => {
-    await apiClient.post(ServicePath.Opportunity.Status, request);
+    await apiClient.post(ServicePath.Opportunity.State, request);
   },
 
   assignOpportunity: async (request: AssignRequest): Promise<void> => {

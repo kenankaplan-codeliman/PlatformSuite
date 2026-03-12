@@ -70,7 +70,7 @@ export const ServicePath = {
         Update: `${ControllerPaths.LeadPath}/update`,
         Delete: `${ControllerPaths.LeadPath}/delete`,
         Assign: `${ControllerPaths.LeadPath}/assign`,
-        Status: `${ControllerPaths.LeadPath}/set-state`,
+        State: `${ControllerPaths.LeadPath}/set-state`,
         UpdateStatus:`${ControllerPaths.LeadPath}/bulk-update-status`,
     },
 
@@ -82,7 +82,7 @@ export const ServicePath = {
         Update: `${ControllerPaths.AccountPath}/update`,
         Delete: `${ControllerPaths.AccountPath}/delete`,
         Assign: `${ControllerPaths.AccountPath}/assign`,
-        Status: `${ControllerPaths.AccountPath}/set-state`,
+        State: `${ControllerPaths.AccountPath}/set-state`,
     },
 
     Contact:{
@@ -93,7 +93,7 @@ export const ServicePath = {
         Update: `${ControllerPaths.ContactPath}/update`,
         Delete: `${ControllerPaths.ContactPath}/delete`,
         Assign: `${ControllerPaths.ContactPath}/assign`,
-        Status: `${ControllerPaths.ContactPath}/set-state`,
+        State: `${ControllerPaths.ContactPath}/set-state`,
     },
 
     Product:{
@@ -108,7 +108,7 @@ export const ServicePath = {
         Update: `${ControllerPaths.OpportunityPath}/update`,
         Delete: `${ControllerPaths.OpportunityPath}/delete`,
         Assign: `${ControllerPaths.OpportunityPath}/assign`,
-        Status: `${ControllerPaths.OpportunityPath}/set-state`,
+        State: `${ControllerPaths.OpportunityPath}/set-state`,
     }
 
 };

@@ -60,7 +60,7 @@ export const contactService = {
   },
 
   setStatusContact: async (request: StatusRequest): Promise<void> => {
-    await apiClient.post(ServicePath.Contact.Status, request);
+    await apiClient.post(ServicePath.Contact.State, request);
   },
 
   assignContact: async (request: AssignRequest): Promise<void> => {
