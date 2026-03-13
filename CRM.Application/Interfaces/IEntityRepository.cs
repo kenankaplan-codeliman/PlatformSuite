@@ -1,4 +1,5 @@
-﻿using CRM.Domain.Entities.Common;
+﻿using CRM.Application.Modals.Common;
+using CRM.Domain.Entities.Common;
 
 namespace CRM.Application.Interfaces;
 
@@ -18,4 +19,6 @@ public interface IEntityRepository<T> where T : class, IBaseEntity
     Task AssignAsync(IEnumerable<Guid> entityIds, Guid ownerId, CancellationToken cancellationToken = default);
 
     Task SetStateAsync(IEnumerable<Guid> entityIds, bool isActive, CancellationToken cancellationToken = default);
+
+    Task<AuditInfo?> GetAuditInfoAsync(Guid id, CancellationToken cancellationToken = default);
 }

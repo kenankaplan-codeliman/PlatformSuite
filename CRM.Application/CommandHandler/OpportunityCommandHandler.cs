@@ -52,7 +52,11 @@ public class OpportunityCommandHandler
     {
         var result = await opportunityRepository.GetAsync(Id) ?? throw new NotFoundException();
 
-        return result.ToModal();
+        var modal = result.ToModal();
+
+        modal.Audit = await opportunityRepository.GetAuditInfoAsync(Id);
+
+        return modal;
     }
 
     public async Task<OpportunityDetailItem> Create(OpportunityDetailItem opportunityDetailItem)

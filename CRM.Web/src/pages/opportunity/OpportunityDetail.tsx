@@ -21,7 +21,6 @@ import {
   UserOutlined,
   FileTextOutlined,
   CalendarOutlined,
-  ClockCircleOutlined,
 } from '@ant-design/icons';
 
 import { toLocalISO } from '@/util/dateHelper';
@@ -45,6 +44,7 @@ import { EntityType, type EntityReference } from '@/types/entity.lookup.types';
 import EntityLookup from '@/components/EntityLookup';
 import { entitySearchService } from '@/services/entity.search.service';
 import { getEntityColor, getEntityIcon } from '@/config/entity.config';
+import AuditCard from '@/components/AuditCard';
 
 const { Title, Text, Paragraph } = Typography;
 const { TextArea } = Input;
@@ -307,23 +307,7 @@ const OpportunityDetail: React.FC<DetailPageProps<OpportunityDetailItem>> = (pro
 
                 <Col span={12}>
                   {/* Kayıt Bilgileri */}
-                  <Card
-                    title={<Space><ClockCircleOutlined /><span>Kayıt Bilgileri</span></Space>}
-                    style={{ marginBottom: 16 }}
-                  >
-                    <Descriptions column={1} size="small">
-                      <Descriptions.Item label="Oluşturulma">
-                        {currentOpportunity?.createdAt
-                          ? toLocalISO(currentOpportunity.createdAt)
-                          : <Text type="secondary">-</Text>}
-                      </Descriptions.Item>
-                      <Descriptions.Item label="Son Güncelleme">
-                        {currentOpportunity?.updatedAt
-                          ? toLocalISO(currentOpportunity.updatedAt)
-                          : <Text type="secondary">-</Text>}
-                      </Descriptions.Item>
-                    </Descriptions>
-                  </Card>
+                  <AuditCard audit={currentOpportunity?.audit} style={{ marginBottom: 16 }} />
                 </Col>
 
                 {/* Açıklama */}

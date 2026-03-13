@@ -1,7 +1,6 @@
 // Opportunity Types - Based on Opportunity.cs Entity
 
 import type { AuditInfo } from "./common.types";
-import type { EntityReference } from "./entity.lookup.types";
 
 // =====================================================
 // ENUMS

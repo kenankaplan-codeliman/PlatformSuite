@@ -1,4 +1,5 @@
-﻿using CRM.Domain.Enums;
+﻿using CRM.Application.Modals.Common;
+using CRM.Domain.Enums;
 
 namespace CRM.Application.Modals.OpportunityModal;
 
@@ -39,4 +40,6 @@ public class OpportunityDetailItem
     public DateTime? UpdatedAt { get; set; }
 
     public bool IsActive { get; set; }
+
+    public AuditInfo? Audit { get; set; }
 }
