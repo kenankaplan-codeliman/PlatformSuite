@@ -5,63 +5,40 @@ import type {
   OpportunityListResponse,
 } from '@/types/opportunity.types';
 import apiClient from '@/services/api.client';
+import { apiRequest } from '@/services/api.request';
 import { ServicePath } from '@/config/service.paths';
 import type { AssignRequest, IdListRequest, IdRequest, StatusRequest } from '@/types/common.types';
 
 export const opportunityService = {
 
-  getOpportunities: async (
-    page: number = 1,
-    pageSize: number = 50,
-    filters?: OpportunityListFilters
-  ): Promise<OpportunityListResponse> => {
+  getOpportunities: async (page = 1, pageSize = 50, filters?: OpportunityListFilters): Promise<OpportunityListResponse> => {
     const request: OpportunityListRequest = { page, pageSize, filters };
-    const response = await apiClient.post<OpportunityListResponse>(
-      ServicePath.Opportunity.List,
-      request
-    );
-    return response.data;
+    return apiRequest(() => apiClient.post<OpportunityListResponse>(ServicePath.Opportunity.List, request).then(r => r.data));
   },
 
   getOpportunityById: async (id: string): Promise<OpportunityDetailItem> => {
     const request: IdRequest = { id };
-    const response = await apiClient.post<OpportunityDetailItem>(
-      ServicePath.Opportunity.Get,
-      request
-    );
-    return response.data;
+    return apiRequest(() => apiClient.post<OpportunityDetailItem>(ServicePath.Opportunity.Get, request).then(r => r.data));
   },
 
-  createOpportunity: async (
-    opportunity: Omit<Partial<OpportunityDetailItem>, 'id' | 'createdAt' | 'updatedAt'>
-  ): Promise<OpportunityDetailItem> => {
-    const response = await apiClient.post<OpportunityDetailItem>(
-      ServicePath.Opportunity.Create,
-      opportunity
-    );
-    return response.data;
+  createOpportunity: async (opportunity: Omit<Partial<OpportunityDetailItem>, 'id' | 'createdAt' | 'updatedAt'>): Promise<OpportunityDetailItem> => {
+    return apiRequest(() => apiClient.post<OpportunityDetailItem>(ServicePath.Opportunity.Create, opportunity).then(r => r.data));
   },
 
-  updateOpportunity: async (
-    opportunity: Partial<OpportunityDetailItem>
-  ): Promise<OpportunityDetailItem> => {
-    const response = await apiClient.post<OpportunityDetailItem>(
-      ServicePath.Opportunity.Update,
-      opportunity
-    );
-    return response.data;
+  updateOpportunity: async (opportunity: Partial<OpportunityDetailItem>): Promise<OpportunityDetailItem> => {
+    return apiRequest(() => apiClient.post<OpportunityDetailItem>(ServicePath.Opportunity.Update, opportunity).then(r => r.data));
   },
 
   deleteOpportunity: async (request: IdListRequest): Promise<void> => {
-    await apiClient.post(ServicePath.Opportunity.Delete, request);
+    return apiRequest(() => apiClient.post(ServicePath.Opportunity.Delete, request).then(() => undefined));
   },
 
   setStatusOpportunity: async (request: StatusRequest): Promise<void> => {
-    await apiClient.post(ServicePath.Opportunity.State, request);
+    return apiRequest(() => apiClient.post(ServicePath.Opportunity.State, request).then(() => undefined));
   },
 
   assignOpportunity: async (request: AssignRequest): Promise<void> => {
-    await apiClient.post(ServicePath.Opportunity.Assign, request);
+    return apiRequest(() => apiClient.post(ServicePath.Opportunity.Assign, request).then(() => undefined));
   },
 };
 

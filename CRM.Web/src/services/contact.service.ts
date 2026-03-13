@@ -5,66 +5,40 @@ import type {
   ContactListResponse,
 } from '@/types/contact.types';
 import apiClient from '@/services/api.client';
+import { apiRequest } from '@/services/api.request';
 import { ServicePath } from '@/config/service.paths';
 import type { IdRequest, IdListRequest, StatusRequest, AssignRequest } from '@/types/common.types';
 
 export const contactService = {
 
-  getContacts: async (
-    page: number = 1,
-    pageSize: number = 10,
-    filters?: ContactListFilters
-  ): Promise<ContactListResponse> => {
-    const request: ContactListRequest = {
-      page,
-      pageSize,
-      filters,
-    };
-    const response = await apiClient.post<ContactListResponse>(
-      ServicePath.Contact.List,
-      request
-    );
-    return response.data;
+  getContacts: async (page = 1, pageSize = 10, filters?: ContactListFilters): Promise<ContactListResponse> => {
+    const request: ContactListRequest = { page, pageSize, filters };
+    return apiRequest(() => apiClient.post<ContactListResponse>(ServicePath.Contact.List, request).then(r => r.data));
   },
 
   getContactById: async (id: string): Promise<ContactDetailItem> => {
     const request: IdRequest = { id };
-    const response = await apiClient.post<ContactDetailItem>(
-      ServicePath.Contact.Get,
-      request
-    );
-    return response.data;
+    return apiRequest(() => apiClient.post<ContactDetailItem>(ServicePath.Contact.Get, request).then(r => r.data));
   },
 
-  createContact: async (
-    contact: Omit<Partial<ContactDetailItem>, 'id' | 'createdAt' | 'updatedAt'>
-  ): Promise<ContactDetailItem> => {
-    const response = await apiClient.post<ContactDetailItem>(
-      ServicePath.Contact.Create,
-      contact
-    );
-    return response.data;
+  createContact: async (contact: Omit<Partial<ContactDetailItem>, 'id' | 'createdAt' | 'updatedAt'>): Promise<ContactDetailItem> => {
+    return apiRequest(() => apiClient.post<ContactDetailItem>(ServicePath.Contact.Create, contact).then(r => r.data));
   },
 
   updateContact: async (contact: Partial<ContactDetailItem>): Promise<ContactDetailItem> => {
-    const response = await apiClient.post<ContactDetailItem>(
-      ServicePath.Contact.Update,
-      contact
-    );
-    return response.data;
+    return apiRequest(() => apiClient.post<ContactDetailItem>(ServicePath.Contact.Update, contact).then(r => r.data));
   },
 
-  // Tekil ve bulk silme aynı endpoint — ids dizisiyle çalışır
   deleteContact: async (request: IdListRequest): Promise<void> => {
-    await apiClient.post(ServicePath.Contact.Delete, request);
+    return apiRequest(() => apiClient.post(ServicePath.Contact.Delete, request).then(() => undefined));
   },
 
   setStatusContact: async (request: StatusRequest): Promise<void> => {
-    await apiClient.post(ServicePath.Contact.State, request);
+    return apiRequest(() => apiClient.post(ServicePath.Contact.State, request).then(() => undefined));
   },
 
   assignContact: async (request: AssignRequest): Promise<void> => {
-    await apiClient.post(ServicePath.Contact.Assign, request);
+    return apiRequest(() => apiClient.post(ServicePath.Contact.Assign, request).then(() => undefined));
   },
 };
 

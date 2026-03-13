@@ -6,6 +6,7 @@ import type {
   LeadStatusValue,
 } from '@/types/lead.types';
 import apiClient from '@/services/api.client';
+import { apiRequest } from '@/services/api.request';
 import { ServicePath } from '@/config/service.paths';
 import type { AssignRequest, IdListRequest, IdRequest, StatusRequest } from '@/types/common.types';
 
@@ -17,57 +18,55 @@ export const leadService = {
     filters?: LeadListFilters
   ): Promise<LeadListResponse> => {
     const request: LeadListRequest = { page, pageSize, filters };
-    const response = await apiClient.post<LeadListResponse>(
-      ServicePath.Lead.List,
-      request
+    return apiRequest(() =>
+      apiClient.post<LeadListResponse>(ServicePath.Lead.List, request).then(r => r.data)
     );
-    return response.data;
   },
 
   getLeadById: async (id: string): Promise<LeadDetailItem> => {
     const request: IdRequest = { id };
-    const response = await apiClient.post<LeadDetailItem>(
-      ServicePath.Lead.Get,
-      request
+    return apiRequest(() =>
+      apiClient.post<LeadDetailItem>(ServicePath.Lead.Get, request).then(r => r.data)
     );
-    return response.data;
   },
 
   createLead: async (
     lead: Omit<Partial<LeadDetailItem>, 'id' | 'createdAt' | 'updatedAt'>
   ): Promise<LeadDetailItem> => {
-    const response = await apiClient.post<LeadDetailItem>(
-      ServicePath.Lead.Create,
-      lead
+    return apiRequest(() =>
+      apiClient.post<LeadDetailItem>(ServicePath.Lead.Create, lead).then(r => r.data)
     );
-    return response.data;
   },
 
   updateLead: async (lead: Partial<LeadDetailItem>): Promise<LeadDetailItem> => {
-    const response = await apiClient.post<LeadDetailItem>(
-      ServicePath.Lead.Update,
-      lead
+    return apiRequest(() =>
+      apiClient.post<LeadDetailItem>(ServicePath.Lead.Update, lead).then(r => r.data)
     );
-    return response.data;
   },
 
-  // Tekil ve bulk silme aynı endpoint — ids dizisiyle çalışır
   deleteLead: async (request: IdListRequest): Promise<void> => {
-    await apiClient.post(ServicePath.Lead.Delete, request);
+    return apiRequest(() =>
+      apiClient.post(ServicePath.Lead.Delete, request).then(() => undefined)
+    );
   },
 
   setStatusLead: async (request: StatusRequest): Promise<void> => {
-    await apiClient.post(ServicePath.Lead.State, request);
+    return apiRequest(() =>
+      apiClient.post(ServicePath.Lead.State, request).then(() => undefined)
+    );
   },
 
-  // Lead'e özgü: durum güncelleme (New, Contacted, Qualified vb.)
   updateLeadStatus: async (ids: string[], status: LeadStatusValue): Promise<void> => {
-    await apiClient.post(ServicePath.Lead.UpdateStatus, { ids, status });
+    return apiRequest(() =>
+      apiClient.post(ServicePath.Lead.UpdateStatus, { ids, status }).then(() => undefined)
+    );
   },
 
   assignLead: async (request: AssignRequest): Promise<void> => {
-    await apiClient.post(ServicePath.Lead.Assign, request);
-  }
+    return apiRequest(() =>
+      apiClient.post(ServicePath.Lead.Assign, request).then(() => undefined)
+    );
+  },
 
 };
 

@@ -5,238 +5,206 @@ import { authService } from '@/services/auth.sevice';
 import { handleError } from '@/hooks/useHandleError';
 import { StateType, useProcessState } from "@/stores/process.state.store";
 
+
+
+// JWT payload'dan expire tarihini çıkarır
+const getTokenExpireAt = (token: string | null | undefined): string | null => {
+  if (!token) return null;
+  try {
+    const payload = JSON.parse(atob(token.split('.')[1]));
+    return payload.exp
+      ? new Date(payload.exp * 1000).toISOString()
+      : null;
+  } catch {
+    return null;
+  }
+};
+
+// ─── State Interface ──────────────────────────────────────────────────────────
+
 interface AuthState {
-    // State
-    user: User | null;
-    accessToken: string | null;
-    accessTokenExpireAt: string | null; // ISO date string
-    refreshToken: string | null;
-    isAuthenticated: boolean;
+  // State
+  user: User | null;
+  accessToken: string | null;
+  accessTokenExpireAt: string | null;
+  refreshToken: string | null;
+  refreshTokenExpireAt: string | null;
 
+  // Actions
+  loadUser: () => Promise<void>;
+  login: (email: string, password: string) => Promise<void>;
+  loginWithMicrosoft: (msalToken: string) => Promise<void>;
+  refreshAuthToken: () => Promise<void>;
+  setToken: (response: LoginResponse) => void;
+  clearToken: () => void;
+  logout: () => Promise<void>;
 
-    // Actions
-    loadUser: () => void;
-    login: (email: string, password: string) => Promise<void>;
-    loginWithMicrosoft: (msalToken: string) => Promise<void>;
-    refreshAuthToken: () => Promise<void>;
-
-    setToken: (response: LoginResponse) => void;
-    clearToken: () => void;
-
-    logout: () => void;
-
-    // Helpers
-    isTokenExpired: () => boolean;
-    checkAuth: () => boolean; // Token geçerliyse true, expire olduysa logout yapıp false döner
+  // Helpers
+  isAccessTokenExpired: () => boolean;
+  isRefreshTokenExpired: () => boolean;
+  checkAuth: () => Promise<boolean>;
 }
 
+// ─── Store ────────────────────────────────────────────────────────────────────
+
 export const useAuthState = create<AuthState>()(
-    persist(
-        (set, get) => ({
+  persist(
+    (set, get) => ({
 
+      // ── Initial state ────────────────────────────────────────────────────
+      user: null,
+      accessToken: null,
+      accessTokenExpireAt: null,
+      refreshToken: null,
+      refreshTokenExpireAt: null,
 
-            // Initial state
-            user: null,
-            accessToken: null,
-            accessTokenExpireAt: null,
-            refreshToken: null,
-            isAuthenticated: false,
+      // ── Token helpers ────────────────────────────────────────────────────
+      clearToken: () => {
+        set({
+          user: null,
+          accessToken: null,
+          accessTokenExpireAt: null,
+          refreshToken: null,
+          refreshTokenExpireAt: null,
+        });
+      },
 
-            // Actions
-            clearToken: () => {
-                set({
-                    user: null,
-                    accessToken: null,
-                    accessTokenExpireAt: null,
-                    refreshToken: null,
-                    isAuthenticated: false,
-                });
-            },
+      setToken: (response: LoginResponse) => {
+        set({
+          accessToken: response.accessToken,
+          accessTokenExpireAt: getTokenExpireAt(response.accessToken),
+          refreshToken: response.refreshToken,
+          refreshTokenExpireAt: getTokenExpireAt(response.refreshToken),
+        });
+      },
 
-            setToken: (response: LoginResponse) => {
-                const expireAtStr = convertExpireAtString(response.accessTokenExpireAt);
-                set({
-                    accessToken: response.accessToken,
-                    accessTokenExpireAt: expireAtStr,
-                    refreshToken: response.refreshToken ?? null,
-                    isAuthenticated: true,
-                });
-            },
+      isAccessTokenExpired: () => {
+        const { accessTokenExpireAt } = get();
+        if (!accessTokenExpireAt) return true;
+        return Date.now() >= new Date(accessTokenExpireAt).getTime();
+      },
 
-            loadUser: async () => {
-                const { setState } = useProcessState.getState();
-                const { accessToken } = get();
+      isRefreshTokenExpired: () => {
+        const { refreshTokenExpireAt } = get();
+        if (!refreshTokenExpireAt) return true;
+        return Date.now() >= new Date(refreshTokenExpireAt).getTime();
+      },
 
-                setState(StateType.Loading, "Initializing user", "Please wait...");
+      // ── Auth check ───────────────────────────────────────────────────────
+      checkAuth: async () => {
+        const { accessToken, isAccessTokenExpired, isRefreshTokenExpired, refreshAuthToken, logout } = get();
 
-                try {
-                    const response = await authService.fetchUser(accessToken!);
+        if (!accessToken) return false;
 
-                    set({
-                        user: response
-                    });
+        // Access token hâlâ geçerliyse devam et
+        if (!isAccessTokenExpired()) return true;
 
-                    setState(StateType.Success, "User loaded", "User information has been loaded successfully.");
-
-                } catch (error) {
-                    const errorMessage = handleError(error);
-                    setState(StateType.Error, "User loading failed", errorMessage);
-                }
-
-            },
-
-            login: async (email, password) => {
-
-                const { setState } = useProcessState.getState();
-                const { setToken, clearToken } = get();
-
-                try {
-                    setState(StateType.Loading, "Logging in", "Please wait...");
-
-                    const response = await authService.login(email, password)
-
-                    setToken(response);
-
-                    setState(StateType.Success, "Login Successful", "You have been logged in successfully.");
-
-                } catch (error) {
-                    clearToken();
-                    const errorMessage = handleError(error);
-                    setState(StateType.Error, "Login Failed", errorMessage);
-                }
-
-            },
-
-            loginWithMicrosoft: async (msalToken: string) => {
-
-                const { setState } = useProcessState.getState();
-                const { setToken, clearToken } = get();
-
-
-
-                try {
-                    setState(StateType.Loading, "Logging in with Microsoft", "Please wait...");
-
-                    const response = await authService.loginWithMicrosoft(msalToken);
-
-                    setToken(response);
-
-                    setState(StateType.Success, "Login Successful", "You have been logged in successfully.");
-                } catch (error) {
-                    clearToken();
-                    const errorMessage = handleError(error);
-                    setState(StateType.Error, 'Microsoft login failed', errorMessage);
-                }
-            },
-
-            refreshAuthToken: async () => {
-                const { setState } = useProcessState.getState();
-                const { setToken, clearToken, refreshToken } = get();
-
-
-
-                try {
-                    // Check if refreshToken is available
-                    if (!refreshToken) {
-                        clearToken();
-                        return;
-                    }
-
-                    setState(StateType.Loading, "Refreshing token", "Please wait...");
-
-                    // Implement token refresh logic here
-                    const response = await authService.refreshToken(refreshToken);
-
-                    setToken(response);
-
-                    setState(StateType.Success, "Token refreshed", "Your session has been extended.");
-                } catch (error) {
-                    clearToken();
-                    const errorMessage = handleError(error);
-                    setState(StateType.Error, 'Token refresh failed', errorMessage);
-                    throw error;
-                }
-            },
-
-            logout: async () => {
-                const { setState } = useProcessState.getState();
-                const { accessToken, clearToken } = get();
-
-                try {
-                    if (accessToken != null) {
-                        setState(StateType.Loading, "Logging out", "Please wait...");
-
-                        await authService.logout(accessToken!);
-
-                        setState(StateType.Success, 'Logout Successful', 'You have been logged out successfully.');
-                    }
-                } catch (error) {
-                    const errorMessage = handleError(error);
-                    setState(StateType.Error, 'Logout failed', errorMessage);
-                }
-                finally {
-                    clearToken();
-                    // 2. Storage'ı temizle
-                    sessionStorage.clear();
-                    localStorage.removeItem('crm-auth-state');
-                }
-
-            },
-
-            // Token expire kontrolü
-            isTokenExpired: () => {
-                const { accessTokenExpireAt } = get();
-
-                // Token yoksa expire kabul et
-                if (!accessTokenExpireAt) return true;
-
-                const expireTime = new Date(accessTokenExpireAt).getTime();
-                const now = Date.now();
-
-                return now >= expireTime;
-            },
-
-            // Auth kontrolü - expire olduysa logout yapar
-            checkAuth: () => {
-                const { isAuthenticated, isTokenExpired, logout, refreshAuthToken } = get();
-
-                // Authenticate değilse zaten false
-                if (!isAuthenticated) return false;
-
-                // Token expire olduysa logout yap
-                if (isTokenExpired()) {
-                    refreshAuthToken()
-                }
-                else
-                    return true;
-
-                if (isTokenExpired()) {
-                    logout();
-                    return false;
-                }
-                else
-                    return true;
-            },
-        }),
-        {
-            name: 'crm-auth-state',
-            partialize: (state) => ({
-                user: state.user,
-                accessToken: state.accessToken,
-                accessTokenExpireAt: state.accessTokenExpireAt,
-                refreshToken: state.refreshToken,
-                isAuthenticated: state.isAuthenticated,
-            }),
+        // Access token expired — refresh token geçerliyse yenile
+        if (!isRefreshTokenExpired()) {
+          try {
+            await refreshAuthToken();
+            return true;
+          } catch {
+            await logout();
+            return false;
+          }
         }
-    )
+
+        // Her ikisi de expired — logout
+        await logout();
+        return false;
+      },
+
+      // ── User ─────────────────────────────────────────────────────────────
+      loadUser: async () => {
+        const { accessToken } = get();
+        if (!accessToken) return;
+
+        try {
+          const response = await authService.fetchUser(accessToken!);
+          set({ user: response });
+        } catch{ }
+      },
+
+      // ── Auth actions ─────────────────────────────────────────────────────
+      login: async (email, password) => {
+        const { setState, clearState } = useProcessState.getState();
+        const { setToken, clearToken } = get();
+
+        try {
+          setState(StateType.Loading, "Logging in", "Please wait...");
+          const response = await authService.login(email, password);
+          setToken(response);
+          await get().loadUser();
+          //setState(StateType.Success, "Login Successful", "You have been logged in successfully.");
+          clearState();
+        } catch (error) {
+          clearToken();
+          setState(StateType.Error, "Login Failed", handleError(error));
+          throw error;
+        }
+      },
+
+      loginWithMicrosoft: async (msalToken: string) => {
+        const { setState, clearState } = useProcessState.getState();
+        const { setToken, clearToken } = get();
+
+        try {
+          setState(StateType.Loading, "Logging in with Microsoft", "Please wait...");
+          const response = await authService.loginWithMicrosoft(msalToken);
+          setToken(response);
+          await get().loadUser();
+          clearState();
+          //setState(StateType.Success, "Login Successful", "You have been logged in successfully.");
+        } catch (error) {
+          clearToken();
+          setState(StateType.Error, 'Microsoft login failed', handleError(error));
+          throw error;
+        }
+      },
+
+      refreshAuthToken: async () => {
+        const { setToken, clearToken, refreshToken, isRefreshTokenExpired } = get();
+
+        // Refresh token yoksa veya expire olduysa direkt temizle
+        if (!refreshToken || isRefreshTokenExpired()) {
+          clearToken();
+          return;
+        }
+
+        try {
+          const response = await authService.refreshToken(refreshToken);
+          setToken(response);
+        } catch (error) {
+          clearToken();
+          throw error;
+        }
+      },
+
+      logout: async () => {
+        const { clearState } = useProcessState.getState();
+        const { accessToken, clearToken } = get();
+
+        clearToken();
+        clearState();
+        sessionStorage.clear();
+        localStorage.removeItem('crm-auth-state');
+
+        if (accessToken) {
+          authService.logout(accessToken).catch(() => { });
+        }
+      },
+
+    }),
+    {
+      name: 'crm-auth-state',
+      partialize: (state) => ({
+        user: state.user,
+        accessToken: state.accessToken,
+        accessTokenExpireAt: state.accessTokenExpireAt,
+        refreshToken: state.refreshToken,
+        refreshTokenExpireAt: state.refreshTokenExpireAt
+      }),
+    }
+  )
 );
-
-
-// Utility function to convert expireAt to ISO string
-const convertExpireAtString = (accessTokenExpireAt: any) => {
-    const expireAtStr = accessTokenExpireAt instanceof Date
-        ? accessTokenExpireAt.toISOString()
-        : accessTokenExpireAt;
-
-    return expireAtStr;
-};

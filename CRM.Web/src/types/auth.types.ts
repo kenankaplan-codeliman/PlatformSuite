@@ -26,9 +26,7 @@ export interface AccessTokenRequest {
 
 export interface LoginResponse {
     accessToken: string;
-    accessTokenExpireAt: Date;
     refreshToken: string;
-    refreshTokenExpireAt: Date;
 }
 
 export interface MicrosoftCallbackRequest {

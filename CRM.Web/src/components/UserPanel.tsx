@@ -3,58 +3,43 @@ import { UserOutlined, LogoutOutlined } from "@ant-design/icons";
 import { useNavigate } from "react-router-dom";
 import { useAuthState } from '@/stores/auth.store';
 import RoutePaths from "@/config/route.paths";
-import { useEffect } from "react";
 
 const UserPanel = () => {
-
     const navigate = useNavigate();
-    const { isAuthenticated, accessToken, user, logout, loadUser } = useAuthState();
+    const { user, logout } = useAuthState();
 
-    useEffect(() => {
-        if (isAuthenticated && !user){
-            loadUser();
-        }
-    }, [isAuthenticated]);
-
-    const handleLogout = async () => {
-
-        if (accessToken) {
-           await logout()
-        }
-
-        setTimeout(() => {
-            navigate(RoutePaths.Login, { replace: true });
-        }, 1000);
+    const handleLogout = () => {
+        navigate(RoutePaths.Login, { replace: true });
+        logout();
     };
+
+    if (!user) return <></>;
 
     const content = (
         <div style={{ minWidth: 180 }}>
-            <p><b>{user?.displayName}</b></p>
-            <p>{user?.email}</p>
+            <p><b>{user.displayName}</b></p>
+            <p>{user.email}</p>
             <Divider size="small" />
-            <Button type="primary" danger block icon={<LogoutOutlined />} onClick={handleLogout} >
+            <Button
+                type="primary"
+                danger
+                block
+                icon={<LogoutOutlined />}
+                onClick={handleLogout}
+            >
                 Çıkış
             </Button>
         </div>
     );
 
-    if (isAuthenticated) {
-        return (
-            <Popover
-                content={content}
-                trigger="click"
-                placement="bottomRight"
-            >
-                <Avatar
-                    icon={<UserOutlined />}
-                    style={{ cursor: "pointer" }}
-                />
-            </Popover>
-
-        );
-    } else {
-        return <></>;
-    }
+    return (
+        <Popover content={content} trigger="click" placement="bottomRight">
+            <Avatar
+                icon={<UserOutlined />}
+                style={{ cursor: 'pointer', backgroundColor: '#001529' }}
+            />
+        </Popover>
+    );
 };
 
 export default UserPanel;

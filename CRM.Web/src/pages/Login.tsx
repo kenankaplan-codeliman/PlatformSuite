@@ -3,58 +3,39 @@ import { Button, Form, Input, Card, Divider } from "antd";
 import { useAuthState } from "@/stores/auth.store";
 import { loginRequest, msalInstance } from "@/util/msalInstance";
 import MicrosoftOutlined from '@/components/MicrosoftIcon';
-import { useEffect } from "react";
 import RoutePaths from "@/config/route.paths";
-import { StateType, useProcessState } from "@/stores/process.state.store";
 
 const Login = () => {
 
   const { login, loginWithMicrosoft } = useAuthState();
   const navigate = useNavigate();
-  const { state } = useProcessState();
-  
-
-
-useEffect(() => {
-    if (state === StateType.Success) { 
-      setTimeout(() => {
-        navigate(RoutePaths.DashboardPath, { replace: true });
-      }, 1000);
-    }
-  }, [state]);
-
-
-  // ========================================
-  // MICROSOFT 365 LOGIN
-  // ========================================
+ 
+  // ── Microsoft 365 Login ──────────────────────────────────────────────────
   const handleMicrosoftLogin = async () => {
-
+    try {
       const loginResponse = await msalInstance.loginPopup(loginRequest);
-
-      console.log('Microsoft login successful:', loginResponse.account.username);
-
       msalInstance.setActiveAccount(loginResponse.account);
-
+      
       const msTokenResponse = await msalInstance.acquireTokenSilent({
         account: loginResponse.account,
         scopes: ['User.Read', 'openid', 'profile', 'email'],
       });
 
-      loginWithMicrosoft(msTokenResponse.accessToken);
-
+      await loginWithMicrosoft(msTokenResponse.accessToken);
+      navigate(RoutePaths.DashboardPath, { replace: true });
+    } catch (error) {
+      console.error('Microsoft Login failed:', error);
+    }
   };
-
-  // ========================================
-  // EMAIL/PASSWORD LOGIN
-  // ========================================
-
-  const handleLogin = async (values: {
-    email: string;
-    password: string;
-  }) => {
-
+ 
+  // ── Email/Password Login ─────────────────────────────────────────────────
+  const handleLogin = async (values: { email: string; password: string }) => {
+    try {
       await login(values.email, values.password);
-
+      navigate(RoutePaths.DashboardPath, { replace: true });
+    } catch (error) {
+      console.error('Email Login failed:', error);
+    }
   };
 
   return (
@@ -104,7 +85,7 @@ useEffect(() => {
 
         </Form>
         <Divider size="small" />
-        <Button type="primary" htmlType="submit" icon={<MicrosoftOutlined />} block onClick={handleMicrosoftLogin}>
+        <Button type="primary" icon={<MicrosoftOutlined />} block onClick={handleMicrosoftLogin}>
           Login with Microsoft 365
         </Button>
       </Card>

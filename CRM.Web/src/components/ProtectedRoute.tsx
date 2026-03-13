@@ -1,27 +1,35 @@
-import { useEffect } from "react";
-import { Navigate, Outlet, useNavigate } from "react-router-dom";
+import { useEffect, useState } from "react";
+import { Navigate, Outlet } from "react-router-dom";
 import { useAuthState } from "@/stores/auth.store";
 import RoutePaths from "@/config/route.paths";
+import { Spin } from "antd";
 
-const ProtectedRoute =() => {
+type AuthStatus = 'pending' | 'authenticated' | 'unauthenticated';
 
-  const { isAuthenticated } = useAuthState();
+const ProtectedRoute = () => {
   const { checkAuth } = useAuthState();
-  const navigate = useNavigate();
+  const [authStatus, setAuthStatus] = useState<AuthStatus>('pending');
 
   useEffect(() => {
-    if (!checkAuth()) {
-      navigate(RoutePaths.Login);
-    }
+    checkAuth().then((valid) => {
+      setAuthStatus(valid ? 'authenticated' : 'unauthenticated');
+    });
   }, []);
 
+  // checkAuth tamamlanana kadar bekle — servis çağrıları yapılmasın
+  if (authStatus === 'pending') {
+    return (
+      <div style={{ height: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+        <Spin size="large" />
+      </div>
+    );
+  }
 
-  if (!isAuthenticated) {
+  if (authStatus === 'unauthenticated') {
     return <Navigate to={RoutePaths.Login} replace />;
   }
 
   return <Outlet />;
-  
-}
+};
 
-export  default ProtectedRoute;
+export default ProtectedRoute;

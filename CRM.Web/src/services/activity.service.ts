@@ -12,6 +12,7 @@ import {
   type ActivityListItem,
 } from '@/types/activity.types';
 import apiClient from '@/services/api.client';
+import { apiRequest } from '@/services/api.request';
 import { ServicePath } from '@/config/service.paths';
 import type { AssignRequest, IdListRequest, StatusRequest } from '@/types/common.types';
 
@@ -42,90 +43,57 @@ const activityGetEndpointMap: Record<ActivityTypeValue, string> = {
 
 export const activityService = {
 
-  getActivities: async (
-    page: number = 1,
-    pageSize: number = 10,
-    filters?: ActivityListFilters
-  ): Promise<ActivityListResponse> => {
+  getActivities: async (page = 1, pageSize = 10, filters?: ActivityListFilters): Promise<ActivityListResponse> => {
     const request: ActivityListRequest = { page, pageSize, filters };
-    const response = await apiClient.post<ActivityListResponse>(
-      ServicePath.Activity.List,
-      request
-    );
-    return response.data;
+    return apiRequest(() => apiClient.post<ActivityListResponse>(ServicePath.Activity.List, request).then(r => r.data));
   },
 
-  getActivitiesForCalendar: async (
-    startDate: string,
-    endDate: string,
-    filters?: ActivityListFilters
-  ): Promise<ActivityListItem[]> => {
+  getActivitiesForCalendar: async (startDate: string, endDate: string, filters?: ActivityListFilters): Promise<ActivityListItem[]> => {
     const request: ActivityCalendarRequest = { startDate, endDate, filters };
-    const response = await apiClient.post<ActivityListItem[]>(
-      ServicePath.Activity.Calendar,
-      request
-    );
-    return response.data;
+    return apiRequest(() => apiClient.post<ActivityListItem[]>(ServicePath.Activity.Calendar, request).then(r => r.data));
   },
 
   getActivityById: async (id: string, activityType: ActivityTypeValue): Promise<ActivityBase> => {
     const request: ActivityRequest = { id };
     const endpoint = activityGetEndpointMap[activityType];
-    const response = await apiClient.post<ActivityBase>(endpoint, request);
-    return response.data;
+    return apiRequest(() => apiClient.post<ActivityBase>(endpoint, request).then(r => r.data));
   },
 
-  createActivity: async <T extends ActivityBase>(
-    activity: Omit<T, 'id' | 'createdAt' | 'createdBy'>
-  ): Promise<T> => {
+  createActivity: async <T extends ActivityBase>(activity: Omit<T, 'id' | 'createdAt' | 'createdBy'>): Promise<T> => {
     const endpoint = activityCreateEndpointMap[activity.activityType];
-    const response = await apiClient.post<T>(endpoint, activity);
-    return response.data;
+    return apiRequest(() => apiClient.post<T>(endpoint, activity).then(r => r.data));
   },
 
-  updateActivity: async <T extends ActivityBase>(
-    activity: Partial<T> & { activityType: T['activityType'] }
-  ): Promise<T> => {
+  updateActivity: async <T extends ActivityBase>(activity: Partial<T> & { activityType: T['activityType'] }): Promise<T> => {
     const endpoint = activityUpdateEndpointMap[activity.activityType];
-    const response = await apiClient.post<T>(endpoint, activity);
-    return response.data;
+    return apiRequest(() => apiClient.post<T>(endpoint, activity).then(r => r.data));
   },
 
-  // Tekil ve bulk silme aynı endpoint — ids dizisiyle çalışır
   deleteActivity: async (request: IdListRequest): Promise<void> => {
-    await apiClient.post(ServicePath.Activity.Delete, request);
+    return apiRequest(() => apiClient.post(ServicePath.Activity.Delete, request).then(() => undefined));
   },
 
   setStatusActivity: async (request: StatusRequest): Promise<void> => {
-    await apiClient.post(ServicePath.Activity.State, request);
+    return apiRequest(() => apiClient.post(ServicePath.Activity.State, request).then(() => undefined));
   },
 
   assignActivity: async (request: AssignRequest): Promise<void> => {
-    await apiClient.post(ServicePath.Activity.Assign, request);
+    return apiRequest(() => apiClient.post(ServicePath.Activity.Assign, request).then(() => undefined));
   },
 
-  // Aktiviteye özgü: durum güncelleme (Completed, Cancelled vb.)
   bulkUpdateStatus: async (ids: string[], status: ActivityStatusValue): Promise<void> => {
     const request: ActivityBulkUpdateStatusRequest = { ids, status };
-    await apiClient.post(ServicePath.Activity.BulkUpdateStatus, request);
+    return apiRequest(() => apiClient.post(ServicePath.Activity.BulkUpdateStatus, request).then(() => undefined));
   },
 
   completeActivity: async (id: string): Promise<ActivityBase> => {
     const request: ActivityRequest = { id };
-    const response = await apiClient.post<ActivityBase>(
-      ServicePath.Activity.Complete,
-      request
-    );
-    return response.data;
+    return apiRequest(() => apiClient.post<ActivityBase>(ServicePath.Activity.Complete, request).then(r => r.data));
   },
 
   cancelActivity: async (id: string): Promise<ActivityBase> => {
     const request: ActivityRequest = { id };
-    const response = await apiClient.post<ActivityBase>(
-      ServicePath.Activity.Cancel,
-      request
-    );
-    return response.data;
+    return apiRequest(() => apiClient.post<ActivityBase>(ServicePath.Activity.Cancel, request).then(r => r.data));
   },
 };
 
