@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useCallback } from 'react';
 import {
   Card,
   Form,
@@ -77,7 +77,7 @@ const EmailDetail: React.FC<DetailPageProps<EmailActivity>> = (props) => {
     {
       fetchById: (id) => store.fetchActivityById(id, ActivityType.Email),
       createEntity: (values) => store.createActivity<EmailActivity>(values as any),
-      updateEntity: (values) => store.updateActivity<EmailActivity>(values),
+      updateEntity: (values) => store.updateActivity<EmailActivity>(values as any),
       deleteEntity: async (id) => {
         const { deleteActivity } = useActivityStore.getState();
         await deleteActivity(id);
@@ -129,6 +129,25 @@ const EmailDetail: React.FC<DetailPageProps<EmailActivity>> = (props) => {
   );
 
   const currentEmail = detail.currentEntity;
+
+  // ─── Assign Handler ─────────────────────────────────────────────────────
+  const handleAssign = useCallback(async (entity: EntityReference | EntityReference[] | null) => {
+    if (!entity || !currentEmail?.id) return;
+    const user = Array.isArray(entity) ? entity[0] : entity;
+    await store.assignActivity(currentEmail.id, user);
+    await store.fetchActivityById(currentEmail.id, ActivityType.Email);
+  }, [currentEmail?.id, store]);
+
+  // ─── Activate / Deactivate Handler ──────────────────────────────────────
+  const handleStateChange = useCallback(async (isActive: boolean) => {
+    if (!currentEmail?.id) return;
+    if (isActive) {
+      await store.deactivateActivity(currentEmail.id);
+    } else {
+      await store.activateActivity(currentEmail.id);
+    }
+    await store.fetchActivityById(currentEmail.id, ActivityType.Email);
+  }, [currentEmail?.id, store]);
 
   // ─── View Mode ──────────────────────────────────────────────────────────
 
@@ -357,6 +376,9 @@ const EmailDetail: React.FC<DetailPageProps<EmailActivity>> = (props) => {
       onBack={detail.handleBack}
       renderViewMode={renderViewMode}
       renderEditMode={renderEditMode}
+      onAssign={handleAssign}
+      entityIsActive={currentEmail?.isActive}
+      onStateChange={handleStateChange}
     />
   );
 };

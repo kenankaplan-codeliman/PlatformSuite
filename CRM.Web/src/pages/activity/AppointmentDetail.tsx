@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useCallback } from 'react';
 import {
   Card,
   Form,
@@ -84,7 +84,7 @@ const AppointmentDetail: React.FC<DetailPageProps<AppointmentActivity>> = (props
     {
       fetchById: (id) => store.fetchActivityById(id, ActivityType.Appointment),
       createEntity: (values) => store.createActivity<AppointmentActivity>(values as any),
-      updateEntity: (values) => store.updateActivity<AppointmentActivity>(values),
+      updateEntity: (values) => store.updateActivity<AppointmentActivity>(values as any),
       deleteEntity: async (id) => {
         const { deleteActivity } = useActivityStore.getState();
         await deleteActivity(id);
@@ -141,6 +141,25 @@ const AppointmentDetail: React.FC<DetailPageProps<AppointmentActivity>> = (props
   );
 
   const currentAppointment = detail.currentEntity;
+
+  // ─── Assign Handler ─────────────────────────────────────────────────────
+  const handleAssign = useCallback(async (entity: EntityReference | EntityReference[] | null) => {
+    if (!entity || !currentAppointment?.id) return;
+    const user = Array.isArray(entity) ? entity[0] : entity;
+    await store.assignActivity(currentAppointment.id, user);
+    await store.fetchActivityById(currentAppointment.id, ActivityType.Appointment);
+  }, [currentAppointment?.id, store]);
+
+  // ─── Activate / Deactivate Handler ──────────────────────────────────────
+  const handleStateChange = useCallback(async (isActive: boolean) => {
+    if (!currentAppointment?.id) return;
+    if (isActive) {
+      await store.deactivateActivity(currentAppointment.id);
+    } else {
+      await store.activateActivity(currentAppointment.id);
+    }
+    await store.fetchActivityById(currentAppointment.id, ActivityType.Appointment);
+  }, [currentAppointment?.id, store]);
 
   // ─── View Mode ──────────────────────────────────────────────────────────
 
@@ -391,6 +410,9 @@ const AppointmentDetail: React.FC<DetailPageProps<AppointmentActivity>> = (props
       onBack={detail.handleBack}
       renderViewMode={renderViewMode}
       renderEditMode={renderEditMode}
+      onAssign={handleAssign}
+      entityIsActive={currentAppointment?.isActive}
+      onStateChange={handleStateChange}
     />
   );
 };

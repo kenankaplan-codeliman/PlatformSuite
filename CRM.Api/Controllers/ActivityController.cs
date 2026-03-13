@@ -108,7 +108,6 @@ public class ActivityController : ControllerBase
 
     #endregion
 
-
     #region Task
 
     [HttpPost("get/task")]

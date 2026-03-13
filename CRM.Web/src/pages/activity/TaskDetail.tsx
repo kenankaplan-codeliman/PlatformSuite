@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useCallback } from 'react';
 import {
   Card,
   Form,
@@ -80,7 +80,7 @@ const TaskDetail: React.FC<DetailPageProps<TaskActivity>> = (props) => {
     {
       fetchById: (id) => store.fetchActivityById(id, ActivityType.Task),
       createEntity: (values) => store.createActivity<TaskActivity>(values as any),
-      updateEntity: (values) => store.updateActivity<TaskActivity>(values),
+      updateEntity: (values) => store.updateActivity<TaskActivity>(values as any),
       deleteEntity: async (id) => {
         const { deleteActivity } = useActivityStore.getState();
         await deleteActivity(id);
@@ -129,6 +129,25 @@ const TaskDetail: React.FC<DetailPageProps<TaskActivity>> = (props) => {
   );
 
   const currentTask = detail.currentEntity;
+
+  // ─── Assign Handler ─────────────────────────────────────────────────────
+  const handleAssign = useCallback(async (entity: EntityReference | EntityReference[] | null) => {
+    if (!entity || !currentTask?.id) return;
+    const user = Array.isArray(entity) ? entity[0] : entity;
+    await store.assignActivity(currentTask.id, user);
+    await store.fetchActivityById(currentTask.id, ActivityType.Task);
+  }, [currentTask?.id, store]);
+
+  // ─── Activate / Deactivate Handler ──────────────────────────────────────
+  const handleStateChange = useCallback(async (isActive: boolean) => {
+    if (!currentTask?.id) return;
+    if (isActive) {
+      await store.deactivateActivity(currentTask.id);
+    } else {
+      await store.activateActivity(currentTask.id);
+    }
+    await store.fetchActivityById(currentTask.id, ActivityType.Task);
+  }, [currentTask?.id, store]);
 
   // ─── View Mode ──────────────────────────────────────────────────────────
 
@@ -330,6 +349,9 @@ const TaskDetail: React.FC<DetailPageProps<TaskActivity>> = (props) => {
       onBack={detail.handleBack}
       renderViewMode={renderViewMode}
       renderEditMode={renderEditMode}
+      onAssign={handleAssign}
+      entityIsActive={currentTask?.isActive}
+      onStateChange={handleStateChange}
     />
   );
 };

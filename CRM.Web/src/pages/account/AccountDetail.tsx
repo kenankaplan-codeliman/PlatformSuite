@@ -25,7 +25,6 @@ import {
   DollarOutlined,
   FileTextOutlined,
   EnvironmentOutlined,
-  ClockCircleOutlined,
   TeamOutlined,
   UserOutlined,
   PlusOutlined,
@@ -35,9 +34,6 @@ import {
 import { RoutePaths } from '@/config/route.paths';
 import type {
   AccountDetailItem,
-  AccountPhone,
-  AccountEmail,
-  AccountAddress,
   AccountContactRef,
 } from '@/types/account.types';
 import {
@@ -133,6 +129,25 @@ const AccountDetail: React.FC<DetailPageProps<AccountDetailItem>> = (props) => {
   );
 
   const currentAccount = detail.currentEntity;
+
+  // ─── Assign Handler ─────────────────────────────────────────────────────
+  const handleAssign = useCallback(async (entity: EntityReference | EntityReference[] | null) => {
+    if (!entity || !currentAccount?.id) return;
+    const user = Array.isArray(entity) ? entity[0] : entity;
+    await store.assignAccount(currentAccount.id, user);
+    await store.fetchAccountById(currentAccount.id);
+  }, [currentAccount?.id, store]);
+
+  // ─── Activate / Deactivate Handler ──────────────────────────────────────
+  const handleStateChange = useCallback(async (isActive: boolean) => {
+    if (!currentAccount?.id) return;
+    if (isActive) {
+      await store.deactivateAccount(currentAccount.id);
+    } else {
+      await store.activateAccount(currentAccount.id);
+    }
+    await store.fetchAccountById(currentAccount.id);
+  }, [currentAccount?.id, store]);
 
   // ─── View Mode ──────────────────────────────────────────────────────────
 
@@ -379,9 +394,6 @@ const AccountDetail: React.FC<DetailPageProps<AccountDetailItem>> = (props) => {
                   regardingEntityId: detail.entityId,
                   regardingEntityType: EntityType.Account,
                 }}
-                showFilters={true}
-                showBulkActions={true}
-                showPagination={true}
               />
             ),
           },
@@ -874,6 +886,9 @@ const AccountDetail: React.FC<DetailPageProps<AccountDetailItem>> = (props) => {
       onBack={detail.handleBack}
       renderViewMode={renderViewMode}
       renderEditMode={renderEditMode}
+      onAssign={handleAssign}
+      entityIsActive={currentAccount?.isActive}
+      onStateChange={handleStateChange}
     />
   );
 };

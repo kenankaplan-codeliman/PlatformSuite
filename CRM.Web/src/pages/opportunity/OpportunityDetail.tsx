@@ -142,7 +142,18 @@ const OpportunityDetail: React.FC<DetailPageProps<OpportunityDetailItem>> = (pro
   const handleAssign = useCallback(async (entity: EntityReference | EntityReference[] | null) => {
     if (!entity || !currentOpportunity?.id) return;
     const user = Array.isArray(entity) ? entity[0] : entity;
-    await store.assignOpportunity(currentOpportunity.id, user.id);
+    await store.assignOpportunity(currentOpportunity.id, user);
+    await store.fetchOpportunityById(currentOpportunity.id);
+  }, [currentOpportunity?.id, store]);
+
+  // ─── Activate / Deactivate Handler ──────────────────────────────────────
+  const handleStateChange = useCallback(async (isActive: boolean) => {
+    if (!currentOpportunity?.id) return;
+    if (isActive) {
+      await store.deactivateOpportunity(currentOpportunity.id);
+    } else {
+      await store.activateOpportunity(currentOpportunity.id);
+    }
     await store.fetchOpportunityById(currentOpportunity.id);
   }, [currentOpportunity?.id, store]);
 
@@ -338,9 +349,6 @@ const OpportunityDetail: React.FC<DetailPageProps<OpportunityDetailItem>> = (pro
                   regardingEntityId: detail.entityId,
                   regardingEntityType: EntityType.Opportunity,
                 }}
-                showFilters
-                showBulkActions
-                showPagination
               />
             ),
           },
@@ -570,6 +578,8 @@ const OpportunityDetail: React.FC<DetailPageProps<OpportunityDetailItem>> = (pro
       renderViewMode={renderViewMode}
       renderEditMode={renderEditMode}
       onAssign={handleAssign}
+      entityIsActive={currentOpportunity?.isActive}
+      onStateChange={handleStateChange}
     />
   );
 };

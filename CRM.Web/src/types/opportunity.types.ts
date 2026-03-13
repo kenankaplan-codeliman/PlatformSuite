@@ -1,5 +1,8 @@
 // Opportunity Types - Based on Opportunity.cs Entity
 
+import type { AuditInfo } from "./common.types";
+import type { EntityReference } from "./entity.lookup.types";
+
 // =====================================================
 // ENUMS
 // =====================================================
@@ -72,9 +75,10 @@ export interface OpportunityDetailItem {
   contactId?: string;
   contactName?: string;
   products: OpportunityProductItem[];
-  createdAt?: Date;
-  updatedAt?: Date;
+
   isActive: boolean;
+  
+  audit?: AuditInfo;
 }
 
 // =====================================================

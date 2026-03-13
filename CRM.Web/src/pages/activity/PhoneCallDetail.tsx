@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useCallback } from 'react';
 import {
   Card,
   Form,
@@ -27,7 +27,7 @@ import dayjs from 'dayjs';
 
 import { RoutePaths } from '@/config/route.paths';
 import type { PhoneCallActivity } from '@/types/activity.types';
-import { EntityType } from '@/types/entity.lookup.types';
+import { EntityType, type EntityReference } from '@/types/entity.lookup.types';
 import {
   ActivityStatus,
   ActivityPriority,
@@ -69,7 +69,7 @@ const PhoneCallDetail: React.FC<DetailPageProps<PhoneCallActivity>> = (props) =>
     {
       fetchById: (id) => store.fetchActivityById(id, ActivityType.PhoneCall),
       createEntity: (values) => store.createActivity<PhoneCallActivity>(values as any),
-      updateEntity: (values) => store.updateActivity<PhoneCallActivity>(values),
+      updateEntity: (values) => store.updateActivity<PhoneCallActivity>(values as any),
       deleteEntity: async (id) => {
         const { deleteActivity } = useActivityStore.getState();
         await deleteActivity(id);
@@ -118,6 +118,25 @@ const PhoneCallDetail: React.FC<DetailPageProps<PhoneCallActivity>> = (props) =>
   );
 
   const currentPhoneCall = detail.currentEntity;
+
+  // ─── Assign Handler ─────────────────────────────────────────────────────
+  const handleAssign = useCallback(async (entity: EntityReference | EntityReference[] | null) => {
+    if (!entity || !currentPhoneCall?.id) return;
+    const user = Array.isArray(entity) ? entity[0] : entity;
+    await store.assignActivity(currentPhoneCall.id, user);
+    await store.fetchActivityById(currentPhoneCall.id, ActivityType.PhoneCall);
+  }, [currentPhoneCall?.id, store]);
+
+  // ─── Activate / Deactivate Handler ──────────────────────────────────────
+  const handleStateChange = useCallback(async (isActive: boolean) => {
+    if (!currentPhoneCall?.id) return;
+    if (isActive) {
+      await store.deactivateActivity(currentPhoneCall.id);
+    } else {
+      await store.activateActivity(currentPhoneCall.id);
+    }
+    await store.fetchActivityById(currentPhoneCall.id, ActivityType.PhoneCall);
+  }, [currentPhoneCall?.id, store]);
 
   // ─── View Mode (sayfaya özel) ───────────────────────────────────────────
 
@@ -343,6 +362,9 @@ const PhoneCallDetail: React.FC<DetailPageProps<PhoneCallActivity>> = (props) =>
       onBack={detail.handleBack}
       renderViewMode={renderViewMode}
       renderEditMode={renderEditMode}
+      onAssign={handleAssign}
+      entityIsActive={currentPhoneCall?.isActive}
+      onStateChange={handleStateChange}
     />
   );
 };

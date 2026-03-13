@@ -46,7 +46,7 @@ import ActivityListView from '@/components/ActivityListView';
 
 import { useDetailPage, type DetailPageProps } from '@/hooks/useDetailPage';
 import DetailPageLayout from '@/components/DetailPageLayout';
-import { EntityType } from '@/types/entity.lookup.types';
+import { EntityType, type EntityReference } from '@/types/entity.lookup.types';
 
 const { Title, Text, Paragraph } = Typography;
 const { TextArea } = Input;
@@ -95,6 +95,25 @@ const LeadDetail: React.FC<DetailPageProps<LeadDetailItem>> = (props) => {
   );
 
   const currentLead = detail.currentEntity;
+
+  // ─── Assign Handler ─────────────────────────────────────────────────────
+  const handleAssign = useCallback(async (entity: EntityReference | EntityReference[] | null) => {
+    if (!entity || !currentLead?.id) return;
+    const user = Array.isArray(entity) ? entity[0] : entity;
+    await store.assignLead(currentLead.id, user);
+    await store.fetchLeadById(currentLead.id);
+  }, [currentLead?.id, store]);
+
+  // ─── Activate / Deactivate Handler ──────────────────────────────────────
+  const handleStateChange = useCallback(async (isActive: boolean) => {
+    if (!currentLead?.id) return;
+    if (isActive) {
+      await store.deactivateLead(currentLead.id);
+    } else {
+      await store.activateLead(currentLead.id);
+    }
+    await store.fetchLeadById(currentLead.id);
+  }, [currentLead?.id, store]);
 
   // ─── View Mode ──────────────────────────────────────────────────────────
 
@@ -224,9 +243,6 @@ const LeadDetail: React.FC<DetailPageProps<LeadDetailItem>> = (props) => {
                   regardingEntityId: detail.entityId,
                   regardingEntityType: EntityType.Lead,
                 }}
-                showFilters={true}
-                showBulkActions={true}
-                showPagination={true}
               />
             ),
           },
@@ -407,6 +423,9 @@ const LeadDetail: React.FC<DetailPageProps<LeadDetailItem>> = (props) => {
       onBack={detail.handleBack}
       renderViewMode={renderViewMode}
       renderEditMode={renderEditMode}
+      onAssign={handleAssign}
+      entityIsActive={currentLead?.isActive}
+      onStateChange={handleStateChange}
     />
   );
 };

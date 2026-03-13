@@ -17,6 +17,8 @@ import {
   CloseOutlined,
   DeleteOutlined,
   UserAddOutlined,
+  CheckCircleOutlined,
+  StopOutlined,
 } from '@ant-design/icons';
 import type { DetailMode } from '@/hooks/useDetailPage';
 import EntityLookup from '@/components/EntityLookup';
@@ -60,6 +62,14 @@ export interface DetailPageLayoutProps {
    */
   onAssign?: (entity: EntityReference | EntityReference[] | null) => void | Promise<void>;
 
+  /**
+   * Aktivasyon/deaktivasyon handler'ı.
+   * Tanımlandığında entityIsActive durumuna göre toggle butonu gösterilir.
+   * isActive=true ise deactivate, false ise activate çağrılmalıdır.
+   */
+  entityIsActive?: boolean;
+  onStateChange?: (isActive: boolean) => void | Promise<void>;
+
   /** Entity bulunamadı ekranı mesajları */
   notFoundTitle: string;
   notFoundDescription: string;
@@ -91,6 +101,8 @@ const DetailPageLayout: React.FC<DetailPageLayoutProps> = ({
   onDelete,
   onBack,
   onAssign,
+  entityIsActive,
+  onStateChange,
   notFoundTitle,
   notFoundDescription,
   entityExists,
@@ -176,6 +188,37 @@ const DetailPageLayout: React.FC<DetailPageLayoutProps> = ({
                         onChange={handleAssignChange}
                       />
                     </>
+                  )}
+
+                  {/* ─── Activate / Deactivate Toggle Button ────────────── */}
+                  {onStateChange && (
+                    entityIsActive ? (
+                      <Popconfirm
+                        title="Pasifleştir"
+                        description="Bu kaydı pasifleştirmek istediğinizden emin misiniz?"
+                        onConfirm={() => onStateChange(true)}
+                        okText="Pasifleştir"
+                        cancelText="İptal"
+                        okButtonProps={{ danger: true }}
+                      >
+                        <Button danger icon={<StopOutlined />}>
+                          Pasifleştir
+                        </Button>
+                      </Popconfirm>
+                    ) : (
+                      <Popconfirm
+                        title="Etkinleştir"
+                        description="Bu kaydı etkinleştirmek istediğinizden emin misiniz?"
+                        onConfirm={() => onStateChange(false)}
+                        okText="Etkinleştir"
+                        cancelText="İptal"
+                        okButtonProps={{ style: { backgroundColor: '#52c41a', borderColor: '#52c41a' } }}
+                      >
+                        <Button icon={<CheckCircleOutlined />} style={{ color: '#52c41a', borderColor: '#52c41a' }}>
+                          Etkinleştir
+                        </Button>
+                      </Popconfirm>
+                    )
                   )}
 
                   <Popconfirm

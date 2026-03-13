@@ -132,6 +132,25 @@ const ContactDetail: React.FC<DetailPageProps<ContactDetailItem>> = (props) => {
 
   const currentContact = detail.currentEntity;
 
+  // ─── Assign Handler ─────────────────────────────────────────────────────
+  const handleAssign = useCallback(async (entity: EntityReference | EntityReference[] | null) => {
+    if (!entity || !currentContact?.id) return;
+    const user = Array.isArray(entity) ? entity[0] : entity;
+    await store.assignContact(currentContact.id, user);
+    await store.fetchContactById(currentContact.id);
+  }, [currentContact?.id, store]);
+
+  // ─── Activate / Deactivate Handler ──────────────────────────────────────
+  const handleStateChange = useCallback(async (isActive: boolean) => {
+    if (!currentContact?.id) return;
+    if (isActive) {
+      await store.deactivateContact(currentContact.id);
+    } else {
+      await store.activateContact(currentContact.id);
+    }
+    await store.fetchContactById(currentContact.id);
+  }, [currentContact?.id, store]);
+
   const fullName = currentContact
     ? `${currentContact.firstName} ${currentContact.lastName}`.trim()
     : '';
@@ -410,9 +429,6 @@ const ContactDetail: React.FC<DetailPageProps<ContactDetailItem>> = (props) => {
                   regardingEntityId: detail.entityId,
                   regardingEntityType: EntityType.Contact,
                 }}
-                showFilters={true}
-                showBulkActions={true}
-                showPagination={true}
               />
             ),
           },
@@ -889,6 +905,9 @@ const ContactDetail: React.FC<DetailPageProps<ContactDetailItem>> = (props) => {
       onBack={detail.handleBack}
       renderViewMode={renderViewMode}
       renderEditMode={renderEditMode}
+      onAssign={handleAssign}
+      entityIsActive={currentContact?.isActive}
+      onStateChange={handleStateChange}
     />
   );
 };

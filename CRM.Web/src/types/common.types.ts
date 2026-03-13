@@ -1,3 +1,5 @@
+import type { EntityReference } from "./entity.lookup.types";
+
 export interface PaginationParams {
   page?: number;
   pageSize?: number;
@@ -19,4 +21,12 @@ export interface AssignRequest {
 export interface StatusRequest {
   ids: string[];
   isActive: boolean;
+}
+
+export interface AuditInfo {
+  owner?: EntityReference;
+  createdAt?: Date;
+  createdBy?: EntityReference;
+  updatedAt?: Date;
+  updatedBy?: EntityReference;
 }

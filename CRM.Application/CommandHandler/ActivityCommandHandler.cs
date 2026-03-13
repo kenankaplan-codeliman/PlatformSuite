@@ -668,14 +668,29 @@ public class ActivityCommandHandler
     {
         modal.Id = entity.Id;
         modal.Subject = entity.Subject;
+        //modal.ActivityType = entity.ActivityType;
+        modal.Status = entity.Status;
         modal.Priority = entity.Priority;
         modal.StartDate = entity.StartDate;
         modal.DueDate = entity.DueDate;
         modal.EndDate = entity.EndDate;
-        modal.Status = entity.Status;
+        modal.IsActive = entity.IsActive;
 
         if (entity.RegardingEntityType != null && entity.RegardingEntityId != null)
             modal.RegardingEntity = referenceRepository.GetReference(
                 entity.RegardingEntityType.Value, entity.RegardingEntityId.Value);
+
+        modal.Owner = referenceRepository.GetReference(EntityType.User, entity.OwnerId);
+
+        // ── Modal'da karşılığı olmayan entity alanları ────────────────────────
+        // entity.CreatedBy        → IAuditableEntity — modal'a eklenmedi
+        // entity.CreatedAt        → IAuditableEntity — modal'a eklenmedi
+        // entity.UpdatedBy        → IAuditableEntity — modal'a eklenmedi
+        // entity.UpdatedAt        → IAuditableEntity — modal'a eklenmedi
+        // entity.IsDeleted        → ISoftDeleteEntity — soft delete, modal'a gerekmez
+        // entity.DeletedBy        → ISoftDeleteEntity — modal'a gerekmez
+        // entity.DeletedAt        → ISoftDeleteEntity — modal'a gerekmez
+        // entity.OrganizationId   → tenant bilgisi, modal'a eklenmedi
+        // entity.Parties          → ActivityParty koleksiyonu, ayrı modal/DTO ile yönetilmeli
     }
 }
