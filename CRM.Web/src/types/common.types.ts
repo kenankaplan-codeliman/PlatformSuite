@@ -1,4 +1,4 @@
-import type { EntityReference } from "./entity.lookup.types";
+import type { EntityReference, EntityTypeValue } from "./entity.lookup.types";
 
 export interface PaginationParams {
   page?: number;
@@ -21,6 +21,12 @@ export interface AssignRequest {
 export interface StatusRequest {
   ids: string[];
   isActive: boolean;
+}
+
+
+export interface AuditRequest {
+  entityType: EntityTypeValue;
+  id: string;
 }
 
 export interface AuditInfo {

@@ -44,6 +44,7 @@ public static class DependencyInjection
         services.AddScoped<IProductRepository, ProductRepository>();
         services.AddScoped<IAppLoginRepository, AppLoginRepository>();
         services.AddScoped<IDashboardStats, DashboardStatsQueryService>();
+        services.AddScoped<IAuditRepository, AuditRepository>();
 
 
         //Command Handler
@@ -57,9 +58,7 @@ public static class DependencyInjection
         services.AddScoped<OpportunityCommandHandler>();
         services.AddScoped<ProductCommandHandler>();
         services.AddScoped<DashboardStatsCommandHandler>();
-
-
-
+        services.AddScoped<AuditCommandHandler>();
 
         return services;
     }

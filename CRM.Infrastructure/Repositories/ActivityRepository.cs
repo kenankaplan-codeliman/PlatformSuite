@@ -3,6 +3,7 @@ using CRM.Application.Interfaces;
 using CRM.Application.Modals.ActivityModal;
 using CRM.Application.Modals.Common;
 using CRM.Domain.Entities.Activities;
+using CRM.Domain.Entities.Opportunities;
 using CRM.Domain.Enums;
 using CRM.Infrastructure.Data;
 using CRM.Infrastructure.Data.Repositories;
@@ -12,9 +13,9 @@ using EntityType = CRM.Domain.Enums.EntityType;
 namespace CRM.Infrastructure.Repositories;
 
 public class ActivityRepository : BaseEntityRepository<ActivityBase>, IActivityRepository
-{   
-
-    public ActivityRepository(DatabaseContext dbContext): base(dbContext)
+{
+    public ActivityRepository(DatabaseContext context)
+        : base(context)
     {
     }
 

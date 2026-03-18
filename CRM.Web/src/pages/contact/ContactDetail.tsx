@@ -908,6 +908,8 @@ const ContactDetail: React.FC<DetailPageProps<ContactDetailItem>> = (props) => {
       onAssign={handleAssign}
       entityIsActive={currentContact?.isActive}
       onStateChange={handleStateChange}
+      entityId={currentContact?.id}
+      entityType={EntityType.Contact}
     />
   );
 };

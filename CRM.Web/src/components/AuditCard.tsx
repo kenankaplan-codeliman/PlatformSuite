@@ -10,40 +10,48 @@ const { Text } = Typography;
 const renderDate = (date?: Date | string | null): React.ReactNode =>
   formatDate(date) ?? <Text type="secondary">-</Text>;
 
+const renderUser = (entity?: AuditInfo['owner']): React.ReactNode =>
+  entity
+    ? <Tag icon={getEntityIcon(entity.entityType)} color={getEntityColor(entity.entityType)}>{entity.name}</Tag>
+    : <Text type="secondary">-</Text>;
+
 interface AuditCardProps {
   audit?: AuditInfo;
+  /** 
+   * "vertical"  → Descriptions column=1, dar kartlar için (varsayılan)
+   * "horizontal" → Descriptions column=5, tam genişlik footer için
+   */
+  layout?: 'vertical' | 'horizontal';
   style?: React.CSSProperties;
 }
 
-const AuditCard: React.FC<AuditCardProps> = ({ audit, style }) => (
-  <Card
-    title={<Space><ClockCircleOutlined /><span>Kayıt Bilgileri</span></Space>}
-    style={style}
-  >
-    <Descriptions column={1} size="small">
-      <Descriptions.Item label="Sorumlu">
-        {audit?.owner
-          ? <Tag icon={getEntityIcon(audit.owner.entityType)} color={getEntityColor(audit.owner.entityType)}>{audit.owner.name}</Tag>
-          : <Text type="secondary">-</Text>}
-      </Descriptions.Item>
-      <Descriptions.Item label="Oluşturan">
-        {audit?.createdBy
-          ? <Tag icon={getEntityIcon(audit.createdBy.entityType)} color={getEntityColor(audit.createdBy.entityType)}>{audit.createdBy.name}</Tag>
-          : <Text type="secondary">-</Text>}
-      </Descriptions.Item>
-      <Descriptions.Item label="Oluşturulma">
-        {renderDate(audit?.createdAt)}
-      </Descriptions.Item>
-      <Descriptions.Item label="Güncelleyen">
-        {audit?.updatedBy
-          ? <Tag icon={getEntityIcon(audit.updatedBy.entityType)} color={getEntityColor(audit.updatedBy.entityType)}>{audit.updatedBy.name}</Tag>
-          : <Text type="secondary">-</Text>}
-      </Descriptions.Item>
-      <Descriptions.Item label="Son Güncelleme">
-        {renderDate(audit?.updatedAt)}
-      </Descriptions.Item>
-    </Descriptions>
-  </Card>
-);
+const AuditCard: React.FC<AuditCardProps> = ({ audit, layout = 'vertical', style }) => {
+  const column = layout === 'horizontal' ? 5 : 1;
+
+  return (
+    <Card
+      title={<Space><ClockCircleOutlined /><span>Kayıt Bilgileri</span></Space>}
+      style={style}
+    >
+      <Descriptions column={column} size="small">
+        <Descriptions.Item label="Sorumlu">
+          {renderUser(audit?.owner)}
+        </Descriptions.Item>
+        <Descriptions.Item label="Oluşturan">
+          {renderUser(audit?.createdBy)}
+        </Descriptions.Item>
+        <Descriptions.Item label="Oluşturulma">
+          {renderDate(audit?.createdAt)}
+        </Descriptions.Item>
+        <Descriptions.Item label="Güncelleyen">
+          {renderUser(audit?.updatedBy)}
+        </Descriptions.Item>
+        <Descriptions.Item label="Son Güncelleme">
+          {renderDate(audit?.updatedAt)}
+        </Descriptions.Item>
+      </Descriptions>
+    </Card>
+  );
+};
 
 export default AuditCard;

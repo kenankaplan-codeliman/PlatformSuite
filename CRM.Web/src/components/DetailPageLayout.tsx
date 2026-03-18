@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   Card,
   Button,
@@ -22,8 +22,11 @@ import {
 } from '@ant-design/icons';
 import type { DetailMode } from '@/hooks/useDetailPage';
 import EntityLookup from '@/components/EntityLookup';
-import { EntityType, type EntityReference } from '@/types/entity.lookup.types';
+import { EntityType, type EntityReference, type EntityTypeValue } from '@/types/entity.lookup.types';
 import { entitySearchService } from '@/services/entity.search.service';
+import AuditCard from '@/components/AuditCard';
+import type { AuditInfo } from '@/types/common.types';
+import auditService from '@/services/audit.service';
 
 const { Title, Text } = Typography;
 
@@ -85,6 +88,14 @@ export interface DetailPageLayoutProps {
 
   /** İsteğe bağlı: Toolbar'a ekstra butonlar */
   renderExtraViewActions?: () => React.ReactNode;
+
+  /**
+   * Audit bilgilerini otomatik çekmek için entity bilgileri.
+   * İkisi de tanımlandığında entity yüklenince audit servisi çağrılır,
+   * dönen AuditInfo her iki modda da footer'da gösterilir.
+   */
+  entityId?: string;
+  entityType?: EntityTypeValue;
 }
 
 const DetailPageLayout: React.FC<DetailPageLayoutProps> = ({
@@ -109,8 +120,22 @@ const DetailPageLayout: React.FC<DetailPageLayoutProps> = ({
   renderViewMode,
   renderEditMode,
   renderExtraViewActions,
+  entityId,
+  entityType,
 }) => {
   const [assignModalOpen, setAssignModalOpen] = useState(false);
+  const [auditInfo, setAuditInfo] = useState<AuditInfo | null>(null);
+
+  useEffect(() => {
+    if (!entityId || !entityType || !isViewMode) {
+      setAuditInfo(null);
+      return;
+    }
+    auditService
+      .getAuditInfo({ entityType, id: entityId })
+      .then((info) => setAuditInfo(info ?? null))
+      .catch(() => setAuditInfo(null));
+  }, [entityId, entityType, isViewMode]);
 
   const handleAssignChange = async (entity: EntityReference | EntityReference[] | null) => {
     if (!onAssign) return;
@@ -256,6 +281,15 @@ const DetailPageLayout: React.FC<DetailPageLayoutProps> = ({
 
       {/* ─── Content ────────────────────────────────────────────────────── */}
       {isViewMode ? renderViewMode() : renderEditMode()}
+
+      {/* ─── Audit Footer ────────────────────────────────────────────────── */}
+      {auditInfo && (
+        <AuditCard
+          audit={auditInfo}
+          layout="horizontal"
+          style={{ marginTop: 16 }}
+        />
+      )}
     </div>
   );
 };

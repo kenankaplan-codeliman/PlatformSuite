@@ -426,6 +426,8 @@ const LeadDetail: React.FC<DetailPageProps<LeadDetailItem>> = (props) => {
       onAssign={handleAssign}
       entityIsActive={currentLead?.isActive}
       onStateChange={handleStateChange}
+      entityId={currentLead?.id}
+      entityType={EntityType.Lead}
     />
   );
 };

@@ -9,6 +9,7 @@ export const ControllerPaths = {
   ProductPath: `${ServiceBasePath}/api/product`,
   OpportunityPath: `${ServiceBasePath}/api/opportunity`,
   ActivityPath: `${ServiceBasePath}/api/activity`,
+  AuditPath: `${ServiceBasePath}/api/audit`,
 } as const;
 
 
@@ -109,7 +110,11 @@ export const ServicePath = {
         Delete: `${ControllerPaths.OpportunityPath}/delete`,
         Assign: `${ControllerPaths.OpportunityPath}/assign`,
         State: `${ControllerPaths.OpportunityPath}/set-state`,
-    }
+    },
+
+    Audit:{
+        Get: `${ControllerPaths.AuditPath}/get`,
+    },
 
 };
 

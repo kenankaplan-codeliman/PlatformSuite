@@ -889,6 +889,8 @@ const AccountDetail: React.FC<DetailPageProps<AccountDetailItem>> = (props) => {
       onAssign={handleAssign}
       entityIsActive={currentAccount?.isActive}
       onStateChange={handleStateChange}
+      entityId={currentAccount?.id}
+      entityType={EntityType.Account}
     />
   );
 };

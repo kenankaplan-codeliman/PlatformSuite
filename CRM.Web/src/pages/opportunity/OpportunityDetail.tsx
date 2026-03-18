@@ -44,7 +44,7 @@ import { EntityType, type EntityReference } from '@/types/entity.lookup.types';
 import EntityLookup from '@/components/EntityLookup';
 import { entitySearchService } from '@/services/entity.search.service';
 import { getEntityColor, getEntityIcon } from '@/config/entity.config';
-import AuditCard from '@/components/AuditCard';
+import auditService from '@/services/audit.service';
 
 const { Title, Text, Paragraph } = Typography;
 const { TextArea } = Input;
@@ -61,6 +61,201 @@ const renderSelectedEntities = (entities: EntityReference[] | null | undefined) 
         </Tag>
       ))}
     </Space>
+  );
+};
+
+// ─── Edit Form Component ──────────────────────────────────────────────────────
+// renderEditMode içindeki Form.useWatch hook'larını izole eder.
+// DetailPageLayout renderEditMode'u koşullu çağırdığından hook'ların
+// ayrı component scope'unda olması zorunludur (Rules of Hooks).
+
+interface OpportunityEditFormProps {
+  form: ReturnType<typeof Form.useForm>[0];
+}
+
+const OpportunityEditForm: React.FC<OpportunityEditFormProps> = ({ form }) => {
+  const currency      = Form.useWatch('currency', form) ?? 'TRY';
+  const stage         = Form.useWatch('stage', form);
+  const isClosedStage = stage === OpportunityStage.Won || stage === OpportunityStage.Lost;
+  const currencySymbol  = currency === 'USD' ? '$' : currency === 'EUR' ? '€' : '₺';
+  const currencyFormatter = (v: any) =>
+    `${currencySymbol} ${v}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+  const currencyParser = (v: any) =>
+    parseFloat(v?.replace(new RegExp(`\\${currencySymbol}\\s?|(,*)`, 'g'), '') || '0') as any;
+
+  return (
+    <Form form={form} layout="vertical">
+      <Row gutter={24}>
+
+        {/* Temel Bilgiler */}
+        <Col span={24}>
+          <Card
+            title={<Space><RiseOutlined /><span>Temel Bilgiler</span></Space>}
+            style={{ marginBottom: 16 }}
+          >
+            <Row gutter={16}>
+              <Col span={12}>
+                <Form.Item
+                  name="name"
+                  label="Fırsat Adı"
+                  rules={[{ required: true, message: 'Fırsat adı gereklidir' }]}
+                >
+                  <Input prefix={<RiseOutlined />} placeholder="Fırsat adı girin" />
+                </Form.Item>
+              </Col>
+            </Row>
+            <Row gutter={16}>
+              <Col span={8}>
+                <Form.Item
+                  name="account"
+                  label="Firma"
+                  rules={[{ required: true, message: 'Firma seçimi gereklidir' }]}
+                >
+                  <EntityLookup
+                    onSearch={entitySearchService.search}
+                    entityTypes={[EntityType.Account]}
+                    multiple={false}
+                    modalTitle="Firma seçin..."
+                  />
+                </Form.Item>
+              </Col>
+              <Col span={8}>
+                <Form.Item name="contact" label="İlgili Kişi">
+                  <EntityLookup
+                    onSearch={entitySearchService.search}
+                    entityTypes={[EntityType.Contact]}
+                    multiple={false}
+                    modalTitle="Kişi seçin..."
+                  />
+                </Form.Item>
+              </Col>
+              <Col span={8}>
+                <Form.Item
+                  name="products"
+                  label="Ürünleri Seçin"
+                  rules={[{ required: true, type: 'array', min: 1, message: 'En az bir ürün seçimi gereklidir' }]}
+                >
+                  <EntityLookup
+                    onSearch={entitySearchService.search}
+                    entityTypes={[EntityType.Product]}
+                    multiple={true}
+                    modalTitle="Ürün seçin..."
+                  />
+                </Form.Item>
+              </Col>
+              <Col span={8}>
+                <Form.Item
+                  name="stage"
+                  label="Aşama"
+                  rules={[{ required: true, message: 'Aşama seçimi gereklidir' }]}
+                >
+                  <Select options={opportunityStageOptions} placeholder="Aşama seçin" />
+                </Form.Item>
+              </Col>
+              <Col span={8}>
+                <Form.Item
+                  name="probability"
+                  label="Olasılık (%)"
+                  rules={[{ required: true, message: 'Olasılık gereklidir' }]}
+                >
+                  <InputNumber
+                    style={{ width: '100%' }}
+                    min={0}
+                    max={100}
+                    formatter={(v) => `%${v}`}
+                    parser={(v) => parseInt(v?.replace('%', '') || '0', 10) as any}
+                    placeholder="0-100"
+                  />
+                </Form.Item>
+              </Col>
+              <Col span={8}>
+                <Form.Item name="source" label="Kaynak">
+                  <Select
+                    options={opportunitySourceOptions}
+                    placeholder="Kaynak seçin"
+                    allowClear
+                  />
+                </Form.Item>
+              </Col>
+            </Row>
+          </Card>
+        </Col>
+
+        {/* Finansal */}
+        <Col span={24}>
+          <Card
+            title={<Space><BankOutlined /><span>Finansal</span></Space>}
+            style={{ marginBottom: 16 }}
+          >
+            <Row gutter={16}>
+              <Col span={6}>
+                <Form.Item name="currency" label="Para Birimi">
+                  <Select
+                    options={[
+                      { label: 'TRY (₺)', value: 'TRY' },
+                      { label: 'USD ($)', value: 'USD' },
+                      { label: 'EUR (€)', value: 'EUR' },
+                    ]}
+                    placeholder="Para birimi"
+                  />
+                </Form.Item>
+              </Col>
+              <Col span={6}>
+                <Form.Item
+                  name="estimatedValue"
+                  label="Tahmini Değer"
+                  rules={[{ required: true, message: 'Tahmini değer gereklidir' }]}
+                >
+                  <InputNumber
+                    key={`estimatedValue-${currency}`}
+                    style={{ width: '100%' }}
+                    min={0}
+                    placeholder="0"
+                    formatter={currencyFormatter}
+                    parser={currencyParser}
+                  />
+                </Form.Item>
+              </Col>
+              <Col span={6}>
+                <Form.Item name="actualValue" label="Gerçekleşen Değer">
+                  <InputNumber
+                    key={`actualValue-${currency}`}
+                    style={{ width: '100%' }}
+                    min={0}
+                    placeholder={isClosedStage ? '0' : 'Kazanıldı/Kaybedildi aşamasında aktif olur'}
+                    formatter={currencyFormatter}
+                    parser={currencyParser}
+                    disabled={!isClosedStage}
+                  />
+                </Form.Item>
+              </Col>
+              <Col span={6}>
+                <Form.Item name="closeDate" label="Kapanış Tarihi">
+                  <DatePicker
+                    style={{ width: '100%' }}
+                    format="DD.MM.YYYY"
+                    placeholder={isClosedStage ? 'Tarih seçin' : 'Kazanıldı/Kaybedildi aşamasında aktif olur'}
+                    disabled={!isClosedStage}
+                  />
+                </Form.Item>
+              </Col>
+            </Row>
+          </Card>
+        </Col>
+
+        {/* Açıklama */}
+        <Col span={24}>
+          <Card
+            title={<Space><FileTextOutlined /><span>Açıklama</span></Space>}
+            style={{ marginBottom: 16 }}
+          >
+            <Form.Item name="description" label="Açıklama">
+              <TextArea rows={4} placeholder="Fırsat hakkında notlar..." />
+            </Form.Item>
+          </Card>
+        </Col>
+      </Row>
+    </Form>
   );
 };
 
@@ -231,15 +426,6 @@ const OpportunityDetail: React.FC<DetailPageProps<OpportunityDetailItem>> = (pro
                     style={{ marginBottom: 16 }}
                   >
                     <Descriptions column={1} size="small">
-                      <Descriptions.Item label="Aşama">
-                        <Tag
-                          style={{ backgroundColor:getOpportunityStageColor(currentOpportunity?.stage ?? OpportunityStage.Prospect), color: '#fff', border: 'none' }}
-                        >
-                          {getOpportunityStageLabel(
-                            currentOpportunity?.stage ?? OpportunityStage.Prospect
-                          )}
-                        </Tag>
-                      </Descriptions.Item>
                       <Descriptions.Item label="Olasılık">
                         {currentOpportunity?.probability != null ? (
                           <Tag color="blue">%{currentOpportunity.probability}</Tag>
@@ -305,11 +491,6 @@ const OpportunityDetail: React.FC<DetailPageProps<OpportunityDetailItem>> = (pro
                   </Card>
                 </Col>
 
-                <Col span={12}>
-                  {/* Kayıt Bilgileri */}
-                  <AuditCard audit={currentOpportunity?.audit} style={{ marginBottom: 16 }} />
-                </Col>
-
                 {/* Açıklama */}
                 {currentOpportunity?.description && (
                   <Col span={24}>
@@ -343,194 +524,7 @@ const OpportunityDetail: React.FC<DetailPageProps<OpportunityDetailItem>> = (pro
 
   // ─── Edit Mode ──────────────────────────────────────────────────────────
 
-  const renderEditMode = () => {
-    // eslint-disable-next-line react-hooks/rules-of-hooks
-    const currency = Form.useWatch('currency', detail.form) ?? 'TRY';
-    const stage = Form.useWatch('stage', detail.form);
-    const isClosedStage = stage === OpportunityStage.Won || stage === OpportunityStage.Lost;
-    const currencySymbol = currency === 'USD' ? '$' : currency === 'EUR' ? '€' : '₺';
-    const currencyFormatter = (v: any) =>
-      `${currencySymbol} ${v}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',');
-    const currencyParser = (v: any) =>
-      parseFloat(v?.replace(new RegExp(`\\${currencySymbol}\\s?|(,*)`, 'g'), '') || '0') as any;
-
-    return (
-      <Form form={detail.form} layout="vertical">
-        <Row gutter={24}>
-
-          {/* Temel Bilgiler */}
-          <Col span={24}>
-            <Card
-              title={<Space><RiseOutlined /><span>Temel Bilgiler</span></Space>}
-              style={{ marginBottom: 16 }}
-            >
-              <Row gutter={16}>
-                <Col span={12}>
-                  <Form.Item
-                    name="name"
-                    label="Fırsat Adı"
-                    rules={[{ required: true, message: 'Fırsat adı gereklidir' }]}
-                  >
-                    <Input prefix={<RiseOutlined />} placeholder="Fırsat adı girin" />
-                  </Form.Item>
-                </Col>
-              </Row>
-              <Row gutter={16}>
-                <Col span={8}>
-                  <Form.Item
-                    name="account"
-                    label="Firma"
-                    rules={[{ required: true, message: 'Firma seçimi gereklidir' }]}
-                  >
-                    <EntityLookup
-                      onSearch={entitySearchService.search}
-                      entityTypes={[EntityType.Account]}
-                      multiple={false}
-                      modalTitle="Firma seçin..."
-                    />
-                  </Form.Item>
-                </Col>
-                <Col span={8}>
-                  <Form.Item name="contact" label="İlgili Kişi">
-                    <EntityLookup
-                      onSearch={entitySearchService.search}
-                      entityTypes={[EntityType.Contact]}
-                      multiple={false}
-                      modalTitle="Kişi seçin..."
-                    />
-                  </Form.Item>
-                </Col>
-                <Col span={8}>
-                  <Form.Item
-                    name="products"
-                    label="Ürünleri Seçin"
-                    rules={[{ required: true, type: 'array', min: 1, message: 'En az bir ürün seçimi gereklidir' }]}
-                  >
-                    <EntityLookup
-                      onSearch={entitySearchService.search}
-                      entityTypes={[EntityType.Product]}
-                      multiple={true}
-                      modalTitle="Ürün seçin..."
-                    />
-                  </Form.Item>
-                </Col>
-                <Col span={8}>
-                  <Form.Item
-                    name="stage"
-                    label="Aşama"
-                    rules={[{ required: true, message: 'Aşama seçimi gereklidir' }]}
-                  >
-                    <Select options={opportunityStageOptions} placeholder="Aşama seçin" />
-                  </Form.Item>
-                </Col>
-                <Col span={8}>
-                  <Form.Item
-                    name="probability"
-                    label="Olasılık (%)"
-                    rules={[{ required: true, message: 'Olasılık gereklidir' }]}
-                  >
-                    <InputNumber
-                      style={{ width: '100%' }}
-                      min={0}
-                      max={100}
-                      formatter={(v) => `%${v}`}
-                      parser={(v) => parseInt(v?.replace('%', '') || '0', 10) as any}
-                      placeholder="0-100"
-                    />
-                  </Form.Item>
-                </Col>
-                <Col span={8}>
-                  <Form.Item name="source" label="Kaynak">
-                    <Select
-                      options={opportunitySourceOptions}
-                      placeholder="Kaynak seçin"
-                      allowClear
-                    />
-                  </Form.Item>
-                </Col>
-              </Row>
-            </Card>
-          </Col>
-
-          {/* İlişkiler */}
-          <Col span={24}>
-            <Card
-              title={<Space><BankOutlined /><span>Finansal</span></Space>}
-              style={{ marginBottom: 16 }}
-            >
-              <Row gutter={16}>
-                <Col span={6}>
-                  <Form.Item name="currency" label="Para Birimi">
-                    <Select
-                      options={[
-                        { label: 'TRY (₺)', value: 'TRY' },
-                        { label: 'USD ($)', value: 'USD' },
-                        { label: 'EUR (€)', value: 'EUR' },
-                      ]}
-                      placeholder="Para birimi"
-                    />
-                  </Form.Item>
-                </Col>
-                <Col span={6}>
-                  <Form.Item
-                    name="estimatedValue"
-                    label="Tahmini Değer"
-                    rules={[{ required: true, message: 'Tahmini değer gereklidir' }]}
-                  >
-                    <InputNumber
-                      key={`estimatedValue-${currency}`}
-                      style={{ width: '100%' }}
-                      min={0}
-                      placeholder="0"
-                      formatter={currencyFormatter}
-                      parser={currencyParser}
-                    />
-                  </Form.Item>
-                </Col>
-                <Col span={6}>
-                  <Form.Item name="actualValue" label="Gerçekleşen Değer">
-                    <InputNumber
-                      key={`actualValue-${currency}`}
-                      style={{ width: '100%' }}
-                      min={0}
-                      placeholder={isClosedStage ? '0' : 'Kazanıldı/Kaybedildi aşamasında aktif olur'}
-                      formatter={currencyFormatter}
-                      parser={currencyParser}
-                      disabled={!isClosedStage}
-                    />
-                  </Form.Item>
-                </Col>
-                <Col span={6}>
-                  <Form.Item name="closeDate" label="Kapanış Tarihi">
-                    <DatePicker
-                      style={{ width: '100%' }}
-                      format="DD.MM.YYYY"
-                      placeholder={isClosedStage ? 'Tarih seçin' : 'Kazanıldı/Kaybedildi aşamasında aktif olur'}
-                      disabled={!isClosedStage}
-                    />
-                  </Form.Item>
-                </Col>
-              </Row>
-            </Card>
-          </Col>
-
-
-
-          {/* Açıklama */}
-          <Col span={24}>
-            <Card
-              title={<Space><FileTextOutlined /><span>Açıklama</span></Space>}
-              style={{ marginBottom: 16 }}
-            >
-              <Form.Item name="description" label="Açıklama">
-                <TextArea rows={4} placeholder="Fırsat hakkında notlar..." />
-              </Form.Item>
-            </Card>
-          </Col>
-        </Row>
-      </Form>
-    );
-  };
+  const renderEditMode = () => <OpportunityEditForm form={detail.form} />;
 
   // ─── Layout ─────────────────────────────────────────────────────────────
 
@@ -564,6 +558,8 @@ const OpportunityDetail: React.FC<DetailPageProps<OpportunityDetailItem>> = (pro
       onAssign={handleAssign}
       entityIsActive={currentOpportunity?.isActive}
       onStateChange={handleStateChange}
+      entityId={currentOpportunity?.id}
+      entityType={EntityType.Opportunity}
     />
   );
 };

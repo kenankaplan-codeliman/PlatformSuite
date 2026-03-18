@@ -7,11 +7,11 @@ namespace CRM.Api.Authorization;
 [AttributeUsage(AttributeTargets.Class | AttributeTargets.Method, AllowMultiple = true)]
 public sealed class PrivilegeAuthorizeAttribute  : AuthorizeAttribute
 {
-    public string PrivilegeCode { get; }
+    public List<string> PrivilegeCodes { get; } = new();
 
-    public PrivilegeAuthorizeAttribute(string privilegeCode)
+    public PrivilegeAuthorizeAttribute(params string[] privilegeCodes)
     {
         Policy = nameof(PrivilegeAuthorizationRequirement);
-        PrivilegeCode = privilegeCode;
+        PrivilegeCodes.AddRange(privilegeCodes.ToList());
     }
 }
