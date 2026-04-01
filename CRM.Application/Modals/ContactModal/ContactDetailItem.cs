@@ -1,4 +1,5 @@
-﻿using System;
+﻿using CRM.Domain.Enums;
+using System;
 using System.Collections.Generic;
 using System.Text;
 
@@ -9,6 +10,7 @@ public class ContactDetailItem
     public Guid Id { get; set; } = default!;
     public string FirstName { get; set; } = default!;
     public string LastName { get; set; } = default!;
+    public ContactStatus ContactStatus { get; set; }
     public string? Title { get; set; }
     public string? Department { get; set; }
     public DateTime? BirthDate { get; set; }

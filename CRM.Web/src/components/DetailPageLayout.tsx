@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import {
   Card,
   Button,
@@ -123,6 +124,7 @@ const DetailPageLayout: React.FC<DetailPageLayoutProps> = ({
   entityId,
   entityType,
 }) => {
+  const { t } = useTranslation();
   const [assignModalOpen, setAssignModalOpen] = useState(false);
   const [auditInfo, setAuditInfo] = useState<AuditInfo | null>(null);
 
@@ -155,7 +157,7 @@ const DetailPageLayout: React.FC<DetailPageLayoutProps> = ({
             <Text type="secondary">{notFoundDescription}</Text>
             <div style={{ marginTop: 24 }}>
               <Button type="primary" onClick={onBack}>
-                Geri Dön
+                {t('action.backTo')}
               </Button>
             </div>
           </div>
@@ -179,7 +181,7 @@ const DetailPageLayout: React.FC<DetailPageLayoutProps> = ({
         <Row justify="space-between" align="middle">
           <Col>
             <Space align="center">
-              <Tooltip title="Geri">
+              <Tooltip title={t('action.back')}>
                 <Button icon={<ArrowLeftOutlined />} onClick={onBack} />
               </Tooltip>
               <Divider orientation="vertical" />
@@ -201,7 +203,7 @@ const DetailPageLayout: React.FC<DetailPageLayoutProps> = ({
                         icon={<UserAddOutlined />}
                         onClick={() => setAssignModalOpen(true)}
                       >
-                        Ata
+                        {t('action.assign')}
                       </Button>
                       <EntityLookup
                         open={assignModalOpen}
@@ -209,7 +211,7 @@ const DetailPageLayout: React.FC<DetailPageLayoutProps> = ({
                         onSearch={entitySearchService.search}
                         entityTypes={[EntityType.User]}
                         multiple={false}
-                        modalTitle="Kullanıcı ata..."
+                        modalTitle={t('action.assignUser')}
                         onChange={handleAssignChange}
                       />
                     </>
@@ -219,28 +221,28 @@ const DetailPageLayout: React.FC<DetailPageLayoutProps> = ({
                   {onStateChange && (
                     entityIsActive ? (
                       <Popconfirm
-                        title="Pasifleştir"
-                        description="Bu kaydı pasifleştirmek istediğinizden emin misiniz?"
+                        title={t('action.deactivate')}
+                        description={t('confirm.pageDeactivateContent')}
                         onConfirm={() => onStateChange(true)}
-                        okText="Pasifleştir"
-                        cancelText="İptal"
+                        okText={t('action.deactivate')}
+                        cancelText={t('action.cancel')}
                         okButtonProps={{ danger: true }}
                       >
                         <Button danger icon={<StopOutlined />}>
-                          Pasifleştir
+                          {t('action.deactivate')}
                         </Button>
                       </Popconfirm>
                     ) : (
                       <Popconfirm
-                        title="Etkinleştir"
-                        description="Bu kaydı etkinleştirmek istediğinizden emin misiniz?"
+                        title={t('action.activate')}
+                        description={t('confirm.pageActivateContent')}
                         onConfirm={() => onStateChange(false)}
-                        okText="Etkinleştir"
-                        cancelText="İptal"
+                        okText={t('action.activate')}
+                        cancelText={t('action.cancel')}
                         okButtonProps={{ style: { backgroundColor: '#52c41a', borderColor: '#52c41a' } }}
                       >
                         <Button icon={<CheckCircleOutlined />} style={{ color: '#52c41a', borderColor: '#52c41a' }}>
-                          Etkinleştir
+                          {t('action.activate')}
                         </Button>
                       </Popconfirm>
                     )
@@ -250,16 +252,16 @@ const DetailPageLayout: React.FC<DetailPageLayoutProps> = ({
                     title={deleteConfirm.title}
                     description={deleteConfirm.description}
                     onConfirm={onDelete}
-                    okText="Sil"
-                    cancelText="İptal"
+                    okText={t('action.delete')}
+                    cancelText={t('action.cancel')}
                     okButtonProps={{ danger: true }}
                   >
                     <Button danger icon={<DeleteOutlined />}>
-                      Sil
+                      {t('action.delete')}
                     </Button>
                   </Popconfirm>
                   <Button type="primary" icon={<EditOutlined />} onClick={onEdit}>
-                    Düzenle
+                    {t('action.edit')}
                   </Button>
                 </>
               )}
@@ -267,10 +269,10 @@ const DetailPageLayout: React.FC<DetailPageLayoutProps> = ({
               {(isEditMode || isCreateMode) && (
                 <>
                   <Button icon={<CloseOutlined />} onClick={onCancelEdit}>
-                    İptal
+                    {t('action.cancel')}
                   </Button>
                   <Button type="primary" icon={<SaveOutlined />} onClick={onSave}>
-                    {isNew ? 'Oluştur' : 'Kaydet'}
+                    {isNew ? t('action.create') : t('action.save')}
                   </Button>
                 </>
               )}

@@ -44,8 +44,8 @@ public static class LeadMappingExtensions
     public static void UpdateFrom(this Lead entity, LeadDetailItem modal)
     {
         entity.CompanyName = modal.CompanyName ?? string.Empty;
-        entity.FirstName = modal.FirstName ?? string.Empty;
-        entity.LastName = modal.LastName ?? string.Empty;
+        entity.FirstName = modal.FirstName;
+        entity.LastName = modal.LastName;
         entity.JobTitle = modal.JobTitle;
         entity.Email = modal.Email;
         entity.Phone = modal.Phone;

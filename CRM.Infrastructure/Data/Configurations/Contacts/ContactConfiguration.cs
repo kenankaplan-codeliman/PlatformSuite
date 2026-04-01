@@ -42,6 +42,13 @@ public class ContactConfiguration : IEntityTypeConfiguration<Contact>
         builder.Property(x => x.Description)
             .HasColumnName("description");
 
+        builder.Property(x => x.ContactStatus)
+            .HasColumnName("contact_status")
+            .IsRequired()
+            .HasConversion<string>()
+            .HasMaxLength(50)
+            .HasDefaultValue(CRM.Domain.Enums.ContactStatus.Active);
+
         // IOwnedEntity
         builder.Property(x => x.OwnerId)
             .HasColumnName("owner_id")

@@ -3,6 +3,7 @@ import type {
   ContactListRequest,
   ContactListFilters,
   ContactListResponse,
+  ContactStatusValue,
 } from '@/types/contact.types';
 import apiClient from '@/services/api.client';
 import { apiRequest } from '@/services/api.request';
@@ -39,6 +40,12 @@ export const contactService = {
 
   assignContact: async (request: AssignRequest): Promise<void> => {
     return apiRequest(() => apiClient.post(ServicePath.Contact.Assign, request).then(() => undefined));
+  },
+
+  updateContactStatus: async (ids: string[], status: ContactStatusValue): Promise<void> => {
+    return apiRequest(() =>
+      apiClient.post(ServicePath.Contact.BulkUpdateStatus, { ids, status }).then(() => undefined)
+    );
   },
 };
 

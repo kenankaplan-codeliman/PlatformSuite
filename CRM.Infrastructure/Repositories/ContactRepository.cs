@@ -48,6 +48,11 @@ public class ContactRepository : BaseEntityRepository<Contact>, IContactReposito
             query = query.Where(x => x.IsActive == filter.IsActive.Value);
         }
 
+        if (filter.ContactStatus.HasValue)
+        {
+            query = query.Where(x => x.ContactStatus == filter.ContactStatus.Value);
+        }
+
         query = query.Include(c => c.AccountContacts).ThenInclude(ac => ac.Account);
 
 
@@ -63,6 +68,7 @@ public class ContactRepository : BaseEntityRepository<Contact>, IContactReposito
                 FirstName = c.FirstName,
                 LastName = c.LastName,
                 FullName = c.DisplayName,
+                ContactStatus = c.ContactStatus,
                 Title = c.Title,
                 Department = c.Department,
                 PrimaryAccount = c.AccountContacts

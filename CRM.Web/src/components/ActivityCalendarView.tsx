@@ -9,7 +9,6 @@ import {
   Typography,
   Flex,
   Calendar,
-  List,
   Badge,
   ConfigProvider,
   DatePicker,
@@ -179,46 +178,42 @@ const ActivityCalendarView: React.FC<ActivityCalendarViewProps> = ({
     if (activities.length === 0) return null;
 
     return (
-      <List
-        size="small"
-        dataSource={activities.slice(0, 3)}
-        renderItem={(activity) => (
-          <List.Item style={{ padding: '2px 4px' }}>
-            <Flex align="center" gap={4} style={{ width: '100%' }}>
-              <Checkbox
-                checked={selectedRowKeys.includes(activity.id)}
-                onClick={(e) => e.stopPropagation()}
-                onChange={(e) => handleCheckboxToggle(activity.id, e.target.checked)}
-                style={{ flexShrink: 0 }}
-              />
-              <Flex
-                align="center"
-                gap={4}
-                style={{ flex: 1, cursor: 'pointer', overflow: 'hidden' }}
-                onClick={(e) => {
-                  e.stopPropagation();
-                  navigate(getActivityDetailPath(activity.activityType, activity.id, 'view'));
-                }}
-              >
-                <Badge color={getActivityStatusColor(activity.status)} />
-                <Tooltip title={getActivityTypeLabel(activity.activityType)}>
-                  <Avatar
-                    size="small"
-                    style={{
-                      backgroundColor: 'transparent',
-                      color: getActivityTypeColor(activity.activityType),
-                      fontSize: 14,
-                      flexShrink: 0,
-                    }}
-                    icon={getActivityTypeIcon(activity.activityType)}
-                  />
-                </Tooltip>
-                <Text ellipsis style={{ fontSize: 12 }}>{activity.subject}</Text>
-              </Flex>
+      <Flex vertical gap={0}>
+        {activities.slice(0, 3).map((activity) => (
+          <Flex key={activity.id} align="center" gap={4} style={{ padding: '2px 4px', width: '100%' }}>
+            <Checkbox
+              checked={selectedRowKeys.includes(activity.id)}
+              onClick={(e) => e.stopPropagation()}
+              onChange={(e) => handleCheckboxToggle(activity.id, e.target.checked)}
+              style={{ flexShrink: 0 }}
+            />
+            <Flex
+              align="center"
+              gap={4}
+              style={{ flex: 1, cursor: 'pointer', overflow: 'hidden' }}
+              onClick={(e) => {
+                e.stopPropagation();
+                navigate(getActivityDetailPath(activity.activityType, activity.id, 'view'));
+              }}
+            >
+              <Badge color={getActivityStatusColor(activity.status)} />
+              <Tooltip title={getActivityTypeLabel(activity.activityType)}>
+                <Avatar
+                  size="small"
+                  style={{
+                    backgroundColor: 'transparent',
+                    color: getActivityTypeColor(activity.activityType),
+                    fontSize: 14,
+                    flexShrink: 0,
+                  }}
+                  icon={getActivityTypeIcon(activity.activityType)}
+                />
+              </Tooltip>
+              <Text ellipsis style={{ fontSize: 12 }}>{activity.subject}</Text>
             </Flex>
-          </List.Item>
-        )}
-      />
+          </Flex>
+        ))}
+      </Flex>
     );
   }, [calendarActivities, navigate, selectedRowKeys]);
 

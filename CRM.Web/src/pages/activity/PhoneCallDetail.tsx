@@ -1,4 +1,5 @@
 import React, { useCallback } from 'react';
+import { useTranslation } from 'react-i18next';
 import {
   Card,
   Form,
@@ -45,7 +46,6 @@ import { entitySearchService } from '@/services/entity.search.service';
 import EntityLookup from '@/components/EntityLookup';
 import { toLocalISO } from '@/util/dateHelper';
 
-// ✅ Ortak hook ve layout import
 import { useDetailPage, type DetailPageProps } from '@/hooks/useDetailPage';
 import DetailPageLayout from '@/components/DetailPageLayout';
 import { getEntityIcon } from '@/config/entity.config';
@@ -53,23 +53,24 @@ import { getEntityIcon } from '@/config/entity.config';
 const { Title, Text, Paragraph } = Typography;
 const { TextArea } = Input;
 
-// ─── Sayfaya özel sabitler ────────────────────────────────────────────────────
-const directionOptions = [
-  { label: 'Gelen', value: Direction.Incoming },
-  { label: 'Giden', value: Direction.Outgoing },
-];
-
 // ─── Component ────────────────────────────────────────────────────────────────
 
 const PhoneCallDetail: React.FC<DetailPageProps<PhoneCallActivity>> = (props) => {
   const store = useActivityStore();
+  const { t } = useTranslation('activity');
+  const { t: te } = useTranslation('enums');
+  const { t: tc } = useTranslation('common');
 
-  // ✅ Tüm ortak logic tek satırda
+  const directionOptions = [
+    { label: te('direction.Incoming'), value: Direction.Incoming },
+    { label: te('direction.Outgoing'), value: Direction.Outgoing },
+  ];
+
   const detail = useDetailPage<PhoneCallActivity>(
     {
       fetchById: (id) => store.fetchActivityById(id, ActivityType.PhoneCall),
-      createEntity: (values) => store.createActivity<PhoneCallActivity>(values as any),
-      updateEntity: (values) => store.updateActivity<PhoneCallActivity>(values as any),
+      createEntity: (values) => store.createActivity<PhoneCallActivity>(values as Omit<PhoneCallActivity, 'id' | 'createdAt' | 'createdBy'>),
+      updateEntity: (values) => store.updateActivity<PhoneCallActivity>(values as Partial<PhoneCallActivity> & { activityType: PhoneCallActivity['activityType'] }),
       deleteEntity: async (id) => {
         const { deleteActivity } = useActivityStore.getState();
         await deleteActivity(id);
@@ -77,7 +78,6 @@ const PhoneCallDetail: React.FC<DetailPageProps<PhoneCallActivity>> = (props) =>
       currentEntity: store.currentActivity as PhoneCallActivity | null,
       clearCurrentEntity: () => store.setCurrentActivity(null),
 
-      // Entity → Form dönüşümü
       mapEntityToForm: (entity) => ({
         subject: entity.subject,
         direction: entity.direction,
@@ -92,7 +92,6 @@ const PhoneCallDetail: React.FC<DetailPageProps<PhoneCallActivity>> = (props) =>
         regardingEntity: entity.regardingEntity || null,
       }),
 
-      // Form → Entity dönüşümü
       mapFormToEntity: (values, id) => ({
         ...values,
         id: id || undefined,
@@ -101,7 +100,6 @@ const PhoneCallDetail: React.FC<DetailPageProps<PhoneCallActivity>> = (props) =>
         dueDate: toLocalISO(values.dueDate),
       }),
 
-      // Yeni kayıt default'ları
       defaultFormValues: {
         direction: Direction.Outgoing,
         status: ActivityStatus.NotStarted,
@@ -138,7 +136,7 @@ const PhoneCallDetail: React.FC<DetailPageProps<PhoneCallActivity>> = (props) =>
     await store.fetchActivityById(currentPhoneCall.id, ActivityType.PhoneCall);
   }, [currentPhoneCall?.id, store]);
 
-  // ─── View Mode (sayfaya özel) ───────────────────────────────────────────
+  // ─── View Mode ──────────────────────────────────────────────────────────
 
   const renderViewMode = () => (
     <>
@@ -157,17 +155,17 @@ const PhoneCallDetail: React.FC<DetailPageProps<PhoneCallActivity>> = (props) =>
                   {getActivityPriorityLabel(currentPhoneCall?.priority ?? ActivityPriority.Normal)}
                 </Tag>
                 <Tag color={currentPhoneCall?.direction === Direction.Incoming ? 'green' : 'blue'}>
-                  <SwapOutlined /> {currentPhoneCall?.direction === Direction.Incoming ? 'Gelen' : 'Giden'}
+                  <SwapOutlined /> {currentPhoneCall?.direction === Direction.Incoming ? te('direction.Incoming') : te('direction.Outgoing')}
                 </Tag>
                 <Badge
                   status={currentPhoneCall?.isActive ? 'success' : 'default'}
-                  text={currentPhoneCall?.isActive ? 'Aktif' : 'Pasif'}
+                  text={currentPhoneCall?.isActive ? tc('status.active') : tc('status.inactive')}
                 />
               </Space>
               <Space>
                 <ClockCircleOutlined />
                 <Text type="secondary">
-                  Son Tarih: {currentPhoneCall?.dueDate ? dayjs(currentPhoneCall.dueDate).format('DD.MM.YYYY HH:mm') : '-'}
+                  {t('phoneCall.dueDate')}: {currentPhoneCall?.dueDate ? dayjs(currentPhoneCall.dueDate).format('DD.MM.YYYY HH:mm') : '-'}
                 </Text>
               </Space>
             </Space>
@@ -179,10 +177,10 @@ const PhoneCallDetail: React.FC<DetailPageProps<PhoneCallActivity>> = (props) =>
                 onClick={detail.handleComplete}
                 disabled={currentPhoneCall?.status === ActivityStatus.Completed}
               >
-                Tamamlandı
+                {t('action.completed')}
               </Button>
               <Button icon={<CloseCircleOutlined />} onClick={detail.handleCancelActivity} danger>
-                İptal Et
+                {t('action.cancel')}
               </Button>
             </Space>
           </Col>
@@ -191,9 +189,9 @@ const PhoneCallDetail: React.FC<DetailPageProps<PhoneCallActivity>> = (props) =>
 
       <Row gutter={[16, 16]}>
         <Col span={24}>
-          <Card title={<Space><PhoneOutlined /><span>Görüşme Bilgileri</span></Space>}>
+          <Card title={<Space><PhoneOutlined /><span>{t('section.callInfo')}</span></Space>}>
             <Descriptions column={2} size="small">
-              <Descriptions.Item label="Arayan">
+              <Descriptions.Item label={t('field.caller')}>
                 {currentPhoneCall?.caller ? (
                   <Space>
                     {getEntityIcon(currentPhoneCall.caller.entityType)}
@@ -201,7 +199,7 @@ const PhoneCallDetail: React.FC<DetailPageProps<PhoneCallActivity>> = (props) =>
                   </Space>
                 ) : '-'}
               </Descriptions.Item>
-              <Descriptions.Item label="Aranan">
+              <Descriptions.Item label={t('field.recipient')}>
                 {currentPhoneCall?.recipient ? (
                   <Space>
                     {getEntityIcon(currentPhoneCall.recipient.entityType)}
@@ -215,7 +213,7 @@ const PhoneCallDetail: React.FC<DetailPageProps<PhoneCallActivity>> = (props) =>
 
         {currentPhoneCall?.regardingEntity && (
           <Col span={24}>
-            <Card title={<Space><LinkOutlined /><span>İlgili Kayıt</span></Space>}>
+            <Card title={<Space><LinkOutlined /><span>{t('section.regardingRecord')}</span></Space>}>
               <Space>
                 {getEntityIcon(currentPhoneCall.regardingEntity.entityType)}
                 <Text strong>{currentPhoneCall.regardingEntity.name}</Text>
@@ -226,9 +224,9 @@ const PhoneCallDetail: React.FC<DetailPageProps<PhoneCallActivity>> = (props) =>
         )}
 
         <Col span={24}>
-          <Card title={<Space><FileTextOutlined /><span>Görüşme Notları</span></Space>}>
+          <Card title={<Space><FileTextOutlined /><span>{t('section.callNotes')}</span></Space>}>
             <Paragraph style={{ margin: 0, whiteSpace: 'pre-wrap' }}>
-              {currentPhoneCall?.callNotes || 'Not bulunmamaktadır'}
+              {currentPhoneCall?.callNotes || t('empty.callNotes')}
             </Paragraph>
           </Card>
         </Col>
@@ -236,51 +234,51 @@ const PhoneCallDetail: React.FC<DetailPageProps<PhoneCallActivity>> = (props) =>
     </>
   );
 
-  // ─── Edit Mode (sayfaya özel) ───────────────────────────────────────────
+  // ─── Edit Mode ──────────────────────────────────────────────────────────
 
   const renderEditMode = () => (
     <Form form={detail.form} layout="vertical">
       <Row gutter={[16, 16]}>
         <Col span={24}>
-          <Card title={<Space><PhoneOutlined /><span>Görüşme Bilgileri</span></Space>}>
+          <Card title={<Space><PhoneOutlined /><span>{t('section.callInfo')}</span></Space>}>
             <Row gutter={16}>
               <Col span={12}>
-                <Form.Item name="subject" label="Konu" rules={[{ required: true, message: 'Konu gereklidir' }]}>
-                  <Input prefix={<PhoneOutlined />} placeholder="Görüşme konusu" />
+                <Form.Item name="subject" label={t('field.subject')} rules={[{ required: true, message: t('validation.subjectRequired') }]}>
+                  <Input prefix={<PhoneOutlined />} placeholder={t('placeholder.phoneSubject')} />
                 </Form.Item>
               </Col>
               <Col span={12}>
-                <Form.Item name="direction" label="Yön" rules={[{ required: true, message: 'Yön gereklidir' }]}>
+                <Form.Item name="direction" label={t('field.direction')} rules={[{ required: true, message: t('validation.directionRequired') }]}>
                   <Select options={directionOptions} />
                 </Form.Item>
               </Col>
               <Col span={12}>
-                <Form.Item label="Arayan" name="caller" rules={[{ required: true, message: 'Arayan gereklidir' }]}>
+                <Form.Item label={t('field.caller')} name="caller" rules={[{ required: true, message: t('validation.callerRequired') }]}>
                   <EntityLookup
                     onSearch={entitySearchService.search}
                     entityTypes={[EntityType.User, EntityType.Lead, EntityType.Contact, EntityType.Account]}
                     multiple={false}
-                    modalTitle="Arayan seçin..."
+                    modalTitle={t('modal.selectCaller')}
                   />
                 </Form.Item>
               </Col>
               <Col span={12}>
-                <Form.Item label="Aranan" name="recipient" rules={[{ required: true, message: 'Aranan gereklidir' }]}>
+                <Form.Item label={t('field.recipient')} name="recipient" rules={[{ required: true, message: t('validation.recipientRequired') }]}>
                   <EntityLookup
                     onSearch={entitySearchService.search}
                     entityTypes={[EntityType.User, EntityType.Lead, EntityType.Contact, EntityType.Account]}
                     multiple={false}
-                    modalTitle="Aranan seçin..."
+                    modalTitle={t('modal.selectRecipient')}
                   />
                 </Form.Item>
               </Col>
               <Col span={12}>
-                <Form.Item name="regardingEntity" label="İlgili Kayıt">
+                <Form.Item name="regardingEntity" label={t('label.selectRegarding')}>
                   <EntityLookup
                     onSearch={entitySearchService.search}
                     entityTypes={[EntityType.Lead, EntityType.Account, EntityType.Opportunity]}
                     multiple={false}
-                    modalTitle="İlgili kayıt seçin..."
+                    modalTitle={t('modal.selectRegardingEntity')}
                   />
                 </Form.Item>
               </Col>
@@ -289,15 +287,15 @@ const PhoneCallDetail: React.FC<DetailPageProps<PhoneCallActivity>> = (props) =>
         </Col>
 
         <Col span={12}>
-          <Card title={<Space><ClockCircleOutlined /><span>Durum & Öncelik</span></Space>}>
+          <Card title={<Space><ClockCircleOutlined /><span>{t('section.statusPriority')}</span></Space>}>
             <Row gutter={16}>
               <Col span={12}>
-                <Form.Item name="status" label="Durum" rules={[{ required: true }]}>
+                <Form.Item name="status" label={t('field.status')} rules={[{ required: true }]}>
                   <Select options={activityStatusOptions} />
                 </Form.Item>
               </Col>
               <Col span={12}>
-                <Form.Item name="priority" label="Öncelik" rules={[{ required: true }]}>
+                <Form.Item name="priority" label={t('field.priority')} rules={[{ required: true }]}>
                   <Select options={activityPriorityOptions} />
                 </Form.Item>
               </Col>
@@ -306,15 +304,15 @@ const PhoneCallDetail: React.FC<DetailPageProps<PhoneCallActivity>> = (props) =>
         </Col>
 
         <Col span={12}>
-          <Card title={<Space><ClockCircleOutlined /><span>Zaman Bilgileri</span></Space>}>
+          <Card title={<Space><ClockCircleOutlined /><span>{t('section.timeInfo')}</span></Space>}>
             <Row gutter={16}>
               <Col span={12}>
-                <Form.Item name="startDate" label="Başlangıç" rules={[{ required: true }]}>
+                <Form.Item name="startDate" label={t('label.startDate')} rules={[{ required: true }]}>
                   <DatePicker showTime format="DD.MM.YYYY HH:mm" style={{ width: '100%' }} />
                 </Form.Item>
               </Col>
               <Col span={12}>
-                <Form.Item name="dueDate" label="Bitiş" rules={[{ required: true }]}>
+                <Form.Item name="dueDate" label={t('label.endDate')} rules={[{ required: true }]}>
                   <DatePicker showTime format="DD.MM.YYYY HH:mm" style={{ width: '100%' }} />
                 </Form.Item>
               </Col>
@@ -323,9 +321,9 @@ const PhoneCallDetail: React.FC<DetailPageProps<PhoneCallActivity>> = (props) =>
         </Col>
 
         <Col span={24}>
-          <Card title={<Space><FileTextOutlined /><span>Görüşme Notları</span></Space>}>
-            <Form.Item name="callNotes" label="Notlar">
-              <TextArea rows={6} placeholder="Görüşme notları..." />
+          <Card title={<Space><FileTextOutlined /><span>{t('section.callNotes')}</span></Space>}>
+            <Form.Item name="callNotes" label={t('label.notes')}>
+              <TextArea rows={6} placeholder={t('placeholder.callNotes')} />
             </Form.Item>
           </Card>
         </Col>
@@ -333,21 +331,21 @@ const PhoneCallDetail: React.FC<DetailPageProps<PhoneCallActivity>> = (props) =>
     </Form>
   );
 
-  // ─── Layout ile render ──────────────────────────────────────────────────
+  // ─── Layout ─────────────────────────────────────────────────────────────
 
   return (
     <DetailPageLayout
       title={{
-        create: 'Yeni Telefon Görüşmesi',
-        view: 'Görüşme Detayı',
-        edit: 'Görüşme Düzenle',
+        create: t('phoneCall.titleCreate'),
+        view: t('phoneCall.titleView'),
+        edit: t('phoneCall.titleEdit'),
       }}
       deleteConfirm={{
-        title: 'Görüşme Silme',
-        description: 'Bu telefon görüşmesini silmek istediğinizden emin misiniz?',
+        title: t('phoneCall.deleteTitle'),
+        description: t('phoneCall.deleteDescription'),
       }}
-      notFoundTitle="Telefon Görüşmesi Bulunamadı"
-      notFoundDescription="Aradığınız telefon görüşmesi bulunamadı veya silinmiş olabilir."
+      notFoundTitle={t('phoneCall.notFoundTitle')}
+      notFoundDescription={t('phoneCall.notFoundDescription')}
       mode={detail.mode}
       isNew={detail.isNew}
       isViewMode={detail.isViewMode}

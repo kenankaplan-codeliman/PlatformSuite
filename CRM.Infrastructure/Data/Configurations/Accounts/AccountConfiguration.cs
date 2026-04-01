@@ -32,6 +32,13 @@ public class AccountConfiguration : IEntityTypeConfiguration<Account>
             .HasConversion<string>()
             .HasMaxLength(50);
 
+        builder.Property(a => a.AccountStatus)
+            .HasColumnName("account_status")
+            .IsRequired()
+            .HasConversion<string>()
+            .HasMaxLength(50)
+            .HasDefaultValue(CRM.Domain.Enums.AccountStatus.Prospect);
+
         builder.Property(a => a.Industry)
             .HasColumnName("industry")
             .HasMaxLength(150);

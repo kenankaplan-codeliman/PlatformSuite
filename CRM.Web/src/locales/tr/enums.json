@@ -1,0 +1,106 @@
+{
+  "leadSource": {
+    "web": "Web",
+    "phone": "Telefon",
+    "email": "E-posta",
+    "referral": "Referans",
+    "partner": "İş Ortağı",
+    "event": "Etkinlik",
+    "campaign": "Kampanya",
+    "social": "Sosyal Medya",
+    "other": "Diğer"
+  },
+  "leadStatus": {
+    "new": "Yeni",
+    "contacted": "İletişime Geçildi",
+    "qualified": "Nitelikli",
+    "unqualified": "Nitelendirilemedi",
+    "converted": "Dönüştürüldü"
+  },
+  "leadRating": {
+    "cold": "Soğuk",
+    "warm": "Ilık",
+    "hot": "Sıcak"
+  },
+  "accountType": {
+    "customer": "Müşteri",
+    "prospect": "Potansiyel",
+    "partner": "İş Ortağı",
+    "vendor": "Tedarikçi",
+    "competitor": "Rakip",
+    "other": "Diğer"
+  },
+  "accountStatus": {
+    "prospect": "Potansiyel",
+    "active": "Aktif",
+    "atRisk": "Risk Altında",
+    "inactive": "Pasif",
+    "churned": "Kayıp"
+  },
+  "contactStatus": {
+    "active": "Aktif",
+    "doNotContact": "İletişim Kurma",
+    "unsubscribed": "Abonelik İptal",
+    "inactive": "Pasif"
+  },
+  "opportunityStage": {
+    "prospect": "Aday",
+    "qualification": "Nitelendirme",
+    "proposal": "Teklif",
+    "negotiation": "Müzakere",
+    "won": "Kazanıldı",
+    "lost": "Kaybedildi"
+  },
+  "opportunitySource": {
+    "web": "Web",
+    "referral": "Referans",
+    "coldCall": "Soğuk Arama",
+    "emailCampaign": "E-posta Kampanyası",
+    "event": "Etkinlik",
+    "socialMedia": "Sosyal Medya",
+    "partner": "İş Ortağı",
+    "existingCustomer": "Mevcut Müşteri",
+    "other": "Diğer"
+  },
+  "activityType": {
+    "email": "E-posta",
+    "phoneCall": "Telefon",
+    "task": "Görev",
+    "appointment": "Randevu"
+  },
+  "activityStatus": {
+    "notStarted": "Başlamadı",
+    "inProgress": "Devam Ediyor",
+    "completed": "Tamamlandı",
+    "cancelled": "İptal Edildi"
+  },
+  "activityPriority": {
+    "low": "Düşük",
+    "normal": "Normal",
+    "high": "Yüksek"
+  },
+  "direction": {
+    "Incoming": "Gelen",
+    "Outgoing": "Giden"
+  },
+  "phoneType": {
+    "work": "İş",
+    "mobile": "Mobil",
+    "fax": "Faks",
+    "home": "Ev",
+    "other": "Diğer"
+  },
+  "emailType": {
+    "work": "İş",
+    "personal": "Kişisel",
+    "billing": "Fatura",
+    "support": "Destek",
+    "other": "Diğer"
+  },
+  "addressType": {
+    "billing": "Fatura",
+    "shipping": "Sevkiyat",
+    "office": "Ofis",
+    "other": "Diğer"
+  }
+}

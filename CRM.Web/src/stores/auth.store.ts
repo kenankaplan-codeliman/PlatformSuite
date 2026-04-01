@@ -123,7 +123,7 @@ export const useAuthState = create<AuthState>()(
         try {
           const response = await authService.fetchUser(accessToken!);
           set({ user: response });
-        } catch{ }
+        } catch { /* Kullanıcı bilgisi yüklenemedi — sessizce devam et */ }
       },
 
       // ── Auth actions ─────────────────────────────────────────────────────
@@ -187,7 +187,13 @@ export const useAuthState = create<AuthState>()(
 
         clearToken();
         clearState();
-        sessionStorage.clear();
+
+        // sessionStorage.clear() yerine yalnızca MSAL önbelleğini temizle.
+        // Diğer oturum verilerini (varsa) korur.
+        Object.keys(sessionStorage)
+          .filter((key) => key.startsWith('msal.'))
+          .forEach((key) => sessionStorage.removeItem(key));
+
         localStorage.removeItem('crm-auth-state');
 
         if (accessToken) {

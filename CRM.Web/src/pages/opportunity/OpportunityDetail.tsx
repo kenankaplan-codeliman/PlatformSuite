@@ -1,4 +1,5 @@
 import React, { useState, useCallback } from 'react';
+import { useTranslation } from 'react-i18next';
 import {
   Card,
   Form,
@@ -44,7 +45,6 @@ import { EntityType, type EntityReference } from '@/types/entity.lookup.types';
 import EntityLookup from '@/components/EntityLookup';
 import { entitySearchService } from '@/services/entity.search.service';
 import { getEntityColor, getEntityIcon } from '@/config/entity.config';
-import auditService from '@/services/audit.service';
 
 const { Title, Text, Paragraph } = Typography;
 const { TextArea } = Input;
@@ -74,14 +74,15 @@ interface OpportunityEditFormProps {
 }
 
 const OpportunityEditForm: React.FC<OpportunityEditFormProps> = ({ form }) => {
+  const { t } = useTranslation('opportunity');
   const currency      = Form.useWatch('currency', form) ?? 'TRY';
   const stage         = Form.useWatch('stage', form);
   const isClosedStage = stage === OpportunityStage.Won || stage === OpportunityStage.Lost;
   const currencySymbol  = currency === 'USD' ? '$' : currency === 'EUR' ? '€' : '₺';
-  const currencyFormatter = (v: any) =>
+  const currencyFormatter = (v: number | string | undefined) =>
     `${currencySymbol} ${v}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',');
-  const currencyParser = (v: any) =>
-    parseFloat(v?.replace(new RegExp(`\\${currencySymbol}\\s?|(,*)`, 'g'), '') || '0') as any;
+  const currencyParser = (v: string | undefined) =>
+    parseFloat(v?.replace(new RegExp(`\\${currencySymbol}\\s?|(,*)`, 'g'), '') || '0') as number;
 
   return (
     <Form form={form} layout="vertical">
@@ -90,17 +91,17 @@ const OpportunityEditForm: React.FC<OpportunityEditFormProps> = ({ form }) => {
         {/* Temel Bilgiler */}
         <Col span={24}>
           <Card
-            title={<Space><RiseOutlined /><span>Temel Bilgiler</span></Space>}
+            title={<Space><RiseOutlined /><span>{t('section.basicInfo')}</span></Space>}
             style={{ marginBottom: 16 }}
           >
             <Row gutter={16}>
               <Col span={12}>
                 <Form.Item
                   name="name"
-                  label="Fırsat Adı"
-                  rules={[{ required: true, message: 'Fırsat adı gereklidir' }]}
+                  label={t('field.name')}
+                  rules={[{ required: true, message: t('validation.nameRequired') }]}
                 >
-                  <Input prefix={<RiseOutlined />} placeholder="Fırsat adı girin" />
+                  <Input prefix={<RiseOutlined />} placeholder={t('placeholder.name')} />
                 </Form.Item>
               </Col>
             </Row>
@@ -108,71 +109,71 @@ const OpportunityEditForm: React.FC<OpportunityEditFormProps> = ({ form }) => {
               <Col span={8}>
                 <Form.Item
                   name="account"
-                  label="Firma"
-                  rules={[{ required: true, message: 'Firma seçimi gereklidir' }]}
+                  label={t('field.account')}
+                  rules={[{ required: true, message: t('validation.accountRequired') }]}
                 >
                   <EntityLookup
                     onSearch={entitySearchService.search}
                     entityTypes={[EntityType.Account]}
                     multiple={false}
-                    modalTitle="Firma seçin..."
+                    modalTitle={t('placeholder.selectAccount')}
                   />
                 </Form.Item>
               </Col>
               <Col span={8}>
-                <Form.Item name="contact" label="İlgili Kişi">
+                <Form.Item name="contact" label={t('field.contact')}>
                   <EntityLookup
                     onSearch={entitySearchService.search}
                     entityTypes={[EntityType.Contact]}
                     multiple={false}
-                    modalTitle="Kişi seçin..."
+                    modalTitle={t('placeholder.selectContact')}
                   />
                 </Form.Item>
               </Col>
               <Col span={8}>
                 <Form.Item
                   name="products"
-                  label="Ürünleri Seçin"
-                  rules={[{ required: true, type: 'array', min: 1, message: 'En az bir ürün seçimi gereklidir' }]}
+                  label={t('field.products')}
+                  rules={[{ required: true, type: 'array', min: 1, message: t('validation.productRequired') }]}
                 >
                   <EntityLookup
                     onSearch={entitySearchService.search}
                     entityTypes={[EntityType.Product]}
                     multiple={true}
-                    modalTitle="Ürün seçin..."
+                    modalTitle={t('placeholder.selectProduct')}
                   />
                 </Form.Item>
               </Col>
               <Col span={8}>
                 <Form.Item
                   name="stage"
-                  label="Aşama"
-                  rules={[{ required: true, message: 'Aşama seçimi gereklidir' }]}
+                  label={t('field.stage')}
+                  rules={[{ required: true, message: t('validation.stageRequired') }]}
                 >
-                  <Select options={opportunityStageOptions} placeholder="Aşama seçin" />
+                  <Select options={opportunityStageOptions} placeholder={t('placeholder.stage')} />
                 </Form.Item>
               </Col>
               <Col span={8}>
                 <Form.Item
                   name="probability"
-                  label="Olasılık (%)"
-                  rules={[{ required: true, message: 'Olasılık gereklidir' }]}
+                  label={t('field.probability')}
+                  rules={[{ required: true, message: t('validation.probabilityRequired') }]}
                 >
                   <InputNumber
                     style={{ width: '100%' }}
                     min={0}
                     max={100}
                     formatter={(v) => `%${v}`}
-                    parser={(v) => parseInt(v?.replace('%', '') || '0', 10) as any}
+                    parser={(v) => parseInt(v?.replace('%', '') || '0', 10) as number}
                     placeholder="0-100"
                   />
                 </Form.Item>
               </Col>
               <Col span={8}>
-                <Form.Item name="source" label="Kaynak">
+                <Form.Item name="source" label={t('field.source')}>
                   <Select
                     options={opportunitySourceOptions}
-                    placeholder="Kaynak seçin"
+                    placeholder={t('placeholder.source')}
                     allowClear
                   />
                 </Form.Item>
@@ -184,27 +185,27 @@ const OpportunityEditForm: React.FC<OpportunityEditFormProps> = ({ form }) => {
         {/* Finansal */}
         <Col span={24}>
           <Card
-            title={<Space><BankOutlined /><span>Finansal</span></Space>}
+            title={<Space><BankOutlined /><span>{t('section.financial')}</span></Space>}
             style={{ marginBottom: 16 }}
           >
             <Row gutter={16}>
               <Col span={6}>
-                <Form.Item name="currency" label="Para Birimi">
+                <Form.Item name="currency" label={t('field.currency')}>
                   <Select
                     options={[
                       { label: 'TRY (₺)', value: 'TRY' },
                       { label: 'USD ($)', value: 'USD' },
                       { label: 'EUR (€)', value: 'EUR' },
                     ]}
-                    placeholder="Para birimi"
+                    placeholder={t('placeholder.currency')}
                   />
                 </Form.Item>
               </Col>
               <Col span={6}>
                 <Form.Item
                   name="estimatedValue"
-                  label="Tahmini Değer"
-                  rules={[{ required: true, message: 'Tahmini değer gereklidir' }]}
+                  label={t('field.estimatedValue')}
+                  rules={[{ required: true, message: t('validation.estimatedValueRequired') }]}
                 >
                   <InputNumber
                     key={`estimatedValue-${currency}`}
@@ -217,12 +218,12 @@ const OpportunityEditForm: React.FC<OpportunityEditFormProps> = ({ form }) => {
                 </Form.Item>
               </Col>
               <Col span={6}>
-                <Form.Item name="actualValue" label="Gerçekleşen Değer">
+                <Form.Item name="actualValue" label={t('field.actualValue')}>
                   <InputNumber
                     key={`actualValue-${currency}`}
                     style={{ width: '100%' }}
                     min={0}
-                    placeholder={isClosedStage ? '0' : 'Kazanıldı/Kaybedildi aşamasında aktif olur'}
+                    placeholder={isClosedStage ? '0' : t('placeholder.closedStageRequired')}
                     formatter={currencyFormatter}
                     parser={currencyParser}
                     disabled={!isClosedStage}
@@ -230,11 +231,11 @@ const OpportunityEditForm: React.FC<OpportunityEditFormProps> = ({ form }) => {
                 </Form.Item>
               </Col>
               <Col span={6}>
-                <Form.Item name="closeDate" label="Kapanış Tarihi">
+                <Form.Item name="closeDate" label={t('field.closeDate')}>
                   <DatePicker
                     style={{ width: '100%' }}
                     format="DD.MM.YYYY"
-                    placeholder={isClosedStage ? 'Tarih seçin' : 'Kazanıldı/Kaybedildi aşamasında aktif olur'}
+                    placeholder={isClosedStage ? t('placeholder.selectDate') : t('placeholder.closedStageDate')}
                     disabled={!isClosedStage}
                   />
                 </Form.Item>
@@ -246,11 +247,11 @@ const OpportunityEditForm: React.FC<OpportunityEditFormProps> = ({ form }) => {
         {/* Açıklama */}
         <Col span={24}>
           <Card
-            title={<Space><FileTextOutlined /><span>Açıklama</span></Space>}
+            title={<Space><FileTextOutlined /><span>{t('section.description')}</span></Space>}
             style={{ marginBottom: 16 }}
           >
-            <Form.Item name="description" label="Açıklama">
-              <TextArea rows={4} placeholder="Fırsat hakkında notlar..." />
+            <Form.Item name="description" label={t('field.description')}>
+              <TextArea rows={4} placeholder={t('placeholder.description')} />
             </Form.Item>
           </Card>
         </Col>

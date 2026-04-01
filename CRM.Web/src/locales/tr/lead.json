@@ -1,0 +1,103 @@
+{
+  "module": "Lead",
+  "modulePlural": "Leadler",
+
+  "field": {
+    "companyName": "Şirket Adı",
+    "firstName": "Ad",
+    "lastName": "Soyad",
+    "jobTitle": "Ünvan",
+    "email": "E-posta",
+    "phone": "Telefon",
+    "mobilePhone": "Mobil Telefon",
+    "website": "Web Sitesi",
+    "address": "Adres",
+    "description": "Açıklama",
+    "industry": "Sektör",
+    "numberOfEmployees": "Çalışan Sayısı",
+    "annualRevenue": "Yıllık Gelir (₺)",
+    "estimatedValue": "Tahmini Değer (₺)",
+    "estimatedValueShort": "Tahmini Değer",
+    "leadSource": "Kaynak",
+    "leadStatus": "Durum",
+    "leadRating": "Değerlendirme",
+    "convertedDate": "Dönüştürülme Tarihi",
+    "isActive": "Aktif"
+  },
+
+  "placeholder": {
+    "companyName": "Şirket adı girin",
+    "firstName": "Ad girin",
+    "lastName": "Soyad girin",
+    "jobTitle": "Ünvan girin",
+    "phone": "Telefon girin",
+    "email": "E-posta girin",
+    "mobilePhone": "Mobil telefon girin",
+    "website": "https://example.com",
+    "industry": "Sektör girin",
+    "address": "Adres girin",
+    "description": "Lead hakkında notlar...",
+    "leadStatus": "Durum seçin",
+    "leadRating": "Değerlendirme seçin",
+    "leadSource": "Kaynak seçin",
+    "searchCompany": "Şirket adı ara..."
+  },
+
+  "validation": {
+    "companyNameRequired": "Şirket adı gereklidir",
+    "emailInvalid": "Geçerli bir e-posta girin",
+    "leadStatusRequired": "Durum seçimi gereklidir",
+    "leadRatingRequired": "Değerlendirme seçimi gereklidir",
+    "leadSourceRequired": "Kaynak seçimi gereklidir"
+  },
+
+  "section": {
+    "basicInfo": "Temel Bilgiler",
+    "contactInfo": "İletişim Bilgileri",
+    "companyInfo": "Şirket Bilgileri",
+    "statusInfo": "Durum & Sınıflandırma",
+    "companyDetails": "Şirket Detayları",
+    "address": "Adres",
+    "description": "Açıklama"
+  },
+
+  "tab": {
+    "details": "Detaylar",
+    "activities": "Aktiviteler"
+  },
+
+  "action": {
+    "create": "Yeni Lead",
+    "changeStatus": "Durum Değiştir",
+    "convert": "Dönüştür",
+    "convertTitle": "Lead Dönüştür"
+  },
+
+  "confirm": {
+    "deleteTitle": "Lead Silme",
+    "deleteDescription": "Bu lead'i silmek istediğinizden emin misiniz?",
+    "bulkDeleteContent": "Seçili {{count}} lead silinecek. Onaylıyor musunuz?",
+    "rowDeleteContent": "\"{{name}}\" lead'i silinecek. Onaylıyor musunuz?"
+  },
+
+  "message": {
+    "createSuccess": "Lead başarıyla oluşturuldu.",
+    "updateSuccess": "Lead başarıyla güncellendi.",
+    "deleteSuccess": "Lead başarıyla silindi.",
+    "convertSuccess": "Lead başarıyla dönüştürüldü."
+  },
+
+  "list": {
+    "title": "Lead Yönetimi",
+    "subtitle": "Potansiyel müşterilerinizi yönetin",
+    "empty": "Henüz lead bulunmuyor."
+  },
+
+  "detail": {
+    "titleCreate": "Yeni Lead",
+    "titleView": "Lead Detayı",
+    "titleEdit": "Lead Düzenle",
+    "notFoundTitle": "Lead Bulunamadı",
+    "notFoundDescription": "Aradığınız lead bulunamadı veya silinmiş olabilir."
+  }
+}

@@ -1,5 +1,7 @@
 ﻿
 
+using CRM.Domain.Enums;
+
 namespace CRM.Application.Modals.ContactModal;
 
 public class ContactListItem
@@ -8,6 +10,7 @@ public class ContactListItem
     public string FirstName { get; set; } = default!;
     public string LastName { get; set; } = default!;
     public string FullName { get; set; } = default!;
+    public ContactStatus ContactStatus { get; set; }
     public string? Title { get; set; }
     public string? Department { get; set; }
     public ContactAccountModal? PrimaryAccount { get; set; }

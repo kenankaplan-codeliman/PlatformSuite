@@ -1,8 +1,19 @@
 // Account Types - Based on Account.cs Entity
+import i18n from '@/config/i18n.config';
 
 // =====================================================
 // ENUMS
 // =====================================================
+
+export const AccountStatus = {
+  Prospect: 'prospect',
+  Active: 'active',
+  AtRisk: 'atRisk',
+  Inactive: 'inactive',
+  Churned: 'churned',
+} as const;
+
+export type AccountStatusValue = (typeof AccountStatus)[keyof typeof AccountStatus];
 
 export const AccountType = {
   Customer: 'customer',
@@ -90,6 +101,7 @@ export interface AccountListItem {
   id: string;
   accountName: string;
   accountType: AccountTypeValue;
+  accountStatus?: AccountStatusValue;
   industry?: string;
   annualRevenue?: number;
   numberOfEmployees?: number;
@@ -104,6 +116,7 @@ export interface AccountDetailItem {
   id: string;
   accountName: string;
   accountType: AccountTypeValue;
+  accountStatus?: AccountStatusValue;
   industry?: string;
   annualRevenue?: number;
   numberOfEmployees?: number;
@@ -148,49 +161,23 @@ export interface AccountListResponse {
   pageSize: number;
 }
 
-// =====================================================
-// LABELS
-// =====================================================
-
-const AccountTypeLabels: Record<AccountTypeValue, string> = {
-  [AccountType.Customer]: 'Müşteri',
-  [AccountType.Prospect]: 'Potansiyel',
-  [AccountType.Partner]: 'İş Ortağı',
-  [AccountType.Vendor]: 'Tedarikçi',
-  [AccountType.Competitor]: 'Rakip',
-  [AccountType.Other]: 'Diğer',
-};
-
-const PhoneTypeLabels: Record<PhoneTypeValue, string> = {
-  [PhoneType.Work]: 'İş',
-  [PhoneType.Mobile]: 'Mobil',
-  [PhoneType.Fax]: 'Faks',
-  [PhoneType.Home]: 'Ev',
-  [PhoneType.Other]: 'Diğer',
-};
-
-const EmailTypeLabels: Record<EmailTypeValue, string> = {
-  [EmailType.Work]: 'İş',
-  [EmailType.Personal]: 'Kişisel',
-  [EmailType.Billing]: 'Fatura',
-  [EmailType.Support]: 'Destek',
-  [EmailType.Other]: 'Diğer',
-};
-
-const AddressTypeLabels: Record<AddressTypeValue, string> = {
-  [AddressType.Billing]: 'Fatura',
-  [AddressType.Shipping]: 'Sevkiyat',
-  [AddressType.Office]: 'Ofis',
-  [AddressType.Other]: 'Diğer',
-};
-
-
-
 
 
 // =====================================================
 // COLORS
 // =====================================================
+
+// =====================================================
+// COLORS
+// =====================================================
+
+const AccountStatusColors: Record<AccountStatusValue, string> = {
+  [AccountStatus.Prospect]: 'blue',
+  [AccountStatus.Active]: 'green',
+  [AccountStatus.AtRisk]: 'orange',
+  [AccountStatus.Inactive]: 'default',
+  [AccountStatus.Churned]: 'red',
+};
 
 const AccountTypeColors: Record<AccountTypeValue, string> = {
   [AccountType.Customer]: 'green',
@@ -205,55 +192,61 @@ const AccountTypeColors: Record<AccountTypeValue, string> = {
 // HELPER FUNCTIONS
 // =====================================================
 
-export const getAccountTypeLabel = (type: AccountTypeValue): string => {
-  return AccountTypeLabels[type] ?? 'Bilinmiyor';
-};
+export const getAccountStatusLabel = (status: AccountStatusValue): string =>
+  i18n.t(`enums:accountStatus.${status}`, { defaultValue: status });
 
-export const getAccountTypeColor = (type: AccountTypeValue): string => {
-  return AccountTypeColors[type] ?? 'default';
-};
+export const getAccountStatusColor = (status: AccountStatusValue): string =>
+  AccountStatusColors[status] ?? 'default';
 
-export const getPhoneTypeLabel = (type: PhoneTypeValue): string => {
-  return PhoneTypeLabels[type] ?? 'Bilinmiyor';
-};
+export const getAccountTypeLabel = (type: AccountTypeValue): string =>
+  i18n.t(`enums:accountType.${type}`, { defaultValue: type });
 
-export const getEmailTypeLabel = (type: EmailTypeValue): string => {
-  return EmailTypeLabels[type] ?? 'Bilinmiyor';
-};
+export const getAccountTypeColor = (type: AccountTypeValue): string =>
+  AccountTypeColors[type] ?? 'default';
 
-export const getAddressTypeLabel = (type: AddressTypeValue): string => {
-  return AddressTypeLabels[type] ?? 'Bilinmiyor';
-};
+export const getPhoneTypeLabel = (type: PhoneTypeValue): string =>
+  i18n.t(`enums:phoneType.${type}`, { defaultValue: type });
+
+export const getEmailTypeLabel = (type: EmailTypeValue): string =>
+  i18n.t(`enums:emailType.${type}`, { defaultValue: type });
+
+export const getAddressTypeLabel = (type: AddressTypeValue): string =>
+  i18n.t(`enums:addressType.${type}`, { defaultValue: type });
 
 // =====================================================
 // SELECT OPTIONS
 // =====================================================
 
-export const accountTypeOptions = Object.entries(AccountType).map(([, value]) => ({
-  label: AccountTypeLabels[value as AccountTypeValue],
-  value: value,
+export const accountStatusOptions = Object.values(AccountStatus).map((value) => ({
+  label: getAccountStatusLabel(value),
+  value,
 }));
 
-export const phoneTypeOptions = Object.entries(PhoneType).map(([, value]) => ({
-  label: PhoneTypeLabels[value as PhoneTypeValue],
-  value: value,
+export const accountTypeOptions = Object.values(AccountType).map((value) => ({
+  label: getAccountTypeLabel(value),
+  value,
 }));
 
-export const emailTypeOptions = Object.entries(EmailType).map(([, value]) => ({
-  label: EmailTypeLabels[value as EmailTypeValue],
-  value: value,
+export const phoneTypeOptions = Object.values(PhoneType).map((value) => ({
+  label: getPhoneTypeLabel(value),
+  value,
 }));
 
-export const addressTypeOptions = Object.entries(AddressType).map(([, value]) => ({
-  label: AddressTypeLabels[value as AddressTypeValue],
-  value: value,
+export const emailTypeOptions = Object.values(EmailType).map((value) => ({
+  label: getEmailTypeLabel(value),
+  value,
+}));
+
+export const addressTypeOptions = Object.values(AddressType).map((value) => ({
+  label: getAddressTypeLabel(value),
+  value,
 }));
 
 // =====================================================
 // TABLE FILTER OPTIONS
 // =====================================================
 
-export const accountTypeFilters = Object.entries(AccountType).map(([, value]) => ({
-  text: AccountTypeLabels[value as AccountTypeValue],
-  value: value,
+export const accountTypeFilters = Object.values(AccountType).map((value) => ({
+  text: getAccountTypeLabel(value),
+  value,
 }));

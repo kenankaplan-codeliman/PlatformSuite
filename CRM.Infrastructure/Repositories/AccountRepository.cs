@@ -47,6 +47,11 @@ public class AccountRepository : BaseEntityRepository<Account>, IAccountReposito
             query = query.Where(x => x.IsActive == filter.isActive.Value);
         }
 
+        if (filter.accountStatus.HasValue)
+        {
+            query = query.Where(x => x.AccountStatus == filter.accountStatus.Value);
+        }
+
         var pageIndex = (paginationInfo.Page - 1) >= 0 ? paginationInfo.Page - 1 : 0;
 
         var skipVal = pageIndex * paginationInfo.PageSize;
@@ -59,6 +64,7 @@ public class AccountRepository : BaseEntityRepository<Account>, IAccountReposito
               Id = acc.Id,
               AccountName = acc.AccountName,
               AccountType = acc.AccountType,
+              AccountStatus = acc.AccountStatus,
               Industry = acc.Industry,
               AnnualRevenue = acc.AnnualRevenue,
               NumberOfEmployees = acc.NumberOfEmployees,

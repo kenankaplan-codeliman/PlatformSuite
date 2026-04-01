@@ -6,8 +6,14 @@ namespace CRM.Domain.Enums
 {
     public enum LeadSource
     {
+        Web,
+        Phone,
+        Email,
+        Referral,
+        Partner,
+        Event,
+        Campaign,
+        Social,
         Other,
-        Website,
-        Reference,
     }
 }

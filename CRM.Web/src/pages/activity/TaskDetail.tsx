@@ -1,4 +1,5 @@
 import React, { useCallback } from 'react';
+import { useTranslation } from 'react-i18next';
 import {
   Card,
   Form,
@@ -75,12 +76,14 @@ const renderSelectedEntities = (entities: EntityReference[] | EntityReference | 
 
 const TaskDetail: React.FC<DetailPageProps<TaskActivity>> = (props) => {
   const store = useActivityStore();
+  const { t } = useTranslation('activity');
+  const { t: tc } = useTranslation('common');
 
   const detail = useDetailPage<TaskActivity>(
     {
       fetchById: (id) => store.fetchActivityById(id, ActivityType.Task),
-      createEntity: (values) => store.createActivity<TaskActivity>(values as any),
-      updateEntity: (values) => store.updateActivity<TaskActivity>(values as any),
+      createEntity: (values) => store.createActivity<TaskActivity>(values as Omit<TaskActivity, 'id' | 'createdAt' | 'createdBy'>),
+      updateEntity: (values) => store.updateActivity<TaskActivity>(values as Partial<TaskActivity> & { activityType: TaskActivity['activityType'] }),
       deleteEntity: async (id) => {
         const { deleteActivity } = useActivityStore.getState();
         await deleteActivity(id);
@@ -88,7 +91,6 @@ const TaskDetail: React.FC<DetailPageProps<TaskActivity>> = (props) => {
       currentEntity: store.currentActivity as TaskActivity | null,
       clearCurrentEntity: () => store.setCurrentActivity(null),
 
-      // Entity → Form dönüşümü
       mapEntityToForm: (entity) => ({
         subject: entity.subject,
         description: entity.taskDescription,
@@ -101,7 +103,6 @@ const TaskDetail: React.FC<DetailPageProps<TaskActivity>> = (props) => {
         percentComplete: entity.percentComplete,
       }),
 
-      // Form → Entity dönüşümü
       mapFormToEntity: (values, id) => ({
         ...values,
         id: id || undefined,
@@ -111,7 +112,6 @@ const TaskDetail: React.FC<DetailPageProps<TaskActivity>> = (props) => {
         reminderAt: toLocalISO(values.reminderAt) ?? undefined,
       }),
 
-      // Yeni kayıt default'ları
       defaultFormValues: {
         activityType: ActivityType.Task,
         status: ActivityStatus.NotStarted,
@@ -166,17 +166,17 @@ const TaskDetail: React.FC<DetailPageProps<TaskActivity>> = (props) => {
                 <Tag color={getActivityPriorityColor(currentTask?.priority ?? ActivityPriority.Normal)} icon={<FlagOutlined />}>
                   {getActivityPriorityLabel(currentTask?.priority ?? ActivityPriority.Normal)}
                 </Tag>
-                <Badge status={currentTask?.isActive ? 'success' : 'default'} text={currentTask?.isActive ? 'Aktif' : 'Pasif'} />
+                <Badge status={currentTask?.isActive ? 'success' : 'default'} text={currentTask?.isActive ? tc('status.active') : tc('status.inactive')} />
               </Space>
             </Space>
           </Col>
           <Col>
             <Space>
               {currentTask?.status !== ActivityStatus.Completed && (
-                <Button type="primary" icon={<CheckCircleOutlined />} onClick={detail.handleComplete}>Tamamla</Button>
+                <Button type="primary" icon={<CheckCircleOutlined />} onClick={detail.handleComplete}>{t('action.complete')}</Button>
               )}
               {currentTask?.status !== ActivityStatus.Cancelled && (
-                <Button icon={<CloseCircleOutlined />} onClick={detail.handleCancelActivity}>İptal Et</Button>
+                <Button icon={<CloseCircleOutlined />} onClick={detail.handleCancelActivity}>{t('action.cancel')}</Button>
               )}
             </Space>
           </Col>
@@ -185,19 +185,19 @@ const TaskDetail: React.FC<DetailPageProps<TaskActivity>> = (props) => {
 
       <Row gutter={16}>
         <Col span={12}>
-          <Card title={<Space><FlagOutlined /><span>Durum & İlerleme</span></Space>} style={{ marginBottom: 16 }}>
+          <Card title={<Space><FlagOutlined /><span>{t('section.statusProgress')}</span></Space>} style={{ marginBottom: 16 }}>
             <Descriptions column={1} size="small">
-              <Descriptions.Item label="Durum">
+              <Descriptions.Item label={t('field.status')}>
                 <Tag color={getActivityStatusColor(currentTask?.status ?? ActivityStatus.NotStarted)}>
                   {getActivityStatusLabel(currentTask?.status ?? ActivityStatus.NotStarted)}
                 </Tag>
               </Descriptions.Item>
-              <Descriptions.Item label="Öncelik">
+              <Descriptions.Item label={t('field.priority')}>
                 <Tag color={getActivityPriorityColor(currentTask?.priority ?? ActivityPriority.Normal)}>
                   {getActivityPriorityLabel(currentTask?.priority ?? ActivityPriority.Normal)}
                 </Tag>
               </Descriptions.Item>
-              <Descriptions.Item label="Tamamlanma">
+              <Descriptions.Item label={t('field.percentComplete')}>
                 <Progress percent={currentTask?.percentComplete || 0} size="small" style={{ width: 150 }} />
               </Descriptions.Item>
             </Descriptions>
@@ -205,15 +205,15 @@ const TaskDetail: React.FC<DetailPageProps<TaskActivity>> = (props) => {
         </Col>
 
         <Col span={12}>
-          <Card title={<Space><CalendarOutlined /><span>Tarih Bilgileri</span></Space>} style={{ marginBottom: 16 }}>
+          <Card title={<Space><CalendarOutlined /><span>{t('section.dateInfo')}</span></Space>} style={{ marginBottom: 16 }}>
             <Descriptions column={1} size="small">
-              <Descriptions.Item label="Başlangıç">
+              <Descriptions.Item label={t('label.startDate')}>
                 {currentTask?.startDate ? dayjs(currentTask.startDate).format('DD.MM.YYYY HH:mm') : '-'}
               </Descriptions.Item>
-              <Descriptions.Item label="Bitiş">
+              <Descriptions.Item label={t('label.endDate')}>
                 {currentTask?.dueDate ? dayjs(currentTask.dueDate).format('DD.MM.YYYY HH:mm') : '-'}
               </Descriptions.Item>
-              <Descriptions.Item label="Hatırlatma">
+              <Descriptions.Item label={t('label.reminder')}>
                 {currentTask?.reminderAt ? dayjs(currentTask.reminderAt).format('DD.MM.YYYY HH:mm') : '-'}
               </Descriptions.Item>
             </Descriptions>
@@ -221,14 +221,14 @@ const TaskDetail: React.FC<DetailPageProps<TaskActivity>> = (props) => {
         </Col>
 
         <Col span={12}>
-          <Card title={<Space><LinkOutlined /><span>İlgili Kayıt</span></Space>} style={{ marginBottom: 16 }}>
+          <Card title={<Space><LinkOutlined /><span>{t('section.regardingRecord')}</span></Space>} style={{ marginBottom: 16 }}>
             {renderSelectedEntities(currentTask?.regardingEntity)}
           </Card>
         </Col>
 
         <Col span={24}>
-          <Card title={<Space><FileTextOutlined /><span>Açıklama</span></Space>} style={{ marginBottom: 16 }}>
-            <Paragraph>{currentTask?.taskDescription || 'Açıklama girilmemiş.'}</Paragraph>
+          <Card title={<Space><FileTextOutlined /><span>{t('section.description')}</span></Space>} style={{ marginBottom: 16 }}>
+            <Paragraph>{currentTask?.taskDescription || t('empty.taskDescription')}</Paragraph>
           </Card>
         </Col>
       </Row>
@@ -241,31 +241,31 @@ const TaskDetail: React.FC<DetailPageProps<TaskActivity>> = (props) => {
     <Form form={detail.form} layout="vertical">
       <Row gutter={16}>
         <Col span={24}>
-          <Card title={<Space><CheckSquareOutlined /><span>Görev Bilgileri</span></Space>} style={{ marginBottom: 16 }}>
+          <Card title={<Space><CheckSquareOutlined /><span>{t('section.taskInfo')}</span></Space>} style={{ marginBottom: 16 }}>
             <Row gutter={16}>
               <Col span={24}>
-                <Form.Item name="subject" label="Konu" rules={[{ required: true, message: 'Konu gereklidir' }]}>
-                  <Input placeholder="Görev konusu girin" />
+                <Form.Item name="subject" label={t('field.subject')} rules={[{ required: true, message: t('validation.subjectRequired') }]}>
+                  <Input placeholder={t('placeholder.taskSubject')} />
                 </Form.Item>
               </Col>
               <Col span={12}>
-                <Form.Item name="percentComplete" label="Tamamlanma Yüzdesi">
+                <Form.Item name="percentComplete" label={t('label.percentComplete')}>
                   <InputNumber
                     min={0}
                     max={100}
                     style={{ width: '100%' }}
                     formatter={(value) => `${value}%`}
-                    parser={(value) => parseInt(value?.replace('%', '') || '0', 10) as any}
+                    parser={(value) => parseInt(value?.replace('%', '') || '0', 10) as number}
                   />
                 </Form.Item>
               </Col>
               <Col span={12}>
-                <Form.Item name="regardingEntity" label="İlgili Kaydı Seçin">
+                <Form.Item name="regardingEntity" label={t('label.selectRegarding')}>
                   <EntityLookup
                     onSearch={entitySearchService.search}
                     entityTypes={[EntityType.Lead, EntityType.Account, EntityType.Contact]}
                     multiple={false}
-                    modalTitle="İlgili Kayıt Seç"
+                    modalTitle={t('modal.selectRegarding')}
                   />
                 </Form.Item>
               </Col>
@@ -273,46 +273,46 @@ const TaskDetail: React.FC<DetailPageProps<TaskActivity>> = (props) => {
           </Card>
         </Col>
         <Col span={8}>
-          <Card title={<Space><FlagOutlined /><span>Durum & Öncelik</span></Space>} style={{ marginBottom: 16 }}>
+          <Card title={<Space><FlagOutlined /><span>{t('section.statusPriority')}</span></Space>} style={{ marginBottom: 16 }}>
             <Row gutter={16}>
               <Col span={12}>
-                <Form.Item name="status" label="Durum" rules={[{ required: true, message: 'Durum seçimi gereklidir' }]}>
-                  <Select options={activityStatusOptions} placeholder="Durum seçin" />
+                <Form.Item name="status" label={t('field.status')} rules={[{ required: true, message: t('validation.statusRequired') }]}>
+                  <Select options={activityStatusOptions} placeholder={t('field.status')} />
                 </Form.Item>
               </Col>
               <Col span={12}>
-                <Form.Item name="priority" label="Öncelik" rules={[{ required: true, message: 'Öncelik seçimi gereklidir' }]}>
-                  <Select options={activityPriorityOptions} placeholder="Öncelik seçin" />
+                <Form.Item name="priority" label={t('field.priority')} rules={[{ required: true, message: t('validation.priorityRequired') }]}>
+                  <Select options={activityPriorityOptions} placeholder={t('field.priority')} />
                 </Form.Item>
               </Col>
             </Row>
           </Card>
         </Col>
         <Col span={16}>
-          <Card title={<Space><CalendarOutlined /><span>Zaman Bilgileri</span></Space>} style={{ marginBottom: 16 }}>
+          <Card title={<Space><CalendarOutlined /><span>{t('section.timeInfo')}</span></Space>} style={{ marginBottom: 16 }}>
             <Row gutter={16}>
               <Col span={8}>
-                <Form.Item name="startDate" label="Başlangıç Tarihi" rules={[{ required: true, message: 'Başlangıç tarihi gereklidir' }]}>
-                  <DatePicker showTime format="DD.MM.YYYY HH:mm" style={{ width: '100%' }} placeholder="Başlangıç tarihi" />
+                <Form.Item name="startDate" label={t('field.startDate')} rules={[{ required: true, message: t('validation.startDateRequired') }]}>
+                  <DatePicker showTime format="DD.MM.YYYY HH:mm" style={{ width: '100%' }} placeholder={t('placeholder.startDate')} />
                 </Form.Item>
               </Col>
               <Col span={8}>
-                <Form.Item name="dueDate" label="Bitiş Tarihi" rules={[{ required: true, message: 'Bitiş tarihi gereklidir' }]}>
-                  <DatePicker showTime format="DD.MM.YYYY HH:mm" style={{ width: '100%' }} placeholder="Bitiş tarihi" />
+                <Form.Item name="dueDate" label={t('field.endDate')} rules={[{ required: true, message: t('validation.dueDateRequired') }]}>
+                  <DatePicker showTime format="DD.MM.YYYY HH:mm" style={{ width: '100%' }} placeholder={t('placeholder.dueDate')} />
                 </Form.Item>
               </Col>
               <Col span={8}>
-                <Form.Item name="reminderAt" label="Hatırlatma">
-                  <DatePicker showTime format="DD.MM.YYYY HH:mm" style={{ width: '100%' }} placeholder="Hatırlatma tarihi" />
+                <Form.Item name="reminderAt" label={t('label.reminder')}>
+                  <DatePicker showTime format="DD.MM.YYYY HH:mm" style={{ width: '100%' }} placeholder={t('label.reminder')} />
                 </Form.Item>
               </Col>
             </Row>
           </Card>
         </Col>
         <Col span={24}>
-          <Card title={<Space><FileTextOutlined /><span>Açıklama</span></Space>} style={{ marginBottom: 16 }}>
-            <Form.Item name="description" label="Açıklama">
-              <TextArea rows={4} placeholder="Görev hakkında notlar..." />
+          <Card title={<Space><FileTextOutlined /><span>{t('section.description')}</span></Space>} style={{ marginBottom: 16 }}>
+            <Form.Item name="description" label={t('field.description')}>
+              <TextArea rows={4} placeholder={t('placeholder.taskDescription')} />
             </Form.Item>
           </Card>
         </Col>
@@ -325,16 +325,16 @@ const TaskDetail: React.FC<DetailPageProps<TaskActivity>> = (props) => {
   return (
     <DetailPageLayout
       title={{
-        create: 'Yeni Görev',
-        view: 'Görev Detayı',
-        edit: 'Görev Düzenle',
+        create: t('task.titleCreate'),
+        view: t('task.titleView'),
+        edit: t('task.titleEdit'),
       }}
       deleteConfirm={{
-        title: 'Görev Silme',
-        description: 'Bu görevi silmek istediğinizden emin misiniz?',
+        title: t('task.deleteTitle'),
+        description: t('task.deleteDescription'),
       }}
-      notFoundTitle="Görev Bulunamadı"
-      notFoundDescription="Aradığınız görev bulunamadı veya silinmiş olabilir."
+      notFoundTitle={t('task.notFoundTitle')}
+      notFoundDescription={t('task.notFoundDescription')}
       mode={detail.mode}
       isNew={detail.isNew}
       isViewMode={detail.isViewMode}

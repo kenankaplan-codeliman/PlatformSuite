@@ -16,6 +16,7 @@ public class Account :
 
     public string AccountName { get; set; } = null!;
     public AccountType AccountType { get; set; }
+    public AccountStatus AccountStatus { get; set; } = AccountStatus.Prospect;
     public string? Industry { get; set; }
     public decimal? AnnualRevenue { get; set; }
     public int? NumberOfEmployees { get; set; }

@@ -1,5 +1,6 @@
 import { useEffect, useCallback, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { RoutePaths } from '@/config/route.paths';
 import { Avatar, Badge, Input, Space, Typography } from 'antd';
 import type { TableProps } from 'antd';
@@ -13,6 +14,8 @@ const { Text } = Typography;
 
 const ContactList: React.FC = () => {
   const navigate = useNavigate();
+  const { t } = useTranslation('contact');
+  const { t: tc } = useTranslation('common');
 
   const {
     contacts, hasMore, page, pageSize, filters, selectedRowKeys,
@@ -45,7 +48,7 @@ const ContactList: React.FC = () => {
 
   const columns: ColumnsType<ContactListItem> = [
     {
-      title: 'Kişi', key: 'fullName', sorter: true, width: 240,
+      title: t('field.fullName'), key: 'fullName', sorter: true, width: 240,
       render: (_: unknown, record: ContactListItem) => (
         <Space>
           <Avatar size="small" icon={<UserOutlined />} />
@@ -57,17 +60,17 @@ const ContactList: React.FC = () => {
       ),
     },
     {
-      title: 'Firma', dataIndex: 'primaryAccount', key: 'primaryAccount', width: 180, ellipsis: true,
+      title: t('field.company'), dataIndex: 'primaryAccount', key: 'primaryAccount', width: 180, ellipsis: true,
       render: (primaryAccount: ContactAccountRef) => primaryAccount
         ? <Space size={4}><BankOutlined style={{ color: '#8c8c8c', fontSize: 12 }} /><Text>{primaryAccount.accountName}</Text></Space>
         : <Text type="secondary">-</Text>,
     },
     {
-      title: 'Departman', dataIndex: 'department', key: 'department', width: 140, ellipsis: true,
+      title: t('field.department'), dataIndex: 'department', key: 'department', width: 140, ellipsis: true,
       render: (value: string) => value || <Text type="secondary">-</Text>,
     },
     {
-      title: 'İletişim', key: 'contact', width: 220,
+      title: t('section.contactInfo'), key: 'contact', width: 220,
       render: (_: unknown, record: ContactListItem) => (
         <Space orientation="vertical" size={2}>
           {record.primaryEmail && (
@@ -80,15 +83,15 @@ const ContactList: React.FC = () => {
       ),
     },
     {
-      title: 'Şehir', dataIndex: 'primaryCity', key: 'primaryCity', width: 120, ellipsis: true,
+      title: t('field.city'), dataIndex: 'primaryCity', key: 'primaryCity', width: 120, ellipsis: true,
       render: (city: string) => city
         ? <Space size={4}><EnvironmentOutlined style={{ color: '#8c8c8c', fontSize: 12 }} /><Text>{city}</Text></Space>
         : <Text type="secondary">-</Text>,
     },
     {
-      title: 'Aktif', dataIndex: 'isActive', key: 'isActive', width: 80, align: 'center',
-      filters: [{ text: 'Aktif', value: true }, { text: 'Pasif', value: false }],
-      render: (isActive: boolean) => <Badge status={isActive ? 'success' : 'default'} text={isActive ? 'Evet' : 'Hayır'} />,
+      title: t('field.isActive'), dataIndex: 'isActive', key: 'isActive', width: 80, align: 'center',
+      filters: [{ text: tc('status.active'), value: true }, { text: tc('status.inactive'), value: false }],
+      render: (isActive: boolean) => <Badge status={isActive ? 'success' : 'default'} text={isActive ? tc('confirm.yes') : tc('confirm.no')} />,
     },
   ];
 
@@ -103,12 +106,12 @@ const ContactList: React.FC = () => {
 
   return (
     <ListPageLayout<ContactListItem>
-      title="Kişi Yönetimi"
-      subtitle="Kişilerinizi yönetin"
-      createButtonLabel="Yeni Kişi"
+      title={t('list.title')}
+      subtitle={t('list.subtitle')}
+      createButtonLabel={t('action.create')}
       onCreate={() => navigate(RoutePaths.Contact.New)}
 
-      searchPlaceholder="Kişi adı ara..."
+      searchPlaceholder={t('placeholder.search')}
       searchValue={filters.contactName ?? ''}
       onSearch={handleSearch}
       hasActiveFilters={hasActiveFilters}
@@ -117,12 +120,12 @@ const ContactList: React.FC = () => {
       renderExtraFilters={() => (
         <>
           <Input
-            placeholder="Unvan" allowClear style={{ width: 150 }}
+            placeholder={t('field.title')} allowClear style={{ width: 150 }}
             value={filters.title || ''}
             onChange={(e) => handleFilterChange('title', e.target.value)}
           />
           <Input
-            placeholder="Departman" allowClear style={{ width: 150 }}
+            placeholder={t('field.department')} allowClear style={{ width: 150 }}
             value={filters.department || ''}
             onChange={(e) => handleFilterChange('department', e.target.value)}
           />
@@ -136,22 +139,22 @@ const ContactList: React.FC = () => {
       onBulkDelete={{
         handler: bulkDeleteContacts,
         confirm: {
-          title: 'Toplu Silme',
-          content: (count) => `Seçili ${count} kişi silinecek. Onaylıyor musunuz?`,
+          title: tc('confirm.bulkDeleteTitle'),
+          content: (count) => t('confirm.bulkDeleteContent', { count }),
         },
       }}
       onBulkActivate={{
         handler: bulkActivateContacts,
         confirm: {
-          title: 'Toplu Etkinleştirme',
-          content: (count) => `Seçili ${count} kişi etkinleştirilecek. Onaylıyor musunuz?`,
+          title: tc('confirm.bulkActivateTitle'),
+          content: (count) => t('confirm.bulkActivateContent', { count }),
         },
       }}
       onBulkDeactivate={{
         handler: bulkDeactivateContacts,
         confirm: {
-          title: 'Toplu Pasifleştirme',
-          content: (count) => `Seçili ${count} kişi pasifleştirilecek. Onaylıyor musunuz?`,
+          title: tc('confirm.bulkDeactivateTitle'),
+          content: (count) => t('confirm.bulkDeactivateContent', { count }),
         },
       }}
       onBulkAssign={{ handler: bulkAssignContacts }}
@@ -172,8 +175,8 @@ const ContactList: React.FC = () => {
         onDelete: {
           handler: (record) => deleteContact(record.id),
           confirm: {
-            title: 'Kişi Silme',
-            content: (record) => `"${record.fullName}" kişisi silinecek. Onaylıyor musunuz?`,
+            title: t('confirm.deleteTitle'),
+            content: (record) => t('confirm.rowDeleteContent', { name: record.fullName }),
           },
         },
       }}

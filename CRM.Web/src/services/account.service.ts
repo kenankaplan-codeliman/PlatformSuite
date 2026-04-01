@@ -3,6 +3,7 @@ import type {
   AccountListRequest,
   AccountListFilters,
   AccountListResponse,
+  AccountStatusValue,
 } from '@/types/account.types';
 import apiClient from '@/services/api.client';
 import { apiRequest } from '@/services/api.request';
@@ -39,6 +40,12 @@ export const accountService = {
 
   assignAccount: async (request: AssignRequest): Promise<void> => {
     return apiRequest(() => apiClient.post(ServicePath.Account.Assign, request).then(() => undefined));
+  },
+
+  updateAccountStatus: async (ids: string[], status: AccountStatusValue): Promise<void> => {
+    return apiRequest(() =>
+      apiClient.post(ServicePath.Account.BulkUpdateStatus, { ids, status }).then(() => undefined)
+    );
   },
 };
 

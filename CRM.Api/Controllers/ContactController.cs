@@ -7,6 +7,7 @@ using CRM.Application.Modals.Common;
 using CRM.Application.Modals.ContactModal;
 using CRM.Application.Modals.LeadModal;
 using CRM.Domain.Authorization;
+using CRM.Domain.Enums;
 using Microsoft.AspNetCore.Mvc;
 
 namespace CRM.Api.Controllers;
@@ -90,6 +91,14 @@ public class ContactController : ControllerBase
     public async Task<IActionResult> SetState(StatusRequest request)
     {
         await contactCommandHandler.SetStateAsync(request.Ids, request.IsActive);
+        return Ok();
+    }
+
+    [HttpPost("bulk-update-status")]
+    [PrivilegeAuthorize(PrivilegeCodes.ContactPrivilegeCodes.Update)]
+    public async Task<IActionResult> BulkUpdateStatus(ContactBulkUpdateStatusRequest request)
+    {
+        await contactCommandHandler.BulkUpdateStatusAsync(request.Ids, request.Status);
         return Ok();
     }
 

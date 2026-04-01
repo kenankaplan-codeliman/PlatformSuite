@@ -14,7 +14,7 @@ import {
   Tooltip,
   Avatar,
 } from 'antd';
-import type { TableProps } from 'antd';
+import type { TableProps, InputRef } from 'antd';
 import {
   SearchOutlined,
   CloseOutlined,
@@ -139,7 +139,7 @@ const EntityLookup: React.FC<EntityLookupProps> = ({
 
 
   // Refs
-  const searchInputRef = useRef<any>(null);
+  const searchInputRef = useRef<InputRef>(null);
 
   // Normalize value to array
   const selectedEntities = useMemo((): EntityReference[] => {

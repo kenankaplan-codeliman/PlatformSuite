@@ -1,9 +1,19 @@
 // Contact Types - Based on Contact.cs Entity
+import i18n from '@/config/i18n.config';
 
 // =====================================================
 // ENUMS
 // Account entity ile aynı backend enum'larını paylaşır
 // =====================================================
+
+export const ContactStatus = {
+  Active: 'active',
+  DoNotContact: 'doNotContact',
+  Unsubscribed: 'unsubscribed',
+  Inactive: 'inactive',
+} as const;
+
+export type ContactStatusValue = (typeof ContactStatus)[keyof typeof ContactStatus];
 
 export const PhoneType = {
   Work: 'work',
@@ -84,6 +94,7 @@ export interface ContactListItem {
   fullName: string;
   title?: string;
   department?: string;
+  contactStatus?: ContactStatusValue;
   primaryAccount?: ContactAccountRef;
   primaryEmail?: string;
   primaryPhone?: string;
@@ -96,6 +107,7 @@ export interface ContactDetailItem {
   lastName: string;
   title?: string;
   department?: string;
+  contactStatus?: ContactStatusValue;
   birthDate?: string;
   description?: string;
 
@@ -139,44 +151,34 @@ export interface ContactListResponse {
 }
 
 // =====================================================
-// LABELS
+// COLORS
 // =====================================================
 
-const PhoneTypeLabels: Record<PhoneTypeValue, string> = {
-  [PhoneType.Work]: 'İş',
-  [PhoneType.Mobile]: 'Mobil',
-  [PhoneType.Fax]: 'Faks',
-  [PhoneType.Home]: 'Ev',
-  [PhoneType.Other]: 'Diğer',
-};
-
-const EmailTypeLabels: Record<EmailTypeValue, string> = {
-  [EmailType.Work]: 'İş',
-  [EmailType.Personal]: 'Kişisel',
-  [EmailType.Billing]: 'Fatura',
-  [EmailType.Support]: 'Destek',
-  [EmailType.Other]: 'Diğer',
-};
-
-const AddressTypeLabels: Record<AddressTypeValue, string> = {
-  [AddressType.Billing]: 'Fatura',
-  [AddressType.Shipping]: 'Sevkiyat',
-  [AddressType.Office]: 'Ofis',
-  [AddressType.Other]: 'Diğer',
+const ContactStatusColors: Record<ContactStatusValue, string> = {
+  [ContactStatus.Active]: 'green',
+  [ContactStatus.DoNotContact]: 'red',
+  [ContactStatus.Unsubscribed]: 'orange',
+  [ContactStatus.Inactive]: 'default',
 };
 
 // =====================================================
 // HELPER FUNCTIONS
 // =====================================================
 
+export const getContactStatusLabel = (status: ContactStatusValue): string =>
+  i18n.t(`enums:contactStatus.${status}`, { defaultValue: status });
+
+export const getContactStatusColor = (status: ContactStatusValue): string =>
+  ContactStatusColors[status] ?? 'default';
+
 export const getPhoneTypeLabel = (type: PhoneTypeValue): string =>
-  PhoneTypeLabels[type] ?? 'Bilinmiyor';
+  i18n.t(`enums:phoneType.${type}`, { defaultValue: type });
 
 export const getEmailTypeLabel = (type: EmailTypeValue): string =>
-  EmailTypeLabels[type] ?? 'Bilinmiyor';
+  i18n.t(`enums:emailType.${type}`, { defaultValue: type });
 
 export const getAddressTypeLabel = (type: AddressTypeValue): string =>
-  AddressTypeLabels[type] ?? 'Bilinmiyor';
+  i18n.t(`enums:addressType.${type}`, { defaultValue: type });
 
 export const getContactFullName = (
   contact: Pick<ContactDetailItem | ContactListItem, 'firstName' | 'lastName'>
@@ -186,17 +188,22 @@ export const getContactFullName = (
 // SELECT OPTIONS
 // =====================================================
 
-export const phoneTypeOptions = Object.entries(PhoneType).map(([, value]) => ({
-  label: PhoneTypeLabels[value as PhoneTypeValue],
+export const contactStatusOptions = Object.values(ContactStatus).map((value) => ({
+  label: getContactStatusLabel(value),
   value,
 }));
 
-export const emailTypeOptions = Object.entries(EmailType).map(([, value]) => ({
-  label: EmailTypeLabels[value as EmailTypeValue],
+export const phoneTypeOptions = Object.values(PhoneType).map((value) => ({
+  label: getPhoneTypeLabel(value),
   value,
 }));
 
-export const addressTypeOptions = Object.entries(AddressType).map(([, value]) => ({
-  label: AddressTypeLabels[value as AddressTypeValue],
+export const emailTypeOptions = Object.values(EmailType).map((value) => ({
+  label: getEmailTypeLabel(value),
+  value,
+}));
+
+export const addressTypeOptions = Object.values(AddressType).map((value) => ({
+  label: getAddressTypeLabel(value),
   value,
 }));

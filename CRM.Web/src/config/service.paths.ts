@@ -84,6 +84,7 @@ export const ServicePath = {
         Delete: `${ControllerPaths.AccountPath}/delete`,
         Assign: `${ControllerPaths.AccountPath}/assign`,
         State: `${ControllerPaths.AccountPath}/set-state`,
+        BulkUpdateStatus: `${ControllerPaths.AccountPath}/bulk-update-status`,
     },
 
     Contact:{
@@ -95,6 +96,7 @@ export const ServicePath = {
         Delete: `${ControllerPaths.ContactPath}/delete`,
         Assign: `${ControllerPaths.ContactPath}/assign`,
         State: `${ControllerPaths.ContactPath}/set-state`,
+        BulkUpdateStatus: `${ControllerPaths.ContactPath}/bulk-update-status`,
     },
 
     Product:{
@@ -110,6 +112,7 @@ export const ServicePath = {
         Delete: `${ControllerPaths.OpportunityPath}/delete`,
         Assign: `${ControllerPaths.OpportunityPath}/assign`,
         State: `${ControllerPaths.OpportunityPath}/set-state`,
+        BulkUpdateStage: `${ControllerPaths.OpportunityPath}/bulk-update-stage`,
     },
 
     Audit:{

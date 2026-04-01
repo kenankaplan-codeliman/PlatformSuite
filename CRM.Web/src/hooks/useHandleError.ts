@@ -5,6 +5,11 @@ interface FieldError {
   errors: string[];
 }
 
+interface ApiErrorResponse {
+  detail?: string;
+  errors?: FieldError[];
+}
+
 export function handleError(error: unknown): string {
 
   let errorMessage: string | null = null;
@@ -35,14 +40,16 @@ export function handleError(error: unknown): string {
           errorMessage = "Beklenmeyen bir hata oluştu";
       }
 
+      const responseData = error.response.data as ApiErrorResponse;
+
       // Backend detail message
-      const backendMessage = (error.response.data as any)?.detail;
+      const backendMessage = responseData?.detail;
       if (backendMessage) {
         errorMessage = backendMessage;
       }
 
       // Validation errors
-      const validationErrors = (error.response.data as any)?.errors as FieldError[];
+      const validationErrors = responseData?.errors;
 
       if (validationErrors?.length) {
         errorMessage = validationErrors

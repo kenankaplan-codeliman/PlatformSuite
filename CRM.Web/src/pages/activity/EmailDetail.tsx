@@ -1,4 +1,5 @@
 import React, { useCallback } from 'react';
+import { useTranslation } from 'react-i18next';
 import {
   Card,
   Form,
@@ -22,6 +23,7 @@ import {
   LinkOutlined,
   CalendarOutlined,
 } from '@ant-design/icons';
+import DOMPurify from 'dompurify';
 import dayjs from 'dayjs';
 
 import { RoutePaths } from '@/config/route.paths';
@@ -72,31 +74,28 @@ const renderSelectedEntities = (entities: EntityReference[] | EntityReference | 
 
 const EmailDetail: React.FC<DetailPageProps<EmailActivity>> = (props) => {
   const store = useActivityStore();
+  const { t } = useTranslation('activity');
+  const { t: tc } = useTranslation('common');
 
   const detail = useDetailPage<EmailActivity>(
     {
       fetchById: (id) => store.fetchActivityById(id, ActivityType.Email),
-      createEntity: (values) => store.createActivity<EmailActivity>(values as any),
-      updateEntity: (values) => store.updateActivity<EmailActivity>(values as any),
+      createEntity: (values) => store.createActivity<EmailActivity>(values as Omit<EmailActivity, 'id' | 'createdAt' | 'createdBy'>),
+      updateEntity: (values) => store.updateActivity<EmailActivity>(values as Partial<EmailActivity> & { activityType: EmailActivity['activityType'] }),
       deleteEntity: async (id) => {
-        const { deleteActivity } = useActivityStore.getState();
-        await deleteActivity(id);
+        await store.deleteActivity(id);
       },
       currentEntity: store.currentActivity as EmailActivity | null,
       clearCurrentEntity: () => store.setCurrentActivity(null),
 
-      // Entity → Form dönüşümü
       mapEntityToForm: (entity) => ({
         subject: entity.subject,
         body: entity.body,
-
         status: entity.status,
         priority: entity.priority,
-
         startDate: entity.startDate ? dayjs(entity.startDate) : null,
         dueDate: entity.dueDate ? dayjs(entity.dueDate) : null,
         readDate: entity.readDate ? dayjs(entity.readDate) : null,
-
         from: entity.from || null,
         to: entity.to || [],
         cc: entity.cc || [],
@@ -104,7 +103,6 @@ const EmailDetail: React.FC<DetailPageProps<EmailActivity>> = (props) => {
         regardingEntity: entity.regardingEntity || null,
       }),
 
-      // Form → Entity dönüşümü
       mapFormToEntity: (values, id) => ({
         ...values,
         id: id || undefined,
@@ -114,7 +112,6 @@ const EmailDetail: React.FC<DetailPageProps<EmailActivity>> = (props) => {
         readDate: toLocalISO(values.readDate) ?? undefined,
       }),
 
-      // Yeni kayıt default'ları
       defaultFormValues: {
         activityType: ActivityType.Email,
         status: ActivityStatus.NotStarted,
@@ -168,7 +165,7 @@ const EmailDetail: React.FC<DetailPageProps<EmailActivity>> = (props) => {
                 </Tag>
                 <Badge
                   status={currentEmail?.isActive ? 'success' : 'default'}
-                  text={currentEmail?.isActive ? 'Aktif' : 'Pasif'}
+                  text={currentEmail?.isActive ? tc('status.active') : tc('status.inactive')}
                 />
               </Space>
             </Space>
@@ -178,26 +175,26 @@ const EmailDetail: React.FC<DetailPageProps<EmailActivity>> = (props) => {
 
       <Row gutter={16}>
         <Col span={12}>
-          <Card title={<Space><SendOutlined /><span>Gönderen / Alıcılar</span></Space>} style={{ marginBottom: 16 }}>
+          <Card title={<Space><SendOutlined /><span>{t('section.senderRecipients')}</span></Space>} style={{ marginBottom: 16 }}>
             <Descriptions column={1} size="small">
-              <Descriptions.Item label="Kimden">{renderSelectedEntities(currentEmail?.from)}</Descriptions.Item>
-              <Descriptions.Item label="Kime">{renderSelectedEntities(currentEmail?.to)}</Descriptions.Item>
-              <Descriptions.Item label="CC">{renderSelectedEntities(currentEmail?.cc)}</Descriptions.Item>
-              <Descriptions.Item label="BCC">{renderSelectedEntities(currentEmail?.bcc)}</Descriptions.Item>
+              <Descriptions.Item label={t('field.from')}>{renderSelectedEntities(currentEmail?.from)}</Descriptions.Item>
+              <Descriptions.Item label={t('field.to')}>{renderSelectedEntities(currentEmail?.to)}</Descriptions.Item>
+              <Descriptions.Item label={t('field.cc')}>{renderSelectedEntities(currentEmail?.cc)}</Descriptions.Item>
+              <Descriptions.Item label={t('field.bcc')}>{renderSelectedEntities(currentEmail?.bcc)}</Descriptions.Item>
             </Descriptions>
           </Card>
         </Col>
 
         <Col span={12}>
-          <Card title={<Space><ClockCircleOutlined /><span>Tarih Bilgileri</span></Space>} style={{ marginBottom: 16 }}>
+          <Card title={<Space><ClockCircleOutlined /><span>{t('section.dateInfo')}</span></Space>} style={{ marginBottom: 16 }}>
             <Descriptions column={1} size="small">
-              <Descriptions.Item label="Oluşturma Tarihi">
+              <Descriptions.Item label={t('label.emailCreatedDate')}>
                 {currentEmail?.startDate ? dayjs(currentEmail.startDate).format('DD.MM.YYYY HH:mm') : '-'}
               </Descriptions.Item>
-              <Descriptions.Item label="Gönderilme Tarihi">
+              <Descriptions.Item label={t('label.emailSentDate')}>
                 {currentEmail?.dueDate ? dayjs(currentEmail.dueDate).format('DD.MM.YYYY HH:mm') : '-'}
               </Descriptions.Item>
-              <Descriptions.Item label="Okunma Tarihi">
+              <Descriptions.Item label={t('label.emailReadDate')}>
                 {currentEmail?.readDate ? dayjs(currentEmail.readDate).format('DD.MM.YYYY HH:mm') : '-'}
               </Descriptions.Item>
             </Descriptions>
@@ -205,16 +202,16 @@ const EmailDetail: React.FC<DetailPageProps<EmailActivity>> = (props) => {
         </Col>
 
         <Col span={24}>
-          <Card title={<Space><LinkOutlined /><span>İlgili Kayıt</span></Space>} style={{ marginBottom: 16 }}>
+          <Card title={<Space><LinkOutlined /><span>{t('section.regardingRecord')}</span></Space>} style={{ marginBottom: 16 }}>
             {renderSelectedEntities(currentEmail?.regardingEntity)}
           </Card>
         </Col>
 
         <Col span={24}>
-          <Card title={<Space><FileTextOutlined /><span>E-posta İçeriği</span></Space>} style={{ marginBottom: 16 }}>
+          <Card title={<Space><FileTextOutlined /><span>{t('section.emailContent')}</span></Space>} style={{ marginBottom: 16 }}>
             <div
               style={{ padding: 16, background: '#fafafa', borderRadius: 4, minHeight: 200 }}
-              dangerouslySetInnerHTML={{ __html: currentEmail?.body || '<p>İçerik bulunmuyor.</p>' }}
+              dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(currentEmail?.body || `<p>${t('empty.emailContent')}</p>`) }}
             />
           </Card>
         </Col>
@@ -227,65 +224,64 @@ const EmailDetail: React.FC<DetailPageProps<EmailActivity>> = (props) => {
   const renderEditMode = () => (
     <Form form={detail.form} layout="vertical">
       <Row gutter={16}>
-        {/* Konu */}
         <Col span={24}>
-          <Card title={<Space><MailOutlined /><span>E-posta Bilgileri</span></Space>} style={{ marginBottom: 16 }}>
+          <Card title={<Space><MailOutlined /><span>{t('section.emailInfo')}</span></Space>} style={{ marginBottom: 16 }}>
             <Row gutter={16}>
               <Col span={24}>
-                <Form.Item name="subject" label="Konu" rules={[{ required: true, message: 'Konu gereklidir' }]}>
-                  <Input placeholder="E-posta konusu girin" />
+                <Form.Item name="subject" label={t('field.subject')} rules={[{ required: true, message: t('validation.subjectRequired') }]}>
+                  <Input placeholder={t('placeholder.emailSubject')} />
                 </Form.Item>
               </Col>
               <Col span={12}>
-                <Form.Item name="from" label="Gönderen Seçin">
+                <Form.Item name="from" label={t('label.selectFrom')}>
                   <EntityLookup
                     onSearch={entitySearchService.search}
                     entityTypes={[EntityType.User]}
                     multiple={false}
-                    modalTitle="Gönderen Seç"
+                    modalTitle={t('modal.selectFrom')}
                   />
                 </Form.Item>
               </Col>
               <Col span={12}>
-                <Form.Item name="to" label="Alıcıları Seçin">
+                <Form.Item name="to" label={t('label.selectTo')}>
                   <EntityLookup
                     onSearch={entitySearchService.search}
                     entityTypes={[EntityType.User, EntityType.Contact, EntityType.Account]}
                     multiple={true}
-                    modalTitle="Alıcı Seç"
+                    modalTitle={t('modal.selectTo')}
                     maxSelections={50}
                   />
                 </Form.Item>
               </Col>
               <Col span={12}>
-                <Form.Item name="cc" label="CC Alıcılarını Seçin">
+                <Form.Item name="cc" label={t('label.selectCc')}>
                   <EntityLookup
                     onSearch={entitySearchService.search}
                     entityTypes={[EntityType.User, EntityType.Contact, EntityType.Account]}
                     multiple={true}
-                    modalTitle="CC Seç"
+                    modalTitle={t('modal.selectCc')}
                     maxSelections={50}
                   />
                 </Form.Item>
               </Col>
               <Col span={12}>
-                <Form.Item name="bcc" label="BCC Alıcılarını Seçin">
+                <Form.Item name="bcc" label={t('label.selectBcc')}>
                   <EntityLookup
                     onSearch={entitySearchService.search}
                     entityTypes={[EntityType.User, EntityType.Contact, EntityType.Account]}
                     multiple={true}
-                    modalTitle="BCC Seç"
+                    modalTitle={t('modal.selectBcc')}
                     maxSelections={50}
                   />
                 </Form.Item>
               </Col>
               <Col span={12}>
-                <Form.Item name="regardingEntity" label="İlgili Kaydı Seçin">
+                <Form.Item name="regardingEntity" label={t('label.selectRegarding')}>
                   <EntityLookup
                     onSearch={entitySearchService.search}
                     entityTypes={[EntityType.Lead, EntityType.Account, EntityType.Contact]}
                     multiple={false}
-                    modalTitle="İlgili Kayıt Seç"
+                    modalTitle={t('modal.selectRegarding')}
                   />
                 </Form.Item>
               </Col>
@@ -293,56 +289,52 @@ const EmailDetail: React.FC<DetailPageProps<EmailActivity>> = (props) => {
           </Card>
         </Col>
 
-        {/* Durum & Yön */}
         <Col span={8}>
-          <Card title={<Space><FlagOutlined /><span>Durum & Yön</span></Space>} style={{ marginBottom: 16 }}>
+          <Card title={<Space><FlagOutlined /><span>{t('section.statusDirection')}</span></Space>} style={{ marginBottom: 16 }}>
             <Row gutter={16}>
               <Col span={12}>
-                <Form.Item name="status" label="Durum" rules={[{ required: true, message: 'Durum seçimi gereklidir' }]}>
-                  <Select options={activityStatusOptions} placeholder="Durum seçin" />
+                <Form.Item name="status" label={t('field.status')} rules={[{ required: true, message: t('validation.statusRequired') }]}>
+                  <Select options={activityStatusOptions} placeholder={t('field.status')} />
                 </Form.Item>
               </Col>
               <Col span={12}>
-                <Form.Item name="priority" label="Öncelik" rules={[{ required: true, message: 'Öncelik seçimi gereklidir' }]}>
-                  <Select options={activityPriorityOptions} placeholder="Öncelik seçin" />
+                <Form.Item name="priority" label={t('field.priority')} rules={[{ required: true, message: t('validation.priorityRequired') }]}>
+                  <Select options={activityPriorityOptions} placeholder={t('field.priority')} />
                 </Form.Item>
               </Col>
             </Row>
           </Card>
         </Col>
 
-        {/* Zaman Bilgileri*/}
         <Col span={16}>
-          <Card title={<Space><CalendarOutlined /><span>Zaman Bilgileri</span></Space>} style={{ marginBottom: 16 }}>
+          <Card title={<Space><CalendarOutlined /><span>{t('section.timeInfo')}</span></Space>} style={{ marginBottom: 16 }}>
             <Row gutter={16}>
               <Col span={8}>
-                <Form.Item name="startDate" label="Oluşturma Tarihi" rules={[{ required: true, message: 'Oluşturma tarihi gereklidir' }]}>
-                  <DatePicker showTime format="DD.MM.YYYY HH:mm" style={{ width: '100%' }} placeholder="Oluşturma tarihi" />
+                <Form.Item name="startDate" label={t('label.emailCreatedDate')} rules={[{ required: true, message: t('validation.emailStartDateRequired') }]}>
+                  <DatePicker showTime format="DD.MM.YYYY HH:mm" style={{ width: '100%' }} placeholder={t('placeholder.emailStartDate')} />
                 </Form.Item>
               </Col>
               <Col span={8}>
-                <Form.Item name="dueDate" label="Gönderilme Tarihi" rules={[{ required: true, message: 'Gönderilme tarihi gereklidir' }]}>
-                  <DatePicker showTime format="DD.MM.YYYY HH:mm" style={{ width: '100%' }} placeholder="Gönderilme tarihi" />
+                <Form.Item name="dueDate" label={t('label.emailSentDate')} rules={[{ required: true, message: t('validation.emailDueDateRequired') }]}>
+                  <DatePicker showTime format="DD.MM.YYYY HH:mm" style={{ width: '100%' }} placeholder={t('placeholder.emailDueDate')} />
                 </Form.Item>
               </Col>
               <Col span={8}>
-                <Form.Item name="readDate" label="Okunma Tarihi">
-                  <DatePicker showTime format="DD.MM.YYYY HH:mm" style={{ width: '100%' }} placeholder="Okunma tarihi" />
+                <Form.Item name="readDate" label={t('label.emailReadDate')}>
+                  <DatePicker showTime format="DD.MM.YYYY HH:mm" style={{ width: '100%' }} placeholder={t('label.emailReadDate')} />
                 </Form.Item>
               </Col>
             </Row>
           </Card>
         </Col>
 
-        {/* E-posta İçeriği */}
         <Col span={24}>
-          <Card title={<Space><FileTextOutlined /><span>E-posta İçeriği</span></Space>} style={{ marginBottom: 16 }}>
-            <Form.Item name="body" label="İçerik">
-              <TextArea rows={8} placeholder="E-posta içeriği..." />
+          <Card title={<Space><FileTextOutlined /><span>{t('section.emailContent')}</span></Space>} style={{ marginBottom: 16 }}>
+            <Form.Item name="body" label={t('field.body')}>
+              <TextArea rows={8} placeholder={t('placeholder.emailContent')} />
             </Form.Item>
           </Card>
         </Col>
-
       </Row>
     </Form>
   );
@@ -352,16 +344,16 @@ const EmailDetail: React.FC<DetailPageProps<EmailActivity>> = (props) => {
   return (
     <DetailPageLayout
       title={{
-        create: 'Yeni E-posta',
-        view: 'E-posta Detayı',
-        edit: 'E-posta Düzenle',
+        create: t('email.titleCreate'),
+        view: t('email.titleView'),
+        edit: t('email.titleEdit'),
       }}
       deleteConfirm={{
-        title: 'E-posta Silme',
-        description: 'Bu e-postayı silmek istediğinizden emin misiniz?',
+        title: t('email.deleteTitle'),
+        description: t('email.deleteDescription'),
       }}
-      notFoundTitle="E-posta Bulunamadı"
-      notFoundDescription="Aradığınız e-posta bulunamadı veya silinmiş olabilir."
+      notFoundTitle={t('email.notFoundTitle')}
+      notFoundDescription={t('email.notFoundDescription')}
       mode={detail.mode}
       isNew={detail.isNew}
       isViewMode={detail.isViewMode}

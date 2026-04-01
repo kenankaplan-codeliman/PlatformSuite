@@ -2,6 +2,7 @@ import React from "react";
 import ReactDOM from "react-dom/client";
 import App from "./App";
 import "antd/dist/reset.css";
+import '@/config/i18n.config';
 
 
 ReactDOM.createRoot(

@@ -1,4 +1,5 @@
 // Lead Types - Based on Lead.cs Entity
+import i18n from '@/config/i18n.config';
 
 export const LeadSource = {
   Web: 'web',
@@ -109,33 +110,6 @@ export interface LeadBulkUpdateStatusRequest {
   status: LeadStatusValue;
 }
 
-// Label maps
-const LeadSourceLabels: Record<LeadSourceValue, string> = {
-  [LeadSource.Web]: 'Web',
-  [LeadSource.Phone]: 'Telefon',
-  [LeadSource.Email]: 'E-posta',
-  [LeadSource.Referral]: 'Referans',
-  [LeadSource.Partner]: 'İş Ortağı',
-  [LeadSource.Event]: 'Etkinlik',
-  [LeadSource.Campaign]: 'Kampanya',
-  [LeadSource.Social]: 'Sosyal Medya',
-  [LeadSource.Other]: 'Diğer',
-};
-
-const LeadStatusLabels: Record<LeadStatusValue, string> = {
-  [LeadStatus.New]: 'Yeni',
-  [LeadStatus.Contacted]: 'İletişime Geçildi',
-  [LeadStatus.Qualified]: 'Nitelikli',
-  [LeadStatus.Unqualified]: 'Niteliksiz',
-  [LeadStatus.Converted]: 'Dönüştürüldü',
-};
-
-const LeadRatingLabels: Record<LeadRatingValue, string> = {
-  [LeadRating.Cold]: 'Soğuk',
-  [LeadRating.Warm]: 'Ilık',
-  [LeadRating.Hot]: 'Sıcak',
-};
-
 // Color maps
 const LeadStatusColors: Record<LeadStatusValue, string> = {
   [LeadStatus.New]: 'blue',
@@ -151,18 +125,15 @@ const LeadRatingColors: Record<LeadRatingValue, string> = {
   [LeadRating.Hot]: 'red',
 };
 
-// Helper functions - all accept VALUE (number) as parameter
-export const getLeadSourceLabel = (source: LeadSourceValue): string => {
-  return LeadSourceLabels[source] ?? 'Bilinmiyor';
-};
+// Helper functions
+export const getLeadSourceLabel = (source: LeadSourceValue): string =>
+  i18n.t(`enums:leadSource.${source}`, { defaultValue: source });
 
-export const getLeadStatusLabel = (status: LeadStatusValue): string => {
-  return LeadStatusLabels[status] ?? 'Bilinmiyor';
-};
+export const getLeadStatusLabel = (status: LeadStatusValue): string =>
+  i18n.t(`enums:leadStatus.${status}`, { defaultValue: status });
 
-export const getLeadRatingLabel = (rating: LeadRatingValue): string => {
-  return LeadRatingLabels[rating] ?? 'Bilinmiyor';
-};
+export const getLeadRatingLabel = (rating: LeadRatingValue): string =>
+  i18n.t(`enums:leadRating.${rating}`, { defaultValue: rating });
 
 export const getLeadStatusColor = (status: LeadStatusValue): string => {
   return LeadStatusColors[status] ?? 'default';
@@ -172,34 +143,34 @@ export const getLeadRatingColor = (rating: LeadRatingValue): string => {
   return LeadRatingColors[rating] ?? 'default';
 };
 
-// Options for Select components (pre-built for convenience)
-export const leadSourceOptions = Object.entries(LeadSource).map(([, value]) => ({
-  label: LeadSourceLabels[value as LeadSourceValue],
-  value: value,
+// Options for Select components
+export const leadSourceOptions = Object.values(LeadSource).map((value) => ({
+  label: getLeadSourceLabel(value),
+  value,
 }));
 
-export const leadStatusOptions = Object.entries(LeadStatus).map(([, value]) => ({
-  label: LeadStatusLabels[value as LeadStatusValue],
-  value: value,
+export const leadStatusOptions = Object.values(LeadStatus).map((value) => ({
+  label: getLeadStatusLabel(value),
+  value,
 }));
 
-export const leadRatingOptions = Object.entries(LeadRating).map(([, value]) => ({
-  label: LeadRatingLabels[value as LeadRatingValue],
-  value: value,
+export const leadRatingOptions = Object.values(LeadRating).map((value) => ({
+  label: getLeadRatingLabel(value),
+  value,
 }));
 
 // Table filter options (for Ant Design Table column filters)
-export const leadStatusFilters = Object.entries(LeadStatus).map(([, value]) => ({
-  text: LeadStatusLabels[value as LeadStatusValue],
-  value: value,
+export const leadStatusFilters = Object.values(LeadStatus).map((value) => ({
+  text: getLeadStatusLabel(value),
+  value,
 }));
 
-export const leadRatingFilters = Object.entries(LeadRating).map(([, value]) => ({
-  text: LeadRatingLabels[value as LeadRatingValue],
-  value: value,
+export const leadRatingFilters = Object.values(LeadRating).map((value) => ({
+  text: getLeadRatingLabel(value),
+  value,
 }));
 
-export const leadSourceFilters = Object.entries(LeadSource).map(([, value]) => ({
-  text: LeadSourceLabels[value as LeadSourceValue],
-  value: value,
+export const leadSourceFilters = Object.values(LeadSource).map((value) => ({
+  text: getLeadSourceLabel(value),
+  value,
 }));

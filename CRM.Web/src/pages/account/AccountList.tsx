@@ -1,5 +1,6 @@
 import { useEffect, useCallback, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { RoutePaths } from '@/config/route.paths';
 import { Badge, Input, Select, Space, Tag, Tooltip, Typography } from 'antd';
 import type { TableProps } from 'antd';
@@ -19,6 +20,8 @@ const { Text } = Typography;
 
 const AccountList: React.FC = () => {
   const navigate = useNavigate();
+  const { t } = useTranslation('account');
+  const { t: tc } = useTranslation('common');
 
   const {
     accounts, hasMore, page, pageSize, filters, selectedRowKeys,
@@ -56,18 +59,18 @@ const AccountList: React.FC = () => {
 
   const columns: ColumnsType<AccountListItem> = [
     {
-      title: 'Firma Adı', dataIndex: 'accountName', key: 'accountName', sorter: true, width: 220,
+      title: t('field.name'), dataIndex: 'accountName', key: 'accountName', sorter: true, width: 220,
       render: (text: string) => <Text strong style={{ cursor: 'pointer', color: '#1890ff' }}>{text}</Text>,
     },
     {
-      title: 'Tip', dataIndex: 'accountType', key: 'accountType', width: 120,
+      title: t('field.accountType'), dataIndex: 'accountType', key: 'accountType', width: 120,
       filters: accountTypeFilters,
       render: (type: AccountTypeValue) => (
         <Tag color={getAccountTypeColor(type)}>{getAccountTypeLabel(type)}</Tag>
       ),
     },
     {
-      title: 'İletişim', key: 'contact', width: 220,
+      title: t('section.contactInfo', 'İletişim'), key: 'contact', width: 220,
       render: (_: unknown, record: AccountListItem) => (
         <Space orientation="vertical" size={2}>
           {record.primaryEmail && (
@@ -79,31 +82,33 @@ const AccountList: React.FC = () => {
         </Space>
       ),
     },
-    { title: 'Sektör', dataIndex: 'industry', key: 'industry', width: 140, ellipsis: true },
+    { title: t('field.industry'), dataIndex: 'industry', key: 'industry', width: 140, ellipsis: true },
     {
-      title: 'Şehir', dataIndex: 'primaryCity', key: 'primaryCity', width: 120, ellipsis: true,
+      title: t('field.city'), dataIndex: 'primaryCity', key: 'primaryCity', width: 120, ellipsis: true,
       render: (city: string) => city
         ? <Space size={4}><EnvironmentOutlined style={{ color: '#8c8c8c', fontSize: 12 }} /><Text>{city}</Text></Space>
         : '-',
     },
     {
-      title: 'Çalışan', dataIndex: 'numberOfEmployees', key: 'numberOfEmployees', width: 100, align: 'right', sorter: true,
+      title: t('field.employees'), dataIndex: 'numberOfEmployees', key: 'numberOfEmployees', width: 100, align: 'right', sorter: true,
       render: (value: number) => value ? value.toLocaleString('tr-TR') : '-',
     },
     {
-      title: 'Yıllık Gelir', dataIndex: 'annualRevenue', key: 'annualRevenue', width: 140, align: 'right', sorter: true,
+      title: t('field.annualRevenue'), dataIndex: 'annualRevenue', key: 'annualRevenue', width: 140, align: 'right', sorter: true,
       render: (value: number) => value ? `₺${value.toLocaleString('tr-TR')}` : '-',
     },
     {
-      title: 'Web', dataIndex: 'website', key: 'website', width: 60, align: 'center',
+      title: t('field.web'), dataIndex: 'website', key: 'website', width: 60, align: 'center',
       render: (url: string) => url
         ? <Tooltip title={url}><a href={normalizeUrl(url)} target="_blank" rel="noopener noreferrer" onClick={(e) => e.stopPropagation()}><GlobalOutlined style={{ color: '#1890ff' }} /></a></Tooltip>
         : '-',
     },
     {
-      title: 'Aktif', dataIndex: 'isActive', key: 'isActive', width: 80, align: 'center',
-      filters: [{ text: 'Aktif', value: true }, { text: 'Pasif', value: false }],
-      render: (isActive: boolean) => <Badge status={isActive ? 'success' : 'default'} text={isActive ? 'Evet' : 'Hayır'} />,
+      title: t('field.isActive'), dataIndex: 'isActive', key: 'isActive', width: 80, align: 'center',
+      filters: [{ text: tc('status.active'), value: true }, { text: tc('status.inactive'), value: false }],
+      render: (isActive: boolean) => (
+        <Badge status={isActive ? 'success' : 'default'} text={isActive ? tc('confirm.yes') : tc('confirm.no')} />
+      ),
     },
   ];
 
@@ -119,12 +124,12 @@ const AccountList: React.FC = () => {
 
   return (
     <ListPageLayout<AccountListItem>
-      title="Firma Yönetimi"
-      subtitle="Firmalarınızı yönetin"
-      createButtonLabel="Yeni Firma"
+      title={t('list.title')}
+      subtitle={t('list.subtitle')}
+      createButtonLabel={t('action.create')}
       onCreate={() => navigate(RoutePaths.Account.New)}
 
-      searchPlaceholder="Firma adı ara..."
+      searchPlaceholder={t('placeholder.search')}
       searchValue={filters.accountName ?? ''}
       onSearch={handleSearch}
       hasActiveFilters={hasActiveFilters}
@@ -133,13 +138,13 @@ const AccountList: React.FC = () => {
       renderExtraFilters={() => (
         <>
           <Select
-            placeholder="Firma Tipi" allowClear style={{ width: 160 }}
+            placeholder={t('field.accountType')} allowClear style={{ width: 160 }}
             value={filters.accountType}
             onChange={(value) => handleFilterChange('accountType', value)}
             options={accountTypeOptions}
           />
           <Input
-            placeholder="Sektör" allowClear style={{ width: 150 }}
+            placeholder={t('field.industry')} allowClear style={{ width: 150 }}
             value={filters.industry || ''}
             onChange={(e) => handleFilterChange('industry', e.target.value)}
           />
@@ -153,22 +158,22 @@ const AccountList: React.FC = () => {
       onBulkDelete={{
         handler: bulkDeleteAccounts,
         confirm: {
-          title: 'Toplu Silme',
-          content: (count) => `Seçili ${count} firma silinecek. Onaylıyor musunuz?`,
+          title: tc('confirm.bulkDeleteTitle'),
+          content: (count) => t('confirm.bulkDeleteContent', { count }),
         },
       }}
       onBulkActivate={{
         handler: bulkActivateAccounts,
         confirm: {
-          title: 'Toplu Etkinleştirme',
-          content: (count) => `Seçili ${count} firma etkinleştirilecek. Onaylıyor musunuz?`,
+          title: tc('confirm.bulkActivateTitle'),
+          content: (count) => t('confirm.bulkActivateContent', { count }),
         },
       }}
       onBulkDeactivate={{
         handler: bulkDeactivateAccounts,
         confirm: {
-          title: 'Toplu Pasifleştirme',
-          content: (count) => `Seçili ${count} firma pasifleştirilecek. Onaylıyor musunuz?`,
+          title: tc('confirm.bulkDeactivateTitle'),
+          content: (count) => t('confirm.bulkDeactivateContent', { count }),
         },
       }}
       onBulkAssign={{ handler: bulkAssignAccounts }}
@@ -177,20 +182,14 @@ const AccountList: React.FC = () => {
         onView: (record) => navigate(RoutePaths.Account.View(record.id)),
         onEdit: (record) => navigate(RoutePaths.Account.Edit(record.id)),
         isActiveResolver: (record) => record.isActive,
-        onActivate: {
-          handler: (record) => activateAccount(record.id),
-        },
-        onDeactivate: {
-          handler: (record) => deactivateAccount(record.id),
-        },
-        onAssign: {
-          handler: (record, entity) => assignAccount(record.id, entity),
-        },
+        onActivate: { handler: (record) => activateAccount(record.id) },
+        onDeactivate: { handler: (record) => deactivateAccount(record.id) },
+        onAssign: { handler: (record, entity) => assignAccount(record.id, entity) },
         onDelete: {
           handler: (record) => deleteAccount(record.id),
           confirm: {
-            title: 'Firma Silme',
-            content: (record) => `"${record.accountName}" firması silinecek. Onaylıyor musunuz?`,
+            title: t('confirm.deleteTitle'),
+            content: (record) => t('confirm.rowDeleteContent', { name: record.accountName }),
           },
         },
       }}

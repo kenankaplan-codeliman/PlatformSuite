@@ -9,7 +9,7 @@ namespace CRM.Domain.Enums
         New,
         Contacted,
         Qualified,
+        Unqualified,
         Converted,
-        Lost,
     }
 }

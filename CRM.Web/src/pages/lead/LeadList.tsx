@@ -1,5 +1,6 @@
 import { useEffect, useCallback, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { RoutePaths } from '@/config/route.paths';
 import { Badge, Input, Select, Space, Tag, Typography } from 'antd';
 import type { TableProps } from 'antd';
@@ -8,7 +9,7 @@ import {
   PhoneOutlined,
 } from '@ant-design/icons';
 import type { ColumnsType } from 'antd/es/table/interface';
-import type { LeadListItem, LeadStatusValue, LeadRatingValue, LeadSourceValue } from '@/types/lead.types';
+import type { LeadListItem, LeadStatusValue, LeadRatingValue } from '@/types/lead.types';
 import {
   LeadStatus,
   getLeadStatusLabel,
@@ -31,6 +32,7 @@ const { Text } = Typography;
 
 const LeadList: React.FC = () => {
   const navigate = useNavigate();
+  const { t } = useTranslation('lead');
 
   const {
     leads,
@@ -80,7 +82,6 @@ const LeadList: React.FC = () => {
     [filters, setFilters]
   );
 
-  // Table onChange — kolon filtreleri
   const handleTableChange: TableProps<LeadListItem>['onChange'] = (_pagination, tableFilters) => {
     setFilters({
       ...filters,
@@ -92,7 +93,6 @@ const LeadList: React.FC = () => {
     });
   };
 
-  // ── hasActiveFilters ────────────────────────────────────────────────────────
   const hasActiveFilters = !!(
     filters.companyName ||
     filters.leadStatus !== undefined ||
@@ -101,47 +101,30 @@ const LeadList: React.FC = () => {
     filters.industry
   );
 
-  // ── Bulk: durum değiştir — extraBulkItems ────────────────────────────────────
+  // ── Bulk: durum değiştir ────────────────────────────────────────────────────
   const extraBulkItems = useCallback((): MenuProps['items'] => [
     {
       key: 'status',
-      label: 'Durum Değiştir',
+      label: t('action.changeStatus'),
       icon: <CheckCircleOutlined />,
-      children: [
-        {
-          key: `status-${LeadStatus.New}`,
-          label: getLeadStatusLabel(LeadStatus.New),
-          onClick: () => bulkUpdateStatus(LeadStatus.New),
-        },
-        {
-          key: `status-${LeadStatus.Contacted}`,
-          label: getLeadStatusLabel(LeadStatus.Contacted),
-          onClick: () => bulkUpdateStatus(LeadStatus.Contacted),
-        },
-        {
-          key: `status-${LeadStatus.Qualified}`,
-          label: getLeadStatusLabel(LeadStatus.Qualified),
-          onClick: () => bulkUpdateStatus(LeadStatus.Qualified),
-        },
-        {
-          key: `status-${LeadStatus.Unqualified}`,
-          label: getLeadStatusLabel(LeadStatus.Unqualified),
-          onClick: () => bulkUpdateStatus(LeadStatus.Unqualified),
-        },
-      ],
+      children: Object.values(LeadStatus).map((status) => ({
+        key: `status-${status}`,
+        label: getLeadStatusLabel(status),
+        onClick: () => bulkUpdateStatus(status),
+      })),
     },
-  ], [bulkUpdateStatus]);
+  ], [t, bulkUpdateStatus]);
 
   // ── Columns ─────────────────────────────────────────────────────────────────
   const columns: ColumnsType<LeadListItem> = [
     {
-      title: 'Şirket Adı',
+      title: t('field.companyName'),
       dataIndex: 'companyName',
       key: 'companyName',
       sorter: true,
       width: 200,
       render: (text: string, record: LeadListItem) => (
-        <Space direction="vertical" size={0}>
+        <Space orientation="vertical" size={0}>
           <Text strong style={{ cursor: 'pointer', color: '#1890ff' }}>{text}</Text>
           <Text type="secondary" style={{ fontSize: 12 }}>
             {record.firstName} {record.lastName}
@@ -150,12 +133,12 @@ const LeadList: React.FC = () => {
       ),
     },
     {
-      title: 'İletişim',
+      title: t('section.contactInfo'),
       dataIndex: 'email',
       key: 'contact',
       width: 220,
       render: (_: unknown, record: LeadListItem) => (
-        <Space direction="vertical" size={2}>
+        <Space orientation="vertical" size={2}>
           {record.email && (
             <Space size={4}>
               <MailOutlined style={{ color: '#8c8c8c', fontSize: 12 }} />
@@ -172,7 +155,7 @@ const LeadList: React.FC = () => {
       ),
     },
     {
-      title: 'Durum',
+      title: t('field.leadStatus'),
       dataIndex: 'leadStatus',
       key: 'leadStatus',
       width: 140,
@@ -182,7 +165,7 @@ const LeadList: React.FC = () => {
       ),
     },
     {
-      title: 'Değerlendirme',
+      title: t('field.leadRating'),
       dataIndex: 'leadRating',
       key: 'leadRating',
       width: 120,
@@ -192,21 +175,21 @@ const LeadList: React.FC = () => {
       ),
     },
     {
-      title: 'Kaynak',
+      title: t('field.leadSource'),
       dataIndex: 'leadSource',
       key: 'leadSource',
       width: 120,
-      render: (source: LeadSourceValue) => <Text>{getLeadSourceLabel(source)}</Text>,
+      render: (source) => <Text>{getLeadSourceLabel(source)}</Text>,
     },
     {
-      title: 'Sektör',
+      title: t('field.industry'),
       dataIndex: 'industry',
       key: 'industry',
       width: 140,
       ellipsis: true,
     },
     {
-      title: 'Tahmini Değer',
+      title: t('field.estimatedValueShort'),
       dataIndex: 'estimatedValue',
       key: 'estimatedValue',
       width: 130,
@@ -215,17 +198,20 @@ const LeadList: React.FC = () => {
       render: (value: number) => (value ? `₺${value.toLocaleString('tr-TR')}` : '-'),
     },
     {
-      title: 'Aktif',
+      title: t('field.isActive'),
       dataIndex: 'isActive',
       key: 'isActive',
       width: 80,
       align: 'center',
       filters: [
-        { text: 'Aktif', value: true },
-        { text: 'Pasif', value: false },
+        { text: t('common:status.active'), value: true },
+        { text: t('common:status.inactive'), value: false },
       ],
       render: (isActive: boolean) => (
-        <Badge status={isActive ? 'success' : 'default'} text={isActive ? 'Evet' : 'Hayır'} />
+        <Badge
+          status={isActive ? 'success' : 'default'}
+          text={isActive ? t('common:confirm.yes') : t('common:confirm.no')}
+        />
       ),
     },
   ];
@@ -233,12 +219,12 @@ const LeadList: React.FC = () => {
   // ── Render ───────────────────────────────────────────────────────────────────
   return (
     <ListPageLayout<LeadListItem>
-      title="Lead Yönetimi"
-      subtitle="Potansiyel müşterilerinizi yönetin"
-      createButtonLabel="Yeni Lead"
+      title={t('list.title')}
+      subtitle={t('list.subtitle')}
+      createButtonLabel={t('action.create')}
       onCreate={() => navigate(RoutePaths.Lead.New)}
 
-      searchPlaceholder="Şirket adı ara..."
+      searchPlaceholder={t('placeholder.searchCompany')}
       searchValue={filters.companyName ?? ''}
       onSearch={handleSearch}
       hasActiveFilters={hasActiveFilters}
@@ -247,25 +233,25 @@ const LeadList: React.FC = () => {
       renderExtraFilters={() => (
         <>
           <Select
-            placeholder="Durum" allowClear style={{ width: 160 }}
+            placeholder={t('field.leadStatus')} allowClear style={{ width: 160 }}
             value={filters.leadStatus}
             onChange={(val) => handleFilterChange('leadStatus', val)}
             options={leadStatusOptions}
           />
           <Select
-            placeholder="Değerlendirme" allowClear style={{ width: 140 }}
+            placeholder={t('field.leadRating')} allowClear style={{ width: 140 }}
             value={filters.leadRating}
             onChange={(val) => handleFilterChange('leadRating', val)}
             options={leadRatingOptions}
           />
           <Select
-            placeholder="Kaynak" allowClear style={{ width: 150 }}
+            placeholder={t('field.leadSource')} allowClear style={{ width: 150 }}
             value={filters.leadSource}
             onChange={(val) => handleFilterChange('leadSource', val)}
             options={leadSourceOptions}
           />
           <Input
-            placeholder="Sektör" allowClear style={{ width: 150 }}
+            placeholder={t('field.industry')} allowClear style={{ width: 150 }}
             value={filters.industry || ''}
             onChange={(e) => handleFilterChange('industry', e.target.value)}
           />
@@ -279,8 +265,8 @@ const LeadList: React.FC = () => {
       onBulkDelete={{
         handler: bulkDeleteLeads,
         confirm: {
-          title: 'Toplu Silme',
-          content: (count) => `Seçili ${count} lead silinecek. Onaylıyor musunuz?`,
+          title: t('common:confirm.bulkDeleteTitle'),
+          content: (count) => t('confirm.bulkDeleteContent', { count }),
         },
       }}
       onBulkActivate={{ handler: bulkActivateLeads }}
@@ -298,8 +284,8 @@ const LeadList: React.FC = () => {
         onDelete: {
           handler: (record) => deleteLead(record.id),
           confirm: {
-            title: 'Lead Silme',
-            content: (record) => `"${record.companyName}" lead'i silinecek. Onaylıyor musunuz?`,
+            title: t('confirm.deleteTitle'),
+            content: (record) => t('confirm.rowDeleteContent', { name: record.companyName }),
           },
         },
       }}

@@ -1,6 +1,7 @@
 // Opportunity Types - Based on Opportunity.cs Entity
 
 import type { AuditInfo } from "./common.types";
+import i18n from '@/config/i18n.config';
 
 // =====================================================
 // ENUMS
@@ -106,31 +107,6 @@ export interface OpportunityListResponse {
 }
 
 // =====================================================
-// LABELS
-// =====================================================
-
-const OpportunityStageLabels: Record<OpportunityStageValue, string> = {
-  [OpportunityStage.Prospect]: 'Aday',
-  [OpportunityStage.Qualification]: 'Nitelendirme',
-  [OpportunityStage.Proposal]: 'Teklif',
-  [OpportunityStage.Negotiation]: 'Müzakere',
-  [OpportunityStage.Won]: 'Kazanıldı',
-  [OpportunityStage.Lost]: 'Kaybedildi',
-};
-
-const OpportunitySourceLabels: Record<OpportunitySourceValue, string> = {
-  [OpportunitySource.Web]: 'Web',
-  [OpportunitySource.Referral]: 'Referans',
-  [OpportunitySource.ColdCall]: 'Soğuk Arama',
-  [OpportunitySource.EmailCampaign]: 'E-posta Kampanyası',
-  [OpportunitySource.Event]: 'Etkinlik',
-  [OpportunitySource.SocialMedia]: 'Sosyal Medya',
-  [OpportunitySource.Partner]: 'İş Ortağı',
-  [OpportunitySource.ExistingCustomer]: 'Mevcut Müşteri',
-  [OpportunitySource.Other]: 'Diğer',
-};
-
-// =====================================================
 // COLORS
 // =====================================================
 
@@ -148,13 +124,13 @@ const OpportunityStageColors: Record<OpportunityStageValue, string> = {
 // =====================================================
 
 export const getOpportunityStageLabel = (stage: OpportunityStageValue): string =>
-  OpportunityStageLabels[stage] ?? 'Bilinmiyor';
+  i18n.t(`enums:opportunityStage.${stage}`, { defaultValue: stage });
 
 export const getOpportunityStageColor = (stage: OpportunityStageValue): string =>
   OpportunityStageColors[stage] ?? '#d9d9d9';
 
 export const getOpportunitySourceLabel = (source: OpportunitySourceValue): string =>
-  OpportunitySourceLabels[source] ?? 'Bilinmiyor';
+  i18n.t(`enums:opportunitySource.${source}`, { defaultValue: source });
 
 export const formatCurrency = (value: number, currency = 'TRY'): string =>
   new Intl.NumberFormat('tr-TR', { style: 'currency', currency }).format(value);
@@ -163,13 +139,13 @@ export const formatCurrency = (value: number, currency = 'TRY'): string =>
 // SELECT OPTIONS
 // =====================================================
 
-export const opportunityStageOptions = Object.entries(OpportunityStage).map(([, value]) => ({
-  label: OpportunityStageLabels[value as OpportunityStageValue],
+export const opportunityStageOptions = Object.values(OpportunityStage).map((value) => ({
+  label: getOpportunityStageLabel(value),
   value,
 }));
 
-export const opportunitySourceOptions = Object.entries(OpportunitySource).map(([, value]) => ({
-  label: OpportunitySourceLabels[value as OpportunitySourceValue],
+export const opportunitySourceOptions = Object.values(OpportunitySource).map((value) => ({
+  label: getOpportunitySourceLabel(value),
   value,
 }));
 

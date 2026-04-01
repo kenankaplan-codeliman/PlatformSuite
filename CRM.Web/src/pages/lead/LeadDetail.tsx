@@ -1,4 +1,5 @@
 import React, { useState, useCallback } from 'react';
+import { useTranslation } from 'react-i18next';
 import {
   Card,
   Form,
@@ -55,6 +56,8 @@ const { TextArea } = Input;
 
 const LeadDetail: React.FC<DetailPageProps<LeadDetailItem>> = (props) => {
   const store = useLeadStore();
+  const { t } = useTranslation('lead');
+  const { t: tc } = useTranslation('common');
 
   const [activeTab, setActiveTab] = useState<string>('details');
   const handleTabChange = useCallback((key: string) => setActiveTab(key), []);
@@ -71,16 +74,9 @@ const LeadDetail: React.FC<DetailPageProps<LeadDetailItem>> = (props) => {
       currentEntity: store.currentLead,
       clearCurrentEntity: () => store.setCurrentLead(null),
 
-      // Entity → Form dönüşümü (Lead'de tarih alanı yok, doğrudan map)
       mapEntityToForm: (entity) => ({ ...entity }),
+      mapFormToEntity: (values, id) => ({ ...values, id: id || undefined }),
 
-      // Form → Entity dönüşümü
-      mapFormToEntity: (values, id) => ({
-        ...values,
-        id: id || undefined,
-      }),
-
-      // Yeni kayıt default'ları
       defaultFormValues: {
         leadStatus: LeadStatus.New,
         leadRating: LeadRating.Cold,
@@ -89,14 +85,14 @@ const LeadDetail: React.FC<DetailPageProps<LeadDetailItem>> = (props) => {
 
       listPath: RoutePaths.Lead.List,
       getViewPath: (entity) => RoutePaths.Lead.View(entity.id),
-      // Lead'de complete/cancel yok
     },
     props
   );
 
   const currentLead = detail.currentEntity;
 
-  // ─── Assign Handler ─────────────────────────────────────────────────────
+  // ─── Handlers ───────────────────────────────────────────────────────────────
+
   const handleAssign = useCallback(async (entity: EntityReference | EntityReference[] | null) => {
     if (!entity || !currentLead?.id) return;
     const user = Array.isArray(entity) ? entity[0] : entity;
@@ -104,7 +100,6 @@ const LeadDetail: React.FC<DetailPageProps<LeadDetailItem>> = (props) => {
     await store.fetchLeadById(currentLead.id);
   }, [currentLead?.id, store]);
 
-  // ─── Activate / Deactivate Handler ──────────────────────────────────────
   const handleStateChange = useCallback(async (isActive: boolean) => {
     if (!currentLead?.id) return;
     if (isActive) {
@@ -115,11 +110,10 @@ const LeadDetail: React.FC<DetailPageProps<LeadDetailItem>> = (props) => {
     await store.fetchLeadById(currentLead.id);
   }, [currentLead?.id, store]);
 
-  // ─── View Mode ──────────────────────────────────────────────────────────
+  // ─── View Mode ──────────────────────────────────────────────────────────────
 
   const renderViewMode = () => (
     <>
-      {/* Header Info */}
       <Card style={{ marginBottom: 16 }}>
         <Row gutter={24} align="middle">
           <Col flex="auto">
@@ -136,7 +130,7 @@ const LeadDetail: React.FC<DetailPageProps<LeadDetailItem>> = (props) => {
                 </Tag>
                 <Badge
                   status={currentLead?.isActive ? 'success' : 'default'}
-                  text={currentLead?.isActive ? 'Aktif' : 'Pasif'}
+                  text={currentLead?.isActive ? tc('status.active') : tc('status.inactive')}
                 />
               </Space>
               <Text type="secondary">
@@ -149,7 +143,7 @@ const LeadDetail: React.FC<DetailPageProps<LeadDetailItem>> = (props) => {
           <Col>
             {currentLead?.estimatedValue && (
               <div style={{ textAlign: 'right' }}>
-                <Text type="secondary">Tahmini Değer</Text>
+                <Text type="secondary">{t('field.estimatedValueShort')}</Text>
                 <Title level={4} style={{ margin: 0, color: '#52c41a' }}>
                   ₺{currentLead.estimatedValue.toLocaleString('tr-TR')}
                 </Title>
@@ -165,36 +159,36 @@ const LeadDetail: React.FC<DetailPageProps<LeadDetailItem>> = (props) => {
         items={[
           {
             key: 'details',
-            label: 'Detaylar',
+            label: t('tab.details'),
             children: (
               <Row gutter={16}>
                 {/* İletişim Bilgileri */}
                 <Col span={12}>
-                  <Card title={<Space><UserOutlined /><span>İletişim Bilgileri</span></Space>} style={{ marginBottom: 16 }}>
+                  <Card title={<Space><UserOutlined /><span>{t('section.contactInfo')}</span></Space>} style={{ marginBottom: 16 }}>
                     <Descriptions column={1} size="small">
-                      <Descriptions.Item label={<><MailOutlined /> E-posta</>}>
+                      <Descriptions.Item label={<><MailOutlined /> {t('field.email')}</>}>
                         {currentLead?.email ? (
                           <a href={`mailto:${currentLead.email}`}>{currentLead.email}</a>
                         ) : <Text type="secondary">-</Text>}
                       </Descriptions.Item>
-                      <Descriptions.Item label={<><PhoneOutlined /> Telefon</>}>
+                      <Descriptions.Item label={<><PhoneOutlined /> {t('field.phone')}</>}>
                         {currentLead?.phone ? (
                           <a href={`tel:${currentLead.phone}`}>{currentLead.phone}</a>
                         ) : <Text type="secondary">-</Text>}
                       </Descriptions.Item>
-                      <Descriptions.Item label={<><PhoneOutlined /> Mobil</>}>
+                      <Descriptions.Item label={<><PhoneOutlined /> {t('field.mobilePhone')}</>}>
                         {currentLead?.mobilePhone ? (
                           <a href={`tel:${currentLead.mobilePhone}`}>{currentLead.mobilePhone}</a>
                         ) : <Text type="secondary">-</Text>}
                       </Descriptions.Item>
-                      <Descriptions.Item label={<><GlobalOutlined /> Web Sitesi</>}>
+                      <Descriptions.Item label={<><GlobalOutlined /> {t('field.website')}</>}>
                         {currentLead?.website ? (
                           <a href={currentLead.website} target="_blank" rel="noopener noreferrer">
                             {currentLead.website}
                           </a>
                         ) : <Text type="secondary">-</Text>}
                       </Descriptions.Item>
-                      <Descriptions.Item label={<><EnvironmentOutlined /> Adres</>}>
+                      <Descriptions.Item label={<><EnvironmentOutlined /> {t('field.address')}</>}>
                         {currentLead?.address || <Text type="secondary">-</Text>}
                       </Descriptions.Item>
                     </Descriptions>
@@ -203,30 +197,29 @@ const LeadDetail: React.FC<DetailPageProps<LeadDetailItem>> = (props) => {
 
                 {/* Şirket Bilgileri */}
                 <Col span={12}>
-                  <Card title={<Space><BankOutlined /><span>Şirket Bilgileri</span></Space>} style={{ marginBottom: 16 }}>
+                  <Card title={<Space><BankOutlined /><span>{t('section.companyInfo')}</span></Space>} style={{ marginBottom: 16 }}>
                     <Descriptions column={1} size="small">
-                      <Descriptions.Item label="Sektör">
+                      <Descriptions.Item label={t('field.industry')}>
                         {currentLead?.industry || <Text type="secondary">-</Text>}
                       </Descriptions.Item>
-                      <Descriptions.Item label="Çalışan Sayısı">
+                      <Descriptions.Item label={t('field.numberOfEmployees')}>
                         {currentLead?.numberOfEmployees?.toLocaleString('tr-TR') || <Text type="secondary">-</Text>}
                       </Descriptions.Item>
-                      <Descriptions.Item label="Yıllık Gelir">
+                      <Descriptions.Item label={t('field.annualRevenue')}>
                         {currentLead?.annualRevenue
                           ? `₺${currentLead.annualRevenue.toLocaleString('tr-TR')}`
                           : <Text type="secondary">-</Text>}
                       </Descriptions.Item>
-                      <Descriptions.Item label="Kaynak">
+                      <Descriptions.Item label={t('field.leadSource')}>
                         {getLeadSourceLabel(currentLead?.leadSource ?? LeadSource.Web)}
                       </Descriptions.Item>
                     </Descriptions>
                   </Card>
                 </Col>
 
-                {/* Açıklama */}
                 {currentLead?.description && (
                   <Col span={24}>
-                    <Card title={<Space><FileTextOutlined /><span>Açıklama</span></Space>} style={{ marginBottom: 16 }}>
+                    <Card title={<Space><FileTextOutlined /><span>{t('section.description')}</span></Space>} style={{ marginBottom: 16 }}>
                       <Paragraph>{currentLead.description}</Paragraph>
                     </Card>
                   </Col>
@@ -236,7 +229,7 @@ const LeadDetail: React.FC<DetailPageProps<LeadDetailItem>> = (props) => {
           },
           {
             key: 'activities',
-            label: 'Aktiviteler',
+            label: t('tab.activities'),
             children: (
               <ActivityListView
                 initialFilters={{
@@ -251,53 +244,53 @@ const LeadDetail: React.FC<DetailPageProps<LeadDetailItem>> = (props) => {
     </>
   );
 
-  // ─── Edit Mode ──────────────────────────────────────────────────────────
+  // ─── Edit Mode ──────────────────────────────────────────────────────────────
 
   const renderEditMode = () => (
     <Form form={detail.form} layout="vertical">
       <Row gutter={24}>
         {/* Temel Bilgiler */}
         <Col span={24}>
-          <Card title={<Space><UserOutlined /><span>Temel Bilgiler</span></Space>} style={{ marginBottom: 16 }}>
+          <Card title={<Space><UserOutlined /><span>{t('section.basicInfo')}</span></Space>} style={{ marginBottom: 16 }}>
             <Row gutter={16}>
               <Col span={8}>
-                <Form.Item name="companyName" label="Şirket Adı" rules={[{ required: true, message: 'Şirket adı gereklidir' }]}>
-                  <Input prefix={<BankOutlined />} placeholder="Şirket adı girin" />
+                <Form.Item name="companyName" label={t('field.companyName')} rules={[{ required: true, message: t('validation.companyNameRequired') }]}>
+                  <Input prefix={<BankOutlined />} placeholder={t('placeholder.companyName')} />
                 </Form.Item>
               </Col>
               <Col span={8}>
-                <Form.Item name="firstName" label="Ad" rules={[{ required: true, message: 'Ad gereklidir' }]}>
-                  <Input prefix={<UserOutlined />} placeholder="Ad girin" />
+                <Form.Item name="firstName" label={t('field.firstName')}>
+                  <Input prefix={<UserOutlined />} placeholder={t('placeholder.firstName')} />
                 </Form.Item>
               </Col>
               <Col span={8}>
-                <Form.Item name="lastName" label="Soyad" rules={[{ required: true, message: 'Soyad gereklidir' }]}>
-                  <Input placeholder="Soyad girin" />
+                <Form.Item name="lastName" label={t('field.lastName')}>
+                  <Input placeholder={t('placeholder.lastName')} />
                 </Form.Item>
               </Col>
               <Col span={8}>
-                <Form.Item name="phone" label="Telefon">
-                  <Input prefix={<PhoneOutlined />} placeholder="Telefon girin" />
+                <Form.Item name="phone" label={t('field.phone')}>
+                  <Input prefix={<PhoneOutlined />} placeholder={t('placeholder.phone')} />
                 </Form.Item>
               </Col>
               <Col span={8}>
-                <Form.Item name="email" label="E-posta" rules={[{ type: 'email', message: 'Geçerli bir e-posta girin' }]}>
-                  <Input prefix={<MailOutlined />} placeholder="E-posta girin" />
+                <Form.Item name="email" label={t('field.email')} rules={[{ type: 'email', message: t('validation.emailInvalid') }]}>
+                  <Input prefix={<MailOutlined />} placeholder={t('placeholder.email')} />
                 </Form.Item>
               </Col>
               <Col span={8}>
-                <Form.Item name="jobTitle" label="Ünvan">
-                  <Input placeholder="Ünvan girin" />
+                <Form.Item name="jobTitle" label={t('field.jobTitle')}>
+                  <Input placeholder={t('placeholder.jobTitle')} />
                 </Form.Item>
               </Col>
               <Col span={8}>
-                <Form.Item name="mobilePhone" label="Mobil Telefon">
-                  <Input prefix={<PhoneOutlined />} placeholder="Mobil telefon girin" />
+                <Form.Item name="mobilePhone" label={t('field.mobilePhone')}>
+                  <Input prefix={<PhoneOutlined />} placeholder={t('placeholder.mobilePhone')} />
                 </Form.Item>
               </Col>
               <Col span={8}>
-                <Form.Item name="website" label="Web Sitesi">
-                  <Input prefix={<GlobalOutlined />} placeholder="https://example.com" />
+                <Form.Item name="website" label={t('field.website')}>
+                  <Input prefix={<GlobalOutlined />} placeholder={t('placeholder.website')} />
                 </Form.Item>
               </Col>
             </Row>
@@ -306,21 +299,21 @@ const LeadDetail: React.FC<DetailPageProps<LeadDetailItem>> = (props) => {
 
         {/* Durum & Sınıflandırma */}
         <Col span={12}>
-          <Card title={<Space><ClockCircleOutlined /><span>Durum & Sınıflandırma</span></Space>} style={{ marginBottom: 16 }}>
+          <Card title={<Space><ClockCircleOutlined /><span>{t('section.statusInfo')}</span></Space>} style={{ marginBottom: 16 }}>
             <Row gutter={16}>
               <Col span={12}>
-                <Form.Item name="leadStatus" label="Durum" rules={[{ required: true, message: 'Durum seçimi gereklidir' }]}>
-                  <Select options={leadStatusOptions} placeholder="Durum seçin" />
+                <Form.Item name="leadStatus" label={t('field.leadStatus')} rules={[{ required: true, message: t('validation.leadStatusRequired') }]}>
+                  <Select options={leadStatusOptions} placeholder={t('placeholder.leadStatus')} />
                 </Form.Item>
               </Col>
               <Col span={12}>
-                <Form.Item name="leadRating" label="Değerlendirme" rules={[{ required: true, message: 'Değerlendirme seçimi gereklidir' }]}>
-                  <Select options={leadRatingOptions} placeholder="Değerlendirme seçin" />
+                <Form.Item name="leadRating" label={t('field.leadRating')} rules={[{ required: true, message: t('validation.leadRatingRequired') }]}>
+                  <Select options={leadRatingOptions} placeholder={t('placeholder.leadRating')} />
                 </Form.Item>
               </Col>
               <Col span={24}>
-                <Form.Item name="leadSource" label="Kaynak" rules={[{ required: true, message: 'Kaynak seçimi gereklidir' }]}>
-                  <Select options={leadSourceOptions} placeholder="Kaynak seçin" />
+                <Form.Item name="leadSource" label={t('field.leadSource')} rules={[{ required: true, message: t('validation.leadSourceRequired') }]}>
+                  <Select options={leadSourceOptions} placeholder={t('placeholder.leadSource')} />
                 </Form.Item>
               </Col>
             </Row>
@@ -329,43 +322,43 @@ const LeadDetail: React.FC<DetailPageProps<LeadDetailItem>> = (props) => {
 
         {/* Şirket Detayları */}
         <Col span={12}>
-          <Card title={<Space><DollarOutlined /><span>Şirket Detayları</span></Space>} style={{ marginBottom: 16 }}>
+          <Card title={<Space><DollarOutlined /><span>{t('section.companyDetails')}</span></Space>} style={{ marginBottom: 16 }}>
             <Row gutter={16}>
               <Col span={12}>
-                <Form.Item name="industry" label="Sektör">
-                  <Input placeholder="Sektör girin" />
+                <Form.Item name="industry" label={t('field.industry')}>
+                  <Input placeholder={t('placeholder.industry')} />
                 </Form.Item>
               </Col>
               <Col span={12}>
-                <Form.Item name="numberOfEmployees" label="Çalışan Sayısı">
+                <Form.Item name="numberOfEmployees" label={t('field.numberOfEmployees')}>
                   <InputNumber
                     style={{ width: '100%' }}
                     min={0}
-                    placeholder="Çalışan sayısı"
+                    placeholder={t('field.numberOfEmployees')}
                     formatter={(value) => `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')}
-                    parser={(value) => parseInt(value?.replace(/\$\s?|(,*)/g, '') || '0', 10) as any}
+                    parser={(value) => parseInt(value?.replace(/\$\s?|(,*)/g, '') || '0', 10) as number}
                   />
                 </Form.Item>
               </Col>
               <Col span={12}>
-                <Form.Item name="annualRevenue" label="Yıllık Gelir (₺)">
+                <Form.Item name="annualRevenue" label={t('field.annualRevenue')}>
                   <InputNumber
                     style={{ width: '100%' }}
                     min={0}
-                    placeholder="Yıllık gelir"
+                    placeholder={t('field.annualRevenue')}
                     formatter={(value) => `₺ ${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')}
-                    parser={(value) => parseInt(value?.replace(/₺\s?|(,*)/g, '') || '0', 10) as any}
+                    parser={(value) => parseInt(value?.replace(/₺\s?|(,*)/g, '') || '0', 10) as number}
                   />
                 </Form.Item>
               </Col>
               <Col span={12}>
-                <Form.Item name="estimatedValue" label="Tahmini Değer (₺)">
+                <Form.Item name="estimatedValue" label={t('field.estimatedValue')}>
                   <InputNumber
                     style={{ width: '100%' }}
                     min={0}
-                    placeholder="Tahmini değer"
+                    placeholder={t('field.estimatedValue')}
                     formatter={(value) => `₺ ${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')}
-                    parser={(value) => parseInt(value?.replace(/₺\s?|(,*)/g, '') || '0', 10) as any}
+                    parser={(value) => parseInt(value?.replace(/₺\s?|(,*)/g, '') || '0', 10) as number}
                   />
                 </Form.Item>
               </Col>
@@ -375,18 +368,18 @@ const LeadDetail: React.FC<DetailPageProps<LeadDetailItem>> = (props) => {
 
         {/* Adres */}
         <Col span={24}>
-          <Card title={<Space><EnvironmentOutlined /><span>Adres</span></Space>} style={{ marginBottom: 16 }}>
-            <Form.Item name="address" label="Adres">
-              <TextArea rows={2} placeholder="Adres girin" />
+          <Card title={<Space><EnvironmentOutlined /><span>{t('section.address')}</span></Space>} style={{ marginBottom: 16 }}>
+            <Form.Item name="address" label={t('field.address')}>
+              <TextArea rows={2} placeholder={t('placeholder.address')} />
             </Form.Item>
           </Card>
         </Col>
 
         {/* Açıklama */}
         <Col span={24}>
-          <Card title={<Space><FileTextOutlined /><span>Açıklama</span></Space>} style={{ marginBottom: 16 }}>
-            <Form.Item name="description" label="Açıklama">
-              <TextArea rows={4} placeholder="Lead hakkında notlar..." />
+          <Card title={<Space><FileTextOutlined /><span>{t('section.description')}</span></Space>} style={{ marginBottom: 16 }}>
+            <Form.Item name="description" label={t('field.description')}>
+              <TextArea rows={4} placeholder={t('placeholder.description')} />
             </Form.Item>
           </Card>
         </Col>
@@ -394,21 +387,21 @@ const LeadDetail: React.FC<DetailPageProps<LeadDetailItem>> = (props) => {
     </Form>
   );
 
-  // ─── Layout ─────────────────────────────────────────────────────────────
+  // ─── Layout ─────────────────────────────────────────────────────────────────
 
   return (
     <DetailPageLayout
       title={{
-        create: 'Yeni Lead',
-        view: 'Lead Detayı',
-        edit: 'Lead Düzenle',
+        create: t('detail.titleCreate'),
+        view: t('detail.titleView'),
+        edit: t('detail.titleEdit'),
       }}
       deleteConfirm={{
-        title: 'Lead Silme',
-        description: "Bu lead'i silmek istediğinizden emin misiniz?",
+        title: t('confirm.deleteTitle'),
+        description: t('confirm.deleteDescription'),
       }}
-      notFoundTitle="Lead Bulunamadı"
-      notFoundDescription="Aradığınız lead bulunamadı veya silinmiş olabilir."
+      notFoundTitle={t('detail.notFoundTitle')}
+      notFoundDescription={t('detail.notFoundDescription')}
       mode={detail.mode}
       isNew={detail.isNew}
       isViewMode={detail.isViewMode}

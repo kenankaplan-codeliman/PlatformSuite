@@ -24,13 +24,11 @@ public class LeadConfiguration : IEntityTypeConfiguration<Lead>
 
         builder.Property(e => e.FirstName)
             .HasColumnName("first_name")
-            .HasMaxLength(100)
-            .IsRequired();
+            .HasMaxLength(100);
 
         builder.Property(e => e.LastName)
             .HasColumnName("last_name")
-            .HasMaxLength(100)
-            .IsRequired();
+            .HasMaxLength(100);
 
         builder.Property(e => e.JobTitle)
             .HasColumnName("job_title")

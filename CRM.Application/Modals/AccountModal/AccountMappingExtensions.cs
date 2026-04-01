@@ -16,6 +16,7 @@ public static class AccountMappingExtensions
             Id = entity.Id,
             AccountName = entity.AccountName,
             AccountType = entity.AccountType,
+            AccountStatus = entity.AccountStatus,
             Industry = entity.Industry,
             AnnualRevenue = entity.AnnualRevenue,
             NumberOfEmployees = entity.NumberOfEmployees,
@@ -93,6 +94,7 @@ public static class AccountMappingExtensions
     {
         entity.AccountName = modal.AccountName;
         entity.AccountType = modal.AccountType;
+        entity.AccountStatus = modal.AccountStatus;
         entity.Industry = modal.Industry;
         entity.AnnualRevenue = modal.AnnualRevenue;
         entity.NumberOfEmployees = modal.NumberOfEmployees;

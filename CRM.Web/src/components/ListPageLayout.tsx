@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import {
   Card,
   Button,
@@ -170,11 +171,11 @@ function resolveStr<T>(val: string | ((r: T) => string) | undefined, record: T, 
 function ListPageLayout<T extends object>({
   title,
   subtitle,
-  createButtonLabel = 'Yeni',
+  createButtonLabel,
   onCreate,
   renderExtraHeaderActions,
 
-  searchPlaceholder = 'Ara...',
+  searchPlaceholder,
   searchValue = '',
   onSearch,
   onSearchChange,
@@ -213,17 +214,21 @@ function ListPageLayout<T extends object>({
 
   renderContent,
 }: ListPageLayoutProps<T>) {
+  const { t } = useTranslation();
+  const resolvedCreateLabel = createButtonLabel ?? t('action.new');
+  const resolvedSearchPlaceholder = searchPlaceholder ?? t('action.searchPlaceholder');
+
   const [filterVisible, setFilterVisible] = useState(false);
   const [bulkAssignOpen, setBulkAssignOpen] = useState(false);
   const [rowAssignRecord, setRowAssignRecord] = useState<T | null>(null);
 
   // ── Confirm helpers ───────────────────────────────────────────────────────
   const showConfirm = (title: string, content: string, onOk: () => void | Promise<void>) => {
-    Modal.confirm({ title, content, okText: 'Onayla', cancelText: 'İptal', onOk });
+    Modal.confirm({ title, content, okText: t('action.confirm'), cancelText: t('action.cancel'), onOk });
   };
 
   const showDangerConfirm = (title: string, content: string, onOk: () => void | Promise<void>) => {
-    Modal.confirm({ title, content, okText: 'Sil', okType: 'danger', cancelText: 'İptal', onOk });
+    Modal.confirm({ title, content, okText: t('action.delete'), okType: 'danger', cancelText: t('action.cancel'), onOk });
   };
 
   // ── Bulk action runners ───────────────────────────────────────────────────
@@ -237,10 +242,10 @@ function ListPageLayout<T extends object>({
 
   const runBulkDelete = () => {
     if (!onBulkDelete) return;
-    const title = onBulkDelete.confirm?.title ?? 'Toplu Silme';
+    const title = onBulkDelete.confirm?.title ?? t('confirm.bulkDeleteTitle');
     const content = onBulkDelete.confirm?.content
       ? onBulkDelete.confirm.content(selectedRowKeys.length)
-      : `Seçili ${selectedRowKeys.length} kayıt silinecek. Onaylıyor musunuz?`;
+      : t('confirm.bulkDeleteContent', { count: selectedRowKeys.length });
     showDangerConfirm(title, content, onBulkDelete.handler);
   };
 
@@ -259,8 +264,8 @@ function ListPageLayout<T extends object>({
   const runRowDelete = (record: T) => {
     if (!rowActions?.onDelete) return;
     const action = rowActions.onDelete;
-    const title = resolveStr(action.confirm?.title, record, 'Kaydı Sil');
-    const content = resolveStr(action.confirm?.content, record, 'Bu kaydı silmek istediğinize emin misiniz?');
+    const title = resolveStr(action.confirm?.title, record, t('confirm.rowDeleteTitle'));
+    const content = resolveStr(action.confirm?.content, record, t('confirm.rowDeleteContent'));
     showDangerConfirm(title, content, () => action.handler(record));
   };
 
@@ -276,13 +281,13 @@ function ListPageLayout<T extends object>({
 
     if (rowActions.onView) {
       items.push({
-        key: 'view', label: 'Görüntüle', icon: <EyeOutlined />,
+        key: 'view', label: t('action.view'), icon: <EyeOutlined />,
         onClick: (info) => { info.domEvent.stopPropagation(); rowActions.onView!(record); },
       });
     }
     if (rowActions.onEdit) {
       items.push({
-        key: 'edit', label: 'Düzenle', icon: <EditOutlined />,
+        key: 'edit', label: t('action.edit'), icon: <EditOutlined />,
         onClick: (info) => { info.domEvent.stopPropagation(); rowActions.onEdit!(record); },
       });
     }
@@ -291,46 +296,54 @@ function ListPageLayout<T extends object>({
       const isActive = rowActions.isActiveResolver(record);
       if (!isActive && rowActions.onActivate) {
         items.push({
-          key: 'activate', label: 'Etkinleştir', icon: <CheckCircleOutlined />,
+          key: 'activate', label: t('action.activate'), icon: <CheckCircleOutlined />,
           onClick: (info) => {
             info.domEvent.stopPropagation();
-            rowActions.onActivate!.confirm
-              ? runRowAction(rowActions.onActivate!, record, { title: 'Etkinleştir', content: 'Bu kaydı etkinleştirmek istiyor musunuz?' })
-              : rowActions.onActivate!.handler(record);
+            if (rowActions.onActivate!.confirm) {
+              runRowAction(rowActions.onActivate!, record, { title: t('confirm.activateTitle'), content: t('confirm.activateContent') });
+            } else {
+              rowActions.onActivate!.handler(record);
+            }
           },
         });
       }
       if (isActive && rowActions.onDeactivate) {
         items.push({
-          key: 'deactivate', label: 'Pasifleştir', icon: <StopOutlined />,
+          key: 'deactivate', label: t('action.deactivate'), icon: <StopOutlined />,
           onClick: (info) => {
             info.domEvent.stopPropagation();
-            rowActions.onDeactivate!.confirm
-              ? runRowAction(rowActions.onDeactivate!, record, { title: 'Pasifleştir', content: 'Bu kaydı pasifleştirmek istiyor musunuz?' })
-              : rowActions.onDeactivate!.handler(record);
+            if (rowActions.onDeactivate!.confirm) {
+              runRowAction(rowActions.onDeactivate!, record, { title: t('confirm.deactivateTitle'), content: t('confirm.deactivateContent') });
+            } else {
+              rowActions.onDeactivate!.handler(record);
+            }
           },
         });
       }
     } else {
       if (rowActions.onActivate) {
         items.push({
-          key: 'activate', label: 'Etkinleştir', icon: <CheckCircleOutlined />,
+          key: 'activate', label: t('action.activate'), icon: <CheckCircleOutlined />,
           onClick: (info) => {
             info.domEvent.stopPropagation();
-            rowActions.onActivate!.confirm
-              ? runRowAction(rowActions.onActivate!, record, { title: 'Etkinleştir', content: 'Bu kaydı etkinleştirmek istiyor musunuz?' })
-              : rowActions.onActivate!.handler(record);
+            if (rowActions.onActivate!.confirm) {
+              runRowAction(rowActions.onActivate!, record, { title: t('confirm.activateTitle'), content: t('confirm.activateContent') });
+            } else {
+              rowActions.onActivate!.handler(record);
+            }
           },
         });
       }
       if (rowActions.onDeactivate) {
         items.push({
-          key: 'deactivate', label: 'Pasifleştir', icon: <StopOutlined />,
+          key: 'deactivate', label: t('action.deactivate'), icon: <StopOutlined />,
           onClick: (info) => {
             info.domEvent.stopPropagation();
-            rowActions.onDeactivate!.confirm
-              ? runRowAction(rowActions.onDeactivate!, record, { title: 'Pasifleştir', content: 'Bu kaydı pasifleştirmek istiyor musunuz?' })
-              : rowActions.onDeactivate!.handler(record);
+            if (rowActions.onDeactivate!.confirm) {
+              runRowAction(rowActions.onDeactivate!, record, { title: t('confirm.deactivateTitle'), content: t('confirm.deactivateContent') });
+            } else {
+              rowActions.onDeactivate!.handler(record);
+            }
           },
         });
       }
@@ -338,7 +351,7 @@ function ListPageLayout<T extends object>({
 
     if (rowActions.onAssign) {
       items.push({
-        key: 'assign', label: 'Ata', icon: <UserAddOutlined />,
+        key: 'assign', label: t('action.assign'), icon: <UserAddOutlined />,
         onClick: (info) => { info.domEvent.stopPropagation(); setRowAssignRecord(record); },
       });
     }
@@ -352,7 +365,7 @@ function ListPageLayout<T extends object>({
     if (rowActions.onDelete) {
       if (items.length > 0) items.push({ type: 'divider' });
       items.push({
-        key: 'delete', label: 'Sil', icon: <DeleteOutlined />, danger: true,
+        key: 'delete', label: t('action.delete'), icon: <DeleteOutlined />, danger: true,
         onClick: (info) => { info.domEvent.stopPropagation(); runRowDelete(record); },
       });
     }
@@ -386,20 +399,20 @@ function ListPageLayout<T extends object>({
 
   const bulkMenuItems: MenuProps['items'] = [
     ...(onBulkActivate
-      ? [{ key: 'activate', label: 'Seçilenleri Etkinleştir', icon: <CheckCircleOutlined />,
-           onClick: () => runBulkAction(onBulkActivate, { title: 'Toplu Etkinleştirme', content: `Seçili ${selectedRowKeys.length} kayıt etkinleştirilecek. Onaylıyor musunuz?` }) }]
+      ? [{ key: 'activate', label: t('action.bulkActivate'), icon: <CheckCircleOutlined />,
+           onClick: () => runBulkAction(onBulkActivate, { title: t('confirm.bulkActivateTitle'), content: t('confirm.bulkActivateContent', { count: selectedRowKeys.length }) }) }]
       : []),
     ...(onBulkDeactivate
-      ? [{ key: 'deactivate', label: 'Seçilenleri Pasifleştir', icon: <StopOutlined />,
-           onClick: () => runBulkAction(onBulkDeactivate, { title: 'Toplu Pasifleştirme', content: `Seçili ${selectedRowKeys.length} kayıt pasifleştirilecek. Onaylıyor musunuz?` }) }]
+      ? [{ key: 'deactivate', label: t('action.bulkDeactivate'), icon: <StopOutlined />,
+           onClick: () => runBulkAction(onBulkDeactivate, { title: t('confirm.bulkDeactivateTitle'), content: t('confirm.bulkDeactivateContent', { count: selectedRowKeys.length }) }) }]
       : []),
     ...(onBulkAssign
-      ? [{ key: 'assign', label: 'Seçilenleri Ata', icon: <UserAddOutlined />, onClick: () => setBulkAssignOpen(true) }]
+      ? [{ key: 'assign', label: t('action.bulkAssign'), icon: <UserAddOutlined />, onClick: () => setBulkAssignOpen(true) }]
       : []),
     ...(extraBulkItems?.() ?? []),
     ...(onBulkDelete && hasBulkNonDelete ? [{ type: 'divider' as const }] : []),
     ...(onBulkDelete
-      ? [{ key: 'delete', label: 'Seçilenleri Sil', icon: <DeleteOutlined />, danger: true, onClick: runBulkDelete }]
+      ? [{ key: 'delete', label: t('action.bulkDelete'), icon: <DeleteOutlined />, danger: true, onClick: runBulkDelete }]
       : []),
   ];
 
@@ -427,7 +440,7 @@ function ListPageLayout<T extends object>({
           {renderExtraHeaderActions?.()}
           {onCreate && (
             <Button type="primary" icon={<PlusOutlined />} onClick={onCreate}>
-              {createButtonLabel}
+              {resolvedCreateLabel}
             </Button>
           )}
         </Space>
@@ -441,7 +454,7 @@ function ListPageLayout<T extends object>({
             <Space size="middle" wrap>
               {onSearch && (
                 <Search
-                  placeholder={searchPlaceholder}
+                  placeholder={resolvedSearchPlaceholder}
                   allowClear
                   value={searchValue}
                   onChange={(e) => onSearchChange?.(e.target.value)}
@@ -456,7 +469,7 @@ function ListPageLayout<T extends object>({
           <Col>
             <Space>
               {renderExtraFilters && (
-                <Tooltip title={filterVisible ? 'Filtreleri Gizle' : 'Filtreleri Göster'}>
+                <Tooltip title={filterVisible ? t('action.hideFilters') : t('action.showFilters')}>
                   <Button
                     icon={<FilterOutlined />}
                     type={filterVisible ? 'primary' : 'default'}
@@ -465,12 +478,12 @@ function ListPageLayout<T extends object>({
                 </Tooltip>
               )}
               {hasActiveFilters && onResetFilters && (
-                <Tooltip title="Filtreleri Temizle">
+                <Tooltip title={t('action.clearFilters')}>
                   <Button icon={<ClearOutlined />} onClick={onResetFilters} />
                 </Tooltip>
               )}
               {onRefresh && (
-                <Tooltip title="Yenile">
+                <Tooltip title={t('action.refresh')}>
                   <Button icon={<ReloadOutlined />} onClick={onRefresh} />
                 </Tooltip>
               )}
@@ -487,13 +500,13 @@ function ListPageLayout<T extends object>({
         >
           <Flex justify="space-between" align="center">
             <Space>
-              <Text strong>{selectedRowKeys.length} öğe seçildi</Text>
-              <Button type="link" size="small" onClick={onClearSelection}>Seçimi Temizle</Button>
+              <Text strong>{t('selection.selected', { count: selectedRowKeys.length })}</Text>
+              <Button type="link" size="small" onClick={onClearSelection}>{t('action.clearSelection')}</Button>
             </Space>
             {bulkMenuItems.length > 0 && (
               <Dropdown menu={{ items: bulkMenuItems }} trigger={['click']}>
                 <Button type="primary">
-                  <Space>Toplu İşlemler<MoreOutlined /></Space>
+                  <Space>{t('action.bulkActions')}<MoreOutlined /></Space>
                 </Button>
               </Dropdown>
             )}
@@ -506,7 +519,7 @@ function ListPageLayout<T extends object>({
               onSearch={entitySearchService.search}
               entityTypes={[EntityType.User]}
               multiple={false}
-              modalTitle="Kullanıcı ata..."
+              modalTitle={t('action.assignUser')}
               onChange={handleBulkAssignChange}
             />
           )}

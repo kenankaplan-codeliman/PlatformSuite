@@ -3,6 +3,7 @@ import type {
   OpportunityListRequest,
   OpportunityListFilters,
   OpportunityListResponse,
+  OpportunityStageValue,
 } from '@/types/opportunity.types';
 import apiClient from '@/services/api.client';
 import { apiRequest } from '@/services/api.request';
@@ -39,6 +40,12 @@ export const opportunityService = {
 
   assignOpportunity: async (request: AssignRequest): Promise<void> => {
     return apiRequest(() => apiClient.post(ServicePath.Opportunity.Assign, request).then(() => undefined));
+  },
+
+  updateOpportunityStage: async (ids: string[], stage: OpportunityStageValue): Promise<void> => {
+    return apiRequest(() =>
+      apiClient.post(ServicePath.Opportunity.BulkUpdateStage, { ids, stage }).then(() => undefined)
+    );
   },
 };
 

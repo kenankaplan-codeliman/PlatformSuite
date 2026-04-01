@@ -16,6 +16,8 @@ namespace CRM.Application.Modals.AccountModal
 
         public AccountType AccountType { get; set; }
 
+        public AccountStatus AccountStatus { get; set; }
+
         public string? Industry { get; set; }
 
         public decimal? AnnualRevenue { get; set; }

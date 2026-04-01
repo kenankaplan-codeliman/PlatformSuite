@@ -17,6 +17,7 @@ public static class ContactMappingExtensions
             Id = entity.Id,
             FirstName = entity.FirstName,
             LastName = entity.LastName,
+            ContactStatus = entity.ContactStatus,
             Title = entity.Title,
             Department = entity.Department,
             BirthDate = entity.BirthDate,
@@ -90,6 +91,7 @@ public static class ContactMappingExtensions
     {
         entity.FirstName = modal.FirstName;
         entity.LastName = modal.LastName;
+        entity.ContactStatus = modal.ContactStatus;
         entity.Title = modal.Title;
         entity.Department = modal.Department;
         entity.BirthDate = modal.BirthDate;

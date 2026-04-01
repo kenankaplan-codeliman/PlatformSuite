@@ -4,8 +4,8 @@ create table if not exists lead (
 
     -- Domain Properties
     company_name                varchar(200) not null,
-    first_name                  varchar(100) not null,
-    last_name                   varchar(100) not null,
+    first_name                  varchar(100),
+    last_name                   varchar(100),
     job_title                   varchar(100),
     email                       varchar(150),
     phone                       varchar(50),
@@ -51,12 +51,12 @@ create table if not exists lead (
     -- Enum constraints
     constraint chk_lead_source
         check (lead_source in (
-            'Web','Phone','Email','Referral','Campaign','Other'
+            'Web','Phone','Email','Referral','Partner','Event','Campaign','Social','Other'
         )),
 
     constraint chk_lead_status
         check (lead_status in (
-            'New','Contacted','Qualified','Converted','Disqualified'
+            'New','Contacted','Qualified','Unqualified','Converted'
         )),
 
     constraint chk_lead_rating

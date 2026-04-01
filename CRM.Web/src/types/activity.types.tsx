@@ -1,5 +1,6 @@
 import { EntityType, type EntityReference, type EntityTypeValue } from '@/types/entity.lookup.types';
 import { getEntityColor, getEntityIcon, getEntityLabel } from '@/config/entity.config';
+import i18n from '@/config/i18n.config';
 
 /**
  * Activity Types
@@ -48,16 +49,8 @@ export const ActivityStatus = {
 
 export type ActivityStatusValue = (typeof ActivityStatus)[keyof typeof ActivityStatus];
 
-export const getActivityStatusLabel = (status: ActivityStatusValue): string => {
-  const labels: Record<ActivityStatusValue, string> = {
-    [ActivityStatus.NotStarted]: 'Başlamadı',
-    [ActivityStatus.InProgress]: 'Devam Ediyor',
-    [ActivityStatus.Completed]: 'Tamamlandı',
-    [ActivityStatus.Cancelled]: 'İptal Edildi',
-    //[ActivityStatus.Deferred]: 'Ertelendi',
-  };
-  return labels[status] || 'Bilinmiyor';
-};
+export const getActivityStatusLabel = (status: ActivityStatusValue): string =>
+  i18n.t(`enums:activityStatus.${status}`, { defaultValue: status });
 
 export const getActivityStatusColor = (status: ActivityStatusValue): string => {
   const colors: Record<ActivityStatusValue, string> = {
@@ -126,14 +119,8 @@ export const ActivityPriority = {
 
 export type ActivityPriorityValue = (typeof ActivityPriority)[keyof typeof ActivityPriority];
 
-export const getActivityPriorityLabel = (priority: ActivityPriorityValue): string => {
-  const labels: Record<ActivityPriorityValue, string> = {
-    [ActivityPriority.Low]: 'Düşük',
-    [ActivityPriority.Normal]: 'Normal',
-    [ActivityPriority.High]: 'Yüksek',
-  };
-  return labels[priority] || 'Bilinmiyor';
-};
+export const getActivityPriorityLabel = (priority: ActivityPriorityValue): string =>
+  i18n.t(`enums:activityPriority.${priority}`, { defaultValue: priority });
 
 export const getActivityPriorityColor = (priority: ActivityPriorityValue): string => {
   const colors: Record<ActivityPriorityValue, string> = {
@@ -355,13 +342,10 @@ export interface ActivityListResponse {
 // SELECT OPTIONS
 // ============================================
 
-export const activityStatusOptions = [
-  { label: 'Başlamadı', value: ActivityStatus.NotStarted },
-  { label: 'Devam Ediyor', value: ActivityStatus.InProgress },
-  { label: 'Tamamlandı', value: ActivityStatus.Completed },
-  { label: 'İptal Edildi', value: ActivityStatus.Cancelled },
-  //{ label: 'Ertelendi', value: ActivityStatus.Deferred },
-];
+export const activityStatusOptions = Object.values(ActivityStatus).map((value) => ({
+  label: getActivityStatusLabel(value),
+  value,
+}));
 
 export const activityTypeOptions = [
   { label: 'E-posta', value: ActivityType.Email },
@@ -370,11 +354,10 @@ export const activityTypeOptions = [
   { label: 'Randevu', value: ActivityType.Appointment },
 ];
 
-export const activityPriorityOptions = [
-  { label: 'Düşük', value: ActivityPriority.Low },
-  { label: 'Normal', value: ActivityPriority.Normal },
-  { label: 'Yüksek', value: ActivityPriority.High },
-];
+export const activityPriorityOptions = Object.values(ActivityPriority).map((value) => ({
+  label: getActivityPriorityLabel(value),
+  value,
+}));
 
 // ============================================
 // TABLE FILTER OPTIONS

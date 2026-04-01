@@ -1,0 +1,15 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npx tsc:*)",
+      "Bash(npm run:*)",
+      "Bash(xargs -0 grep -n \": any\\\\|as any\")",
+      "Bash(npx eslint:*)",
+      "Bash(grep -E \"\\\\.\\(ts|tsx\\)$\")",
+      "Bash(xargs grep:*)",
+      "Bash(xargs ls:*)",
+      "Bash(dotnet build:*)",
+      "Bash(npm install:*)"
+    ]
+  }
+}

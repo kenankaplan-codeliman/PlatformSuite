@@ -1,4 +1,5 @@
 import React, { useState, useCallback } from 'react';
+import { useTranslation } from 'react-i18next';
 import {
   Card,
   Form,
@@ -62,10 +63,20 @@ import { entitySearchService } from '@/services/entity.search.service';
 const { Title, Text, Paragraph } = Typography;
 const { TextArea } = Input;
 
+// Form satırı tipi: EntityLookup çıktısı + ContactAccountRef alanları
+interface AccountFormRow {
+  id?: string;
+  account: EntityReference | null;
+  role?: string;
+  isPrimary?: boolean;
+}
+
 // ─── Component ────────────────────────────────────────────────────────────────
 
 const ContactDetail: React.FC<DetailPageProps<ContactDetailItem>> = (props) => {
   const store = useContactStore();
+  const { t } = useTranslation('contact');
+  const { t: tc } = useTranslation('common');
 
   const [activeTab, setActiveTab] = useState<string>('details');
   const handleTabChange = useCallback((key: string) => setActiveTab(key), []);
@@ -106,8 +117,8 @@ const ContactDetail: React.FC<DetailPageProps<ContactDetailItem>> = (props) => {
           : undefined,
         // Form satırı → ContactAccountRef: EntityReference'ı geri çevir
         accountContacts: (values.accountContacts ?? [])
-          .filter((ac: any) => ac.account != null)
-          .map((ac: any) => ({
+          .filter((ac: AccountFormRow) => ac.account != null)
+          .map((ac: AccountFormRow) => ({
             id: ac.id,
             accountId: ac.account.id,
             accountName: ac.account.name,
@@ -177,7 +188,7 @@ const ContactDetail: React.FC<DetailPageProps<ContactDetailItem>> = (props) => {
                 </Title>
                 <Badge
                   status={currentContact?.isActive ? 'success' : 'default'}
-                  text={currentContact?.isActive ? 'Aktif' : 'Pasif'}
+                  text={currentContact?.isActive ? tc('status.active') : tc('status.inactive')}
                 />
               </Space>
               {(currentContact?.title || currentContact?.department) && (
@@ -206,23 +217,23 @@ const ContactDetail: React.FC<DetailPageProps<ContactDetailItem>> = (props) => {
         items={[
           {
             key: 'details',
-            label: 'Detaylar',
+            label: t('tab.details'),
             children: (
               <Row gutter={16}>
                 {/* Kişi Bilgileri */}
                 <Col span={12}>
                   <Card
-                    title={<Space><IdcardOutlined /><span>Kişi Bilgileri</span></Space>}
+                    title={<Space><IdcardOutlined /><span>{t('section.contactInfo')}</span></Space>}
                     style={{ marginBottom: 16 }}
                   >
                     <Descriptions column={1} size="small">
-                      <Descriptions.Item label="Unvan">
+                      <Descriptions.Item label={t('field.title')}>
                         {currentContact?.title || <Text type="secondary">-</Text>}
                       </Descriptions.Item>
-                      <Descriptions.Item label="Departman">
+                      <Descriptions.Item label={t('field.department')}>
                         {currentContact?.department || <Text type="secondary">-</Text>}
                       </Descriptions.Item>
-                      <Descriptions.Item label="Doğum Tarihi">
+                      <Descriptions.Item label={t('field.birthDate')}>
                         {currentContact?.birthDate
                           ? dayjs(currentContact.birthDate).format('DD.MM.YYYY')
                           : <Text type="secondary">-</Text>}
@@ -234,7 +245,7 @@ const ContactDetail: React.FC<DetailPageProps<ContactDetailItem>> = (props) => {
                 {/* Telefonlar */}
                 <Col span={12}>
                   <Card
-                    title={<Space><PhoneOutlined /><span>Telefonlar</span></Space>}
+                    title={<Space><PhoneOutlined /><span>{t('section.phones')}</span></Space>}
                     style={{ marginBottom: 16 }}
                   >
                     {currentContact?.phones && currentContact.phones.length > 0 ? (
@@ -246,7 +257,7 @@ const ContactDetail: React.FC<DetailPageProps<ContactDetailItem>> = (props) => {
                               <Space>
                                 {getPhoneTypeLabel(phone.type)}
                                 {phone.isPrimary && (
-                                  <Tag color="blue" style={{ fontSize: 10 }}>Birincil</Tag>
+                                  <Tag color="blue" style={{ fontSize: 10 }}>{t('subField.primary')}</Tag>
                                 )}
                               </Space>
                             }
@@ -256,7 +267,7 @@ const ContactDetail: React.FC<DetailPageProps<ContactDetailItem>> = (props) => {
                         ))}
                       </Descriptions>
                     ) : (
-                      <Text type="secondary">Kayıtlı telefon yok</Text>
+                      <Text type="secondary">{t('emptyState.phones')}</Text>
                     )}
                   </Card>
                 </Col>
@@ -264,7 +275,7 @@ const ContactDetail: React.FC<DetailPageProps<ContactDetailItem>> = (props) => {
                 {/* E-postalar */}
                 <Col span={12}>
                   <Card
-                    title={<Space><MailOutlined /><span>E-postalar</span></Space>}
+                    title={<Space><MailOutlined /><span>{t('section.emails')}</span></Space>}
                     style={{ marginBottom: 16 }}
                   >
                     {currentContact?.emails && currentContact.emails.length > 0 ? (
@@ -276,7 +287,7 @@ const ContactDetail: React.FC<DetailPageProps<ContactDetailItem>> = (props) => {
                               <Space>
                                 {getEmailTypeLabel(email.type)}
                                 {email.isPrimary && (
-                                  <Tag color="blue" style={{ fontSize: 10 }}>Birincil</Tag>
+                                  <Tag color="blue" style={{ fontSize: 10 }}>{t('subField.primary')}</Tag>
                                 )}
                               </Space>
                             }
@@ -286,7 +297,7 @@ const ContactDetail: React.FC<DetailPageProps<ContactDetailItem>> = (props) => {
                         ))}
                       </Descriptions>
                     ) : (
-                      <Text type="secondary">Kayıtlı e-posta yok</Text>
+                      <Text type="secondary">{t('emptyState.emails')}</Text>
                     )}
                   </Card>
                 </Col>
@@ -294,7 +305,7 @@ const ContactDetail: React.FC<DetailPageProps<ContactDetailItem>> = (props) => {
                 {/* Adresler */}
                 <Col span={12}>
                   <Card
-                    title={<Space><EnvironmentOutlined /><span>Adresler</span></Space>}
+                    title={<Space><EnvironmentOutlined /><span>{t('section.addresses')}</span></Space>}
                     style={{ marginBottom: 16 }}
                   >
                     {currentContact?.addresses && currentContact.addresses.length > 0 ? (
@@ -309,7 +320,7 @@ const ContactDetail: React.FC<DetailPageProps<ContactDetailItem>> = (props) => {
                           <Space>
                             <Tag>{getAddressTypeLabel(address.type)}</Tag>
                             {address.isPrimary && (
-                              <Tag color="blue" style={{ fontSize: 10 }}>Birincil</Tag>
+                              <Tag color="blue" style={{ fontSize: 10 }}>{t('subField.primary')}</Tag>
                             )}
                           </Space>
                           <Paragraph style={{ margin: '4px 0 0' }}>
@@ -329,7 +340,7 @@ const ContactDetail: React.FC<DetailPageProps<ContactDetailItem>> = (props) => {
                         </div>
                       ))
                     ) : (
-                      <Text type="secondary">Kayıtlı adres yok</Text>
+                      <Text type="secondary">{t('emptyState.addresses')}</Text>
                     )}
                   </Card>
                 </Col>
@@ -338,7 +349,7 @@ const ContactDetail: React.FC<DetailPageProps<ContactDetailItem>> = (props) => {
                 {currentContact?.accountContacts && currentContact.accountContacts.length > 0 && (
                   <Col span={24}>
                     <Card
-                      title={<Space><BankOutlined /><span>Bağlı Firmalar</span></Space>}
+                      title={<Space><BankOutlined /><span>{t('section.accounts')}</span></Space>}
                       style={{ marginBottom: 16 }}
                     >
                       <Table<ContactAccountRef>
@@ -348,7 +359,7 @@ const ContactDetail: React.FC<DetailPageProps<ContactDetailItem>> = (props) => {
                         size="small"
                         columns={[
                           {
-                            title: 'Firma',
+                            title: t('field.company'),
                             dataIndex: 'accountName',
                             key: 'accountName',
                             width: '42%',
@@ -360,14 +371,14 @@ const ContactDetail: React.FC<DetailPageProps<ContactDetailItem>> = (props) => {
                             ),
                           },
                           {
-                            title: 'Rol',
+                            title: t('field.role'),
                             dataIndex: 'role',
                             key: 'role',
                             width: '42%',
                             render: (role: string) => role || <Text type="secondary">-</Text>,
                           },
                           {
-                            title: 'Birincil',
+                            title: t('subField.primary'),
                             dataIndex: 'isPrimary',
                             key: 'isPrimary',
                             align: 'center',
@@ -375,7 +386,7 @@ const ContactDetail: React.FC<DetailPageProps<ContactDetailItem>> = (props) => {
                             render: (isPrimary: boolean) => (
                               <Badge
                                 status={isPrimary ? 'success' : 'default'}
-                                text={isPrimary ? 'Evet' : 'Hayır'}
+                                text={isPrimary ? tc('confirm.yes') : tc('confirm.no')}
                               />
                             ),
                           },
@@ -388,16 +399,16 @@ const ContactDetail: React.FC<DetailPageProps<ContactDetailItem>> = (props) => {
                 {/* Kayıt Bilgileri */}
                 <Col span={12}>
                   <Card
-                    title={<Space><ClockCircleOutlined /><span>Kayıt Bilgileri</span></Space>}
+                    title={<Space><ClockCircleOutlined /><span>{t('section.recordInfo')}</span></Space>}
                     style={{ marginBottom: 16 }}
                   >
                     <Descriptions column={1} size="small">
-                      <Descriptions.Item label="Oluşturulma">
+                      <Descriptions.Item label={t('subField.createdAt')}>
                         {currentContact?.createdAt
                           ? dayjs(currentContact.createdAt).format('DD.MM.YYYY HH:mm')
                           : <Text type="secondary">-</Text>}
                       </Descriptions.Item>
-                      <Descriptions.Item label="Son Güncelleme">
+                      <Descriptions.Item label={t('subField.updatedAt')}>
                         {currentContact?.updatedAt
                           ? dayjs(currentContact.updatedAt).format('DD.MM.YYYY HH:mm')
                           : <Text type="secondary">-</Text>}
@@ -410,7 +421,7 @@ const ContactDetail: React.FC<DetailPageProps<ContactDetailItem>> = (props) => {
                 {currentContact?.description && (
                   <Col span={24}>
                     <Card
-                      title={<Space><FileTextOutlined /><span>Açıklama</span></Space>}
+                      title={<Space><FileTextOutlined /><span>{t('section.description')}</span></Space>}
                       style={{ marginBottom: 16 }}
                     >
                       <Paragraph>{currentContact.description}</Paragraph>
@@ -422,7 +433,7 @@ const ContactDetail: React.FC<DetailPageProps<ContactDetailItem>> = (props) => {
           },
           {
             key: 'activities',
-            label: 'Aktiviteler',
+            label: t('tab.activities'),
             children: (
               <ActivityListView
                 initialFilters={{
@@ -445,55 +456,55 @@ const ContactDetail: React.FC<DetailPageProps<ContactDetailItem>> = (props) => {
         {/* Temel Bilgiler */}
         <Col span={24}>
           <Card
-            title={<Space><UserOutlined /><span>Temel Bilgiler</span></Space>}
+            title={<Space><UserOutlined /><span>{t('section.basicInfo')}</span></Space>}
             style={{ marginBottom: 16 }}
           >
             <Row gutter={16}>
               <Col span={8}>
                 <Form.Item
                   name="firstName"
-                  label="Ad"
-                  rules={[{ required: true, message: 'Ad gereklidir' }]}
+                  label={t('field.firstName')}
+                  rules={[{ required: true, message: t('validation.firstNameRequired') }]}
                 >
-                  <Input prefix={<UserOutlined />} placeholder="Ad girin" />
+                  <Input prefix={<UserOutlined />} placeholder={t('placeholder.firstName')} />
                 </Form.Item>
               </Col>
               <Col span={8}>
                 <Form.Item
                   name="lastName"
-                  label="Soyad"
-                  rules={[{ required: true, message: 'Soyad gereklidir' }]}
+                  label={t('field.lastName')}
+                  rules={[{ required: true, message: t('validation.lastNameRequired') }]}
                 >
-                  <Input placeholder="Soyad girin" />
+                  <Input placeholder={t('placeholder.lastName')} />
                 </Form.Item>
               </Col>
               <Col span={8}>
-                <Form.Item name="title" label="Unvan">
-                  <Input prefix={<IdcardOutlined />} placeholder="Unvan girin" />
+                <Form.Item name="title" label={t('field.title')}>
+                  <Input prefix={<IdcardOutlined />} placeholder={t('placeholder.title')} />
                 </Form.Item>
               </Col>
               <Col span={8}>
-                <Form.Item name="department" label="Departman">
-                  <Input placeholder="Departman girin" />
+                <Form.Item name="department" label={t('field.department')}>
+                  <Input placeholder={t('placeholder.department')} />
                 </Form.Item>
               </Col>
               <Col span={8}>
-                <Form.Item name="birthDate" label="Doğum Tarihi">
+                <Form.Item name="birthDate" label={t('field.birthDate')}>
                   <DatePicker
                     style={{ width: '100%' }}
                     format="DD.MM.YYYY"
-                    placeholder="Tarih seçin"
+                    placeholder={t('placeholder.birthDate')}
                   />
                 </Form.Item>
               </Col>
               <Col span={8}>
                 <Form.Item
                   name="isActive"
-                  label="Durum"
+                  label={t('field.status')}
                   valuePropName="checked"
                   initialValue={true}
                 >
-                  <Switch checkedChildren="Aktif" unCheckedChildren="Pasif" />
+                  <Switch checkedChildren={tc('status.active')} unCheckedChildren={tc('status.inactive')} />
                 </Form.Item>
               </Col>
             </Row>
@@ -503,7 +514,7 @@ const ContactDetail: React.FC<DetailPageProps<ContactDetailItem>> = (props) => {
         {/* Telefonlar */}
         <Col span={12}>
           <Card
-            title={<Space><PhoneOutlined /><span>Telefonlar</span></Space>}
+            title={<Space><PhoneOutlined /><span>{t('section.phones')}</span></Space>}
             style={{ marginBottom: 16 }}
           >
             <Form.List name="phones">
@@ -519,10 +530,10 @@ const ContactDetail: React.FC<DetailPageProps<ContactDetailItem>> = (props) => {
                         <Form.Item
                           {...restField}
                           name={[name, 'phoneNumber']}
-                          rules={[{ required: true, message: 'Telefon gerekli' }]}
+                          rules={[{ required: true, message: t('validation.phoneRequired') }]}
                           style={{ marginBottom: 0 }}
                         >
-                          <Input placeholder="Telefon numarası" />
+                          <Input placeholder={t('placeholder.phoneNumber')} />
                         </Form.Item>
                       </Col>
                       <Col span={6}>
@@ -543,7 +554,7 @@ const ContactDetail: React.FC<DetailPageProps<ContactDetailItem>> = (props) => {
                           initialValue={false}
                           style={{ marginBottom: 0 }}
                         >
-                          <Switch checkedChildren="Birincil" unCheckedChildren="Birincil" size="small" />
+                          <Switch checkedChildren={t('subField.primary')} unCheckedChildren={t('subField.primary')} size="small" />
                         </Form.Item>
                       </Col>
                       <Col span={4}>
@@ -563,7 +574,7 @@ const ContactDetail: React.FC<DetailPageProps<ContactDetailItem>> = (props) => {
                     block
                     icon={<PlusOutlined />}
                   >
-                    Telefon Ekle
+                    {t('action.addPhone')}
                   </Button>
                 </>
               )}
@@ -574,7 +585,7 @@ const ContactDetail: React.FC<DetailPageProps<ContactDetailItem>> = (props) => {
         {/* E-postalar */}
         <Col span={12}>
           <Card
-            title={<Space><MailOutlined /><span>E-postalar</span></Space>}
+            title={<Space><MailOutlined /><span>{t('section.emails')}</span></Space>}
             style={{ marginBottom: 16 }}
           >
             <Form.List name="emails">
@@ -591,12 +602,12 @@ const ContactDetail: React.FC<DetailPageProps<ContactDetailItem>> = (props) => {
                           {...restField}
                           name={[name, 'email']}
                           rules={[
-                            { required: true, message: 'E-posta gerekli' },
-                            { type: 'email', message: 'Geçerli bir e-posta girin' },
+                            { required: true, message: t('validation.emailRequired') },
+                            { type: 'email', message: t('validation.emailInvalid') },
                           ]}
                           style={{ marginBottom: 0 }}
                         >
-                          <Input placeholder="E-posta adresi" />
+                          <Input placeholder={t('placeholder.emailAddress')} />
                         </Form.Item>
                       </Col>
                       <Col span={6}>
@@ -617,7 +628,7 @@ const ContactDetail: React.FC<DetailPageProps<ContactDetailItem>> = (props) => {
                           initialValue={false}
                           style={{ marginBottom: 0 }}
                         >
-                          <Switch checkedChildren="Birincil" unCheckedChildren="Birincil" size="small" />
+                          <Switch checkedChildren={t('subField.primary')} unCheckedChildren={t('subField.primary')} size="small" />
                         </Form.Item>
                       </Col>
                       <Col span={4}>
@@ -637,7 +648,7 @@ const ContactDetail: React.FC<DetailPageProps<ContactDetailItem>> = (props) => {
                     block
                     icon={<PlusOutlined />}
                   >
-                    E-posta Ekle
+                    {t('action.addEmail')}
                   </Button>
                 </>
               )}
@@ -648,7 +659,7 @@ const ContactDetail: React.FC<DetailPageProps<ContactDetailItem>> = (props) => {
         {/* Adresler */}
         <Col span={12}>
           <Card
-            title={<Space><EnvironmentOutlined /><span>Adresler</span></Space>}
+            title={<Space><EnvironmentOutlined /><span>{t('section.addresses')}</span></Space>}
             style={{ marginBottom: 16 }}
           >
             <Form.List name="addresses">
@@ -678,10 +689,10 @@ const ContactDetail: React.FC<DetailPageProps<ContactDetailItem>> = (props) => {
                           <Form.Item
                             {...restField}
                             name={[name, 'addressLine1']}
-                            rules={[{ required: true, message: 'Adres satırı 1 gerekli' }]}
+                            rules={[{ required: true, message: t('validation.addressLine1Required') }]}
                             style={{ marginBottom: 8 }}
                           >
-                            <Input placeholder="Adres Satırı 1" />
+                            <Input placeholder={t('placeholder.addressLine1')} />
                           </Form.Item>
                         </Col>
                         <Col span={8}>
@@ -700,7 +711,7 @@ const ContactDetail: React.FC<DetailPageProps<ContactDetailItem>> = (props) => {
                             name={[name, 'addressLine2']}
                             style={{ marginBottom: 8 }}
                           >
-                            <Input placeholder="Adres Satırı 2 (opsiyonel)" />
+                            <Input placeholder={t('placeholder.addressLine2')} />
                           </Form.Item>
                         </Col>
                         <Col span={8}>
@@ -711,27 +722,27 @@ const ContactDetail: React.FC<DetailPageProps<ContactDetailItem>> = (props) => {
                             initialValue={false}
                             style={{ marginBottom: 8 }}
                           >
-                            <Switch checkedChildren="Birincil" unCheckedChildren="Birincil" size="small" />
+                            <Switch checkedChildren={t('subField.primary')} unCheckedChildren={t('subField.primary')} size="small" />
                           </Form.Item>
                         </Col>
                         <Col span={6}>
                           <Form.Item {...restField} name={[name, 'city']} style={{ marginBottom: 0 }}>
-                            <Input placeholder="Şehir" />
+                            <Input placeholder={t('placeholder.city')} />
                           </Form.Item>
                         </Col>
                         <Col span={6}>
                           <Form.Item {...restField} name={[name, 'state']} style={{ marginBottom: 0 }}>
-                            <Input placeholder="İl/Eyalet" />
+                            <Input placeholder={t('placeholder.state')} />
                           </Form.Item>
                         </Col>
                         <Col span={6}>
                           <Form.Item {...restField} name={[name, 'postalCode']} style={{ marginBottom: 0 }}>
-                            <Input placeholder="Posta Kodu" />
+                            <Input placeholder={t('placeholder.postalCode')} />
                           </Form.Item>
                         </Col>
                         <Col span={6}>
                           <Form.Item {...restField} name={[name, 'country']} style={{ marginBottom: 0 }}>
-                            <Input placeholder="Ülke" />
+                            <Input placeholder={t('placeholder.country')} />
                           </Form.Item>
                         </Col>
                       </Row>
@@ -743,7 +754,7 @@ const ContactDetail: React.FC<DetailPageProps<ContactDetailItem>> = (props) => {
                     block
                     icon={<PlusOutlined />}
                   >
-                    Adres Ekle
+                    {t('action.addAddress')}
                   </Button>
                 </>
               )}
@@ -754,7 +765,7 @@ const ContactDetail: React.FC<DetailPageProps<ContactDetailItem>> = (props) => {
         {/* Bağlı Firmalar */}
         <Col span={24}>
           <Card
-            title={<Space><BankOutlined /><span>Bağlı Firmalar</span></Space>}
+            title={<Space><BankOutlined /><span>{t('section.accounts')}</span></Space>}
             style={{ marginBottom: 16 }}
           >
             <Form.List name="accountContacts">
@@ -766,16 +777,16 @@ const ContactDetail: React.FC<DetailPageProps<ContactDetailItem>> = (props) => {
                     style={{ marginBottom: 4, borderBottom: "1px solid #d9d9d9" }}
                   >
                     <Col span={10}>
-                      <Text strong>Firma</Text>
+                      <Text strong>{t('field.company')}</Text>
                     </Col>
                     <Col span={10}>
-                      <Text strong>Rol</Text>
+                      <Text strong>{t('field.role')}</Text>
                     </Col>
                     <Col span={2}>
-                      <Text strong>Birincil</Text>
+                      <Text strong>{t('subField.primary')}</Text>
                     </Col>
                     <Col span={2}>
-                      <Text strong>Sil</Text>
+                      <Text strong>{tc('action.delete')}</Text>
                     </Col>
                   </Row>
 
@@ -797,14 +808,14 @@ const ContactDetail: React.FC<DetailPageProps<ContactDetailItem>> = (props) => {
                             {...restField}
                             name={[name, 'account']}
                             // label="Firma"
-                            rules={[{ required: true, message: 'Firma seçimi gereklidir' }]}
+                            rules={[{ required: true, message: t('validation.accountRequired') }]}
                             style={{ marginBottom: 0 }}
                           >
                             <EntityLookup
                               onSearch={entitySearchService.search}
                               entityTypes={[EntityType.Account]}
                               multiple={false}
-                              modalTitle="Firma seçin..."
+                              modalTitle={t('placeholder.selectAccount')}
                             />
                           </Form.Item>
                         </Col>
@@ -817,7 +828,7 @@ const ContactDetail: React.FC<DetailPageProps<ContactDetailItem>> = (props) => {
                             // label="Rol"
                             style={{ marginBottom: 0 }}
                           >
-                            <Input placeholder="Rol girin (opsiyonel)" />
+                            <Input placeholder={t('placeholder.role')} />
                           </Form.Item>
                         </Col>
 
@@ -831,7 +842,7 @@ const ContactDetail: React.FC<DetailPageProps<ContactDetailItem>> = (props) => {
                             initialValue={false}
                             style={{ marginBottom: 0 }}
                           >
-                            <Switch checkedChildren="Evet" unCheckedChildren="Hayır" size="small" />
+                            <Switch checkedChildren={tc('confirm.yes')} unCheckedChildren={tc('confirm.no')} size="small" />
                           </Form.Item>
                         </Col>
 
@@ -853,7 +864,7 @@ const ContactDetail: React.FC<DetailPageProps<ContactDetailItem>> = (props) => {
                     block
                     icon={<PlusOutlined />}
                   >
-                    Firma Ekle
+                    {t('action.addAccount')}
                   </Button>
                 </>
               )}
@@ -864,11 +875,11 @@ const ContactDetail: React.FC<DetailPageProps<ContactDetailItem>> = (props) => {
         {/* Açıklama */}
         <Col span={24}>
           <Card
-            title={<Space><FileTextOutlined /><span>Açıklama</span></Space>}
+            title={<Space><FileTextOutlined /><span>{t('section.description')}</span></Space>}
             style={{ marginBottom: 16 }}
           >
-            <Form.Item name="description" label="Açıklama">
-              <TextArea rows={4} placeholder="Kişi hakkında notlar..." />
+            <Form.Item name="description" label={t('field.description')}>
+              <TextArea rows={4} placeholder={t('placeholder.description')} />
             </Form.Item>
           </Card>
         </Col>
@@ -881,16 +892,16 @@ const ContactDetail: React.FC<DetailPageProps<ContactDetailItem>> = (props) => {
   return (
     <DetailPageLayout
       title={{
-        create: 'Yeni Kişi',
-        view: 'Kişi Detayı',
-        edit: 'Kişi Düzenle',
+        create: t('detail.titleCreate'),
+        view: t('detail.titleView'),
+        edit: t('detail.titleEdit'),
       }}
       deleteConfirm={{
-        title: 'Kişi Silme',
-        description: 'Bu kişiyi silmek istediğinizden emin misiniz?',
+        title: t('confirm.deleteTitle'),
+        description: t('confirm.deleteDescription'),
       }}
-      notFoundTitle="Kişi Bulunamadı"
-      notFoundDescription="Aradığınız kişi bulunamadı veya silinmiş olabilir."
+      notFoundTitle={t('detail.notFoundTitle')}
+      notFoundDescription={t('detail.notFoundDescription')}
       mode={detail.mode}
       isNew={detail.isNew}
       isViewMode={detail.isViewMode}

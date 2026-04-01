@@ -156,5 +156,27 @@ namespace CRM.Application.CommandHandler
             }
         }
 
+        public async Task BulkUpdateStatusAsync(List<Guid> Ids, AccountStatus status)
+        {
+            try
+            {
+                await unitOfWork.BeginTransactionAsync();
+
+                foreach (var id in Ids)
+                {
+                    var entity = await accountRepository.GetAsync(id) ?? throw new NotFoundException();
+                    entity.AccountStatus = status;
+                    await accountRepository.UpdateAsync(entity);
+                }
+
+                await unitOfWork.CommitTransactionAsync();
+            }
+            catch
+            {
+                await unitOfWork.RollbackTransactionAsync();
+                throw;
+            }
+        }
+
     }
 }

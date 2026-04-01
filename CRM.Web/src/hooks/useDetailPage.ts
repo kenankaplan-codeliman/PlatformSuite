@@ -8,6 +8,11 @@ import { useSmartBack } from '@/hooks/useSmartBack';
 
 export type DetailMode = 'view' | 'edit' | 'create';
 
+// Ant Design form değerleri runtime'da shape'i bilinmeyen key-value çiftleridir;
+// burada `any` kasıtlı olarak kullanılmaktadır.
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+type FormValues = Record<string, any>;
+
 export interface DetailPageConfig<TEntity> {
   /** Veri çekme fonksiyonu */
   fetchById: (id: string) => Promise<void>;
@@ -28,13 +33,13 @@ export interface DetailPageConfig<TEntity> {
   clearCurrentEntity: () => void;
 
   /** Form alanlarını entity'den doldurma (dayjs dönüşümleri vb.) */
-  mapEntityToForm: (entity: TEntity) => Record<string, any>;
+  mapEntityToForm: (entity: TEntity) => FormValues;
 
   /** Form değerlerini entity formatına dönüştürme (toLocalISO vb.) */
-  mapFormToEntity: (values: Record<string, any>, id?: string) => Partial<TEntity>;
+  mapFormToEntity: (values: FormValues, id?: string) => Partial<TEntity>;
 
   /** Yeni kayıt için default form değerleri */
-  defaultFormValues: Record<string, any>;
+  defaultFormValues: FormValues;
 
   /** Listeleme sayfası path'i (geri dönüş için) */
   listPath: string;
@@ -70,14 +75,23 @@ export function useDetailPage<TEntity>(
     deleteEntity,
     currentEntity,
     clearCurrentEntity,
-    mapEntityToForm,
-    mapFormToEntity,
-    defaultFormValues,
     listPath,
     getViewPath,
     completeEntity,
     cancelEntity,
   } = config;
+
+  // Her render'da yeni referans üretilen callback'leri ref'e al.
+  // Bu sayede useEffect/useCallback dep array'leri sabit kalır,
+  // ama fonksiyon gövdesi her zaman güncel sürümü çağırır.
+  const mapEntityToFormRef = useRef(config.mapEntityToForm);
+  mapEntityToFormRef.current = config.mapEntityToForm;
+
+  const mapFormToEntityRef = useRef(config.mapFormToEntity);
+  mapFormToEntityRef.current = config.mapFormToEntity;
+
+  const defaultFormValuesRef = useRef(config.defaultFormValues);
+  defaultFormValuesRef.current = config.defaultFormValues;
 
   const params = useParams<{ id: string }>();
   const navigate = useNavigate();
@@ -138,16 +152,16 @@ export function useDetailPage<TEntity>(
 
 
   useEffect(() => {
-  if (currentEntity && !isNew) {
-    // sadece edit/create modunda set et
-    if (!isViewMode) {
-      form.setFieldsValue(mapEntityToForm(currentEntity));
+    if (currentEntity && !isNew) {
+      // Sadece edit modunda form doldur — ref sayesinde daima güncel mapEntityToForm çağrılır
+      if (!isViewMode) {
+        form.setFieldsValue(mapEntityToFormRef.current(currentEntity));
+      }
+    } else if (isNew) {
+      form.resetFields();
+      form.setFieldsValue(defaultFormValuesRef.current);
     }
-  } else if (isNew) {
-    form.resetFields();
-    form.setFieldsValue(defaultFormValues);
-  }
-}, [currentEntity, form, isNew, isViewMode]);
+  }, [currentEntity, form, isNew, isViewMode]);
 
   // ─── Handlers ───────────────────────────────────────────────────────────
 
@@ -161,41 +175,61 @@ export function useDetailPage<TEntity>(
     if (isNew) {
       navigate(listPath);
     } else if (currentEntity) {
-      form.setFieldsValue(mapEntityToForm(currentEntity));
+      form.setFieldsValue(mapEntityToFormRef.current(currentEntity));
       updateMode('view');
     }
     props.onCancel?.();
   }, [isNew, navigate, listPath, form, currentEntity, updateMode, props]);
 
   const handleSave = useCallback(async () => {
+    // validateFields rejection'u Ant Design'ın kendi inline validasyon mesajlarını tetikler;
+    // bu satırın fırlattığı hata kasıtlı olarak yukarıya taşınır.
     const values = await form.validateFields();
-    const formattedValues = mapFormToEntity(values, entityId);
 
-    if (isNew) {
-      const created = await createEntity(formattedValues);
-      props.onSave?.(created);
-      navigate(getViewPath(created));
-    } else if (entityId) {
-      const updated = await updateEntity(formattedValues);
-      props.onSave?.(updated);
-      updateMode('view');
+    try {
+      const formattedValues = mapFormToEntityRef.current(values, entityId);
+
+      if (isNew) {
+        const created = await createEntity(formattedValues);
+        props.onSave?.(created);
+        navigate(getViewPath(created));
+      } else if (entityId) {
+        const updated = await updateEntity(formattedValues);
+        props.onSave?.(updated);
+        updateMode('view');
+      }
+    } catch {
+      // API/network hataları store'da StateType.Error ile gösterildi.
+      // Navigasyon yapılmaz — kullanıcı formu düzeltebilir.
     }
-  }, [form, isNew, entityId, createEntity, updateEntity, navigate, getViewPath, updateMode, props, mapFormToEntity]);
+  }, [form, isNew, entityId, createEntity, updateEntity, navigate, getViewPath, updateMode, props]);
 
   const handleDelete = useCallback(async () => {
     if (!entityId || isNew) return;
-    await deleteEntity(entityId);
-    handleBack();
+    try {
+      await deleteEntity(entityId);
+      handleBack();
+    } catch {
+      // Hata store'da gösterildi — navigasyon yapılmaz
+    }
   }, [entityId, isNew, deleteEntity, handleBack]);
 
   const handleComplete = useCallback(async () => {
     if (!entityId || isNew || !completeEntity) return;
-    await completeEntity(entityId);
+    try {
+      await completeEntity(entityId);
+    } catch {
+      // Hata store'da gösterildi
+    }
   }, [entityId, isNew, completeEntity]);
 
   const handleCancelActivity = useCallback(async () => {
     if (!entityId || isNew || !cancelEntity) return;
-    await cancelEntity(entityId);
+    try {
+      await cancelEntity(entityId);
+    } catch {
+      // Hata store'da gösterildi
+    }
   }, [entityId, isNew, cancelEntity]);
 
   return {

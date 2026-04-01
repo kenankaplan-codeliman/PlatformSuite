@@ -1,4 +1,5 @@
 import React, { useState, useCallback } from 'react';
+import { useTranslation } from 'react-i18next';
 import {
   Card,
   Form,
@@ -63,10 +64,20 @@ import { entitySearchService } from '@/services/entity.search.service';
 const { Title, Text, Paragraph } = Typography;
 const { TextArea } = Input;
 
+// Form satırı tipi: EntityLookup çıktısı + AccountContactRef alanları
+interface ContactFormRow {
+  id?: string;
+  contact: EntityReference | null;
+  role?: string;
+  isPrimary?: boolean;
+}
+
 // ─── Component ────────────────────────────────────────────────────────────────
 
 const AccountDetail: React.FC<DetailPageProps<AccountDetailItem>> = (props) => {
   const store = useAccountStore();
+  const { t } = useTranslation('account');
+  const { t: tc } = useTranslation('common');
 
   const [activeTab, setActiveTab] = useState<string>('details');
   const handleTabChange = useCallback((key: string) => setActiveTab(key), []);
@@ -103,8 +114,8 @@ const AccountDetail: React.FC<DetailPageProps<AccountDetailItem>> = (props) => {
         id: id || undefined,
         // Form satırı → AccountContactRef: EntityReference'ı geri çevir
         contacts: (values.contacts ?? [])
-          .filter((c: any) => c.contact != null)
-          .map((c: any) => ({
+          .filter((c: ContactFormRow) => c.contact != null)
+          .map((c: ContactFormRow) => ({
             id: c.id,
             contactId: c.contact.id,
             contactName: c.contact.name,
@@ -167,14 +178,14 @@ const AccountDetail: React.FC<DetailPageProps<AccountDetailItem>> = (props) => {
                 </Tag>
                 <Badge
                   status={currentAccount?.isActive ? 'success' : 'default'}
-                  text={currentAccount?.isActive ? 'Aktif' : 'Pasif'}
+                  text={currentAccount?.isActive ? tc('status.active') : tc('status.inactive')}
                 />
               </Space>
               {currentAccount?.industry && (
                 <Text type="secondary">
                   <BankOutlined style={{ marginRight: 4 }} />
                   {currentAccount.industry}
-                  {currentAccount.parentAccountName && ` · Üst Firma: ${currentAccount.parentAccountName}`}
+                  {currentAccount.parentAccountName && ` · ${t('subField.parentPrefix')}${currentAccount.parentAccountName}`}
                 </Text>
               )}
             </Space>
@@ -182,7 +193,7 @@ const AccountDetail: React.FC<DetailPageProps<AccountDetailItem>> = (props) => {
           <Col>
             {currentAccount?.annualRevenue && (
               <div style={{ textAlign: 'right' }}>
-                <Text type="secondary">Yıllık Gelir</Text>
+                <Text type="secondary">{t('field.annualRevenue')}</Text>
                 <Title level={4} style={{ margin: 0, color: '#52c41a' }}>
                   ₺{currentAccount.annualRevenue.toLocaleString('tr-TR')}
                 </Title>
@@ -198,30 +209,30 @@ const AccountDetail: React.FC<DetailPageProps<AccountDetailItem>> = (props) => {
         items={[
           {
             key: 'details',
-            label: 'Detaylar',
+            label: t('tab.details'),
             children: (
               <Row gutter={16}>
                 {/* Firma Bilgileri */}
                 <Col span={12}>
                   <Card
-                    title={<Space><BankOutlined /><span>Firma Bilgileri</span></Space>}
+                    title={<Space><BankOutlined /><span>{t('section.companyInfo')}</span></Space>}
                     style={{ marginBottom: 16 }}
                   >
                     <Descriptions column={1} size="small">
-                      <Descriptions.Item label="Sektör">
+                      <Descriptions.Item label={t('field.industry')}>
                         {currentAccount?.industry || <Text type="secondary">-</Text>}
                       </Descriptions.Item>
-                      <Descriptions.Item label="Çalışan Sayısı">
+                      <Descriptions.Item label={t('field.numberOfEmployees')}>
                         {currentAccount?.numberOfEmployees?.toLocaleString('tr-TR') || (
                           <Text type="secondary">-</Text>
                         )}
                       </Descriptions.Item>
-                      <Descriptions.Item label="Yıllık Gelir">
+                      <Descriptions.Item label={t('field.annualRevenue')}>
                         {currentAccount?.annualRevenue
                           ? `₺${currentAccount.annualRevenue.toLocaleString('tr-TR')}`
                           : <Text type="secondary">-</Text>}
                       </Descriptions.Item>
-                      <Descriptions.Item label={<><GlobalOutlined /> Web Sitesi</>}>
+                      <Descriptions.Item label={<><GlobalOutlined /> {t('field.website')}</>}>
                         {currentAccount?.website ? (
                           <a href={currentAccount.website} target="_blank" rel="noopener noreferrer">
                             {currentAccount.website}
@@ -230,7 +241,7 @@ const AccountDetail: React.FC<DetailPageProps<AccountDetailItem>> = (props) => {
                           <Text type="secondary">-</Text>
                         )}
                       </Descriptions.Item>
-                      <Descriptions.Item label="Üst Firma">
+                      <Descriptions.Item label={t('field.parentAccount')}>
                         {currentAccount?.parentAccountName || <Text type="secondary">-</Text>}
                       </Descriptions.Item>
                     </Descriptions>
@@ -240,7 +251,7 @@ const AccountDetail: React.FC<DetailPageProps<AccountDetailItem>> = (props) => {
                 {/* Telefonlar */}
                 <Col span={12}>
                   <Card
-                    title={<Space><PhoneOutlined /><span>Telefonlar</span></Space>}
+                    title={<Space><PhoneOutlined /><span>{t('section.phones')}</span></Space>}
                     style={{ marginBottom: 16 }}
                   >
                     {currentAccount?.phones && currentAccount.phones.length > 0 ? (
@@ -251,7 +262,7 @@ const AccountDetail: React.FC<DetailPageProps<AccountDetailItem>> = (props) => {
                             label={
                               <Space>
                                 {getPhoneTypeLabel(phone.type)}
-                                {phone.isPrimary && <Tag color="blue" style={{ fontSize: 10 }}>Birincil</Tag>}
+                                {phone.isPrimary && <Tag color="blue" style={{ fontSize: 10 }}>{t('subField.primary')}</Tag>}
                               </Space>
                             }
                           >
@@ -260,7 +271,7 @@ const AccountDetail: React.FC<DetailPageProps<AccountDetailItem>> = (props) => {
                         ))}
                       </Descriptions>
                     ) : (
-                      <Text type="secondary">Kayıtlı telefon yok</Text>
+                      <Text type="secondary">{t('emptyState.phones')}</Text>
                     )}
                   </Card>
                 </Col>
@@ -268,7 +279,7 @@ const AccountDetail: React.FC<DetailPageProps<AccountDetailItem>> = (props) => {
                 {/* E-postalar */}
                 <Col span={12}>
                   <Card
-                    title={<Space><MailOutlined /><span>E-postalar</span></Space>}
+                    title={<Space><MailOutlined /><span>{t('section.emails')}</span></Space>}
                     style={{ marginBottom: 16 }}
                   >
                     {currentAccount?.emails && currentAccount.emails.length > 0 ? (
@@ -279,7 +290,7 @@ const AccountDetail: React.FC<DetailPageProps<AccountDetailItem>> = (props) => {
                             label={
                               <Space>
                                 {getEmailTypeLabel(email.type)}
-                                {email.isPrimary && <Tag color="blue" style={{ fontSize: 10 }}>Birincil</Tag>}
+                                {email.isPrimary && <Tag color="blue" style={{ fontSize: 10 }}>{t('subField.primary')}</Tag>}
                               </Space>
                             }
                           >
@@ -288,7 +299,7 @@ const AccountDetail: React.FC<DetailPageProps<AccountDetailItem>> = (props) => {
                         ))}
                       </Descriptions>
                     ) : (
-                      <Text type="secondary">Kayıtlı e-posta yok</Text>
+                      <Text type="secondary">{t('emptyState.emails')}</Text>
                     )}
                   </Card>
                 </Col>
@@ -296,7 +307,7 @@ const AccountDetail: React.FC<DetailPageProps<AccountDetailItem>> = (props) => {
                 {/* Adresler */}
                 <Col span={12}>
                   <Card
-                    title={<Space><EnvironmentOutlined /><span>Adresler</span></Space>}
+                    title={<Space><EnvironmentOutlined /><span>{t('section.addresses')}</span></Space>}
                     style={{ marginBottom: 16 }}
                   >
                     {currentAccount?.addresses && currentAccount.addresses.length > 0 ? (
@@ -304,7 +315,7 @@ const AccountDetail: React.FC<DetailPageProps<AccountDetailItem>> = (props) => {
                         <div key={address.id || idx} style={{ marginBottom: idx < currentAccount.addresses.length - 1 ? 12 : 0 }}>
                           <Space>
                             <Tag>{getAddressTypeLabel(address.type)}</Tag>
-                            {address.isPrimary && <Tag color="blue" style={{ fontSize: 10 }}>Birincil</Tag>}
+                            {address.isPrimary && <Tag color="blue" style={{ fontSize: 10 }}>{t('subField.primary')}</Tag>}
                           </Space>
                           <Paragraph style={{ margin: '4px 0 0' }}>
                             {address.addressLine1}
@@ -318,7 +329,7 @@ const AccountDetail: React.FC<DetailPageProps<AccountDetailItem>> = (props) => {
                         </div>
                       ))
                     ) : (
-                      <Text type="secondary">Kayıtlı adres yok</Text>
+                      <Text type="secondary">{t('emptyState.addresses')}</Text>
                     )}
                   </Card>
                 </Col>
@@ -327,7 +338,7 @@ const AccountDetail: React.FC<DetailPageProps<AccountDetailItem>> = (props) => {
                 {currentAccount?.contacts && currentAccount.contacts.length > 0 && (
                   <Col span={24}>
                     <Card
-                      title={<Space><TeamOutlined /><span>İlişkili Kişiler</span></Space>}
+                      title={<Space><TeamOutlined /><span>{t('section.contacts')}</span></Space>}
                       style={{ marginBottom: 16 }}
                     >
                       <Table<AccountContactRef>
@@ -337,7 +348,7 @@ const AccountDetail: React.FC<DetailPageProps<AccountDetailItem>> = (props) => {
                         size="small"
                         columns={[
                           {
-                            title: 'Kişi',
+                            title: tc('field.name'),
                             dataIndex: 'contactName',
                             key: 'contactName',
                             width: '42%',
@@ -349,20 +360,20 @@ const AccountDetail: React.FC<DetailPageProps<AccountDetailItem>> = (props) => {
                             ),
                           },
                           {
-                            title: 'Rol',
+                            title: t('field.role'),
                             dataIndex: 'role',
                             key: 'role',
                             width: '42%',
                             render: (role: string) => role || <Text type="secondary">-</Text>,
                           },
                           {
-                            title: 'Birincil',
+                            title: t('subField.primary'),
                             dataIndex: 'isPrimary',
                             key: 'isPrimary',
                             align: 'center',
                             width: '16%',
                             render: (isPrimary: boolean) => (
-                              <Badge status={isPrimary ? 'success' : 'default'} text={isPrimary ? 'Evet' : 'Hayır'} />
+                              <Badge status={isPrimary ? 'success' : 'default'} text={isPrimary ? tc('confirm.yes') : tc('confirm.no')} />
                             ),
                           },
                         ]}
@@ -375,7 +386,7 @@ const AccountDetail: React.FC<DetailPageProps<AccountDetailItem>> = (props) => {
                 {currentAccount?.description && (
                   <Col span={24}>
                     <Card
-                      title={<Space><FileTextOutlined /><span>Açıklama</span></Space>}
+                      title={<Space><FileTextOutlined /><span>{t('section.description')}</span></Space>}
                       style={{ marginBottom: 16 }}
                     >
                       <Paragraph>{currentAccount.description}</Paragraph>
@@ -387,7 +398,7 @@ const AccountDetail: React.FC<DetailPageProps<AccountDetailItem>> = (props) => {
           },
           {
             key: 'activities',
-            label: 'Aktiviteler',
+            label: t('tab.activities'),
             children: (
               <ActivityListView
                 initialFilters={{
@@ -410,41 +421,41 @@ const AccountDetail: React.FC<DetailPageProps<AccountDetailItem>> = (props) => {
         {/* Temel Bilgiler */}
         <Col span={24}>
           <Card
-            title={<Space><BankOutlined /><span>Temel Bilgiler</span></Space>}
+            title={<Space><BankOutlined /><span>{t('section.basicInfo')}</span></Space>}
             style={{ marginBottom: 16 }}
           >
             <Row gutter={16}>
               <Col span={8}>
                 <Form.Item
                   name="accountName"
-                  label="Firma Adı"
-                  rules={[{ required: true, message: 'Firma adı gereklidir' }]}
+                  label={t('field.name')}
+                  rules={[{ required: true, message: t('validation.nameRequired') }]}
                 >
-                  <Input prefix={<BankOutlined />} placeholder="Firma adı girin" />
+                  <Input prefix={<BankOutlined />} placeholder={t('placeholder.name')} />
                 </Form.Item>
               </Col>
               <Col span={8}>
                 <Form.Item
                   name="accountType"
-                  label="Firma Tipi"
-                  rules={[{ required: true, message: 'Firma tipi seçimi gereklidir' }]}
+                  label={t('field.accountType')}
+                  rules={[{ required: true, message: t('validation.accountTypeRequired') }]}
                 >
-                  <Select options={accountTypeOptions} placeholder="Firma tipi seçin" />
+                  <Select options={accountTypeOptions} placeholder={t('placeholder.accountType')} />
                 </Form.Item>
               </Col>
               <Col span={8}>
-                <Form.Item name="industry" label="Sektör">
-                  <Input placeholder="Sektör girin" />
+                <Form.Item name="industry" label={t('field.industry')}>
+                  <Input placeholder={t('placeholder.industry')} />
                 </Form.Item>
               </Col>
               <Col span={8}>
-                <Form.Item name="website" label="Web Sitesi">
-                  <Input prefix={<GlobalOutlined />} placeholder="https://example.com" />
+                <Form.Item name="website" label={t('field.website')}>
+                  <Input prefix={<GlobalOutlined />} placeholder={t('placeholder.website')} />
                 </Form.Item>
               </Col>
               <Col span={8}>
-                <Form.Item name="parentAccountId" label="Üst Firma">
-                  <Input placeholder="Üst firma ID (opsiyonel)" />
+                <Form.Item name="parentAccountId" label={t('field.parentAccount')}>
+                  <Input placeholder={t('placeholder.parentAccount')} />
                 </Form.Item>
               </Col>
             </Row>
@@ -454,29 +465,29 @@ const AccountDetail: React.FC<DetailPageProps<AccountDetailItem>> = (props) => {
         {/* Finansal Bilgiler */}
         <Col span={12}>
           <Card
-            title={<Space><DollarOutlined /><span>Finansal Bilgiler</span></Space>}
+            title={<Space><DollarOutlined /><span>{t('section.financialInfo')}</span></Space>}
             style={{ marginBottom: 16 }}
           >
             <Row gutter={16}>
               <Col span={12}>
-                <Form.Item name="numberOfEmployees" label="Çalışan Sayısı">
+                <Form.Item name="numberOfEmployees" label={t('field.numberOfEmployees')}>
                   <InputNumber
                     style={{ width: '100%' }}
                     min={0}
-                    placeholder="Çalışan sayısı"
+                    placeholder={t('placeholder.employees')}
                     formatter={(value) => `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')}
-                    parser={(value) => parseInt(value?.replace(/\$\s?|(,*)/g, '') || '0', 10) as any}
+                    parser={(value) => parseInt(value?.replace(/\$\s?|(,*)/g, '') || '0', 10) as number}
                   />
                 </Form.Item>
               </Col>
               <Col span={12}>
-                <Form.Item name="annualRevenue" label="Yıllık Gelir (₺)">
+                <Form.Item name="annualRevenue" label={t('field.annualRevenueWithCurrency')}>
                   <InputNumber
                     style={{ width: '100%' }}
                     min={0}
-                    placeholder="Yıllık gelir"
+                    placeholder={t('placeholder.annualRevenue')}
                     formatter={(value) => `₺ ${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')}
-                    parser={(value) => parseInt(value?.replace(/₺\s?|(,*)/g, '') || '0', 10) as any}
+                    parser={(value) => parseInt(value?.replace(/₺\s?|(,*)/g, '') || '0', 10) as number}
                   />
                 </Form.Item>
               </Col>
@@ -487,7 +498,7 @@ const AccountDetail: React.FC<DetailPageProps<AccountDetailItem>> = (props) => {
         {/* Telefonlar */}
         <Col span={12}>
           <Card
-            title={<Space><PhoneOutlined /><span>Telefonlar</span></Space>}
+            title={<Space><PhoneOutlined /><span>{t('section.phones')}</span></Space>}
             style={{ marginBottom: 16 }}
           >
             <Form.List name="phones">
@@ -508,10 +519,10 @@ const AccountDetail: React.FC<DetailPageProps<AccountDetailItem>> = (props) => {
                         <Form.Item
                           {...restField}
                           name={[name, 'phoneNumber']}
-                          rules={[{ required: true, message: 'Telefon gerekli' }]}
+                          rules={[{ required: true, message: t('validation.phoneRequired') }]}
                           style={{ marginBottom: 0 }}
                         >
-                          <Input placeholder="Telefon numarası" />
+                          <Input placeholder={t('placeholder.phoneNumber')} />
                         </Form.Item>
                       </Col>
                       <Col span={6}>
@@ -532,7 +543,7 @@ const AccountDetail: React.FC<DetailPageProps<AccountDetailItem>> = (props) => {
                           initialValue={false}
                           style={{ marginBottom: 0 }}
                         >
-                          <Switch checkedChildren="Birincil" unCheckedChildren="Birincil" size="small" />
+                          <Switch checkedChildren={t('subField.primary')} unCheckedChildren={t('subField.primary')} size="small" />
                         </Form.Item>
                       </Col>
                       <Col span={4}>
@@ -547,7 +558,7 @@ const AccountDetail: React.FC<DetailPageProps<AccountDetailItem>> = (props) => {
                     </Row>
                   ))}
                   <Button type="dashed" onClick={() => add({ type: PhoneType.Work, isPrimary: false })} block icon={<PlusOutlined />}>
-                    Telefon Ekle
+                    {t('action.addPhone')}
                   </Button>
                 </>
               )}
@@ -558,7 +569,7 @@ const AccountDetail: React.FC<DetailPageProps<AccountDetailItem>> = (props) => {
         {/* E-postalar */}
         <Col span={12}>
           <Card
-            title={<Space><MailOutlined /><span>E-postalar</span></Space>}
+            title={<Space><MailOutlined /><span>{t('section.emails')}</span></Space>}
             style={{ marginBottom: 16 }}
           >
             <Form.List name="emails">
@@ -580,12 +591,12 @@ const AccountDetail: React.FC<DetailPageProps<AccountDetailItem>> = (props) => {
                           {...restField}
                           name={[name, 'email']}
                           rules={[
-                            { required: true, message: 'E-posta gerekli' },
-                            { type: 'email', message: 'Geçerli bir e-posta girin' },
+                            { required: true, message: t('validation.emailRequired') },
+                            { type: 'email', message: t('validation.emailInvalid') },
                           ]}
                           style={{ marginBottom: 0 }}
                         >
-                          <Input placeholder="E-posta adresi" />
+                          <Input placeholder={t('placeholder.emailAddress')} />
                         </Form.Item>
                       </Col>
                       <Col span={6}>
@@ -606,7 +617,7 @@ const AccountDetail: React.FC<DetailPageProps<AccountDetailItem>> = (props) => {
                           initialValue={false}
                           style={{ marginBottom: 0 }}
                         >
-                          <Switch checkedChildren="Birincil" unCheckedChildren="Birincil" size="small" />
+                          <Switch checkedChildren={t('subField.primary')} unCheckedChildren={t('subField.primary')} size="small" />
                         </Form.Item>
                       </Col>
                       <Col span={4}>
@@ -621,7 +632,7 @@ const AccountDetail: React.FC<DetailPageProps<AccountDetailItem>> = (props) => {
                     </Row>
                   ))}
                   <Button type="dashed" onClick={() => add({ type: EmailType.Work, isPrimary: false })} block icon={<PlusOutlined />}>
-                    E-posta Ekle
+                    {t('action.addEmail')}
                   </Button>
                 </>
               )}
@@ -632,7 +643,7 @@ const AccountDetail: React.FC<DetailPageProps<AccountDetailItem>> = (props) => {
         {/* Adresler */}
         <Col span={12}>
           <Card
-            title={<Space><EnvironmentOutlined /><span>Adresler</span></Space>}
+            title={<Space><EnvironmentOutlined /><span>{t('section.addresses')}</span></Space>}
             style={{ marginBottom: 16 }}
           >
             <Form.List name="addresses">
@@ -667,10 +678,10 @@ const AccountDetail: React.FC<DetailPageProps<AccountDetailItem>> = (props) => {
                           <Form.Item
                             {...restField}
                             name={[name, 'addressLine1']}
-                            rules={[{ required: true, message: 'Adres satırı 1 gerekli' }]}
+                            rules={[{ required: true, message: t('validation.addressLine1Required') }]}
                             style={{ marginBottom: 8 }}
                           >
-                            <Input placeholder="Adres Satırı 1" />
+                            <Input placeholder={t('placeholder.addressLine1')} />
                           </Form.Item>
                         </Col>
                         <Col span={8}>
@@ -689,7 +700,7 @@ const AccountDetail: React.FC<DetailPageProps<AccountDetailItem>> = (props) => {
                             name={[name, 'addressLine2']}
                             style={{ marginBottom: 8 }}
                           >
-                            <Input placeholder="Adres Satırı 2 (opsiyonel)" />
+                            <Input placeholder={t('placeholder.addressLine2')} />
                           </Form.Item>
                         </Col>
                         <Col span={8}>
@@ -700,27 +711,27 @@ const AccountDetail: React.FC<DetailPageProps<AccountDetailItem>> = (props) => {
                             initialValue={false}
                             style={{ marginBottom: 8 }}
                           >
-                            <Switch checkedChildren="Birincil" unCheckedChildren="Birincil" size="small" />
+                            <Switch checkedChildren={t('subField.primary')} unCheckedChildren={t('subField.primary')} size="small" />
                           </Form.Item>
                         </Col>
                         <Col span={6}>
                           <Form.Item {...restField} name={[name, 'city']} style={{ marginBottom: 0 }}>
-                            <Input placeholder="Şehir" />
+                            <Input placeholder={t('placeholder.city')} />
                           </Form.Item>
                         </Col>
                         <Col span={6}>
                           <Form.Item {...restField} name={[name, 'state']} style={{ marginBottom: 0 }}>
-                            <Input placeholder="İl/Eyalet" />
+                            <Input placeholder={t('placeholder.state')} />
                           </Form.Item>
                         </Col>
                         <Col span={6}>
                           <Form.Item {...restField} name={[name, 'postalCode']} style={{ marginBottom: 0 }}>
-                            <Input placeholder="Posta Kodu" />
+                            <Input placeholder={t('placeholder.postalCode')} />
                           </Form.Item>
                         </Col>
                         <Col span={6}>
                           <Form.Item {...restField} name={[name, 'country']} style={{ marginBottom: 0 }}>
-                            <Input placeholder="Ülke" />
+                            <Input placeholder={t('placeholder.country')} />
                           </Form.Item>
                         </Col>
                       </Row>
@@ -732,7 +743,7 @@ const AccountDetail: React.FC<DetailPageProps<AccountDetailItem>> = (props) => {
                     block
                     icon={<PlusOutlined />}
                   >
-                    Adres Ekle
+                    {t('action.addAddress')}
                   </Button>
                 </>
               )}
@@ -743,7 +754,7 @@ const AccountDetail: React.FC<DetailPageProps<AccountDetailItem>> = (props) => {
         {/* İlişkili Kişiler */}
         <Col span={24}>
           <Card
-            title={<Space><TeamOutlined /><span>İlişkili Kişiler</span></Space>}
+            title={<Space><TeamOutlined /><span>{t('section.contacts')}</span></Space>}
             style={{ marginBottom: 16 }}
           >
             <Form.List name="contacts">
@@ -755,16 +766,16 @@ const AccountDetail: React.FC<DetailPageProps<AccountDetailItem>> = (props) => {
                     style={{ marginBottom: 4, borderBottom: '1px solid #d9d9d9' }}
                   >
                     <Col span={10}>
-                      <Text strong>Kişi</Text>
+                      <Text strong>{tc('field.name')}</Text>
                     </Col>
                     <Col span={10}>
-                      <Text strong>Rol</Text>
+                      <Text strong>{t('field.role')}</Text>
                     </Col>
                     <Col span={2}>
-                      <Text strong>Birincil</Text>
+                      <Text strong>{t('subField.primary')}</Text>
                     </Col>
                     <Col span={2}>
-                      <Text strong>Sil</Text>
+                      <Text strong>{tc('action.delete')}</Text>
                     </Col>
                   </Row>
 
@@ -780,14 +791,14 @@ const AccountDetail: React.FC<DetailPageProps<AccountDetailItem>> = (props) => {
                         <Form.Item
                           {...restField}
                           name={[name, 'contact']}
-                          rules={[{ required: true, message: 'Kişi seçimi gereklidir' }]}
+                          rules={[{ required: true, message: t('validation.contactRequired') }]}
                           style={{ marginBottom: 0 }}
                         >
                           <EntityLookup
                             onSearch={entitySearchService.search}
                             entityTypes={[EntityType.Contact]}
                             multiple={false}
-                            modalTitle="Kişi seçin..."
+                            modalTitle={t('action.selectContact')}
                           />
                         </Form.Item>
                       </Col>
@@ -799,7 +810,7 @@ const AccountDetail: React.FC<DetailPageProps<AccountDetailItem>> = (props) => {
                           name={[name, 'role']}
                           style={{ marginBottom: 0 }}
                         >
-                          <Input placeholder="Rol girin (opsiyonel)" />
+                          <Input placeholder={t('placeholder.role')} />
                         </Form.Item>
                       </Col>
 
@@ -812,7 +823,7 @@ const AccountDetail: React.FC<DetailPageProps<AccountDetailItem>> = (props) => {
                           initialValue={false}
                           style={{ marginBottom: 0 }}
                         >
-                          <Switch checkedChildren="Evet" unCheckedChildren="Hayır" size="small" />
+                          <Switch checkedChildren={tc('confirm.yes')} unCheckedChildren={tc('confirm.no')} size="small" />
                         </Form.Item>
                       </Col>
 
@@ -834,7 +845,7 @@ const AccountDetail: React.FC<DetailPageProps<AccountDetailItem>> = (props) => {
                     block
                     icon={<PlusOutlined />}
                   >
-                    Kişi Ekle
+                    {t('action.addContact')}
                   </Button>
                 </>
               )}
@@ -845,11 +856,11 @@ const AccountDetail: React.FC<DetailPageProps<AccountDetailItem>> = (props) => {
         {/* Açıklama */}
         <Col span={24}>
           <Card
-            title={<Space><FileTextOutlined /><span>Açıklama</span></Space>}
+            title={<Space><FileTextOutlined /><span>{t('section.description')}</span></Space>}
             style={{ marginBottom: 16 }}
           >
-            <Form.Item name="description" label="Açıklama">
-              <TextArea rows={4} placeholder="Firma hakkında notlar..." />
+            <Form.Item name="description" label={t('field.description')}>
+              <TextArea rows={4} placeholder={t('placeholder.description')} />
             </Form.Item>
           </Card>
         </Col>
@@ -862,16 +873,16 @@ const AccountDetail: React.FC<DetailPageProps<AccountDetailItem>> = (props) => {
   return (
     <DetailPageLayout
       title={{
-        create: 'Yeni Firma',
-        view: 'Firma Detayı',
-        edit: 'Firma Düzenle',
+        create: t('detail.titleCreate'),
+        view: t('detail.titleView'),
+        edit: t('detail.titleEdit'),
       }}
       deleteConfirm={{
-        title: 'Firma Silme',
-        description: 'Bu firmayı silmek istediğinizden emin misiniz?',
+        title: t('confirm.deleteTitle'),
+        description: t('confirm.deleteDescription'),
       }}
-      notFoundTitle="Firma Bulunamadı"
-      notFoundDescription="Aradığınız firma bulunamadı veya silinmiş olabilir."
+      notFoundTitle={t('detail.notFoundTitle')}
+      notFoundDescription={t('detail.notFoundDescription')}
       mode={detail.mode}
       isNew={detail.isNew}
       isViewMode={detail.isViewMode}

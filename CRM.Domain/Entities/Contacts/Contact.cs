@@ -22,6 +22,7 @@ public class Contact :
     public string FirstName { get; set; } = default!;
     public string LastName { get; set; } = default!;
     public string DisplayName => $"{FirstName} {LastName}";
+    public ContactStatus ContactStatus { get; set; } = ContactStatus.Active;
 
     public string? Title { get; set; }
     public string? Department { get; set; }

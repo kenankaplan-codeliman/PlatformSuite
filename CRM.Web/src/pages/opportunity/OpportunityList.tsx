@@ -1,5 +1,6 @@
 import { useEffect, useRef, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { RoutePaths } from '@/config/route.paths';
 import { Badge, Button, Card, Dropdown, Flex, Select, Tag, Typography } from 'antd';
 import type { MenuProps } from 'antd';
@@ -46,18 +47,19 @@ interface KanbanCardProps {
 }
 
 const KanbanCard: React.FC<KanbanCardProps> = ({ record, onView, onEdit, onDelete }) => {
+  const { t: tc } = useTranslation('common');
   const actionItems: MenuProps['items'] = [
     {
-      key: 'view', label: 'Görüntüle', icon: <RiseOutlined />,
+      key: 'view', label: tc('action.view'), icon: <RiseOutlined />,
       onClick: (info) => { info.domEvent.stopPropagation(); onView(record); },
     },
     {
-      key: 'edit', label: 'Düzenle', icon: <EditOutlined />,
+      key: 'edit', label: tc('action.edit'), icon: <EditOutlined />,
       onClick: (info) => { info.domEvent.stopPropagation(); onEdit(record); },
     },
     { type: 'divider' },
     {
-      key: 'delete', label: 'Sil', icon: <DeleteOutlined />, danger: true,
+      key: 'delete', label: tc('action.delete'), icon: <DeleteOutlined />, danger: true,
       onClick: (info) => { info.domEvent.stopPropagation(); onDelete(record); },
     },
   ];
@@ -129,7 +131,7 @@ const KanbanCard: React.FC<KanbanCardProps> = ({ record, onView, onEdit, onDelet
           status={record.isActive ? 'success' : 'default'}
           text={
             <Text type="secondary" style={{ fontSize: 11 }}>
-              {record.isActive ? 'Aktif' : 'Pasif'}
+              {record.isActive ? tc('status.active') : tc('status.inactive')}
             </Text>
           }
         />
@@ -149,6 +151,7 @@ interface KanbanColumnProps {
 }
 
 const KanbanColumn: React.FC<KanbanColumnProps> = ({ stage, items, onView, onEdit, onDelete }) => {
+  const { t } = useTranslation('opportunity');
   const color = getOpportunityStageColor(stage);
   const label = getOpportunityStageLabel(stage);
   const totalValue = items.reduce((sum, i) => sum + i.estimatedValue, 0);
@@ -219,7 +222,7 @@ const KanbanColumn: React.FC<KanbanColumnProps> = ({ stage, items, onView, onEdi
               fontSize: 12,
             }}
           >
-            Kayıt yok
+            {t('list.noRecords')}
           </div>
         ) : (
           items.map((item) => (
@@ -277,6 +280,7 @@ const KanbanBoard: React.FC<KanbanBoardProps> = ({ groupedByStage, onView, onEdi
 
 const OpportunityList: React.FC = () => {
   const navigate = useNavigate();
+  const { t } = useTranslation('opportunity');
 
   const {
     opportunities,
@@ -333,12 +337,12 @@ const OpportunityList: React.FC = () => {
 
   return (
     <ListPageLayout<OpportunityListItem>
-      title="Fırsat Yönetimi"
-      subtitle="Satış fırsatlarını kanban görünümüyle yönetin"
-      createButtonLabel="Yeni Fırsat"
+      title={t('list.title')}
+      subtitle={t('list.subtitle')}
+      createButtonLabel={t('action.create')}
       onCreate={() => navigate(RoutePaths.Opportunity.New)}
 
-      searchPlaceholder="Fırsat adı ara..."
+      searchPlaceholder={t('placeholder.search')}
       searchValue={filters.name ?? ''}
       onSearch={handleSearch}
       hasActiveFilters={hasActiveFilters}
@@ -347,7 +351,7 @@ const OpportunityList: React.FC = () => {
       renderExtraFilters={() => (
         <>
           <Select
-            placeholder="Aşama"
+            placeholder={t('field.stage')}
             allowClear
             style={{ width: 160 }}
             options={opportunityStageOptions}
@@ -355,7 +359,7 @@ const OpportunityList: React.FC = () => {
             onChange={(val) => handleFilterChange('stage', val)}
           />
           <Select
-            placeholder="Kaynak"
+            placeholder={t('field.source')}
             allowClear
             style={{ width: 180 }}
             options={opportunitySourceOptions}

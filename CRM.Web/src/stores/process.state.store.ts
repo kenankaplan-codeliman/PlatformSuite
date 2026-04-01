@@ -1,6 +1,10 @@
 import { create } from 'zustand';
 import { devtools } from 'zustand/middleware';
 
+// Modül düzeyinde tutulur — store dışında yönetilmesi gerekiyor çünkü
+// Zustand state'i serialize edilebilir olmak zorunda (setTimeout ID değil)
+let _autoCloseTimer: ReturnType<typeof setTimeout> | null = null;
+
 export const StateType = {
   None: 0,
   Loading: 1,
@@ -28,24 +32,30 @@ export const useProcessState = create<ProcessState>()(
         message: null,
 
         //Actions
-        setState: (state: StateType, title: string | null, message: string | null) =>{ 
-          set({ state, title, message })
-          
-          const{ clearState } = get();
+        setState: (state: StateType, title: string | null, message: string | null) => {
+          // Önceki timer'ı iptal et — yeni state geldiğinde eski timer tetiklenmemeli
+          if (_autoCloseTimer !== null) {
+            clearTimeout(_autoCloseTimer);
+            _autoCloseTimer = null;
+          }
+
+          set({ state, title, message });
+
+          const { clearState } = get();
 
           if (state === StateType.Success) {
-            setTimeout(() => {
-                    clearState();
-                  }, 1000);
+            _autoCloseTimer = setTimeout(() => { _autoCloseTimer = null; clearState(); }, 1000);
+          } else if (state === StateType.Error) {
+            _autoCloseTimer = setTimeout(() => { _autoCloseTimer = null; clearState(); }, 3000);
           }
-          else if (state === StateType.Error) {
-            setTimeout(() => {
-                    clearState();
-                  }, 3000);
-          }
-        
         },
-        clearState: () => set({ state: StateType.None, title: null, message: null }), 
+        clearState: () => {
+          if (_autoCloseTimer !== null) {
+            clearTimeout(_autoCloseTimer);
+            _autoCloseTimer = null;
+          }
+          set({ state: StateType.None, title: null, message: null });
+        },
     })
   )
 );
