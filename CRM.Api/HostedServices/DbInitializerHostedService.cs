@@ -33,9 +33,13 @@ public sealed class DbInitializerHostedService : IHostedService
 
 
         //Roles
-        var defaultRole = await roleRepository.GetOrCreateAsync(configuration["DefaultValues:Default_User_Role"]!, AccessLevel.User, isDefault: true);
-        var defaultManagerRole = await roleRepository.GetOrCreateAsync(configuration["DefaultValues:Default_Manager_Role"]!, AccessLevel.Organization);
-        var defaultAdminRole = await roleRepository.GetOrCreateAsync(configuration["DefaultValues:Default_Admin_Role"]!, AccessLevel.All);
+        var userRoleName    = configuration["DefaultValues:Default_User_Role"]    ?? throw new InvalidOperationException("DefaultValues:Default_User_Role is not configured.");
+        var managerRoleName = configuration["DefaultValues:Default_Manager_Role"] ?? throw new InvalidOperationException("DefaultValues:Default_Manager_Role is not configured.");
+        var adminRoleName   = configuration["DefaultValues:Default_Admin_Role"]   ?? throw new InvalidOperationException("DefaultValues:Default_Admin_Role is not configured.");
+
+        var defaultRole        = await roleRepository.GetOrCreateAsync(userRoleName,    AccessLevel.User,         isDefault: true);
+        var defaultManagerRole = await roleRepository.GetOrCreateAsync(managerRoleName, AccessLevel.Organization);
+        var defaultAdminRole   = await roleRepository.GetOrCreateAsync(adminRoleName,   AccessLevel.All);
 
         //User
         string adminUserEmail = configuration["DefaultValues:Admin_User_Email"]!;

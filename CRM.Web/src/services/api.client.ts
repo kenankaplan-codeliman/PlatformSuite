@@ -1,9 +1,7 @@
 import axios, { AxiosHeaders } from "axios";
-import { ServiceBasePath } from "@/config/service.paths";
 import { useAuthState } from "@/stores/auth.store";
 
 const apiClient = axios.create({
-  baseURL: ServiceBasePath,
   timeout: 30000,
   headers: { "Content-Type": "application/json" }
 });

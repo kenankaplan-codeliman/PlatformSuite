@@ -1,164 +1,215 @@
-﻿# CRM Application - .NET 10 + PostgreSQL + Elasticsearch
+# CRM Application — .NET 10 + React 19 + PostgreSQL
 
-## **Architecture Overview**
-Clean Architecture
+## Architecture Overview
+
+Clean Architecture with Docker-based deployment.
 
 ```
-CRM.Solution/
-├── CRM.API/                (Presentation Layer - Controllers, Middleware)
-├── CRM.Application/        (Application Layer - Use Cases, DTOs, Interfaces)
-├── CRM.Domain/             (Domain Layer - Entities, Enums, Business Rules)
-└── CRM.Infrastructure/     (Infrastructure Layer - Data Access, External Services)
-└── CRM.Web/                (Frontend Layer - React Web)
+crm/
+├── CRM.Api/              # Presentation Layer — Controllers, Middleware, Dockerfile
+├── CRM.Application/      # Application Layer — Command Handlers, DTOs
+├── CRM.Domain/           # Domain Layer — Entities, Enums, Business Rules
+├── CRM.Infrastructure/   # Infrastructure Layer — EF Core, Repositories
+├── CRM.Web/              # Frontend — React 19 TypeScript, Dockerfile
+├── CRM.Database/         # Raw SQL schema scripts (PostgreSQL)
+├── docker/db-init/       # DB initialization shell script
+└── nginx/                # Reverse proxy config (production)
 ```
 
-### **Dependency Flow:**
-```
-API → Application → Domain
-  ↘   Infrastructure  ↗
-```
+**Dependency flow:** `Api → Application → Domain ← Infrastructure`
 
 ---
 
-## **Quick Start**
+## Quick Start
 
-### **Configure Database:**
+### Prerequisites
+- Docker Desktop
+- `.env` file in the project root (see below)
+
+### 1. Create the environment file
+
 ```bash
-# Edit appsettings.json
-vi CRM.API/appsettings.json
-
-# Update connection string:
-"DefaultConnection": "Host=localhost;Database=crm_db;Username=crm_user;Password=your_password"
-Database Script Files are inside the "CRM.Database" folder
+cp .env.example .env   # then fill in the values
 ```
-### **4. Run Application:**
+
+### 2. Start Docker
+
 ```bash
-cd CRM.API
-dotnet run
+# Development (docker-compose.override.yml is auto-merged)
+docker compose up -d
 
-# API: http://localhost:5000, https://localhost:5001
-# Swagger: http://localhost:5000/swagger/index.html, https://localhost:5001/swagger/index.html
+# Production (VPS — without override.yml)
+docker compose up -d
 ```
----
-##  **Configuration**
 
-### **appsettings.json:**
-```json
-{
-  "ConnectionStrings": {
-    "DefaultConnection": "Host=localhost;Database=crm_db;Username=crm_user;Password=your_password"
-  },
-  "Jwt": {
-    "SecretKey": "your-super-secret-key-minimum-32-characters-long",
-    "Issuer": "https://api.yourcompany.com",
-    "Audience": "crm-api",
-    "ExpirationMinutes": "15"
-  },
-  "Microsoft": {
-    "TenantId": "YOUR_AZURE_TENANT_ID",
-    "ClientId": "YOUR_AZURE_CLIENT_ID"
-  },
-  "Logging": {
-    "LogLevel": {
-      "Default": "Information",
-      "Microsoft.EntityFrameworkCore": "Information"
-    }
-  }
-}
-```
+### 3. Access the application
+
+| Service | URL |
+|---------|-----|
+| Frontend | `http://localhost` |
+| API Swagger | `http://localhost/api/swagger/index.html` |
 
 ---
-## **Testing with Swagger**
 
-1. Start application: `dotnet run`
-2. Open Swagger: `http://localhost:5000/swagger`
-3. Test endpoints:
-   - Login → Copy `accessToken`
-   - Click "Authorize" button
-   - Paste token as: `Bearer {token}`
-   - Test protected endpoints
+## Development (Local — dotnet run)
 
+Run the DB in Docker and the API on the host for hot reload:
 
-## **Deployment**
+```bash
+# Start infrastructure (DB + frontend)
+docker compose up -d
 
-### **Docker:**
-```dockerfile
-FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
-WORKDIR /src
-COPY . .
-RUN dotnet restore
-RUN dotnet publish CRM.API/CRM.API.csproj -c Release -o /app
-
-FROM mcr.microsoft.com/dotnet/aspnet:8.0
-WORKDIR /app
-COPY --from=build /app .
-EXPOSE 5000
-ENV ASPNETCORE_URLS=http://+:5000
-ENTRYPOINT ["dotnet", "CRM.API.dll"]
+# Run API on host (override.yml exposes DB on localhost:5432)
+dotnet run --project CRM.Api
 ```
 
-### **docker-compose.yml:**
-```yaml
-version: '3.8'
-services:
-  postgres:
-    image: postgres:14
-    environment:
-      POSTGRES_DB: crm_db
-      POSTGRES_USER: crm_user
-      POSTGRES_PASSWORD: fIvOp82KCPtA1BpTwz9ifKs9qqsGR2d3
-    ports:
-      - "5432:5432"
+`EnvFileLoader` loads the root `.env` at startup. Variables already set in the process (Docker-injected) are never overwritten.
 
-  elasticsearch:
-    image: docker.elastic.co/elasticsearch/elasticsearch:8.11.3
-    container_name: data-platform-elasticsearch
-    environment:
-      # Temel Ayarlar
-      - discovery.type=single-node
-      - bootstrap.memory_lock=true
-      - "ES_JAVA_OPTS=-Xms1g -Xmx1g"
+API: `http://localhost:5000` — Swagger: `http://localhost:5000/swagger/index.html`
 
-      # GÜVENLİK AYARLARI (AÇIK ama SSL KAPALI)
-      - xpack.security.enabled=true
-      - xpack.security.http.ssl.enabled=false    
-      - xpack.security.transport.ssl.enabled=false 
+### Frontend development
 
-      # TÜM SİSTEM KULLANICI ŞİFRELERİ
-      - ELASTIC_PASSWORD=elastic123          
-    
-      # Diğer
-      - xpack.license.self_generated.type=basic
-    ports:
-      - "9200:9200"
-    volumes:
-      - es_data:/usr/share/elasticsearch/data
-    networks:
-      - backend
-    healthcheck:
-      # 'elastic' kullanıcısı ve şifresi ile sağlık kontrolü
-      test: ["CMD-SHELL", "curl -s -f -u elastic:elastic123 http://localhost:9200 || exit 1"]
-      interval: 10s
-      timeout: 5s
-      retries: 20
-      start_period: 40s
- 
-  api:
-    build: .
-    ports:
-      - "5000:5000"
-    environment:
-      ConnectionStrings__DefaultConnection: "Host=postgres;Database=crm_db;Username=crm_user;Password=fIvOp82KCPtA1BpTwz9ifKs9qqsGR2d3"
-    depends_on:
-      - postgres
+```bash
+cd CRM.Web
+npm run dev       # Dev server on http://localhost:5500 — reads CRM.Web/.env
+npm run build     # Production build
+npm run lint      # ESLint (max-warnings 0)
 ```
 
 ---
 
-## **Seed Initial Data**
+## Environment Files
 
-1. Default Organization (HQ-Headquarters)
-2. Personel Default Role  (User Access Level)
-3. Manager Role  (Organizational Access Level)
-4. Administrator Role  (All Organizational Access Level)
-5. Admin User
+All sensitive configuration lives in two gitignored `.env` files — never in `appsettings.json`.
+
+| File | Purpose |
+|------|---------|
+| `.env` | Single source of truth for Docker Compose and the API's `EnvFileLoader` |
+| `CRM.Web/.env` | Frontend-only vars read by Vite during `npm run dev` |
+
+### Key variables
+
+| Variable | Description |
+|----------|-------------|
+| `POSTGRES_PASSWORD` | PostgreSQL password |
+| `ConnectionStrings__DefaultConnection` | Full DB connection string |
+| `Jwt__Key` | JWT signing key (min 32 chars) |
+| `DefaultValues__Admin_User_Password` | Initial admin password |
+| `VITE_AZURE_CLIENT_ID` | Azure AD client ID |
+| `VITE_AZURE_TENANT_ID` | Azure AD tenant ID |
+| `ELASTIC_PASSWORD` | Elasticsearch `elastic` user password (used when Elastic logging is enabled manually) |
+
+> `ConnectionStrings__DefaultConnection` in `.env` uses `Host=localhost` for `dotnet run`.
+> Docker Compose overrides this at the service level to `Host=db` (internal service name).
+
+### How the app loads config
+
+```
+dotnet run          → EnvFileLoader reads .env from project root
+                      (process env vars set by Docker take precedence)
+
+docker compose up   → .env is auto-loaded by Docker Compose for variable
+                      interpolation (${VAR}) and injected into containers
+                      via env_file: .env
+```
+
+---
+
+## Docker Environments
+
+### Local dev (`docker-compose.override.yml` auto-merged)
+
+`docker-compose.override.yml` is automatically merged when both files exist. It:
+- Exposes `localhost:5432` so `dotnet run` from the host can reach the DB
+- Sets `ASPNETCORE_ENVIRONMENT: Development` for the API container
+- Sets `VITE_ENVIRONMENT: development` build arg for the frontend
+
+```bash
+docker compose up -d
+```
+
+### Production VPS (only `docker-compose.yml`)
+
+Do NOT copy `docker-compose.override.yml` to the VPS. Without it, the DB has no exposed ports.
+Update `.env` with production values before deploying.
+
+```bash
+docker compose up -d
+```
+
+### Useful commands
+
+```bash
+docker compose logs -f api                  # Stream API logs
+docker compose up -d --build api            # Rebuild API
+docker compose up -d --build frontend       # Rebuild frontend
+docker compose ps                           # Service status
+docker compose down                         # Stop (volumes preserved)
+docker compose down -v                      # Stop + delete volumes (DB wiped!)
+```
+
+---
+
+## Network Isolation
+
+| Network | Services | External access |
+|---------|----------|-----------------|
+| `app_net` | nginx, frontend, api | Yes (via nginx :80) |
+| `db_net` | api, db | No (internal) |
+
+PostgreSQL has no published ports in production — fully isolated inside Docker networks.
+
+> **Elasticsearch / Kibana:** Removed from the default compose setup. Use `docker-compose-elastic.yml` as reference if you want to run them manually alongside the stack.
+
+---
+
+## Logging
+
+Serilog writes structured logs via three optional sinks, all controlled by `appsettings.json` / `.env` overrides:
+
+| Sink | Config key | Default |
+|------|-----------|---------|
+| Console | — | always on |
+| File (rolling daily) | `Logging:File:Enabled` | `true` |
+| PostgreSQL (`app_log` table) | `Logging:Database:Enabled` | `true` |
+| Elasticsearch | `Logging:Elastic:Enabled` | `false` |
+
+**MinimumLevel options:** `Verbose` · `Debug` · `Information` · `Warning` · `Error` · `Fatal`
+
+**File logs** roll daily to `logs/crm-api-YYYYMMDD.log` (31-day retention). In Docker they are persisted in the `api_logs` named volume at `/app/logs` inside the container.
+
+**Elasticsearch** is disabled by default. To enable, point a running ES instance and set:
+```
+Logging__Elastic__Enabled=true
+Logging__Elastic__Url=http://<your-es-host>:9200
+```
+See `docker-compose-elastic.yml` for the full Elastic + Kibana Docker setup.
+
+---
+
+## Database
+
+Schema managed via raw SQL scripts in `CRM.Database/`. On first container start, `docker/db-init/01-init.sh` runs scripts in dependency order:
+
+```
+Identity.sql → Contact.sql → Lead.sql → products.sql → Account.sql → opportunities.sql → Activity.sql → Logs.sql
+```
+
+Seed data (created by `DbInitializerHostedService` on API startup):
+1. Default Organization (HQ — Headquarters)
+2. Personal Role (user-level access)
+3. Manager Role (organizational access)
+4. Administrator Role (full access)
+5. Admin user (`admin` / configurable via `DefaultValues__Admin_User_Password`)
+
+---
+
+## Environment Summary
+
+| | `dotnet run` | Docker (dev) | Docker (prod) |
+|---|---|---|---|
+| **Env file** | `.env` (root) | `.env` (root) | `.env` (root) |
+| **Loaded by** | EnvFileLoader | docker-compose auto | docker-compose auto |
+| **DB host** | `localhost` | `db` | `db` |
+| **Swagger** | ✓ | ✗ | ✗ |
+| **Log files** | `logs/` (local) | `api_logs` volume | `api_logs` volume |

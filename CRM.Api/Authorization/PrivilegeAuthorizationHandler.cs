@@ -83,7 +83,7 @@ public class PrivilegeAuthorizationHandler : AuthorizationHandler<PrivilegeAutho
 
             if (bestPrivilege.Level == AccessLevel.None)
             {
-                context.Fail(new AuthorizationFailureReason(this,$"User has privilege but no access level"));
+                context.Fail(new AuthorizationFailureReason(this, $"User has privilege but no access level"));
                 return;
             }
 
@@ -97,7 +97,7 @@ public class PrivilegeAuthorizationHandler : AuthorizationHandler<PrivilegeAutho
                 throw new Exception();
             }
         }
-        catch (Exception ex)
+        catch (Exception)
         {
             context.Fail(new AuthorizationFailureReason(this, $"Invalid user context."));
             return;

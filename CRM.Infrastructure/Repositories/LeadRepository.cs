@@ -41,10 +41,10 @@ namespace CRM.Infrastructure.Repositories
                 query = query.Where(e => EF.Functions.ILike(e.CompanyName, $"%{filter.CompanyName}%")); 
 
             if (!string.IsNullOrEmpty(filter.FirstName))
-                query = query.Where(e => EF.Functions.ILike(e.FirstName, $"%{filter.FirstName}%"));
+                query = query.Where(e => e.FirstName != null && EF.Functions.ILike(e.FirstName, $"%{filter.FirstName}%"));
 
             if (!string.IsNullOrEmpty(filter.LastName))
-                query = query.Where(e => EF.Functions.ILike(e.LastName, $"%{filter.LastName}%"));
+                query = query.Where(e => e.LastName != null && EF.Functions.ILike(e.LastName, $"%{filter.LastName}%"));
 
             if (filter.LeadStatus.HasValue)
                 query = query.Where(e => e.LeadStatus == filter.LeadStatus.Value);

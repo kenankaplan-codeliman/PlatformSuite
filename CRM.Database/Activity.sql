@@ -108,7 +108,7 @@ CREATE TABLE IF NOT EXISTS activity_phone_call (
     -- Phone Call Properties
     call_direction          VARCHAR(10) NOT NULL,  -- Incoming, Outgoing
     recording_url           VARCHAR(500),
-    call_notes              TEXT,
+    call_notes              TEXT
 );
 
 -- =============================================

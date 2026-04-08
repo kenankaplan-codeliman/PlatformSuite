@@ -4,7 +4,15 @@ using CRM.Api.Middleware;
 using CRM.Infrastructure.Data;
 using Microsoft.EntityFrameworkCore;
 
-var builder = WebApplication.CreateBuilder(args);
+// Load .env before CreateBuilder so ASP.NET Core's env-var config provider picks them up.
+// Docker already injects these as process env vars — EnvFileLoader skips any that are already set.
+EnvFileLoader.Load(Directory.GetCurrentDirectory());
+
+var builder = WebApplication.CreateBuilder(new WebApplicationOptions
+{
+    Args = args,
+    ContentRootPath = AppContext.BaseDirectory,
+});
 
 
 builder.Services.AddDbContext<DatabaseContext>(

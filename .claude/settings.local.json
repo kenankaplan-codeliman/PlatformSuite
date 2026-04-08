@@ -9,7 +9,28 @@
       "Bash(xargs grep:*)",
       "Bash(xargs ls:*)",
       "Bash(dotnet build:*)",
-      "Bash(npm install:*)"
+      "Bash(npm install:*)",
+      "Bash(ls /Users/kenankaplan/Projects/crm/CRM.Api/*.csproj /Users/kenankaplan/Projects/crm/CRM.Application/*.csproj /Users/kenankaplan/Projects/crm/CRM.Domain/*.csproj /Users/kenankaplan/Projects/crm/CRM.Infrastructure/*.csproj)",
+      "Bash(ls /Users/kenankaplan/Projects/crm/CRM.Database/*.csproj)",
+      "Bash(docker info:*)",
+      "Bash(docker compose:*)",
+      "Bash(xargs cat:*)",
+      "Bash(wc -l /Users/kenankaplan/Projects/crm/CRM.Database/*.sql)",
+      "Bash(chmod +x /Users/kenankaplan/Projects/crm/docker/db-init/01-init.sh)",
+      "Bash(grep -n \"REFERENCES\\\\|foreign key\\\\|FOREIGN KEY\" /Users/kenankaplan/Projects/crm/CRM.Database/*.sql)",
+      "Read(//Users/kenankaplan/Projects/crm/**)",
+      "Bash(curl -s -o /dev/null -w \"%{http_code}\" http://localhost/)",
+      "Bash(curl -s -o /dev/null -w \"%{http_code}\" http://localhost/api/health)",
+      "Bash(curl -s -o /dev/null -w \"%{http_code}\" http://localhost/grafana/)",
+      "Bash(curl -s -w \"\\\\n%{http_code}\" http://localhost/api/auth/login -H \"Content-Type: application/json\" -d '{\"email\":\"admin\",\"password\":\"admin\"}')",
+      "Bash(psql \"Host=localhost;Port=5432;Database=crm_db;Username=crm_user;Password=crm_dev_password_2024\" -c \"SELECT 1\")",
+      "Bash(nc -z localhost 5432)",
+      "Bash(dotnet add:*)",
+      "Bash(ls /Users/kenankaplan/Projects/crm/.env*)",
+      "Bash(ls /Users/kenankaplan/Projects/crm/CRM.Web/.env*)",
+      "Bash(grep -E \"\\\\.dll$|CRM\\\\.Api\")",
+      "Bash(docker volume:*)",
+      "Bash(git check-ignore:*)"
     ]
   }
 }

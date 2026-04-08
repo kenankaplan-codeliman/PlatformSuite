@@ -45,7 +45,6 @@ pnpm-debug.log*
 *.iml
 
 # Visual Studio Code
-.vscode/
 .vscode/*
 !.vscode/extensions.json
 !.vscode/settings.json
@@ -286,3 +285,7 @@ Icon
 *.tmp
 *.temp
 /CRM.Domain/Entities/Activity/AppointmentActivityModal.cs
+
+# Environment files — never commit these
+# .env
+# CRM.Web/.env

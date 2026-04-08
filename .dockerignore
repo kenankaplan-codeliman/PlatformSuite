@@ -1,0 +1,30 @@
+# Git
+.git
+.gitignore
+
+# IDE
+.vs
+.vscode
+*.user
+*.suo
+
+# Build outputs (all projects)
+**/bin
+**/obj
+
+# Frontend (handled by its own Dockerfile)
+CRM.Web/
+
+# Database migrations project (not needed for API runtime)
+CRM.Database/
+
+# Docker files
+docker-compose*.yml
+nginx/
+loki/
+promtail/
+grafana/
+
+# Docs
+*.md
+CLAUDE.md

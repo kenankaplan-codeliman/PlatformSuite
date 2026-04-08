@@ -41,7 +41,7 @@ public class ActivityController : ControllerBase
     [PrivilegeAuthorize(PrivilegeCodes.ActivityPrivilegeCodes.Read)]
     public async Task<IActionResult> Calendar(ActivityCalendarRequest request)
     {
-        var response = await activityCommandHandler.Calendar(request.filters, request.StartDate, request.EndDate);
+        var response = await activityCommandHandler.Calendar(request.filters ?? new ActivityListFilters(), request.StartDate, request.EndDate);
         return Ok(response);
     }
 
