@@ -23,6 +23,7 @@ crm/
 ## Quick Start
 
 ### Prerequisites
+
 - Docker Desktop
 - `.env` file in the project root (see below)
 
@@ -44,9 +45,9 @@ docker compose up -d
 
 ### 3. Access the application
 
-| Service | URL |
-|---------|-----|
-| Frontend | `http://localhost` |
+| Service     | URL                                       |
+| ----------- | ----------------------------------------- |
+| Frontend    | `http://localhost`                        |
 | API Swagger | `http://localhost/api/swagger/index.html` |
 
 ---
@@ -82,22 +83,22 @@ npm run lint      # ESLint (max-warnings 0)
 
 All sensitive configuration lives in two gitignored `.env` files — never in `appsettings.json`.
 
-| File | Purpose |
-|------|---------|
-| `.env` | Single source of truth for Docker Compose and the API's `EnvFileLoader` |
-| `CRM.Web/.env` | Frontend-only vars read by Vite during `npm run dev` |
+| File           | Purpose                                                                 |
+| -------------- | ----------------------------------------------------------------------- |
+| `.env`         | Single source of truth for Docker Compose and the API's `EnvFileLoader` |
+| `CRM.Web/.env` | Frontend-only vars read by Vite during `npm run dev`                    |
 
 ### Key variables
 
-| Variable | Description |
-|----------|-------------|
-| `POSTGRES_PASSWORD` | PostgreSQL password |
-| `ConnectionStrings__DefaultConnection` | Full DB connection string |
-| `Jwt__Key` | JWT signing key (min 32 chars) |
-| `DefaultValues__Admin_User_Password` | Initial admin password |
-| `VITE_AZURE_CLIENT_ID` | Azure AD client ID |
-| `VITE_AZURE_TENANT_ID` | Azure AD tenant ID |
-| `ELASTIC_PASSWORD` | Elasticsearch `elastic` user password (used when Elastic logging is enabled manually) |
+| Variable                               | Description                                                                           |
+| -------------------------------------- | ------------------------------------------------------------------------------------- |
+| `POSTGRES_PASSWORD`                    | PostgreSQL password                                                                   |
+| `ConnectionStrings__DefaultConnection` | Full DB connection string                                                             |
+| `Jwt__Key`                             | JWT signing key (min 32 chars)                                                        |
+| `DefaultValues__Admin_User_Password`   | Initial admin password                                                                |
+| `VITE_AZURE_CLIENT_ID`                 | Azure AD client ID                                                                    |
+| `VITE_AZURE_TENANT_ID`                 | Azure AD tenant ID                                                                    |
+| `ELASTIC_PASSWORD`                     | Elasticsearch `elastic` user password (used when Elastic logging is enabled manually) |
 
 > `ConnectionStrings__DefaultConnection` in `.env` uses `Host=localhost` for `dotnet run`.
 > Docker Compose overrides this at the service level to `Host=db` (internal service name).
@@ -120,6 +121,7 @@ docker compose up   → .env is auto-loaded by Docker Compose for variable
 ### Local dev (`docker-compose.override.yml` auto-merged)
 
 `docker-compose.override.yml` is automatically merged when both files exist. It:
+
 - Exposes `localhost:5432` so `dotnet run` from the host can reach the DB
 - Sets `ASPNETCORE_ENVIRONMENT: Development` for the API container
 - Sets `VITE_ENVIRONMENT: development` build arg for the frontend
@@ -152,10 +154,10 @@ docker compose down -v                      # Stop + delete volumes (DB wiped!)
 
 ## Network Isolation
 
-| Network | Services | External access |
-|---------|----------|-----------------|
+| Network   | Services             | External access     |
+| --------- | -------------------- | ------------------- |
 | `app_net` | nginx, frontend, api | Yes (via nginx :80) |
-| `db_net` | api, db | No (internal) |
+| `db_net`  | api, db              | No (internal)       |
 
 PostgreSQL has no published ports in production — fully isolated inside Docker networks.
 
@@ -167,22 +169,24 @@ PostgreSQL has no published ports in production — fully isolated inside Docker
 
 Serilog writes structured logs via three optional sinks, all controlled by `appsettings.json` / `.env` overrides:
 
-| Sink | Config key | Default |
-|------|-----------|---------|
-| Console | — | always on |
-| File (rolling daily) | `Logging:File:Enabled` | `true` |
-| PostgreSQL (`app_log` table) | `Logging:Database:Enabled` | `true` |
-| Elasticsearch | `Logging:Elastic:Enabled` | `false` |
+| Sink                         | Config key                 | Default   |
+| ---------------------------- | -------------------------- | --------- |
+| Console                      | —                          | always on |
+| File (rolling daily)         | `Logging:File:Enabled`     | `true`    |
+| PostgreSQL (`app_log` table) | `Logging:Database:Enabled` | `true`    |
+| Elasticsearch                | `Logging:Elastic:Enabled`  | `false`   |
 
 **MinimumLevel options:** `Verbose` · `Debug` · `Information` · `Warning` · `Error` · `Fatal`
 
 **File logs** roll daily to `logs/crm-api-YYYYMMDD.log` (31-day retention). In Docker they are persisted in the `api_logs` named volume at `/app/logs` inside the container.
 
 **Elasticsearch** is disabled by default. To enable, point a running ES instance and set:
+
 ```
 Logging__Elastic__Enabled=true
 Logging__Elastic__Url=http://<your-es-host>:9200
 ```
+
 See `docker-compose-elastic.yml` for the full Elastic + Kibana Docker setup.
 
 ---
@@ -196,6 +200,7 @@ Identity.sql → Contact.sql → Lead.sql → products.sql → Account.sql → o
 ```
 
 Seed data (created by `DbInitializerHostedService` on API startup):
+
 1. Default Organization (HQ — Headquarters)
 2. Personal Role (user-level access)
 3. Manager Role (organizational access)
@@ -203,13 +208,3 @@ Seed data (created by `DbInitializerHostedService` on API startup):
 5. Admin user (`admin` / configurable via `DefaultValues__Admin_User_Password`)
 
 ---
-
-## Environment Summary
-
-| | `dotnet run` | Docker (dev) | Docker (prod) |
-|---|---|---|---|
-| **Env file** | `.env` (root) | `.env` (root) | `.env` (root) |
-| **Loaded by** | EnvFileLoader | docker-compose auto | docker-compose auto |
-| **DB host** | `localhost` | `db` | `db` |
-| **Swagger** | ✓ | ✗ | ✗ |
-| **Log files** | `logs/` (local) | `api_logs` volume | `api_logs` volume |
