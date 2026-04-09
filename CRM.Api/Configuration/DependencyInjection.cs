@@ -5,13 +5,19 @@ using CRM.Application.Modals.Authentication;
 using CRM.Infrastructure.Data;
 using CRM.Infrastructure.Repositories;
 using CRM.Infrastructure.Services;
+using Microsoft.AspNetCore.DataProtection;
 
 namespace CRM.Api.Configuration;
 
 public static class DependencyInjection
 {
-    public static IServiceCollection AddDependencies(this IServiceCollection services)
+    public static IServiceCollection AddDependencies(this IServiceCollection services, IConfiguration configuration)
     {
+        // Data Protection — key'leri kalıcı dizine yaz (container restart sonrası kaybolmasın)
+        services.AddDataProtection()
+            .PersistKeysToFileSystem(new DirectoryInfo("/app/dataprotection-keys"))
+            .SetApplicationName("CRM.Api");
+
         // ======= Rules =======
 
         services.AddMemoryCache();//Redis Kullandığın da bunu kaldır

@@ -29,7 +29,7 @@ builder.Services
     .AddCorsConfiguration()
     .AddSwagger()
     .AddValidation()
-    .AddDependencies()
+    .AddDependencies(builder.Configuration)
     .AddJwtAuthentication(builder.Configuration)
     .AddPrivilegeAuthorization()
     .AddHostedService<DbInitializerHostedService>()

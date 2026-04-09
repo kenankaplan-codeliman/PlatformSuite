@@ -46,23 +46,27 @@ public static class LoggingConfiguration
                     if (!Enum.TryParse<LogEventLevel>(fileLevel, ignoreCase: true, out var fileLogLevel))
                         fileLogLevel = LogEventLevel.Information;
 
-                    configuration.WriteTo.File(
-                        path: filePath,
-                        rollingInterval: RollingInterval.Day,
-                        retainedFileCountLimit: retainedDays,
-                        restrictedToMinimumLevel: fileLogLevel,
-                        outputTemplate:
-                            "[{Timestamp:yyyy-MM-dd HH:mm:ss}] " +
-                            "[{Level:u3}] " +
-                            "[{SourceContext}] " +
-                            "[{CorrelationId}] " +
-                            "[{UserId}] " +
-                            "[{HttpMethod}] " +
-                            "[{Path}] " +
-                            "[{StatusCode}] " +
-                            "[{DurationMs}ms] " +
-                            "{Message:lj}{NewLine}{Exception}"
-                    );
+                    configuration.WriteTo.Logger(lc => lc
+                        .Filter.ByExcluding(e =>
+                            e.Properties.TryGetValue("SourceContext", out var sc) &&
+                            sc.ToString().Contains("Microsoft.EntityFrameworkCore.Database.Command"))
+                        .WriteTo.File(
+                            path: filePath,
+                            rollingInterval: RollingInterval.Day,
+                            retainedFileCountLimit: retainedDays,
+                            restrictedToMinimumLevel: fileLogLevel,
+                            outputTemplate:
+                                "[{Timestamp:yyyy-MM-dd HH:mm:ss}] " +
+                                "[{Level:u3}] " +
+                                "[{SourceContext}] " +
+                                "[{CorrelationId}] " +
+                                "[{UserId}] " +
+                                "[{HttpMethod}] " +
+                                "[{Path}] " +
+                                "[{StatusCode}] " +
+                                "[{DurationMs}ms] " +
+                                "{Message:lj}{NewLine}{Exception}"
+                        ));
                 }
 
                 var elasticSection = context.Configuration.GetSection("Logging:Elastic");
@@ -77,25 +81,29 @@ public static class LoggingConfiguration
                     if (!Enum.TryParse<LogEventLevel>(elasticLevel, ignoreCase: true, out var elasticLogLevel))
                         elasticLogLevel = LogEventLevel.Information;
 
-                    configuration.WriteTo.Elasticsearch(
-                        new ElasticsearchSinkOptions(new Uri(elasticUrl!))
-                        {
-                            IndexFormat = $"{indexPrefix}-logs-{context.HostingEnvironment.EnvironmentName.ToLower()}-{DateTime.UtcNow:yyyy-MM}",
-                            AutoRegisterTemplate = true,
-                            MinimumLogEventLevel = elasticLogLevel,
-                            ModifyConnectionSettings = x =>
+                    configuration.WriteTo.Logger(lc => lc
+                        .Filter.ByExcluding(e =>
+                            e.Properties.TryGetValue("SourceContext", out var sc) &&
+                            sc.ToString().Contains("Microsoft.EntityFrameworkCore.Database.Command"))
+                        .WriteTo.Elasticsearch(
+                            new ElasticsearchSinkOptions(new Uri(elasticUrl!))
                             {
-                                var username = elasticSection.GetValue<string>("Username");
-                                var password = elasticSection.GetValue<string>("Password");
-
-                                if (!string.IsNullOrWhiteSpace(username))
+                                IndexFormat = $"{indexPrefix}-logs-{context.HostingEnvironment.EnvironmentName.ToLower()}-{DateTime.UtcNow:yyyy-MM}",
+                                AutoRegisterTemplate = true,
+                                MinimumLogEventLevel = elasticLogLevel,
+                                ModifyConnectionSettings = x =>
                                 {
-                                    x = x.BasicAuthentication(username, password);
-                                }
+                                    var username = elasticSection.GetValue<string>("Username");
+                                    var password = elasticSection.GetValue<string>("Password");
 
-                                return x;
-                            }
-                        });
+                                    if (!string.IsNullOrWhiteSpace(username))
+                                    {
+                                        x = x.BasicAuthentication(username, password);
+                                    }
+
+                                    return x;
+                                }
+                            }));
                 }
             });
 
