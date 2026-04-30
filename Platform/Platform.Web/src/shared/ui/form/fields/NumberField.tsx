@@ -3,8 +3,9 @@ import { Controller, type Control, type FieldPath, type FieldValues } from 'reac
 import type { FormMode } from '../../../types/FormMode';
 import { useFormMode } from '../useFormMode';
 import { useErrorMessage } from '../../../lib/i18n/errorMessage';
+import type { FormRowItemProps } from '../FormRow';
 
-export interface NumberFieldProps<TValues extends FieldValues> {
+export interface NumberFieldProps<TValues extends FieldValues> extends FormRowItemProps {
   name: FieldPath<TValues>;
   control: Control<TValues>;
   label?: string;

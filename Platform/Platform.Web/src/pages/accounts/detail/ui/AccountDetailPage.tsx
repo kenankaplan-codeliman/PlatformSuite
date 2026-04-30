@@ -3,6 +3,7 @@ import { useTranslation } from "react-i18next";
 import { useFormContext } from "react-hook-form";
 import { DetailPageLayout } from "../../../../shared/ui/detail-page/DetailPageLayout";
 import { FormSection } from "../../../../shared/ui/form/FormSection";
+import { FormRow } from "../../../../shared/ui/form/FormRow";
 import { TextField } from "../../../../shared/ui/form/fields/TextField";
 import { NumberField } from "../../../../shared/ui/form/fields/NumberField";
 import {
@@ -143,20 +144,22 @@ export function AccountDetailPage() {
           required
           maxLength={200}
         />
-        <SelectField<AccountFormValues, AccountType>
-          name="accountType"
-          control={form.control}
-          label={tEntity("fields.accountType.label")}
-          options={typeOptions}
-          required
-        />
-        <SelectField<AccountFormValues, AccountStatus>
-          name="accountStatus"
-          control={form.control}
-          label={tEntity("fields.accountStatus.label")}
-          options={statusOptions}
-          required
-        />
+        <FormRow>
+          <SelectField<AccountFormValues, AccountType>
+            name="accountType"
+            control={form.control}
+            label={tEntity("fields.accountType.label")}
+            options={typeOptions}
+            required
+          />
+          <SelectField<AccountFormValues, AccountStatus>
+            name="accountStatus"
+            control={form.control}
+            label={tEntity("fields.accountStatus.label")}
+            options={statusOptions}
+            required
+          />
+        </FormRow>
         <TextField
           name="industry"
           control={form.control}
@@ -187,19 +190,23 @@ export function AccountDetailPage() {
           placeholder={tEntity("fields.website.placeholder")}
           maxLength={500}
         />
-        <NumberField
-          name="annualRevenue"
-          control={form.control}
-          label={tEntity("fields.annualRevenue.label")}
-          min={0}
-          precision={2}
-        />
-        <NumberField
-          name="numberOfEmployees"
-          control={form.control}
-          label={tEntity("fields.numberOfEmployees.label")}
-          min={0}
-        />
+        <FormRow columns={3}>
+          <NumberField
+            name="annualRevenue"
+            control={form.control}
+            label={tEntity("fields.annualRevenue.label")}
+            min={0}
+            precision={2}
+            columns={2}
+          />
+          <NumberField
+            name="numberOfEmployees"
+            control={form.control}
+            label={tEntity("fields.numberOfEmployees.label")}
+            min={0}
+            columns={1}
+          />
+        </FormRow>
         <TextAreaField
           name="description"
           control={form.control}

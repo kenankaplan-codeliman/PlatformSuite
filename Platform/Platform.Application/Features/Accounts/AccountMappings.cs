@@ -56,22 +56,18 @@ public static class AccountMappings
         // ========= CreateAccountCommand → Account =========
 
         config.NewConfig<CreateAccountCommand, Account>()
-            .Ignore(d => d.Id,
-                    d => d.ParentAccount, d => d.ChildAccounts,
-                    d => d.Emails, d => d.Phones, d => d.Addresses, d => d.AccountContacts,
-                    d => d.CreatedBy, d => d.CreatedAt, d => d.UpdatedBy, d => d.UpdatedAt,
-                    d => d.IsDeleted, d => d.DeletedBy, d => d.DeletedAt)
+            .Ignore(d => d.ParentAccount!, d => d.ChildAccounts,
+                    d => d.Emails, d => d.Phones, d => d.Addresses, d => d.AccountContacts)
+            .IgnoreAuditFields()
             .AfterMapping((src, dst) => SyncCollections(src.Emails, src.Phones, src.Addresses, src.Contacts, dst));
 
         // ========= UpdateAccountCommand → Account (in-place) =========
 
         config.NewConfig<UpdateAccountCommand, Account>()
             .IgnoreNullValues(true)
-            .Ignore(d => d.Id,
-                    d => d.ParentAccount, d => d.ChildAccounts,
-                    d => d.Emails, d => d.Phones, d => d.Addresses, d => d.AccountContacts,
-                    d => d.CreatedBy, d => d.CreatedAt, d => d.UpdatedBy, d => d.UpdatedAt,
-                    d => d.IsDeleted, d => d.DeletedBy, d => d.DeletedAt)
+            .Ignore(d => d.ParentAccount!, d => d.ChildAccounts,
+                    d => d.Emails, d => d.Phones, d => d.Addresses, d => d.AccountContacts)
+            .IgnoreAuditFields()
             .AfterMapping((src, dst) => SyncCollections(src.Emails, src.Phones, src.Addresses, src.Contacts, dst));
     }
 

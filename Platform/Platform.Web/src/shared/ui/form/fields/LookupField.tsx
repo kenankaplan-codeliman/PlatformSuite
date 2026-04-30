@@ -11,6 +11,7 @@ import type { FormMode } from "../../../types/FormMode";
 import { useFormMode } from "../useFormMode";
 import { useErrorMessage } from "../../../lib/i18n/errorMessage";
 import { useDebouncedValue } from "../../../hooks/useDebouncedValue";
+import type { FormRowItemProps } from "../FormRow";
 
 export interface LookupOption {
   id: string;
@@ -29,7 +30,7 @@ export type LookupSearchFn = (
   pageSize: number,
 ) => Promise<LookupSearchResult>;
 
-export interface LookupFieldProps<TValues extends FieldValues> {
+export interface LookupFieldProps<TValues extends FieldValues> extends FormRowItemProps {
   name: FieldPath<TValues>;
   control: Control<TValues>;
   searchFn: LookupSearchFn;

@@ -1,6 +1,7 @@
 using Platform.Application.Features.AppRoles.Commands.CreateAppRole;
 using Platform.Application.Features.AppRoles.Commands.UpdateAppRole;
 using Platform.Application.Features.AppRoles.Dtos;
+using Platform.Application.Mapping;
 using Platform.Domain.Entities.Identities;
 using Mapster;
 
@@ -15,12 +16,10 @@ public static class AppRoleMappings
         config.NewConfig<AppRole, AppRoleListItem>();
 
         config.NewConfig<CreateAppRoleCommand, AppRole>()
-            .Ignore(d => d.Id,
-                    d => d.CreatedBy, d => d.CreatedAt, d => d.UpdatedBy, d => d.UpdatedAt);
+            .IgnoreAuditFields();
 
         config.NewConfig<UpdateAppRoleCommand, AppRole>()
             .IgnoreNullValues(true)
-            .Ignore(d => d.Id,
-                    d => d.CreatedBy, d => d.CreatedAt, d => d.UpdatedBy, d => d.UpdatedAt);
+            .IgnoreAuditFields();
     }
 }

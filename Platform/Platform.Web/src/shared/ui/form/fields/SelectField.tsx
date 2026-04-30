@@ -3,13 +3,14 @@ import { Controller, type Control, type FieldPath, type FieldValues } from 'reac
 import type { FormMode } from '../../../types/FormMode';
 import { useFormMode } from '../useFormMode';
 import { useErrorMessage } from '../../../lib/i18n/errorMessage';
+import type { FormRowItemProps } from '../FormRow';
 
 export interface SelectOption<TValue extends string | number = string> {
   value: TValue;
   label: string;
 }
 
-export interface SelectFieldProps<TValues extends FieldValues, TValue extends string | number = string> {
+export interface SelectFieldProps<TValues extends FieldValues, TValue extends string | number = string> extends FormRowItemProps {
   name: FieldPath<TValues>;
   control: Control<TValues>;
   options: SelectOption<TValue>[];

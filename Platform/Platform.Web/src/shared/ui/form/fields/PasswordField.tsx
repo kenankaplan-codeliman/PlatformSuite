@@ -1,8 +1,9 @@
 import { Form, Input } from 'antd';
 import { Controller, type Control, type FieldPath, type FieldValues } from 'react-hook-form';
 import { useErrorMessage } from '../../../lib/i18n/errorMessage';
+import type { FormRowItemProps } from '../FormRow';
 
-export interface PasswordFieldProps<TValues extends FieldValues> {
+export interface PasswordFieldProps<TValues extends FieldValues> extends FormRowItemProps {
   name: FieldPath<TValues>;
   control: Control<TValues>;
   label?: string;

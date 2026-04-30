@@ -68,20 +68,16 @@ public static class ContactMappings
         // ========= CreateContactCommand → Contact =========
 
         config.NewConfig<CreateContactCommand, Contact>()
-            .Ignore(d => d.Id,
-                    d => d.AccountContacts, d => d.Emails, d => d.Phones, d => d.Addresses,
-                    d => d.CreatedBy, d => d.CreatedAt, d => d.UpdatedBy, d => d.UpdatedAt,
-                    d => d.IsDeleted, d => d.DeletedBy, d => d.DeletedAt)
+            .Ignore(d => d.AccountContacts, d => d.Emails, d => d.Phones, d => d.Addresses)
+            .IgnoreAuditFields()
             .AfterMapping((src, dst) => SyncCollections(src.Emails, src.Phones, src.Addresses, src.AccountContacts, dst));
 
         // ========= UpdateContactCommand → Contact (in-place) =========
 
         config.NewConfig<UpdateContactCommand, Contact>()
             .IgnoreNullValues(true)
-            .Ignore(d => d.Id,
-                    d => d.AccountContacts, d => d.Emails, d => d.Phones, d => d.Addresses,
-                    d => d.CreatedBy, d => d.CreatedAt, d => d.UpdatedBy, d => d.UpdatedAt,
-                    d => d.IsDeleted, d => d.DeletedBy, d => d.DeletedAt)
+            .Ignore(d => d.AccountContacts, d => d.Emails, d => d.Phones, d => d.Addresses)
+            .IgnoreAuditFields()
             .AfterMapping((src, dst) => SyncCollections(src.Emails, src.Phones, src.Addresses, src.AccountContacts, dst));
     }
 
