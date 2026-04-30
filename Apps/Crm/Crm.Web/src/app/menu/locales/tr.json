@@ -1,0 +1,12 @@
+{
+  "home": "Ana Sayfa",
+  "groups": {
+    "sales": "Satış",
+    "settings": "Ayarlar"
+  },
+  "leads": "Aday Müşteriler",
+  "opportunities": "Fırsatlar",
+  "accounts": "Firmalar",
+  "users": "Kullanıcılar",
+  "roles": "Roller"
+}

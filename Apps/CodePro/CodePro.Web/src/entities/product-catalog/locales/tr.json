@@ -1,0 +1,20 @@
+{
+  "singular": "Ürün Kataloğu",
+  "plural": "Ürün Katalogları",
+  "fields": {
+    "code": { "label": "Katalog Kodu", "placeholder": "Örn: CAT-001" },
+    "name": { "label": "Katalog Adı", "placeholder": "Katalog adı" },
+    "description": { "label": "Açıklama" },
+    "validFrom": { "label": "Geçerlilik Başlangıcı" },
+    "validUntil": { "label": "Geçerlilik Bitişi" },
+    "priceCode": { "label": "Fiyat Kodu" },
+    "isActive": { "label": "Aktif" },
+    "products": { "label": "Ürünler" },
+    "organizations": { "label": "Organizasyonlar" }
+  },
+  "sections": {
+    "general": "Genel Bilgiler",
+    "products": "Katalog Ürünleri",
+    "organizations": "Yetkili Organizasyonlar"
+  }
+}

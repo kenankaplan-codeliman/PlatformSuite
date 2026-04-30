@@ -1,0 +1,7 @@
+{
+  "fields": {
+    "email": { "label": "E-posta", "placeholder": "ornek@firma.com" },
+    "displayName": { "label": "Ad Soyad" }
+  },
+  "greeting": "Hoş geldiniz, {{name}}"
+}

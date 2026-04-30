@@ -1,0 +1,11 @@
+{
+  "singular": "Marka",
+  "plural": "Markalar",
+  "fields": {
+    "name": { "label": "Marka Adı", "placeholder": "Örn: Acme" },
+    "isActive": { "label": "Aktif" }
+  },
+  "sections": {
+    "general": "Genel Bilgiler"
+  }
+}

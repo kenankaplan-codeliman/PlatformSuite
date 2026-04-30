@@ -1,0 +1,18 @@
+{
+  "singular": "Satın Alma Siparişi",
+  "plural": "Satın Alma Siparişleri",
+  "fields": {
+    "orderNumber": { "label": "Sipariş No" },
+    "title": { "label": "Başlık" },
+    "description": { "label": "Açıklama" },
+    "supplier": { "label": "Tedarikçi" },
+    "status": { "label": "Durum" },
+    "priority": { "label": "Öncelik" },
+    "orderDate": { "label": "Sipariş Tarihi" },
+    "expectedDeliveryDate": { "label": "Beklenen Teslim" },
+    "currencyCode": { "label": "Para Birimi" },
+    "totalAmount": { "label": "Toplam" },
+    "isActive": { "label": "Aktif" }
+  },
+  "sections": { "general": "Genel Bilgiler", "lines": "Sipariş Satırları" }
+}

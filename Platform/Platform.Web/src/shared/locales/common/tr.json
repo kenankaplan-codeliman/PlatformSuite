@@ -1,0 +1,34 @@
+{
+  "actions": {
+    "save": "Kaydet",
+    "cancel": "İptal",
+    "delete": "Sil",
+    "edit": "Düzenle",
+    "create": "Oluştur",
+    "back": "Geri",
+    "close": "Kapat",
+    "confirm": "Onayla",
+    "search": "Ara",
+    "submit": "Gönder",
+    "logout": "Çıkış yap"
+  },
+  "messages": {
+    "loading": "Yükleniyor...",
+    "saveSuccess": "Başarıyla kaydedildi.",
+    "deleteSuccess": "Başarıyla silindi.",
+    "unexpectedError": "Beklenmeyen bir hata oluştu.",
+    "sessionExpired": "Oturum süresi doldu, lütfen tekrar giriş yapın."
+  },
+  "errors": {
+    "required": "Bu alan zorunludur.",
+    "invalidEmail": "Geçerli bir e-posta adresi girin.",
+    "minLength": "En az {{count}} karakter olmalıdır.",
+    "maxLength": "En fazla {{count}} karakter olabilir.",
+    "network": "Sunucuya ulaşılamadı.",
+    "unauthorized": "Bu işlem için yetkiniz yok.",
+    "notFound": "Kayıt bulunamadı."
+  },
+  "validation": {
+    "title": "Lütfen formdaki hataları düzeltin."
+  }
+}

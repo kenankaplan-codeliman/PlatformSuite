@@ -1,0 +1,3 @@
+packages:
+  - 'Platform/Platform.Web'
+  - 'Apps/*/*.Web'

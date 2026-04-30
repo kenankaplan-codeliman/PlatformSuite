@@ -2,42 +2,117 @@
   "version": "0.2.0",
   "configurations": [
     {
-      "name": "Launch API",
+      "name": "Crm API",
       "type": "coreclr",
       "request": "launch",
-      "preLaunchTask": "build-api",
-      "program": "${workspaceFolder}/CRM.Api/bin/Debug/net10.0/CRM.Api.dll",
+      "preLaunchTask": "build-crm-api",
+      "program": "${workspaceFolder}/Apps/Crm/Crm.Api/bin/Debug/net10.0/Crm.Api.dll",
       "args": [],
-      "cwd": "${workspaceFolder}",
+      "cwd": "${workspaceFolder}/Apps/Crm/Crm.Api",
       "stopAtEntry": false,
+      "console": "internalConsole",
       "env": {
         "ASPNETCORE_ENVIRONMENT": "Development",
-        "ASPNETCORE_URLS": "http://localhost:5000;https://localhost:5001"
+        "ASPNETCORE_URLS": "http://localhost:5000;https://localhost:5001",
+        "POSTGRES_DB": "crm_db"
       },
-      "sourceFileMap": {
-        "/Views": "${workspaceFolder}/Views"
+      "serverReadyAction": {
+        "action": "openExternally",
+        "pattern": "Now listening on:\\s+(https?://\\S+)",
+        "uriFormat": "%s/swagger"
       }
     },
     {
-      "name": "Launch Frontend",
+      "name": "CodePro API",
+      "type": "coreclr",
+      "request": "launch",
+      "preLaunchTask": "build-codepro-api",
+      "program": "${workspaceFolder}/Apps/CodePro/CodePro.Api/bin/Debug/net10.0/CodePro.Api.dll",
+      "args": [],
+      "cwd": "${workspaceFolder}/Apps/CodePro/CodePro.Api",
+      "stopAtEntry": false,
+      "console": "internalConsole",
+      "env": {
+        "ASPNETCORE_ENVIRONMENT": "Development",
+        "ASPNETCORE_URLS": "http://localhost:5010;https://localhost:5011",
+        "POSTGRES_DB": "codepro_db",
+        "POSTGRES_PORT": "5433"
+      },
+      "serverReadyAction": {
+        "action": "openExternally",
+        "pattern": "Now listening on:\\s+(https?://\\S+)",
+        "uriFormat": "%s/swagger"
+      }
+    },
+    {
+      "name": "Crm Web (vite)",
       "type": "node",
       "request": "launch",
       "runtimeExecutable": "npm",
-      "runtimeArgs": ["run", "dev"],
-      "cwd": "${workspaceFolder}/CRM.Web",
-      "serverReadyAction": {
-        "action": "openExternally",
-        "pattern": "Local:.*http://localhost:([0-9]+)"
-      },
+      "runtimeArgs": ["run", "dev:crm"],
+      "cwd": "${workspaceFolder}",
       "console": "integratedTerminal",
-      "internalConsoleOptions": "neverOpen"
+      "internalConsoleOptions": "neverOpen",
+      "serverReadyAction": {
+        "action": "debugWithChrome",
+        "pattern": "Local:\\s+(https?://\\S+)",
+        "uriFormat": "%s",
+        "webRoot": "${workspaceFolder}/Apps/Crm/Crm.Web"
+      }
+    },
+    {
+      "name": "CodePro Web (vite)",
+      "type": "node",
+      "request": "launch",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": ["run", "dev:codepro"],
+      "cwd": "${workspaceFolder}",
+      "console": "integratedTerminal",
+      "internalConsoleOptions": "neverOpen",
+      "serverReadyAction": {
+        "action": "debugWithChrome",
+        "pattern": "Local:\\s+(https?://\\S+)",
+        "uriFormat": "%s",
+        "webRoot": "${workspaceFolder}/Apps/CodePro/CodePro.Web"
+      }
+    },
+    {
+      "name": "Crm Browser (attach)",
+      "type": "chrome",
+      "request": "launch",
+      "url": "http://localhost:5180",
+      "webRoot": "${workspaceFolder}/Apps/Crm/Crm.Web",
+      "sourceMaps": true,
+      "userDataDir": "${workspaceFolder}/.vscode/.chrome-crm"
+    },
+    {
+      "name": "CodePro Browser (attach)",
+      "type": "chrome",
+      "request": "launch",
+      "url": "http://localhost:5181",
+      "webRoot": "${workspaceFolder}/Apps/CodePro/CodePro.Web",
+      "sourceMaps": true,
+      "userDataDir": "${workspaceFolder}/.vscode/.chrome-codepro"
     }
   ],
   "compounds": [
     {
-      "name": "Launch Full Stack",
-      "configurations": ["Launch API", "Launch Frontend"],
-      "stopAll": true
+      "name": "Crm Full Stack",
+      "configurations": ["Crm API", "Crm Web (vite)"],
+      "stopAll": true,
+      "presentation": { "group": "1-fullstack", "order": 1 }
+    },
+    {
+      "name": "CodePro Full Stack",
+      "configurations": ["CodePro API", "CodePro Web (vite)"],
+      "stopAll": true,
+      "presentation": { "group": "1-fullstack", "order": 2 }
+    },
+    {
+      "name": "All Apps (Crm + CodePro)",
+      "configurations": ["Crm API", "CodePro API", "Crm Web (vite)", "CodePro Web (vite)"],
+      "stopAll": true,
+      "presentation": { "group": "1-fullstack", "order": 3 }
     }
   ]
 }

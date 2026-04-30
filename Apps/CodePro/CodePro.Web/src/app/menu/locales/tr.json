@@ -1,0 +1,29 @@
+{
+  "home": "Ana Sayfa",
+  "groups": {
+    "purchase": "Satın Alma",
+    "products": "Ürünler",
+    "finance": "Finans",
+    "settings": "Ayarlar"
+  },
+  "purchaseRequests": "Talepler",
+  "purchaseBaskets": "Sepetler",
+  "purchaseOrders": "Siparişler",
+  "offers": "Teklifler",
+  "contracts": "Sözleşmeler",
+  "products": "Ürün Listesi",
+  "productCategories": "Ürün Kategorileri",
+  "productCatalogs": "Ürün Katalogları",
+  "productPrices": "Ürün Fiyatları",
+  "priceLists": "Fiyat Listeleri",
+  "brands": "Markalar",
+  "manufacturers": "Üreticiler",
+  "budgets": "Bütçeler",
+  "budgetCategories": "Bütçe Kategorileri",
+  "eDocuments": "E-Belgeler",
+  "organizations": "Organizasyonlar",
+  "accounts": "Firmalar",
+  "users": "Kullanıcılar",
+  "roles": "Roller",
+  "questionnaires": "Formlar"
+}

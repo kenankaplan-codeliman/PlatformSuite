@@ -1,0 +1,12 @@
+{
+  "singular": "Ek Dosya",
+  "plural": "Ek Dosyalar",
+  "fields": {
+    "fileName": { "label": "Dosya Adı" },
+    "contentType": { "label": "Tür" },
+    "fileSize": { "label": "Boyut" },
+    "documentType": { "label": "Belge Türü" },
+    "subject": { "label": "Konu", "placeholder": "Kısa başlık" },
+    "description": { "label": "Açıklama" }
+  }
+}

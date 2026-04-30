@@ -1,0 +1,14 @@
+{
+  "singular": "Fiyat Listesi",
+  "plural": "Fiyat Listeleri",
+  "fields": {
+    "code": { "label": "Liste Kodu", "placeholder": "Otomatik üretilir (örn: PL-2026-0001)" },
+    "name": { "label": "Liste Adı", "placeholder": "Örn: 2026 Yılı Genel Liste" },
+    "description": { "label": "Açıklama", "placeholder": "Kısa açıklama" },
+    "supplier": { "label": "Tedarikçi", "placeholder": "Tedarikçi seçiniz" },
+    "isActive": { "label": "Aktif" }
+  },
+  "sections": {
+    "general": "Genel Bilgiler"
+  }
+}

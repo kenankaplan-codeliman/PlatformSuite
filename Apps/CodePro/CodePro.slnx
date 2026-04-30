@@ -1,0 +1,14 @@
+<Solution>
+  <Folder Name="/Platform/">
+    <Project Path="../../Platform/Platform.Domain/Platform.Domain.csproj" />
+    <Project Path="../../Platform/Platform.Application/Platform.Application.csproj" />
+    <Project Path="../../Platform/Platform.Infrastructure/Platform.Infrastructure.csproj" />
+    <Project Path="../../Platform/Platform.Api/Platform.Api.csproj" />
+  </Folder>
+  <Folder Name="/CodePro/">
+    <Project Path="CodePro.Domain/CodePro.Domain.csproj" />
+    <Project Path="CodePro.Application/CodePro.Application.csproj" />
+    <Project Path="CodePro.Infrastructure/CodePro.Infrastructure.csproj" />
+    <Project Path="CodePro.Api/CodePro.Api.csproj" />
+  </Folder>
+</Solution>

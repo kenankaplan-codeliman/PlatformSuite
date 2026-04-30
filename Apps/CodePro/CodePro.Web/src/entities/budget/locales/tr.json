@@ -1,0 +1,23 @@
+{
+  "singular": "Bütçe",
+  "plural": "Bütçeler",
+  "fields": {
+    "name": { "label": "Bütçe Adı" },
+    "description": { "label": "Açıklama" },
+    "scopeOrganizationId": { "label": "Kapsam Organizasyonu" },
+    "budgetCategoryId": { "label": "Bütçe Kategorisi" },
+    "periodType": { "label": "Dönem Tipi" },
+    "startDate": { "label": "Başlangıç" },
+    "endDate": { "label": "Bitiş" },
+    "totalAmount": { "label": "Toplam Tutar" },
+    "currency": { "label": "Para Birimi" },
+    "overflowBehavior": { "label": "Aşım Davranışı" },
+    "reservationReleasePoint": { "label": "Rezervasyon Bırakma" },
+    "alertThresholdPercentage": { "label": "Uyarı Eşiği %" },
+    "carryOverEnabled": { "label": "Devir Etkin" },
+    "responsibleUserId": { "label": "Sorumlu" },
+    "status": { "label": "Durum" },
+    "isActive": { "label": "Aktif" }
+  },
+  "sections": { "general": "Genel Bilgiler", "period": "Dönem & Tutar", "policy": "Politikalar" }
+}

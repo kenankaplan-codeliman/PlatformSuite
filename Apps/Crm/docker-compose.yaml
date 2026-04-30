@@ -1,0 +1,183 @@
+# =============================================================
+# CRM tam izole stack — bu compose CRM uygulamasının tüm
+# infra'sını (nginx + web + api + db + elasticsearch + kibana)
+# bağımsız olarak ayağa kaldırır. Platform sadece kod kütüphanesi:
+# Dockerfile'lar build sırasında Platform/* dizinini repo root
+# context'iyle dahil eder.
+#
+# Kullanım (Apps/Crm/ klasöründen çalıştır):
+#   cd Apps/Crm
+#   docker compose up -d --build
+#   docker compose up -d crm-db   # sadece DB (VSCode debug için)
+#   docker compose down -v         # volumes dahil temizle
+#
+# Veya repo root'tan, --env-file ile:
+#   docker compose --env-file Apps/Crm/.env -f Apps/Crm/docker-compose.yaml up -d --build
+#
+# Not: Apps/Crm/.env hem YAML interpolation hem de container runtime için
+# kullanılır. Compose, dosya bulunduğu klasördeki .env'i otomatik yükler;
+# repo root'tan çalıştırırken --env-file zorunlu.
+# =============================================================
+services:
+  crm-nginx:
+    image: nginx:1.27-alpine
+    container_name: crm-nginx
+    ports:
+      - "${CRM_NGINX_HOST_PORT:-80}:80"
+    volumes:
+      - ./docker/nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./docker/nginx/conf.d:/etc/nginx/conf.d:ro
+    depends_on:
+      - crm-web
+      - crm-api
+    networks:
+      - crm_app_net
+    restart: unless-stopped
+
+  crm-web:
+    container_name: crm-web
+    build:
+      context: ../..
+      dockerfile: Apps/Crm/Crm.Web/Dockerfile
+      args:
+        VITE_API_BASE_URL: /api
+        VITE_AZURE_CLIENT_ID: ${VITE_AZURE_CLIENT_ID}
+        VITE_AZURE_TENANT_ID: ${VITE_AZURE_TENANT_ID}
+        VITE_ENVIRONMENT: production
+    env_file: ./.env
+    networks:
+      - crm_app_net
+    restart: unless-stopped
+
+  crm-api:
+    container_name: crm-api
+    build:
+      context: ../..
+      dockerfile: Apps/Crm/Crm.Api/Dockerfile
+    env_file: ./.env
+    environment:
+      ASPNETCORE_ENVIRONMENT: Production
+      ASPNETCORE_HTTP_PORTS: "8080"
+      POSTGRES_HOST: crm-db
+      POSTGRES_DB: crm_db
+      Logging__Elastic__Enabled: "true"
+      Logging__Elastic__Url: "http://crm-elasticsearch:9200"
+      Logging__Elastic__Username: ${Logging__Elastic__Username}
+      Logging__Elastic__Password: ${Logging__Elastic__Password}
+    volumes:
+      - crm_api_logs:/app/logs
+      - crm_api_dataprotection:/app/dataprotection-keys
+    depends_on:
+      crm-db:
+        condition: service_healthy
+      crm-elasticsearch:
+        condition: service_healthy
+    networks:
+      - crm_app_net
+      - crm_db_net
+      - crm_elk_net
+    restart: unless-stopped
+
+  crm-db:
+    image: postgres:17-alpine
+    container_name: crm-db
+    env_file: ./.env
+    environment:
+      POSTGRES_DB: crm_db
+      POSTGRES_USER: ${POSTGRES_USER}
+    ports:
+      - "${CRM_DB_HOST_PORT:-5432}:5432"
+    volumes:
+      - crm_postgres_data:/var/lib/postgresql/data
+      - ./docker/db-init:/docker-entrypoint-initdb.d:ro
+      - ../../Platform/Platform.Database:/sql/platform:ro
+      - ./Crm.Database:/sql/crm:ro
+    networks:
+      - crm_db_net
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d crm_db"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+
+  crm-elasticsearch:
+    image: docker.elastic.co/elasticsearch/elasticsearch:8.17.4
+    container_name: crm-elasticsearch
+    environment:
+      discovery.type: single-node
+      xpack.security.enabled: "true"
+      ELASTIC_PASSWORD: ${ELASTIC_PASSWORD}
+      ES_JAVA_OPTS: "-Xms512m -Xmx512m"
+    ports:
+      - "${CRM_ES_HOST_PORT:-9200}:9200"
+    volumes:
+      - crm_elastic_data:/usr/share/elasticsearch/data
+    networks:
+      - crm_elk_net
+    healthcheck:
+      test: ["CMD-SHELL", "curl -s -u elastic:$$ELASTIC_PASSWORD http://localhost:9200/_cluster/health | grep -qE '\"status\":\"(green|yellow)\"'"]
+      interval: 20s
+      timeout: 10s
+      retries: 10
+      start_period: 40s
+    restart: unless-stopped
+
+  crm-elasticsearch-setup:
+    image: docker.elastic.co/elasticsearch/elasticsearch:8.17.4
+    container_name: crm-elasticsearch-setup
+    depends_on:
+      crm-elasticsearch:
+        condition: service_healthy
+    networks:
+      - crm_elk_net
+    environment:
+      ELASTIC_PASSWORD: ${ELASTIC_PASSWORD}
+      KIBANA_SYSTEM_PASSWORD: ${KIBANA_SYSTEM_PASSWORD}
+    entrypoint: ["/bin/bash", "-c"]
+    command:
+      - >-
+        echo "Setting kibana_system password..." &&
+        curl -s -X POST -u "elastic:$$ELASTIC_PASSWORD"
+        -H "Content-Type: application/json"
+        "http://crm-elasticsearch:9200/_security/user/kibana_system/_password"
+        -d "{\"password\":\"$$KIBANA_SYSTEM_PASSWORD\"}"
+        && echo " Done."
+    restart: "no"
+
+  crm-kibana:
+    image: docker.elastic.co/kibana/kibana:8.17.4
+    container_name: crm-kibana
+    environment:
+      ELASTICSEARCH_HOSTS: "http://crm-elasticsearch:9200"
+      ELASTICSEARCH_USERNAME: "kibana_system"
+      ELASTICSEARCH_PASSWORD: ${KIBANA_SYSTEM_PASSWORD}
+      SERVER_BASEPATH: "/kibana"
+      SERVER_REWRITEBASEPATH: "true"
+    ports:
+      - "${CRM_KIBANA_HOST_PORT:-5601}:5601"
+    depends_on:
+      crm-elasticsearch:
+        condition: service_healthy
+      crm-elasticsearch-setup:
+        condition: service_completed_successfully
+    networks:
+      - crm_app_net
+      - crm_elk_net
+    restart: unless-stopped
+
+networks:
+  crm_app_net:
+    driver: bridge
+  crm_db_net:
+    driver: bridge
+    internal: true
+  crm_elk_net:
+    driver: bridge
+    internal: true
+
+volumes:
+  crm_postgres_data:
+  crm_api_logs:
+  crm_api_dataprotection:
+  crm_elastic_data:

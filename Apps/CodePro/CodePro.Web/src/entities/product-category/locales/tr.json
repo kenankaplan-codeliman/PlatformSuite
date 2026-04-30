@@ -1,0 +1,15 @@
+{
+  "singular": "Ürün Kategorisi",
+  "plural": "Ürün Kategorileri",
+  "fields": {
+    "name": { "label": "Kategori Adı", "placeholder": "Örn: Elektronik" },
+    "title": { "label": "Tam Yol" },
+    "code": { "label": "Kategori Kodu", "placeholder": "Örn: EL-01" },
+    "description": { "label": "Açıklama", "placeholder": "Kısa açıklama" },
+    "parentCategoryId": { "label": "Üst Kategori", "placeholder": "Üst kategori seçiniz" },
+    "isActive": { "label": "Aktif" }
+  },
+  "sections": {
+    "general": "Genel Bilgiler"
+  }
+}

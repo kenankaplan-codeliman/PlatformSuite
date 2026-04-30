@@ -1,0 +1,22 @@
+{
+  "singular": "Teklif",
+  "plural": "Teklifler",
+  "fields": {
+    "offerNumber": { "label": "Teklif No" },
+    "offerType": { "label": "Tür" },
+    "subject": { "label": "Konu" },
+    "counterpartyName": { "label": "Karşı Taraf" },
+    "responsibleUserId": { "label": "Sorumlu" },
+    "validFrom": { "label": "Geçerlilik Başlangıcı" },
+    "validUntil": { "label": "Geçerlilik Bitişi" },
+    "currency": { "label": "Para Birimi" },
+    "discountPercentage": { "label": "İskonto %" },
+    "subtotal": { "label": "Ara Toplam" },
+    "vatTotal": { "label": "KDV Toplam" },
+    "grandTotal": { "label": "Genel Toplam" },
+    "notes": { "label": "Notlar" },
+    "status": { "label": "Durum" },
+    "isActive": { "label": "Aktif" }
+  },
+  "sections": { "general": "Genel Bilgiler", "items": "Kalemler", "totals": "Toplamlar" }
+}

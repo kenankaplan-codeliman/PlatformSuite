@@ -1,0 +1,21 @@
+{
+  "singular": "Fırsat",
+  "plural": "Fırsatlar",
+  "fields": {
+    "name": { "label": "Fırsat Adı", "placeholder": "Örn: Q4 lisans yenileme" },
+    "description": { "label": "Açıklama" },
+    "account": { "label": "Firma" },
+    "primaryContact": { "label": "Birincil İletişim" },
+    "stage": { "label": "Aşama" },
+    "amount": { "label": "Tutar" },
+    "probability": { "label": "Olasılık (%)" },
+    "closeDate": { "label": "Kapanış Tarihi" },
+    "lossReason": { "label": "Kayıp Sebebi" },
+    "isActive": { "label": "Aktif" }
+  },
+  "sections": {
+    "general": "Genel Bilgiler",
+    "financial": "Finansal",
+    "details": "Detaylar"
+  }
+}

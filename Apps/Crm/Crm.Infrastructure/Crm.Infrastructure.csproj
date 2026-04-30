@@ -1,0 +1,16 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <RootNamespace>Crm.Infrastructure</RootNamespace>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\Platform\Platform.Infrastructure\Platform.Infrastructure.csproj" />
+    <ProjectReference Include="..\Crm.Application\Crm.Application.csproj" />
+    <ProjectReference Include="..\Crm.Domain\Crm.Domain.csproj" />
+  </ItemGroup>
+
+</Project>

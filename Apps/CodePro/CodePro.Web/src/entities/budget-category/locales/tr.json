@@ -1,0 +1,14 @@
+{
+  "singular": "Bütçe Kategorisi",
+  "plural": "Bütçe Kategorileri",
+  "fields": {
+    "name": { "label": "Kategori Adı", "placeholder": "Örn: Pazarlama" },
+    "code": { "label": "Kategori Kodu", "placeholder": "Örn: BUD-MKT" },
+    "description": { "label": "Açıklama", "placeholder": "Kısa açıklama" },
+    "parentCategoryId": { "label": "Üst Kategori", "placeholder": "Üst kategori seçiniz" },
+    "isActive": { "label": "Aktif" }
+  },
+  "sections": {
+    "general": "Genel Bilgiler"
+  }
+}

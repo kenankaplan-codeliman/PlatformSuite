@@ -1,0 +1,14 @@
+<Solution>
+  <Folder Name="/Platform/">
+    <Project Path="../../Platform/Platform.Domain/Platform.Domain.csproj" />
+    <Project Path="../../Platform/Platform.Application/Platform.Application.csproj" />
+    <Project Path="../../Platform/Platform.Infrastructure/Platform.Infrastructure.csproj" />
+    <Project Path="../../Platform/Platform.Api/Platform.Api.csproj" />
+  </Folder>
+  <Folder Name="/Crm/">
+    <Project Path="Crm.Domain/Crm.Domain.csproj" />
+    <Project Path="Crm.Application/Crm.Application.csproj" />
+    <Project Path="Crm.Infrastructure/Crm.Infrastructure.csproj" />
+    <Project Path="Crm.Api/Crm.Api.csproj" />
+  </Folder>
+</Solution>

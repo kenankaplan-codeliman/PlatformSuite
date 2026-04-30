@@ -1,0 +1,20 @@
+{
+  "singular": "Organizasyon",
+  "plural": "Organizasyonlar",
+  "fields": {
+    "organizationCode": { "label": "Birim Kodu", "placeholder": "Örn: HQ-001" },
+    "organizationName": { "label": "Birim Adı", "placeholder": "Örn: Bilgi Teknolojileri" },
+    "description": { "label": "Açıklama" },
+    "title": { "label": "Hiyerarşik Başlık" },
+    "type": { "label": "Birim Tipi" },
+    "costCenter": { "label": "Maliyet Merkezi" },
+    "parentOrganization": { "label": "Üst Birim" },
+    "reportsTo": { "label": "Raporlayan Birim" },
+    "isDefault": { "label": "Varsayılan" },
+    "isActive": { "label": "Aktif" }
+  },
+  "sections": {
+    "general": "Genel Bilgiler",
+    "hierarchy": "Hiyerarşi"
+  }
+}

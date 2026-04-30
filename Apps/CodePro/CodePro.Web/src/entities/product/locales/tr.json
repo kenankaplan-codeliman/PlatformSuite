@@ -1,0 +1,31 @@
+{
+  "singular": "Ürün",
+  "plural": "Ürünler",
+  "fields": {
+    "code": { "label": "Ürün Kodu", "placeholder": "Örn: PRD-001" },
+    "name": { "label": "Ürün Adı", "placeholder": "Ürün adı" },
+    "shortDescription": { "label": "Kısa Açıklama", "placeholder": "Kısa açıklama" },
+    "detailedDescription": { "label": "Detaylı Açıklama" },
+    "validFrom": { "label": "Geçerlilik Başlangıcı" },
+    "validUntil": { "label": "Geçerlilik Bitişi" },
+    "unitOfMeasure": { "label": "Ölçü Birimi", "placeholder": "Adet / Kg / Metre" },
+    "manufacturerPartNumber": { "label": "Üretici Parça No" },
+    "model": { "label": "Model" },
+    "color": { "label": "Renk" },
+    "productUrl": { "label": "Ürün URL" },
+    "quantityPerUnit": { "label": "Birim Başına Adet" },
+    "deliveryDays": { "label": "Teslim Gün Sayısı" },
+    "category": { "label": "Kategori", "placeholder": "Kategori seçiniz" },
+    "isActive": { "label": "Aktif" },
+    "brands": { "label": "Markalar" },
+    "manufacturers": { "label": "Üreticiler" },
+    "keywords": { "label": "Anahtar Kelimeler" },
+    "supplierSkus": { "label": "Tedarikçi SKU'ları" }
+  },
+  "sections": {
+    "general": "Genel Bilgiler",
+    "validity": "Geçerlilik & Teslimat",
+    "classification": "Marka, Üretici & Anahtar Kelimeler",
+    "supplierSkus": "Tedarikçi SKU'ları"
+  }
+}

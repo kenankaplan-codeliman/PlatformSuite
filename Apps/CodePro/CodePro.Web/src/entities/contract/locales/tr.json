@@ -1,0 +1,22 @@
+{
+  "singular": "Sözleşme",
+  "plural": "Sözleşmeler",
+  "fields": {
+    "contractNumber": { "label": "Sözleşme No" },
+    "subject": { "label": "Konu" },
+    "type": { "label": "Tür" },
+    "counterpartyName": { "label": "Karşı Taraf" },
+    "startDate": { "label": "Başlangıç" },
+    "endDate": { "label": "Bitiş" },
+    "renewalType": { "label": "Yenileme" },
+    "amount": { "label": "Tutar" },
+    "currency": { "label": "Para Birimi" },
+    "paymentType": { "label": "Ödeme Tipi" },
+    "responsibleUserId": { "label": "Sorumlu" },
+    "reminderDaysBefore": { "label": "Hatırlatma (gün)" },
+    "notes": { "label": "Notlar" },
+    "status": { "label": "Durum" },
+    "isActive": { "label": "Aktif" }
+  },
+  "sections": { "general": "Genel Bilgiler", "financial": "Finansal", "responsibility": "Sorumluluk" }
+}

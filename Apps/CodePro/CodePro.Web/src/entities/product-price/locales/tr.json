@@ -1,0 +1,18 @@
+{
+  "singular": "Ürün Fiyatı",
+  "plural": "Ürün Fiyatları",
+  "fields": {
+    "product": { "label": "Ürün", "placeholder": "Ürün seçiniz" },
+    "supplier": { "label": "Tedarikçi", "placeholder": "Tedarikçi seçiniz" },
+    "priceList": { "label": "Fiyat Listesi", "placeholder": "(Opsiyonel)" },
+    "minimumQuantity": { "label": "Minimum Miktar" },
+    "validFrom": { "label": "Geçerlilik Başlangıcı" },
+    "validUntil": { "label": "Geçerlilik Bitişi" },
+    "unitPrice": { "label": "Birim Fiyat" },
+    "currency": { "label": "Para Birimi" },
+    "isActive": { "label": "Aktif" }
+  },
+  "sections": {
+    "general": "Genel Bilgiler"
+  }
+}

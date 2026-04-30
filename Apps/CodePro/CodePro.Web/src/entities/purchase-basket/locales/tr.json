@@ -1,0 +1,14 @@
+{
+  "singular": "Sepet",
+  "plural": "Sepetler",
+  "fields": {
+    "status": { "label": "Durum" },
+    "purchaseRequestId": { "label": "Talep" },
+    "lineCount": { "label": "Satır Sayısı" },
+    "isActive": { "label": "Aktif" }
+  },
+  "sections": {
+    "general": "Sepet",
+    "lines": "Sepet Satırları"
+  }
+}

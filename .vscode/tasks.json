@@ -2,15 +2,42 @@
   "version": "2.0.0",
   "tasks": [
     {
-      "label": "build-api",
+      "label": "build-crm-api",
       "command": "dotnet",
       "type": "process",
-      "args": ["build", "${workspaceFolder}/CRM.Api"],
+      "args": [
+        "build",
+        "${workspaceFolder}/Apps/Crm/Crm.Api/Crm.Api.csproj",
+        "/property:GenerateFullPaths=true",
+        "/consoleloggerparameters:NoSummary"
+      ],
       "problemMatcher": "$msCompile",
       "group": "build",
-      "presentation": {
-        "reveal": "silent"
-      }
+      "presentation": { "reveal": "silent" }
+    },
+    {
+      "label": "build-codepro-api",
+      "command": "dotnet",
+      "type": "process",
+      "args": [
+        "build",
+        "${workspaceFolder}/Apps/CodePro/CodePro.Api/CodePro.Api.csproj",
+        "/property:GenerateFullPaths=true",
+        "/consoleloggerparameters:NoSummary"
+      ],
+      "problemMatcher": "$msCompile",
+      "group": "build",
+      "presentation": { "reveal": "silent" }
+    },
+    {
+      "label": "build-platform-ui",
+      "command": "npx",
+      "type": "process",
+      "args": ["pnpm@9.15.0", "--filter", "@platform/ui", "build"],
+      "options": { "cwd": "${workspaceFolder}" },
+      "problemMatcher": [],
+      "group": "build",
+      "presentation": { "reveal": "silent" }
     }
   ]
 }

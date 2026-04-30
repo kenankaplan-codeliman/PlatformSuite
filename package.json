@@ -1,0 +1,15 @@
+{
+  "name": "platform-suite",
+  "private": true,
+  "scripts": {
+    "dev:crm": "npx pnpm@9.15.0 --filter @app/crm-web dev",
+    "build:crm": "npx pnpm@9.15.0 --filter @app/crm-web... build",
+    "lint:crm": "npx pnpm@9.15.0 --filter @app/crm-web lint",
+    "dev:codepro": "npx pnpm@9.15.0 --filter @app/codepro-web dev",
+    "build:codepro": "npx pnpm@9.15.0 --filter @app/codepro-web... build",
+    "lint:codepro": "npx pnpm@9.15.0 --filter @app/codepro-web lint",
+    "dev:platform-ui": "npx pnpm@9.15.0 --filter @platform/ui dev",
+    "build:platform-ui": "npx pnpm@9.15.0 --filter @platform/ui build"
+  },
+  "packageManager": "pnpm@9.15.0"
+}

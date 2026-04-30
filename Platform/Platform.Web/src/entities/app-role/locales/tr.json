@@ -1,0 +1,15 @@
+{
+  "singular": "Rol",
+  "plural": "Roller",
+  "fields": {
+    "roleName": { "label": "Rol Adı", "placeholder": "Örn: Admin" },
+    "description": { "label": "Açıklama", "placeholder": "Rolün açıklaması" },
+    "isDefault": { "label": "Varsayılan" },
+    "isActive": { "label": "Aktif" },
+    "privileges": { "label": "Yetkiler" }
+  },
+  "sections": {
+    "general": "Genel Bilgiler",
+    "privileges": "Yetkiler"
+  }
+}

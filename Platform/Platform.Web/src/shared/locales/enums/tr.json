@@ -1,0 +1,97 @@
+{
+  "accountStatus": {
+    "Prospect": "Potansiyel",
+    "Active": "Aktif",
+    "AtRisk": "Riskli",
+    "Inactive": "Pasif",
+    "Churned": "Kaybedilmiş"
+  },
+  "accountType": {
+    "Customer": "Müşteri",
+    "Prospect": "Potansiyel",
+    "Partner": "İş Ortağı",
+    "Vendor": "Tedarikçi",
+    "Competitor": "Rakip",
+    "Other": "Diğer"
+  },
+  "contactStatus": {
+    "Active": "Aktif",
+    "Inactive": "Pasif"
+  },
+  "emailType": {
+    "Work": "İş",
+    "Personal": "Kişisel",
+    "Billing": "Fatura",
+    "Support": "Destek",
+    "Other": "Diğer"
+  },
+  "phoneType": {
+    "Mobile": "Cep",
+    "Work": "İş",
+    "Home": "Ev",
+    "Fax": "Faks",
+    "Other": "Diğer"
+  },
+  "addressType": {
+    "Billing": "Fatura",
+    "Shipping": "Sevkiyat",
+    "Office": "Ofis",
+    "Other": "Diğer"
+  },
+  "activityType": {
+    "Task": "Görev",
+    "PhoneCall": "Telefon Görüşmesi",
+    "Appointment": "Randevu",
+    "Email": "E-posta"
+  },
+  "activityStatus": {
+    "NotStarted": "Başlamadı",
+    "InProgress": "Devam Ediyor",
+    "Completed": "Tamamlandı",
+    "Cancelled": "İptal Edildi"
+  },
+  "activityPriority": {
+    "Low": "Düşük",
+    "Normal": "Normal",
+    "High": "Yüksek",
+    "Urgent": "Acil"
+  },
+  "organizationType": {
+    "EXECUTIVE": "Yönetim",
+    "INTERNAL_SYSTEM": "İç Sistem",
+    "DEPARTMENT": "Departman",
+    "ADVISORY": "Danışmanlık",
+    "REGION": "Bölge",
+    "BRANCH": "Şube"
+  },
+  "documentType": {
+    "Other": "Diğer",
+    "TicaretSicilGazetesi": "Ticaret Sicil Gazetesi",
+    "VergiLevhasi": "Vergi Levhası",
+    "ImzaSirkuleri": "İmza Sirküleri",
+    "FaaliyetBelgesi": "Faaliyet Belgesi",
+    "KapasiteRaporu": "Kapasite Raporu",
+    "AnaSozlesme": "Ana Sözleşme",
+    "KurulusKarari": "Kuruluş Kararı",
+    "TicaretSicilBelgesi": "Ticaret Sicil Belgesi",
+    "MersisBelgesi": "MERSİS Belgesi",
+    "MaliTablo": "Mali Tablo",
+    "BilancoBelgesi": "Bilanço Belgesi",
+    "KrediDerecelendirme": "Kredi Derecelendirme",
+    "BankaReferansBelgesi": "Banka Referans Belgesi",
+    "IsoSertifikasi": "ISO Sertifikası",
+    "UrununUygunlukBelgesi": "Ürün Uygunluk Belgesi",
+    "AkreditasyonBelgesi": "Akreditasyon Belgesi",
+    "Sozlesme": "Sözleşme",
+    "Teklif": "Teklif",
+    "Siparis": "Sipariş",
+    "Fatura": "Fatura",
+    "Irsaliye": "İrsaliye",
+    "Sartname": "Şartname",
+    "TeknikDokuman": "Teknik Doküman",
+    "VekaletName": "Vekaletname",
+    "YetkiYazisi": "Yetki Yazısı",
+    "ReferansMektubu": "Referans Mektubu",
+    "IflasSorgulama": "İflas Sorgulama"
+  }
+}

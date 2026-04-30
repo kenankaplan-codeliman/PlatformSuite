@@ -1,0 +1,45 @@
+{
+  "singular": "Anket",
+  "plural": "Anketler",
+  "fields": {
+    "name": { "label": "Anket Adı", "placeholder": "Örn: Tedarikçi Değerlendirme" },
+    "relatedModule": { "label": "İlgili Modül" },
+    "status": { "label": "Durum" },
+    "isActive": { "label": "Aktif" },
+    "questions": { "label": "Sorular" },
+    "questionText": { "label": "Soru", "placeholder": "Soru metni" },
+    "questionType": { "label": "Tür" },
+    "isRequired": { "label": "Zorunlu" },
+    "options": { "label": "Seçenekler" },
+    "optionText": { "label": "Seçenek", "placeholder": "Seçenek metni" }
+  },
+  "sections": {
+    "general": "Genel Bilgiler",
+    "questions": "Sorular"
+  },
+  "relatedModule": {
+    "Offer": "Teklif",
+    "Contract": "Sözleşme",
+    "Supplier": "Tedarikçi",
+    "Order": "Sipariş"
+  },
+  "status": {
+    "Active": "Aktif",
+    "Passive": "Pasif",
+    "Draft": "Taslak"
+  },
+  "questionType": {
+    "YesNo": "Evet/Hayır",
+    "ShortText": "Kısa Metin",
+    "LongText": "Uzun Metin",
+    "Number": "Sayı",
+    "Date": "Tarih",
+    "MultipleChoice": "Çoktan Seçmeli"
+  },
+  "actions": {
+    "addQuestion": "Soru Ekle",
+    "removeQuestion": "Soruyu Sil",
+    "addOption": "Seçenek Ekle",
+    "removeOption": "Seçeneği Sil"
+  }
+}

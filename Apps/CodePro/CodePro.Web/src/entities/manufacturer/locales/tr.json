@@ -1,0 +1,11 @@
+{
+  "singular": "Üretici",
+  "plural": "Üreticiler",
+  "fields": {
+    "name": { "label": "Üretici Adı", "placeholder": "Örn: Acme Manufacturing" },
+    "isActive": { "label": "Aktif" }
+  },
+  "sections": {
+    "general": "Genel Bilgiler"
+  }
+}

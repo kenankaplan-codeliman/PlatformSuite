@@ -1,0 +1,15 @@
+{
+  "singular": "E-Belge",
+  "plural": "E-Belgeler",
+  "fields": {
+    "subject": { "label": "Konu" },
+    "description": { "label": "Açıklama" },
+    "documentType": { "label": "Belge Tipi" },
+    "status": { "label": "Durum" },
+    "entityType": { "label": "İlgili Varlık" },
+    "entityId": { "label": "Varlık No" },
+    "attachmentUrl": { "label": "Ek URL" },
+    "isActive": { "label": "Aktif" }
+  },
+  "sections": { "general": "Genel Bilgiler", "routing": "Yönlendirme" }
+}

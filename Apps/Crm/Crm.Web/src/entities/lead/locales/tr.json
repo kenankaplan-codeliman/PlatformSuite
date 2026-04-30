@@ -1,0 +1,26 @@
+{
+  "singular": "Aday",
+  "plural": "Adaylar",
+  "fields": {
+    "subject": { "label": "Konu", "placeholder": "Örn: Yeni CRM kurulumu" },
+    "firstName": { "label": "Ad" },
+    "lastName": { "label": "Soyad" },
+    "fullName": { "label": "Ad Soyad" },
+    "company": { "label": "Şirket" },
+    "title": { "label": "Ünvan" },
+    "email": { "label": "E-posta" },
+    "phone": { "label": "Telefon" },
+    "website": { "label": "Web Sitesi" },
+    "source": { "label": "Kaynak" },
+    "status": { "label": "Durum" },
+    "score": { "label": "Skor" },
+    "estimatedValue": { "label": "Tahmini Değer" },
+    "description": { "label": "Açıklama" },
+    "isActive": { "label": "Aktif" }
+  },
+  "sections": {
+    "general": "Genel Bilgiler",
+    "contact": "İletişim",
+    "details": "Detaylar"
+  }
+}

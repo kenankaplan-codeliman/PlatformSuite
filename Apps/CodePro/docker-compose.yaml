@@ -1,0 +1,186 @@
+# =============================================================
+# CodePro tam izole stack — bu compose CodePro uygulamasının tüm
+# infra'sını (nginx + web + api + db + elasticsearch + kibana)
+# bağımsız olarak ayağa kaldırır. Platform sadece kod kütüphanesi:
+# Dockerfile'lar build sırasında Platform/* dizinini repo root
+# context'iyle dahil eder.
+#
+# Host portları CRM ile çakışmasın diye farklı:
+#   nginx 81 / db 5433 / es 9201 / kibana 5602
+#
+# Kullanım (Apps/CodePro/ klasöründen çalıştır):
+#   cd Apps/CodePro
+#   docker compose up -d --build
+#   docker compose up -d codepro-db   # sadece DB (VSCode debug için)
+#   docker compose down -v             # volumes dahil temizle
+#
+# Veya repo root'tan, --env-file ile:
+#   docker compose --env-file Apps/CodePro/.env -f Apps/CodePro/docker-compose.yaml up -d --build
+#
+# Not: Apps/CodePro/.env hem YAML interpolation hem de container runtime için
+# kullanılır. Compose, dosya bulunduğu klasördeki .env'i otomatik yükler;
+# repo root'tan çalıştırırken --env-file zorunlu.
+# =============================================================
+services:
+  codepro-nginx:
+    image: nginx:1.27-alpine
+    container_name: codepro-nginx
+    ports:
+      - "${CODEPRO_NGINX_HOST_PORT:-81}:80"
+    volumes:
+      - ./docker/nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./docker/nginx/conf.d:/etc/nginx/conf.d:ro
+    depends_on:
+      - codepro-web
+      - codepro-api
+    networks:
+      - codepro_app_net
+    restart: unless-stopped
+
+  codepro-web:
+    container_name: codepro-web
+    build:
+      context: ../..
+      dockerfile: Apps/CodePro/CodePro.Web/Dockerfile
+      args:
+        VITE_API_BASE_URL: /api
+        VITE_AZURE_CLIENT_ID: ${VITE_AZURE_CLIENT_ID}
+        VITE_AZURE_TENANT_ID: ${VITE_AZURE_TENANT_ID}
+        VITE_ENVIRONMENT: production
+    env_file: ./.env
+    networks:
+      - codepro_app_net
+    restart: unless-stopped
+
+  codepro-api:
+    container_name: codepro-api
+    build:
+      context: ../..
+      dockerfile: Apps/CodePro/CodePro.Api/Dockerfile
+    env_file: ./.env
+    environment:
+      ASPNETCORE_ENVIRONMENT: Production
+      ASPNETCORE_HTTP_PORTS: "8080"
+      POSTGRES_HOST: codepro-db
+      POSTGRES_DB: codepro_db
+      Logging__Elastic__Enabled: "true"
+      Logging__Elastic__Url: "http://codepro-elasticsearch:9200"
+      Logging__Elastic__Username: ${Logging__Elastic__Username}
+      Logging__Elastic__Password: ${Logging__Elastic__Password}
+    volumes:
+      - codepro_api_logs:/app/logs
+      - codepro_api_dataprotection:/app/dataprotection-keys
+    depends_on:
+      codepro-db:
+        condition: service_healthy
+      codepro-elasticsearch:
+        condition: service_healthy
+    networks:
+      - codepro_app_net
+      - codepro_db_net
+      - codepro_elk_net
+    restart: unless-stopped
+
+  codepro-db:
+    image: postgres:17-alpine
+    container_name: codepro-db
+    env_file: ./.env
+    environment:
+      POSTGRES_DB: codepro_db
+      POSTGRES_USER: ${POSTGRES_USER}
+    ports:
+      - "${CODEPRO_DB_HOST_PORT:-5433}:5432"
+    volumes:
+      - codepro_postgres_data:/var/lib/postgresql/data
+      - ./docker/db-init:/docker-entrypoint-initdb.d:ro
+      - ../../Platform/Platform.Database:/sql/platform:ro
+      - ./CodePro.Database:/sql/codepro:ro
+    networks:
+      - codepro_db_net
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d codepro_db"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+
+  codepro-elasticsearch:
+    image: docker.elastic.co/elasticsearch/elasticsearch:8.17.4
+    container_name: codepro-elasticsearch
+    environment:
+      discovery.type: single-node
+      xpack.security.enabled: "true"
+      ELASTIC_PASSWORD: ${ELASTIC_PASSWORD}
+      ES_JAVA_OPTS: "-Xms512m -Xmx512m"
+    ports:
+      - "${CODEPRO_ES_HOST_PORT:-9201}:9200"
+    volumes:
+      - codepro_elastic_data:/usr/share/elasticsearch/data
+    networks:
+      - codepro_elk_net
+    healthcheck:
+      test: ["CMD-SHELL", "curl -s -u elastic:$$ELASTIC_PASSWORD http://localhost:9200/_cluster/health | grep -qE '\"status\":\"(green|yellow)\"'"]
+      interval: 20s
+      timeout: 10s
+      retries: 10
+      start_period: 40s
+    restart: unless-stopped
+
+  codepro-elasticsearch-setup:
+    image: docker.elastic.co/elasticsearch/elasticsearch:8.17.4
+    container_name: codepro-elasticsearch-setup
+    depends_on:
+      codepro-elasticsearch:
+        condition: service_healthy
+    networks:
+      - codepro_elk_net
+    environment:
+      ELASTIC_PASSWORD: ${ELASTIC_PASSWORD}
+      KIBANA_SYSTEM_PASSWORD: ${KIBANA_SYSTEM_PASSWORD}
+    entrypoint: ["/bin/bash", "-c"]
+    command:
+      - >-
+        echo "Setting kibana_system password..." &&
+        curl -s -X POST -u "elastic:$$ELASTIC_PASSWORD"
+        -H "Content-Type: application/json"
+        "http://codepro-elasticsearch:9200/_security/user/kibana_system/_password"
+        -d "{\"password\":\"$$KIBANA_SYSTEM_PASSWORD\"}"
+        && echo " Done."
+    restart: "no"
+
+  codepro-kibana:
+    image: docker.elastic.co/kibana/kibana:8.17.4
+    container_name: codepro-kibana
+    environment:
+      ELASTICSEARCH_HOSTS: "http://codepro-elasticsearch:9200"
+      ELASTICSEARCH_USERNAME: "kibana_system"
+      ELASTICSEARCH_PASSWORD: ${KIBANA_SYSTEM_PASSWORD}
+      SERVER_BASEPATH: "/kibana"
+      SERVER_REWRITEBASEPATH: "true"
+    ports:
+      - "${CODEPRO_KIBANA_HOST_PORT:-5602}:5601"
+    depends_on:
+      codepro-elasticsearch:
+        condition: service_healthy
+      codepro-elasticsearch-setup:
+        condition: service_completed_successfully
+    networks:
+      - codepro_app_net
+      - codepro_elk_net
+    restart: unless-stopped
+
+networks:
+  codepro_app_net:
+    driver: bridge
+  codepro_db_net:
+    driver: bridge
+    internal: true
+  codepro_elk_net:
+    driver: bridge
+    internal: true
+
+volumes:
+  codepro_postgres_data:
+  codepro_api_logs:
+  codepro_api_dataprotection:
+  codepro_elastic_data:

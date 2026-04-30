@@ -1,0 +1,16 @@
+services:
+  codepro-db:
+    ports:
+      - "127.0.0.1:5432:5432"
+    networks:
+      - codepro_db_net
+      - codepro_app_net
+
+  codepro-api:
+    environment:
+      ASPNETCORE_ENVIRONMENT: Development
+
+  codepro-web:
+    build:
+      args:
+        VITE_ENVIRONMENT: development

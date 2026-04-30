@@ -1,0 +1,13 @@
+{
+  "title": "Platform'a Giriş",
+  "subtitle": "Hesap bilgilerinizle giriş yapın.",
+  "fields": {
+    "email": { "label": "E-posta", "placeholder": "ornek@firma.com" },
+    "password": { "label": "Parola", "placeholder": "••••••••" }
+  },
+  "submit": "Giriş yap",
+  "errors": {
+    "invalidCredentials": "E-posta veya parola hatalı.",
+    "generic": "Giriş yapılamadı. Lütfen tekrar deneyin."
+  }
+}

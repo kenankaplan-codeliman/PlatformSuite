@@ -1,0 +1,16 @@
+services:
+  crm-db:
+    ports: !override
+      - "127.0.0.1:5432:5432"
+    networks:
+      - crm_db_net
+      - crm_app_net
+
+  crm-api:
+    environment:
+      ASPNETCORE_ENVIRONMENT: Development
+
+  crm-web:
+    build:
+      args:
+        VITE_ENVIRONMENT: development

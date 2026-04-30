@@ -1,0 +1,21 @@
+{
+  "singular": "Satın Alma Talebi",
+  "plural": "Satın Alma Talepleri",
+  "fields": {
+    "requestNumber": { "label": "Talep No", "placeholder": "Otomatik üretilir" },
+    "title": { "label": "Başlık" },
+    "description": { "label": "Açıklama" },
+    "status": { "label": "Durum" },
+    "priority": { "label": "Öncelik" },
+    "requestDate": { "label": "Talep Tarihi" },
+    "requiredDate": { "label": "Gereken Tarih" },
+    "currencyCode": { "label": "Para Birimi" },
+    "totalAmount": { "label": "Toplam" },
+    "isActive": { "label": "Aktif" },
+    "lines": { "label": "Satırlar" }
+  },
+  "sections": {
+    "general": "Genel Bilgiler",
+    "lines": "Talep Satırları"
+  }
+}

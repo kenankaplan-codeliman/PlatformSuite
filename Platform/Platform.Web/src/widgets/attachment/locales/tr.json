@@ -1,0 +1,22 @@
+{
+  "title": "Ek Dosyalar",
+  "empty": "Henüz dosya yok.",
+  "actions": {
+    "download": "İndir",
+    "delete": "Sil",
+    "deleteConfirm": "Bu dosyayı silmek istediğinizden emin misiniz?",
+    "upload": "Yükle"
+  },
+  "uploader": {
+    "dropzone": "Dosya yüklemek için tıkla veya sürükle",
+    "hint": "Tek dosya — maks 50 MB",
+    "documentType": "Belge Türü",
+    "subject": "Konu (opsiyonel)",
+    "description": "Açıklama (opsiyonel)",
+    "submit": "Yükle"
+  },
+  "errors": {
+    "noFile": "Dosya seçilmedi.",
+    "uploadFailed": "Dosya yüklenemedi."
+  }
+}
