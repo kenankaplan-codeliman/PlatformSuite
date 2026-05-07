@@ -10,6 +10,7 @@ import {
   TextField,
   useRouteMode,
 } from '@platform/ui';
+import { CodeProServicePath } from '../../../../shared/api/servicePaths';
 import { useProductPriceQuery } from '../../../../entities/product-price/api/useProductPriceQueries';
 import {
   useDeleteProductPrice,
@@ -21,9 +22,9 @@ import { RoutePaths } from '../../../../app/router/paths';
 
 const emptyProductPrice: ProductPriceFormValues = {
   id: '',
-  productId: '',
-  supplierAccountId: '',
-  priceListId: null,
+  product: null,
+  supplierAccount: null,
+  priceList: null,
   minimumQuantity: 1,
   validFrom: new Date().toISOString(),
   validUntil: new Date(Date.now() + 365 * 24 * 60 * 60 * 1000).toISOString(),
@@ -44,12 +45,8 @@ export function ProductPriceDetailPage() {
   const title = useMemo(() => {
     if (mode === 'new') return tPage('newTitle');
     if (mode === 'edit') return tPage('editTitle');
-    return query.data?.productName ?? tPage('viewTitle');
-  }, [mode, query.data?.productName, tPage]);
-
-  const productInitialLabel = query.data?.productName ?? undefined;
-  const supplierInitialLabel = query.data?.supplierAccountName ?? undefined;
-  const priceListInitialLabel = query.data?.priceListName ?? undefined;
+    return query.data?.product?.name ?? tPage('viewTitle');
+  }, [mode, query.data?.product?.name, tPage]);
 
   return (
     <DetailPageLayout<ProductPriceFormValues>
@@ -72,49 +69,34 @@ export function ProductPriceDetailPage() {
       }
       afterSaveNavigation={(saved) => RoutePaths.ProductPriceView(saved.id)}
     >
-      <GeneralSection
-        productInitialLabel={productInitialLabel}
-        supplierInitialLabel={supplierInitialLabel}
-        priceListInitialLabel={priceListInitialLabel}
-      />
+      <GeneralSection />
     </DetailPageLayout>
   );
 
-  function GeneralSection({
-    productInitialLabel,
-    supplierInitialLabel,
-    priceListInitialLabel,
-  }: {
-    productInitialLabel?: string;
-    supplierInitialLabel?: string;
-    priceListInitialLabel?: string;
-  }) {
+  function GeneralSection() {
     const form = useFormContext<ProductPriceFormValues>();
     return (
       <FormSection title={tEntity('sections.general')}>
         <EntityLookupField<ProductPriceFormValues>
-          name="productId"
+          name="product"
           control={form.control}
-          servicePath="/api/product/list"
+          servicePath={CodeProServicePath.Product.Search}
           label={tEntity('fields.product.label')}
           placeholder={tEntity('fields.product.placeholder')}
-          initialLabel={productInitialLabel}
         />
         <EntityLookupField<ProductPriceFormValues>
-          name="supplierAccountId"
+          name="supplierAccount"
           control={form.control}
           servicePath={ServicePath.Account.Search}
           label={tEntity('fields.supplier.label')}
           placeholder={tEntity('fields.supplier.placeholder')}
-          initialLabel={supplierInitialLabel}
         />
         <EntityLookupField<ProductPriceFormValues>
-          name="priceListId"
+          name="priceList"
           control={form.control}
-          servicePath="/api/price-list/list"
+          servicePath={CodeProServicePath.PriceList.Search}
           label={tEntity('fields.priceList.label')}
           placeholder={tEntity('fields.priceList.placeholder')}
-          initialLabel={priceListInitialLabel}
           allowClear
         />
         <NumberField

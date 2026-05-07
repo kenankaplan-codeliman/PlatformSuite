@@ -1,3 +1,4 @@
+using Platform.Application.Features.Accounts;
 using Platform.Application.Interfaces;
 using Platform.Domain.Entities.Accounts;
 using Platform.Infrastructure.Data;
@@ -15,10 +16,7 @@ public class AccountRepository : BaseEntityRepository<Account>, IAccountReposito
     public override async Task<Account?> GetAsync(Guid Id, CancellationToken cancellationToken = default)
     {
         return await this.dbContext.Account
-            .Include(a => a.Emails)
-            .Include(a => a.Phones)
-            .Include(a => a.Addresses)
-            .Include(a => a.AccountContacts).ThenInclude(ac => ac.Contact)
+            .WithDetailIncludes()
             .FirstOrDefaultAsync(e => e.Id == Id, cancellationToken);
     }
 }

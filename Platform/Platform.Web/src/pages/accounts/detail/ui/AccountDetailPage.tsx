@@ -53,7 +53,7 @@ const emptyAccount: AccountFormValues = {
   numberOfEmployees: null,
   website: null,
   description: null,
-  parentAccountId: null,
+  parentAccount: null,
   emails: [],
   phones: [],
   addresses: [],
@@ -91,8 +91,6 @@ export function AccountDetailPage() {
     }),
   );
 
-  const parentAccountInitialLabel = query.data?.parentAccountName ?? undefined;
-
   return (
     <DetailPageLayout<AccountFormValues>
       mode={mode}
@@ -117,21 +115,17 @@ export function AccountDetailPage() {
       <GeneralSection
         typeOptions={typeOptions}
         statusOptions={statusOptions}
-        parentAccountInitialLabel={parentAccountInitialLabel}
       />
       <DetailsSection />
     </DetailPageLayout>
   );
 
-  // Entity labels komponente geçmek için wrapper fonksiyonlar
   function GeneralSection({
     typeOptions,
     statusOptions,
-    parentAccountInitialLabel,
   }: {
     typeOptions: SelectOption<AccountType>[];
     statusOptions: SelectOption<AccountStatus>[];
-    parentAccountInitialLabel?: string;
   }) {
     const form = useFormContext<AccountFormValues>();
     return (
@@ -168,11 +162,10 @@ export function AccountDetailPage() {
           maxLength={200}
         />
         <EntityLookupField<AccountFormValues>
-          name="parentAccountId"
+          name="parentAccount"
           control={form.control}
           servicePath={ServicePath.Account.Search}
           label={tEntity("fields.parentAccount.label")}
-          initialLabel={parentAccountInitialLabel}
           allowClear
         />
       </FormSection>

@@ -21,7 +21,8 @@ public sealed class CreatePurchaseOrderHandler : IRequestHandler<CreatePurchaseO
 
     public async Task<Result<PurchaseOrderDetailItem>> Handle(CreatePurchaseOrderCommand request, CancellationToken cancellationToken)
     {
-        var supplierExists = await _db.Account.AsNoTracking().AnyAsync(a => a.Id == request.SupplierAccountId, cancellationToken);
+        var supplierId = request.SupplierAccount?.Id ?? Guid.Empty;
+        var supplierExists = await _db.Account.AsNoTracking().AnyAsync(a => a.Id == supplierId, cancellationToken);
         if (!supplierExists) return PurchaseOrderErrors.SupplierNotFound;
 
         var orderNumber = string.IsNullOrWhiteSpace(request.OrderNumber)
@@ -37,7 +38,7 @@ public sealed class CreatePurchaseOrderHandler : IRequestHandler<CreatePurchaseO
             OrderNumber = orderNumber,
             Title = request.Title,
             Description = request.Description,
-            SupplierAccountId = request.SupplierAccountId,
+            SupplierAccountId = supplierId,
             PurchaseRequestId = request.PurchaseRequestId,
             Priority = request.Priority,
             Status = PurchaseOrderStatus.Draft,

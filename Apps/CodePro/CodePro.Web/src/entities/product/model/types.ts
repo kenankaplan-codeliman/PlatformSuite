@@ -2,6 +2,8 @@
  * Backend DTO'ları ile birebir uyumlu — CodePro.Application/Features/Products/Dtos/**
  */
 
+import type { EntityReference } from '@platform/ui';
+
 export interface ProductBrandItem {
   brandId: string;
   brandName?: string | null;
@@ -19,8 +21,7 @@ export interface ProductKeywordItem {
 
 export interface ProductSkuItem {
   id: string;
-  supplierAccountId: string;
-  supplierAccountName?: string | null;
+  supplierAccount?: EntityReference | null;
   sku: string;
 }
 
@@ -40,8 +41,7 @@ export interface ProductDetailItem {
   quantityPerUnit?: number | null;
   deliveryDays: number;
   accountCodeId?: string | null;
-  productCategoryId: string;
-  productCategoryName?: string | null;
+  productCategory?: EntityReference | null;
   isActive: boolean;
   createdAt?: string | null;
   updatedAt?: string | null;
@@ -71,7 +71,7 @@ export interface ProductListFilter {
 }
 
 export interface ProductFormSku {
-  supplierAccountId: string;
+  supplierAccount?: EntityReference | null;
   sku: string;
 }
 
@@ -91,7 +91,7 @@ export interface ProductFormValues {
   quantityPerUnit?: number | null;
   deliveryDays: number;
   accountCodeId?: string | null;
-  productCategoryId: string;
+  productCategory?: EntityReference | null;
   isActive: boolean;
   brandIds: string[];
   manufacturerIds: string[];

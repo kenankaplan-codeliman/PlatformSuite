@@ -2,14 +2,13 @@
  * Backend DTO'ları ile birebir uyumlu — CodePro.Application/Features/ProductPrices/Dtos/**
  */
 
+import type { EntityReference } from '@platform/ui';
+
 export interface ProductPriceDetailItem {
   id: string;
-  productId: string;
-  productName?: string | null;
-  supplierAccountId: string;
-  supplierAccountName?: string | null;
-  priceListId?: string | null;
-  priceListName?: string | null;
+  product?: EntityReference | null;
+  supplierAccount?: EntityReference | null;
+  priceList?: EntityReference | null;
   minimumQuantity: number;
   validFrom: string;
   validUntil: string;
@@ -46,9 +45,9 @@ export interface ProductPriceListFilter {
 
 export interface ProductPriceFormValues {
   id: string;
-  productId: string;
-  supplierAccountId: string;
-  priceListId?: string | null;
+  product?: EntityReference | null;
+  supplierAccount?: EntityReference | null;
+  priceList?: EntityReference | null;
   minimumQuantity: number;
   validFrom: string;
   validUntil: string;

@@ -29,8 +29,9 @@ public sealed class UpdateProductHandler : IRequestHandler<UpdateProductCommand,
             .AnyAsync(p => p.Id != request.Id && p.Code.ToLower() == request.Code.ToLower(), cancellationToken);
         if (codeExists) return ProductErrors.DuplicateCode;
 
+        var categoryId = request.ProductCategory?.Id ?? Guid.Empty;
         var categoryExists = await _db.ProductCategory.AsNoTracking()
-            .AnyAsync(c => c.Id == request.ProductCategoryId, cancellationToken);
+            .AnyAsync(c => c.Id == categoryId, cancellationToken);
         if (!categoryExists) return ProductErrors.CategoryNotFound;
 
         entity.Code = request.Code;
@@ -47,7 +48,7 @@ public sealed class UpdateProductHandler : IRequestHandler<UpdateProductCommand,
         entity.QuantityPerUnit = request.QuantityPerUnit;
         entity.DeliveryDays = request.DeliveryDays;
         entity.AccountCodeId = request.AccountCodeId;
-        entity.ProductCategoryId = request.ProductCategoryId;
+        entity.ProductCategoryId = categoryId;
 
         await _repository.UpdateAsync(entity, cancellationToken);
 
@@ -55,7 +56,10 @@ public sealed class UpdateProductHandler : IRequestHandler<UpdateProductCommand,
         await ProductSyncHelper.SyncManufacturersAsync(_db, entity.Id, request.ManufacturerIds, cancellationToken);
         await ProductSyncHelper.SyncKeywordsAsync(_db, entity.Id, request.Keywords, cancellationToken);
         await ProductSyncHelper.SyncSupplierSkusAsync(_db, entity.Id,
-            request.SupplierSkus.Select(s => new ProductSkuInput { SupplierAccountId = s.SupplierAccountId, Sku = s.Sku }).ToList(),
+            request.SupplierSkus
+                .Where(s => s.SupplierAccount != null)
+                .Select(s => new ProductSkuInput { SupplierAccountId = s.SupplierAccount!.Id, Sku = s.Sku })
+                .ToList(),
             cancellationToken);
         await _db.SaveChangesAsync(cancellationToken);
 

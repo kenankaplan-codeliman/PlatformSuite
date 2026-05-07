@@ -3,6 +3,7 @@ using CodePro.Application.Features.PriceLists.Commands.DeletePriceList;
 using CodePro.Application.Features.PriceLists.Commands.UpdatePriceList;
 using CodePro.Application.Features.PriceLists.Queries.GetPriceList;
 using CodePro.Application.Features.PriceLists.Queries.ListPriceLists;
+using CodePro.Application.Features.PriceLists.Queries.SearchPriceLists;
 using CodePro.Domain.Authorization;
 using Platform.Api.Authorization;
 using Platform.Api.Extensions;
@@ -22,6 +23,11 @@ public sealed class PriceListController : ControllerBase
     [HttpPost("list")]
     [PrivilegeAuthorize(CodeProPrivilegeCodes.PriceListPrivilegeCodes.Read)]
     public async Task<IActionResult> ListAsync([FromBody] ListPriceListsQuery query, CancellationToken ct)
+        => (await _sender.Send(query, ct)).ToActionResult(HttpContext);
+
+    [HttpPost("search")]
+    [PrivilegeAuthorize(CodeProPrivilegeCodes.PriceListPrivilegeCodes.Read)]
+    public async Task<IActionResult> SearchAsync([FromBody] SearchPriceListsQuery query, CancellationToken ct)
         => (await _sender.Send(query, ct)).ToActionResult(HttpContext);
 
     [HttpPost("get")]

@@ -1,10 +1,11 @@
 import { z } from 'zod';
+import { entityReferenceSchema } from '@platform/ui';
 
 export const productPriceSchema = z.object({
   id: z.string(),
-  productId: z.string().uuid(),
-  supplierAccountId: z.string().uuid(),
-  priceListId: z.string().uuid().nullable().optional(),
+  product: entityReferenceSchema.nullish(),
+  supplierAccount: entityReferenceSchema.nullish(),
+  priceList: entityReferenceSchema.nullish(),
   minimumQuantity: z.number().nonnegative(),
   validFrom: z.string().min(1),
   validUntil: z.string().min(1),

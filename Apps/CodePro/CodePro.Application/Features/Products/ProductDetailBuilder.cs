@@ -1,5 +1,7 @@
 using CodePro.Application.Features.Products.Dtos;
 using CodePro.Application.Interfaces;
+using Platform.Application.Modals.Common;
+using Platform.Domain.Enums;
 using Microsoft.EntityFrameworkCore;
 
 namespace CodePro.Application.Features.Products;
@@ -27,9 +29,10 @@ internal static class ProductDetailBuilder
                 QuantityPerUnit = p.QuantityPerUnit,
                 DeliveryDays = p.DeliveryDays,
                 AccountCodeId = p.AccountCodeId,
-                ProductCategoryId = p.ProductCategoryId,
-                ProductCategoryName = db.ProductCategory.Where(c => c.Id == p.ProductCategoryId)
-                    .Select(c => c.Name).FirstOrDefault(),
+                ProductCategory = db.ProductCategory
+                    .Where(c => c.Id == p.ProductCategoryId)
+                    .Select(c => new EntityReference(EntityType.None) { Id = c.Id, Name = c.Name })
+                    .FirstOrDefault(),
                 IsActive = p.IsActive,
                 CreatedAt = p.CreatedAt,
                 UpdatedAt = p.UpdatedAt,
@@ -64,8 +67,7 @@ internal static class ProductDetailBuilder
             select new ProductSkuItem
             {
                 Id = s.Id,
-                SupplierAccountId = a.Id,
-                SupplierAccountName = a.AccountName,
+                SupplierAccount = new EntityReference(EntityType.Account) { Id = a.Id, Name = a.AccountName },
                 Sku = s.Sku,
             }
         ).ToListAsync(cancellationToken);

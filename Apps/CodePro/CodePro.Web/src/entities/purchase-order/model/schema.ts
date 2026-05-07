@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { entityReferenceSchema } from '@platform/ui';
 
 const lineSchema = z.object({
   id: z.string(),
@@ -21,7 +22,7 @@ export const purchaseOrderSchema = z.object({
   orderNumber: z.string().max(50),
   title: z.string().min(1).max(300),
   description: z.string().nullable().optional(),
-  supplierAccountId: z.string().uuid(),
+  supplierAccount: entityReferenceSchema.nullish(),
   purchaseRequestId: z.string().uuid().nullable().optional(),
   status: z.enum(['Draft', 'Sent', 'Acknowledged', 'PartialDelivered', 'Delivered', 'Cancelled', 'Closed']),
   priority: z.enum(['Low', 'Medium', 'High', 'Urgent']),

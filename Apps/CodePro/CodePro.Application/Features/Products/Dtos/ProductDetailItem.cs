@@ -1,3 +1,5 @@
+using Platform.Application.Modals.Common;
+
 namespace CodePro.Application.Features.Products.Dtos;
 
 public class ProductDetailItem
@@ -18,8 +20,7 @@ public class ProductDetailItem
     public int DeliveryDays { get; set; }
     public Guid? AccountCodeId { get; set; }
 
-    public Guid ProductCategoryId { get; set; }
-    public string? ProductCategoryName { get; set; }
+    public EntityReference? ProductCategory { get; set; }
 
     public bool IsActive { get; set; }
     public DateTime? CreatedAt { get; set; }
@@ -52,7 +53,6 @@ public class ProductKeywordItem
 public class ProductSkuItem
 {
     public Guid Id { get; set; }
-    public Guid SupplierAccountId { get; set; }
-    public string? SupplierAccountName { get; set; }
+    public EntityReference? SupplierAccount { get; set; }
     public string Sku { get; set; } = default!;
 }

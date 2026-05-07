@@ -5,6 +5,7 @@ using Mapster;
 using MapsterMapper;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
+using Platform.Application.Features.Accounts;
 
 namespace Platform.Application.Features.Accounts.Queries.GetAccount;
 
@@ -23,11 +24,7 @@ public sealed class GetAccountHandler : IRequestHandler<GetAccountQuery, Result<
     {
         var entity = await _db.Account
             .AsNoTracking()
-            .Include(a => a.ParentAccount)
-            .Include(a => a.Emails)
-            .Include(a => a.Phones)
-            .Include(a => a.Addresses)
-            .Include(a => a.AccountContacts).ThenInclude(ac => ac.Contact)
+            .WithDetailIncludes()
             .FirstOrDefaultAsync(a => a.Id == request.Id, cancellationToken);
 
         if (entity is null) return AccountErrors.NotFound;

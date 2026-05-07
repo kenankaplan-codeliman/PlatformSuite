@@ -14,6 +14,7 @@ public static class ProductMappings
             .Map(d => d.ProductCategoryName, s => s.ProductCategory != null ? s.ProductCategory.Name : null);
 
         config.NewConfig<CreateProductCommand, Product>()
+            .Map(d => d.ProductCategoryId, s => s.ProductCategory != null ? s.ProductCategory.Id : Guid.Empty)
             .Ignore(d => d.Id,
                     d => d.ProductCategory!,
                     d => d.ProductBrands, d => d.ProductManufacturers, d => d.Keywords, d => d.SupplierSkus,
@@ -22,6 +23,7 @@ public static class ProductMappings
 
         config.NewConfig<UpdateProductCommand, Product>()
             .IgnoreNullValues(true)
+            .Map(d => d.ProductCategoryId, s => s.ProductCategory != null ? s.ProductCategory.Id : Guid.Empty)
             .Ignore(d => d.Id,
                     d => d.ProductCategory!,
                     d => d.ProductBrands, d => d.ProductManufacturers, d => d.Keywords, d => d.SupplierSkus,

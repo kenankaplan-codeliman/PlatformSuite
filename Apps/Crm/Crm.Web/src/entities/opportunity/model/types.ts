@@ -2,6 +2,8 @@
  * Backend DTO'ları ile birebir uyumlu — `Crm.Application/Features/Opportunities/Dtos/**`.
  */
 
+import type { EntityReference } from '@platform/ui';
+
 export type OpportunityStage =
   | 'Prospecting'
   | 'Qualification'
@@ -15,10 +17,8 @@ export interface OpportunityDetailItem {
   id: string;
   name: string;
   description?: string | null;
-  accountId: string;
-  accountName?: string | null;
-  primaryContactId?: string | null;
-  primaryContactName?: string | null;
+  account?: EntityReference | null;
+  primaryContact?: EntityReference | null;
   stage: OpportunityStage;
   amount?: number | null;
   probability: number;
@@ -52,5 +52,5 @@ export interface OpportunityListFilter {
 /** Form için kullanılan, API'ye gönderilen shape. */
 export type OpportunityFormValues = Omit<
   OpportunityDetailItem,
-  'createdAt' | 'updatedAt' | 'accountName' | 'primaryContactName'
+  'createdAt' | 'updatedAt'
 >;

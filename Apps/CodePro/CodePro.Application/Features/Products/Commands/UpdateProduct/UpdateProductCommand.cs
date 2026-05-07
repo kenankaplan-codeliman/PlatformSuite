@@ -1,6 +1,7 @@
 using CodePro.Application.Features.Products.Commands.CreateProduct;
 using CodePro.Application.Features.Products.Dtos;
 using Platform.Application.Common.Abstractions;
+using Platform.Application.Modals.Common;
 
 namespace CodePro.Application.Features.Products.Commands.UpdateProduct;
 
@@ -21,7 +22,7 @@ public sealed class UpdateProductCommand : ICommand<ProductDetailItem>
     public int? QuantityPerUnit { get; init; }
     public int DeliveryDays { get; init; }
     public Guid? AccountCodeId { get; init; }
-    public Guid ProductCategoryId { get; init; }
+    public EntityReference? ProductCategory { get; init; }
 
     public List<Guid> BrandIds { get; init; } = new();
     public List<Guid> ManufacturerIds { get; init; } = new();

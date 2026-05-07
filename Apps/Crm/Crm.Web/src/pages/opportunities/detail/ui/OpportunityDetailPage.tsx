@@ -39,8 +39,8 @@ const emptyOpportunity: OpportunityFormValues = {
   id: '',
   name: '',
   description: null,
-  accountId: '',
-  primaryContactId: null,
+  account: null,
+  primaryContact: null,
   stage: 'Prospecting',
   amount: null,
   probability: 0,
@@ -70,9 +70,6 @@ export function OpportunityDetailPage() {
     label: tEnums(`opportunityStage.${value}`),
   }));
 
-  const accountInitialLabel = query.data?.accountName ?? undefined;
-  const contactInitialLabel = query.data?.primaryContactName ?? undefined;
-
   return (
     <DetailPageLayout<OpportunityFormValues>
       mode={mode}
@@ -94,11 +91,7 @@ export function OpportunityDetailPage() {
       }
       afterSaveNavigation={(saved) => RoutePaths.OpportunityView(saved.id)}
     >
-      <GeneralSection
-        stageOptions={stageOptions}
-        accountInitialLabel={accountInitialLabel}
-        contactInitialLabel={contactInitialLabel}
-      />
+      <GeneralSection stageOptions={stageOptions} />
       <FinancialSection />
       <DetailsSection />
     </DetailPageLayout>
@@ -106,12 +99,8 @@ export function OpportunityDetailPage() {
 
   function GeneralSection({
     stageOptions,
-    accountInitialLabel,
-    contactInitialLabel,
   }: {
     stageOptions: SelectOption<OpportunityStage>[];
-    accountInitialLabel?: string;
-    contactInitialLabel?: string;
   }) {
     const form = useFormContext<OpportunityFormValues>();
     return (
@@ -125,18 +114,16 @@ export function OpportunityDetailPage() {
           maxLength={250}
         />
         <EntityLookupField<OpportunityFormValues>
-          name="accountId"
+          name="account"
           control={form.control}
           servicePath={ServicePath.Account.Search}
           label={tEntity('fields.account.label')}
-          initialLabel={accountInitialLabel}
         />
         <EntityLookupField<OpportunityFormValues>
-          name="primaryContactId"
+          name="primaryContact"
           control={form.control}
           servicePath={ServicePath.Contact.Search}
           label={tEntity('fields.primaryContact.label')}
-          initialLabel={contactInitialLabel}
           allowClear
         />
         <SelectField<OpportunityFormValues, OpportunityStage>

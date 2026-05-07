@@ -25,7 +25,7 @@ const empty: PurchaseOrderFormValues = {
   orderNumber: '',
   title: '',
   description: null,
-  supplierAccountId: '',
+  supplierAccount: null,
   purchaseRequestId: null,
   status: 'Draft',
   priority: 'Medium',
@@ -63,12 +63,12 @@ export function PurchaseOrderDetailPage() {
       onDelete={id ? async () => { await del.mutateAsync(id); } : undefined}
       afterSaveNavigation={(saved) => RoutePaths.PurchaseOrderView(saved.id)}
     >
-      <General supplierLabel={query.data?.supplierAccountName ?? undefined} />
+      <General />
       <AttachmentPanel entityType="PurchaseOrder" entityId={id} />
     </DetailPageLayout>
   );
 
-  function General({ supplierLabel }: { supplierLabel?: string }) {
+  function General() {
     const form = useFormContext<PurchaseOrderFormValues>();
     return (
       <FormSection title={tEntity('sections.general')}>
@@ -76,11 +76,10 @@ export function PurchaseOrderDetailPage() {
         <TextField name="title" control={form.control} label={tEntity('fields.title.label')} required maxLength={300} />
         <TextAreaField name="description" control={form.control} label={tEntity('fields.description.label')} rows={3} />
         <EntityLookupField<PurchaseOrderFormValues>
-          name="supplierAccountId"
+          name="supplierAccount"
           control={form.control}
           servicePath={ServicePath.Account.Search}
           label={tEntity('fields.supplier.label')}
-          initialLabel={supplierLabel}
         />
         <TextField name="currencyCode" control={form.control} label={tEntity('fields.currencyCode.label')} maxLength={10} />
       </FormSection>

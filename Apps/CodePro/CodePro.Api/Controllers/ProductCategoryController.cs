@@ -3,6 +3,7 @@ using CodePro.Application.Features.ProductCategories.Commands.DeleteProductCateg
 using CodePro.Application.Features.ProductCategories.Commands.UpdateProductCategory;
 using CodePro.Application.Features.ProductCategories.Queries.GetProductCategory;
 using CodePro.Application.Features.ProductCategories.Queries.ListProductCategories;
+using CodePro.Application.Features.ProductCategories.Queries.SearchProductCategories;
 using CodePro.Domain.Authorization;
 using Platform.Api.Authorization;
 using Platform.Api.Extensions;
@@ -22,6 +23,11 @@ public sealed class ProductCategoryController : ControllerBase
     [HttpPost("list")]
     [PrivilegeAuthorize(CodeProPrivilegeCodes.ProductCategoryPrivilegeCodes.Read)]
     public async Task<IActionResult> ListAsync([FromBody] ListProductCategoriesQuery query, CancellationToken ct)
+        => (await _sender.Send(query, ct)).ToActionResult(HttpContext);
+
+    [HttpPost("search")]
+    [PrivilegeAuthorize(CodeProPrivilegeCodes.ProductCategoryPrivilegeCodes.Read)]
+    public async Task<IActionResult> SearchAsync([FromBody] SearchProductCategoriesQuery query, CancellationToken ct)
         => (await _sender.Send(query, ct)).ToActionResult(HttpContext);
 
     [HttpPost("get")]

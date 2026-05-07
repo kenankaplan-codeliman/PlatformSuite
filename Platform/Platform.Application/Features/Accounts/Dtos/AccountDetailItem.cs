@@ -1,4 +1,5 @@
 using Platform.Application.Common.Dtos.Communications;
+using Platform.Application.Modals.Common;
 using Platform.Domain.Enums;
 
 namespace Platform.Application.Features.Accounts.Dtos;
@@ -14,8 +15,7 @@ public class AccountDetailItem
     public int? NumberOfEmployees { get; set; }
     public string? Website { get; set; }
     public string? Description { get; set; }
-    public Guid? ParentAccountId { get; set; }
-    public string? ParentAccountName { get; set; }
+    public EntityReference? ParentAccount { get; set; }
     public List<EmailModal> Emails { get; set; } = new();
     public List<PhoneModal> Phones { get; set; } = new();
     public List<AddressModal> Addresses { get; set; } = new();

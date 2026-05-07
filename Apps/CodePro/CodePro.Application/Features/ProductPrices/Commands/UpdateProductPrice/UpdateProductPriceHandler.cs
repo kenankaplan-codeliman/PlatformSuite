@@ -29,24 +29,27 @@ public sealed class UpdateProductPriceHandler : IRequestHandler<UpdateProductPri
         var entity = await _repository.GetAsync(request.Id, cancellationToken);
         if (entity is null) return ProductPriceErrors.NotFound;
 
+        var productId = request.Product?.Id ?? Guid.Empty;
         var productExists = await _db.Product.AsNoTracking()
-            .AnyAsync(p => p.Id == request.ProductId, cancellationToken);
+            .AnyAsync(p => p.Id == productId, cancellationToken);
         if (!productExists) return ProductPriceErrors.ProductNotFound;
 
+        var supplierId = request.SupplierAccount?.Id ?? Guid.Empty;
         var supplierExists = await _db.Account.AsNoTracking()
-            .AnyAsync(a => a.Id == request.SupplierAccountId, cancellationToken);
+            .AnyAsync(a => a.Id == supplierId, cancellationToken);
         if (!supplierExists) return ProductPriceErrors.SupplierNotFound;
 
-        if (request.PriceListId.HasValue)
+        Guid? priceListId = request.PriceList?.Id;
+        if (priceListId.HasValue)
         {
             var priceListExists = await _db.PriceList.AsNoTracking()
-                .AnyAsync(pl => pl.Id == request.PriceListId.Value, cancellationToken);
+                .AnyAsync(pl => pl.Id == priceListId.Value, cancellationToken);
             if (!priceListExists) return ProductPriceErrors.PriceListNotFound;
         }
 
-        entity.ProductId = request.ProductId;
-        entity.SupplierAccountId = request.SupplierAccountId;
-        entity.PriceListId = request.PriceListId;
+        entity.ProductId = productId;
+        entity.SupplierAccountId = supplierId;
+        entity.PriceListId = priceListId;
         entity.MinimumQuantity = request.MinimumQuantity;
         entity.ValidFrom = request.ValidFrom;
         entity.ValidUntil = request.ValidUntil;

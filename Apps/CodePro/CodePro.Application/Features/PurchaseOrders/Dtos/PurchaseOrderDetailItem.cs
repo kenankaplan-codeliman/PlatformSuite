@@ -1,4 +1,5 @@
 using CodePro.Domain.Enums;
+using Platform.Application.Modals.Common;
 
 namespace CodePro.Application.Features.PurchaseOrders.Dtos;
 
@@ -8,8 +9,7 @@ public class PurchaseOrderDetailItem
     public string OrderNumber { get; set; } = default!;
     public string Title { get; set; } = default!;
     public string? Description { get; set; }
-    public Guid SupplierAccountId { get; set; }
-    public string? SupplierAccountName { get; set; }
+    public EntityReference? SupplierAccount { get; set; }
     public Guid? PurchaseRequestId { get; set; }
     public PurchaseOrderStatus Status { get; set; }
     public PurchaseOrderPriority Priority { get; set; }

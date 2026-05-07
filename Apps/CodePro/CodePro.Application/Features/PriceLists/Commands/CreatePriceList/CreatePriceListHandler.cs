@@ -21,8 +21,9 @@ public sealed class CreatePriceListHandler : IRequestHandler<CreatePriceListComm
 
     public async Task<Result<PriceListDetailItem>> Handle(CreatePriceListCommand request, CancellationToken cancellationToken)
     {
+        var supplierId = request.SupplierAccount?.Id ?? Guid.Empty;
         var supplierExists = await _db.Account.AsNoTracking()
-            .AnyAsync(a => a.Id == request.SupplierAccountId, cancellationToken);
+            .AnyAsync(a => a.Id == supplierId, cancellationToken);
         if (!supplierExists) return PriceListErrors.SupplierNotFound;
 
         var entity = request.Adapt<PriceList>();

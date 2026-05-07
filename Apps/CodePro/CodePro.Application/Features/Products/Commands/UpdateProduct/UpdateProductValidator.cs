@@ -15,6 +15,7 @@ public sealed class UpdateProductValidator : AbstractValidator<UpdateProductComm
         RuleFor(x => x.Model).MaximumLength(25);
         RuleFor(x => x.Color).MaximumLength(25);
         RuleFor(x => x.DeliveryDays).GreaterThanOrEqualTo(0);
-        RuleFor(x => x.ProductCategoryId).NotEmpty();
+        RuleFor(x => x.ProductCategory).NotNull();
+        RuleFor(x => x.ProductCategory!.Id).NotEmpty().When(x => x.ProductCategory != null);
     }
 }

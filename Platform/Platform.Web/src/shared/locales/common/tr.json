@@ -17,7 +17,8 @@
     "saveSuccess": "Başarıyla kaydedildi.",
     "deleteSuccess": "Başarıyla silindi.",
     "unexpectedError": "Beklenmeyen bir hata oluştu.",
-    "sessionExpired": "Oturum süresi doldu, lütfen tekrar giriş yapın."
+    "sessionExpired": "Oturum süresi doldu, lütfen tekrar giriş yapın.",
+    "noData": "Sonuç bulunamadı."
   },
   "errors": {
     "required": "Bu alan zorunludur.",

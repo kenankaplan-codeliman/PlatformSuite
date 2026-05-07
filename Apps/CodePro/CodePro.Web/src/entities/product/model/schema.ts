@@ -1,7 +1,8 @@
 import { z } from 'zod';
+import { entityReferenceSchema } from '@platform/ui';
 
 const skuSchema = z.object({
-  supplierAccountId: z.string().uuid(),
+  supplierAccount: entityReferenceSchema.nullish(),
   sku: z.string().min(1).max(25),
 });
 
@@ -21,7 +22,7 @@ export const productSchema = z.object({
   quantityPerUnit: z.number().int().nullable().optional(),
   deliveryDays: z.number().int().nonnegative(),
   accountCodeId: z.string().uuid().nullable().optional(),
-  productCategoryId: z.string().uuid(),
+  productCategory: entityReferenceSchema.nullish(),
   isActive: z.boolean(),
   brandIds: z.array(z.string().uuid()),
   manufacturerIds: z.array(z.string().uuid()),

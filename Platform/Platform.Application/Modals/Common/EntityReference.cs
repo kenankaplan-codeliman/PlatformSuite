@@ -1,12 +1,11 @@
-﻿using Platform.Domain.Enums;
-using System;
-using System.Collections.Generic;
-using System.Text;
+using Platform.Domain.Enums;
 
 namespace Platform.Application.Modals.Common
 {
     public class EntityReference
     {
+        public EntityReference() { }
+
         public EntityReference(EntityType entityType)
         {
             EntityType = entityType;
@@ -14,7 +13,7 @@ namespace Platform.Application.Modals.Common
 
         public Guid Id { get; set; }
         public string Name { get; set; } = string.Empty;
-        public EntityType EntityType { get; private set; }
+        public EntityType EntityType { get; set; }
         public string? Email { get; set; }
         public string? Phone { get; set; }
     }

@@ -13,6 +13,7 @@ import {
   useFormMode,
   useRouteMode,
 } from '@platform/ui';
+import { CodeProServicePath } from '../../../../shared/api/servicePaths';
 import { useProductQuery } from '../../../../entities/product/api/useProductQueries';
 import {
   useDeleteProduct,
@@ -21,6 +22,7 @@ import {
 import { productSchema } from '../../../../entities/product/model/schema';
 import type { ProductFormValues } from '../../../../entities/product/model/types';
 import { RoutePaths } from '../../../../app/router/paths';
+import { ProductImagesSection } from '../sections/ProductImagesSection';
 
 const emptyProduct: ProductFormValues = {
   id: '',
@@ -38,7 +40,7 @@ const emptyProduct: ProductFormValues = {
   quantityPerUnit: null,
   deliveryDays: 0,
   accountCodeId: null,
-  productCategoryId: '',
+  productCategory: null,
   isActive: true,
   brandIds: [],
   manufacturerIds: [],
@@ -64,7 +66,7 @@ function mapDataToForm(data: unknown): ProductFormValues | undefined {
       : [],
     supplierSkus: Array.isArray(detail.supplierSkus)
       ? detail.supplierSkus.map((s) => ({
-          supplierAccountId: s.supplierAccountId,
+          supplierAccount: s.supplierAccount ?? null,
           sku: s.sku,
         }))
       : [],
@@ -87,7 +89,6 @@ export function ProductDetailPage() {
   }, [mode, query.data?.name, tPage]);
 
   const formData = useMemo(() => mapDataToForm(query.data), [query.data]);
-  const categoryInitialLabel = query.data?.productCategoryName ?? undefined;
 
   return (
     <DetailPageLayout<ProductFormValues>
@@ -110,15 +111,16 @@ export function ProductDetailPage() {
       }
       afterSaveNavigation={(saved) => RoutePaths.ProductView(saved.id)}
     >
-      <GeneralSection categoryInitialLabel={categoryInitialLabel} />
+      <GeneralSection />
       <ValiditySection />
       <KeywordsSection />
       <SupplierSkusSection />
+      <ProductImagesSection productId={id} />
       <AttachmentPanel entityType="Product" entityId={id} />
     </DetailPageLayout>
   );
 
-  function GeneralSection({ categoryInitialLabel }: { categoryInitialLabel?: string }) {
+  function GeneralSection() {
     const form = useFormContext<ProductFormValues>();
     return (
       <FormSection title={tEntity('sections.general')}>
@@ -153,12 +155,11 @@ export function ProductDetailPage() {
           rows={4}
         />
         <EntityLookupField<ProductFormValues>
-          name="productCategoryId"
+          name="productCategory"
           control={form.control}
-          servicePath="/api/product-category/list"
+          servicePath={CodeProServicePath.ProductCategory.Search}
           label={tEntity('fields.category.label')}
           placeholder={tEntity('fields.category.placeholder')}
-          initialLabel={categoryInitialLabel}
         />
         <TextField
           name="manufacturerPartNumber"
@@ -271,7 +272,7 @@ export function ProductDetailPage() {
             style={{ border: '1px solid #eee', padding: 12, marginBottom: 12, borderRadius: 4 }}
           >
             <EntityLookupField<ProductFormValues>
-              name={`supplierSkus.${index}.supplierAccountId` as const}
+              name={`supplierSkus.${index}.supplierAccount` as const}
               control={form.control}
               servicePath={ServicePath.Account.Search}
               label="Tedarikçi"
@@ -293,7 +294,7 @@ export function ProductDetailPage() {
         {!isReadOnly && (
           <Button
             htmlType="button"
-            onClick={() => append({ supplierAccountId: '', sku: '' })}
+            onClick={() => append({ supplierAccount: null, sku: '' })}
           >
             + SKU Ekle
           </Button>

@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { entityReferenceSchema } from '../../../shared/types/EntityReference';
 
 /**
  * Client_Architecture: zod şeması + rhf resolver. Validation mesajları i18n key'i olarak yazılır,
@@ -49,7 +50,7 @@ export const accountSchema = z.object({
   numberOfEmployees: z.number().int().min(0).nullish(),
   website: z.string().max(500).nullish(),
   description: z.string().nullish(),
-  parentAccountId: z.string().nullish(),
+  parentAccount: entityReferenceSchema.nullish(),
   emails: z.array(emailModalSchema),
   phones: z.array(phoneModalSchema),
   addresses: z.array(addressModalSchema),

@@ -92,7 +92,6 @@ export { SelectField, type SelectOption } from './shared/ui/form/fields/SelectFi
 export { TextAreaField } from './shared/ui/form/fields/TextAreaField';
 export { PasswordField } from './shared/ui/form/fields/PasswordField';
 export { EntityLookupField } from './shared/ui/form/fields/EntityLookupField';
-export { LookupField } from './shared/ui/form/fields/LookupField';
 
 // ─── API katmanı ─────────────────────────────────────────────────────────────
 export { httpClient } from './shared/api/httpClient';
@@ -111,3 +110,4 @@ export type { AppError, ProblemDetails, ValidationProblemDetails } from './share
 export type { PagedResult, PaginationRequest, PaginationResponse } from './shared/types/Pagination';
 export { defaultPaginationRequest } from './shared/types/Pagination';
 export type { EntityReference } from './shared/types/EntityReference';
+export { entityReferenceSchema } from './shared/types/EntityReference';

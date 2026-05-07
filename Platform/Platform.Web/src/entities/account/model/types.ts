@@ -1,6 +1,8 @@
 /**
- * Backend DTO'ları ile birebir uyumlu — `CRM.Application/Features/Accounts/Dtos/**`.
+ * Backend DTO'ları ile birebir uyumlu — `Platform.Application/Features/Accounts/Dtos/**`.
  */
+
+import type { EntityReference } from '../../../shared/types/EntityReference';
 
 export type AccountStatus = 'Prospect' | 'Active' | 'AtRisk' | 'Inactive' | 'Churned';
 export type AccountType = 'Customer' | 'Prospect' | 'Partner' | 'Vendor' | 'Competitor' | 'Other';
@@ -52,8 +54,7 @@ export interface AccountDetailItem {
   numberOfEmployees?: number | null;
   website?: string | null;
   description?: string | null;
-  parentAccountId?: string | null;
-  parentAccountName?: string | null;
+  parentAccount?: EntityReference | null;
   emails: EmailModal[];
   phones: PhoneModal[];
   addresses: AddressModal[];
@@ -87,4 +88,4 @@ export interface AccountListFilter {
 }
 
 /** Form için kullanılan, API'ye gönderilen shape. */
-export type AccountFormValues = Omit<AccountDetailItem, 'createdAt' | 'updatedAt' | 'parentAccountName'>;
+export type AccountFormValues = Omit<AccountDetailItem, 'createdAt' | 'updatedAt'>;

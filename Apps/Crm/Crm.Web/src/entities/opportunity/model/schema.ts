@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { entityReferenceSchema } from '@platform/ui';
 
 export const opportunityStageEnum = [
   'Prospecting',
@@ -14,8 +15,8 @@ export const opportunitySchema = z.object({
   id: z.string(),
   name: z.string().min(1, 'common:errors.required').max(250),
   description: z.string().nullish(),
-  accountId: z.string().min(1, 'common:errors.required'),
-  primaryContactId: z.string().nullish(),
+  account: entityReferenceSchema.nullish(),
+  primaryContact: entityReferenceSchema.nullish(),
   stage: z.enum(opportunityStageEnum),
   amount: z.number().min(0).nullish(),
   probability: z.number().int().min(0).max(100),

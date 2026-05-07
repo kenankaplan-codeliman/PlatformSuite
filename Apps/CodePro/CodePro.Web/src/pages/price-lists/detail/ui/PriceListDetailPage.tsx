@@ -25,7 +25,7 @@ const emptyPriceList: PriceListFormValues = {
   code: '',
   name: '',
   description: null,
-  supplierAccountId: '',
+  supplierAccount: null,
   isActive: true,
 };
 
@@ -43,8 +43,6 @@ export function PriceListDetailPage() {
     if (mode === 'edit') return tPage('editTitle');
     return query.data?.name ?? tPage('viewTitle');
   }, [mode, query.data?.name, tPage]);
-
-  const supplierInitialLabel = query.data?.supplierAccountName ?? undefined;
 
   return (
     <DetailPageLayout<PriceListFormValues>
@@ -67,12 +65,12 @@ export function PriceListDetailPage() {
       }
       afterSaveNavigation={(saved) => RoutePaths.PriceListView(saved.id)}
     >
-      <GeneralSection supplierInitialLabel={supplierInitialLabel} />
+      <GeneralSection />
       <AttachmentPanel entityType="PriceList" entityId={id} />
     </DetailPageLayout>
   );
 
-  function GeneralSection({ supplierInitialLabel }: { supplierInitialLabel?: string }) {
+  function GeneralSection() {
     const form = useFormContext<PriceListFormValues>();
     return (
       <FormSection title={tEntity('sections.general')}>
@@ -92,12 +90,11 @@ export function PriceListDetailPage() {
           maxLength={200}
         />
         <EntityLookupField<PriceListFormValues>
-          name="supplierAccountId"
+          name="supplierAccount"
           control={form.control}
           servicePath={ServicePath.Account.Search}
           label={tEntity('fields.supplier.label')}
           placeholder={tEntity('fields.supplier.placeholder')}
-          initialLabel={supplierInitialLabel}
         />
         <TextAreaField
           name="description"

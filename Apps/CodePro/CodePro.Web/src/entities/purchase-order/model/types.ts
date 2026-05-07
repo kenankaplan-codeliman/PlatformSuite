@@ -1,3 +1,5 @@
+import type { EntityReference } from '@platform/ui';
+
 export type PurchaseOrderStatus =
   | 'Draft' | 'Sent' | 'Acknowledged' | 'PartialDelivered' | 'Delivered' | 'Cancelled' | 'Closed';
 export type PurchaseOrderPriority = 'Low' | 'Medium' | 'High' | 'Urgent';
@@ -24,8 +26,7 @@ export interface PurchaseOrderDetailItem {
   orderNumber: string;
   title: string;
   description?: string | null;
-  supplierAccountId: string;
-  supplierAccountName?: string | null;
+  supplierAccount?: EntityReference | null;
   purchaseRequestId?: string | null;
   status: PurchaseOrderStatus;
   priority: PurchaseOrderPriority;
@@ -67,7 +68,7 @@ export interface PurchaseOrderFormValues {
   orderNumber: string;
   title: string;
   description?: string | null;
-  supplierAccountId: string;
+  supplierAccount?: EntityReference | null;
   purchaseRequestId?: string | null;
   status: PurchaseOrderStatus;
   priority: PurchaseOrderPriority;

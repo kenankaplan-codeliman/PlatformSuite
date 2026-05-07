@@ -2,13 +2,14 @@
  * Backend DTO'ları ile birebir uyumlu — CodePro.Application/Features/PriceLists/Dtos/**
  */
 
+import type { EntityReference } from '@platform/ui';
+
 export interface PriceListDetailItem {
   id: string;
   code: string;
   name: string;
   description?: string | null;
-  supplierAccountId: string;
-  supplierAccountName?: string | null;
+  supplierAccount?: EntityReference | null;
   isActive: boolean;
   createdAt?: string | null;
   updatedAt?: string | null;
@@ -34,6 +35,6 @@ export interface PriceListFormValues {
   code: string;
   name: string;
   description?: string | null;
-  supplierAccountId: string;
+  supplierAccount?: EntityReference | null;
   isActive: boolean;
 }

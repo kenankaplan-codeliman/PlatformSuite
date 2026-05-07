@@ -3,8 +3,10 @@ using Platform.Application.Features.Accounts.Commands.CreateAccount;
 using Platform.Application.Features.Accounts.Commands.UpdateAccount;
 using Platform.Application.Features.Accounts.Dtos;
 using Platform.Application.Mapping;
+using Platform.Application.Modals.Common;
 using Platform.Domain.Entities.Accounts;
 using Platform.Domain.Entities.Communications;
+using Platform.Domain.Enums;
 using Mapster;
 
 namespace Platform.Application.Features.Accounts;
@@ -31,7 +33,13 @@ public static class AccountMappings
         // ========= Account → Detail / List =========
 
         config.NewConfig<Account, AccountDetailItem>()
-            .Map(d => d.ParentAccountName, s => s.ParentAccount != null ? s.ParentAccount.AccountName : null)
+            .Map(d => d.ParentAccount, s => s.ParentAccount != null
+                ? new EntityReference(EntityType.Account)
+                {
+                    Id = s.ParentAccount.Id,
+                    Name = s.ParentAccount.AccountName,
+                }
+                : null)
             .Map(d => d.Contacts, s => s.AccountContacts);
 
         config.NewConfig<Account, AccountListItem>()
@@ -56,19 +64,26 @@ public static class AccountMappings
         // ========= CreateAccountCommand → Account =========
 
         config.NewConfig<CreateAccountCommand, Account>()
+            .Map(d => d.ParentAccountId, s => s.ParentAccount != null ? (Guid?)s.ParentAccount.Id : null)
             .Ignore(d => d.ParentAccount!, d => d.ChildAccounts,
                     d => d.Emails, d => d.Phones, d => d.Addresses, d => d.AccountContacts)
             .IgnoreAuditFields()
             .AfterMapping((src, dst) => SyncCollections(src.Emails, src.Phones, src.Addresses, src.Contacts, dst));
 
         // ========= UpdateAccountCommand → Account (in-place) =========
+        // ParentAccountId her zaman set edilir (clear durumunu da yakalamak için
+        // IgnoreNullValues'ın dışında, AfterMapping içinde uygulanır).
 
         config.NewConfig<UpdateAccountCommand, Account>()
             .IgnoreNullValues(true)
-            .Ignore(d => d.ParentAccount!, d => d.ChildAccounts,
+            .Ignore(d => d.ParentAccountId, d => d.ParentAccount!, d => d.ChildAccounts,
                     d => d.Emails, d => d.Phones, d => d.Addresses, d => d.AccountContacts)
             .IgnoreAuditFields()
-            .AfterMapping((src, dst) => SyncCollections(src.Emails, src.Phones, src.Addresses, src.Contacts, dst));
+            .AfterMapping((src, dst) =>
+            {
+                dst.ParentAccountId = src.ParentAccount?.Id;
+                SyncCollections(src.Emails, src.Phones, src.Addresses, src.Contacts, dst);
+            });
     }
 
     private static void SyncCollections(

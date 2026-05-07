@@ -27,18 +27,21 @@ public sealed class CreateProductPriceHandler : IRequestHandler<CreateProductPri
         if (request.UnitPrice <= 0)
             return ProductPriceErrors.InvalidPrice;
 
+        var productId = request.Product?.Id ?? Guid.Empty;
         var productExists = await _db.Product.AsNoTracking()
-            .AnyAsync(p => p.Id == request.ProductId, cancellationToken);
+            .AnyAsync(p => p.Id == productId, cancellationToken);
         if (!productExists) return ProductPriceErrors.ProductNotFound;
 
+        var supplierId = request.SupplierAccount?.Id ?? Guid.Empty;
         var supplierExists = await _db.Account.AsNoTracking()
-            .AnyAsync(a => a.Id == request.SupplierAccountId, cancellationToken);
+            .AnyAsync(a => a.Id == supplierId, cancellationToken);
         if (!supplierExists) return ProductPriceErrors.SupplierNotFound;
 
-        if (request.PriceListId.HasValue)
+        if (request.PriceList != null)
         {
+            var priceListId = request.PriceList.Id;
             var priceListExists = await _db.PriceList.AsNoTracking()
-                .AnyAsync(pl => pl.Id == request.PriceListId.Value, cancellationToken);
+                .AnyAsync(pl => pl.Id == priceListId, cancellationToken);
             if (!priceListExists) return ProductPriceErrors.PriceListNotFound;
         }
 

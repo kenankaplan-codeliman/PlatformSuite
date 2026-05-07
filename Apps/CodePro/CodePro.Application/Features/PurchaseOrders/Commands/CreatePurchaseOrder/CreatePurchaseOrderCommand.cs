@@ -1,6 +1,7 @@
 using CodePro.Application.Features.PurchaseOrders.Dtos;
 using CodePro.Domain.Enums;
 using Platform.Application.Common.Abstractions;
+using Platform.Application.Modals.Common;
 
 namespace CodePro.Application.Features.PurchaseOrders.Commands.CreatePurchaseOrder;
 
@@ -9,7 +10,7 @@ public sealed class CreatePurchaseOrderCommand : ICommand<PurchaseOrderDetailIte
     public string? OrderNumber { get; init; }
     public string Title { get; init; } = string.Empty;
     public string? Description { get; init; }
-    public Guid SupplierAccountId { get; init; }
+    public EntityReference? SupplierAccount { get; init; }
     public Guid? PurchaseRequestId { get; init; }
     public PurchaseOrderPriority Priority { get; init; } = PurchaseOrderPriority.Medium;
     public DateTime OrderDate { get; init; } = DateTime.UtcNow;

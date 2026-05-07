@@ -31,14 +31,28 @@ const crud = (base: string) => ({
   Delete: `${base}/delete`,
 });
 
+const crudWithSearch = (base: string) => ({
+  ...crud(base),
+  Search: `${base}/search`,
+});
+
 export const CodeProServicePath = {
   Brand: crud(ControllerPaths.Brand),
   Manufacturer: crud(ControllerPaths.Manufacturer),
-  ProductCategory: crud(ControllerPaths.ProductCategory),
+  ProductCategory: crudWithSearch(ControllerPaths.ProductCategory),
   BudgetCategory: crud(ControllerPaths.BudgetCategory),
   Questionnaire: crud(ControllerPaths.Questionnaire),
-  PriceList: crud(ControllerPaths.PriceList),
-  Product: crud(ControllerPaths.Product),
+  PriceList: crudWithSearch(ControllerPaths.PriceList),
+  Product: {
+    ...crudWithSearch(ControllerPaths.Product),
+    ImageList: `${ControllerPaths.Product}/image/list`,
+    ImageUpload: `${ControllerPaths.Product}/image/upload`,
+    ImageDelete: `${ControllerPaths.Product}/image/delete`,
+    ImageReorder: `${ControllerPaths.Product}/image/reorder`,
+    ImageSetDefault: `${ControllerPaths.Product}/image/set-default`,
+    ImageThumbnail: `${ControllerPaths.Product}/image/thumbnail`,
+    ImageDownload: `${ControllerPaths.Product}/image/download`,
+  },
   ProductPrice: crud(ControllerPaths.ProductPrice),
   ProductCatalog: crud(ControllerPaths.ProductCatalog),
   PurchaseRequest: crud(ControllerPaths.PurchaseRequest),

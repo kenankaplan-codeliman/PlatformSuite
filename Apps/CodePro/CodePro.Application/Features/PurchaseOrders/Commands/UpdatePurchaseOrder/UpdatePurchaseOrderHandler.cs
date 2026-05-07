@@ -22,7 +22,8 @@ public sealed class UpdatePurchaseOrderHandler : IRequestHandler<UpdatePurchaseO
         var entity = await _repository.GetAsync(request.Id, cancellationToken);
         if (entity is null) return PurchaseOrderErrors.NotFound;
 
-        var supplierExists = await _db.Account.AsNoTracking().AnyAsync(a => a.Id == request.SupplierAccountId, cancellationToken);
+        var supplierId = request.SupplierAccount?.Id ?? Guid.Empty;
+        var supplierExists = await _db.Account.AsNoTracking().AnyAsync(a => a.Id == supplierId, cancellationToken);
         if (!supplierExists) return PurchaseOrderErrors.SupplierNotFound;
 
         var numberExists = await _db.PurchaseOrder.AsNoTracking()
@@ -32,7 +33,7 @@ public sealed class UpdatePurchaseOrderHandler : IRequestHandler<UpdatePurchaseO
         entity.OrderNumber = request.OrderNumber;
         entity.Title = request.Title;
         entity.Description = request.Description;
-        entity.SupplierAccountId = request.SupplierAccountId;
+        entity.SupplierAccountId = supplierId;
         entity.PurchaseRequestId = request.PurchaseRequestId;
         entity.Status = request.Status;
         entity.Priority = request.Priority;

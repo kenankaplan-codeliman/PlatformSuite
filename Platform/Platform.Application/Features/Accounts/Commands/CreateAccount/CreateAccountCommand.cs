@@ -1,6 +1,7 @@
 using Platform.Application.Common.Abstractions;
 using Platform.Application.Common.Dtos.Communications;
 using Platform.Application.Features.Accounts.Dtos;
+using Platform.Application.Modals.Common;
 using Platform.Domain.Enums;
 
 namespace Platform.Application.Features.Accounts.Commands.CreateAccount;
@@ -15,7 +16,7 @@ public sealed class CreateAccountCommand : ICommand<AccountDetailItem>
     public int? NumberOfEmployees { get; init; }
     public string? Website { get; init; }
     public string? Description { get; init; }
-    public Guid? ParentAccountId { get; init; }
+    public EntityReference? ParentAccount { get; init; }
     public List<EmailModal> Emails { get; init; } = new();
     public List<PhoneModal> Phones { get; init; } = new();
     public List<AddressModal> Addresses { get; init; } = new();
