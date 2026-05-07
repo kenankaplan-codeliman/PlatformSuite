@@ -89,7 +89,7 @@ export function PriceListDetailPage() {
           required
           maxLength={200}
         />
-        <EntityLookupField<PriceListFormValues>
+        <EntityLookupField
           name="supplierAccount"
           control={form.control}
           servicePath={ServicePath.Account.Search}

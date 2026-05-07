@@ -75,7 +75,7 @@ export function PurchaseOrderDetailPage() {
         <TextField name="orderNumber" control={form.control} label={tEntity('fields.orderNumber.label')} maxLength={50} />
         <TextField name="title" control={form.control} label={tEntity('fields.title.label')} required maxLength={300} />
         <TextAreaField name="description" control={form.control} label={tEntity('fields.description.label')} rows={3} />
-        <EntityLookupField<PurchaseOrderFormValues>
+        <EntityLookupField
           name="supplierAccount"
           control={form.control}
           servicePath={ServicePath.Account.Search}

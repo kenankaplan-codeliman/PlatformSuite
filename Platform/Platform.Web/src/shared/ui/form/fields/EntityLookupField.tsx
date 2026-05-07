@@ -1,11 +1,11 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { Button, Form, Input, List, Modal, Spin, Tag } from 'antd';
 import { CloseOutlined, SearchOutlined } from '@ant-design/icons';
 import {
   Controller,
   type Control,
-  type FieldPath,
   type FieldValues,
+  type Path,
 } from 'react-hook-form';
 import { useTranslation } from 'react-i18next';
 import { httpClient } from '../../../api/httpClient';
@@ -18,7 +18,13 @@ import type { FormRowItemProps } from '../FormRow';
 import { useFormMode } from '../useFormMode';
 
 export interface EntityLookupFieldProps<TValues extends FieldValues> extends FormRowItemProps {
-  name: FieldPath<TValues>;
+  /**
+   * Form alanının yolu. Component sadece `EntityReference | null` ile çalışır;
+   * `name`'in tip güvenliği yerine sade çağrı tercih edildi. Generic `TValues`
+   * sadece `control` prop'undan **infer** etmek için var — caller `<TValues>`
+   * specifier vermek zorunda değil.
+   */
+  name: string;
   control: Control<TValues>;
   /** Backend search endpoint — `ServicePath.Account.Search` gibi. */
   servicePath: string;
@@ -136,7 +142,7 @@ function SearchModal({
       title={title}
       footer={null}
       width={560}
-      destroyOnClose
+      destroyOnHidden
     >
       <Input
         autoFocus
@@ -229,7 +235,7 @@ export function EntityLookupField<TValues extends FieldValues>({
 
   return (
     <Controller
-      name={name}
+      name={name as Path<TValues>}
       control={control}
       render={({ field, fieldState }) => {
         const value = field.value as EntityReference | null | undefined;

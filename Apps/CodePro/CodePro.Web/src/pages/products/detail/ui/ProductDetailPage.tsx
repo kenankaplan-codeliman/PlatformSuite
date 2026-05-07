@@ -154,7 +154,7 @@ export function ProductDetailPage() {
           label={tEntity('fields.detailedDescription.label')}
           rows={4}
         />
-        <EntityLookupField<ProductFormValues>
+        <EntityLookupField
           name="productCategory"
           control={form.control}
           servicePath={CodeProServicePath.ProductCategory.Search}
@@ -271,7 +271,7 @@ export function ProductDetailPage() {
             key={field.id}
             style={{ border: '1px solid #eee', padding: 12, marginBottom: 12, borderRadius: 4 }}
           >
-            <EntityLookupField<ProductFormValues>
+            <EntityLookupField
               name={`supplierSkus.${index}.supplierAccount` as const}
               control={form.control}
               servicePath={ServicePath.Account.Search}

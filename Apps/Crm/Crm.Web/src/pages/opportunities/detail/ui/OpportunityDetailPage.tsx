@@ -113,13 +113,13 @@ export function OpportunityDetailPage() {
           required
           maxLength={250}
         />
-        <EntityLookupField<OpportunityFormValues>
+        <EntityLookupField
           name="account"
           control={form.control}
           servicePath={ServicePath.Account.Search}
           label={tEntity('fields.account.label')}
         />
-        <EntityLookupField<OpportunityFormValues>
+        <EntityLookupField
           name="primaryContact"
           control={form.control}
           servicePath={ServicePath.Contact.Search}

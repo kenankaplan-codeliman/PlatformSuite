@@ -152,7 +152,7 @@ export function OrganizationDetailPage() {
     const form = useFormContext<AppOrganizationFormValues>();
     return (
       <FormSection title={tEntity('sections.hierarchy')}>
-        <EntityLookupField<AppOrganizationFormValues>
+        <EntityLookupField
           name="parentOrganizationId"
           control={form.control}
           servicePath={ServicePath.AppOrganization.List}
@@ -160,7 +160,7 @@ export function OrganizationDetailPage() {
           initialLabel={parentInitialLabel}
           allowClear
         />
-        <EntityLookupField<AppOrganizationFormValues>
+        <EntityLookupField
           name="reportsTo"
           control={form.control}
           servicePath={ServicePath.AppOrganization.List}

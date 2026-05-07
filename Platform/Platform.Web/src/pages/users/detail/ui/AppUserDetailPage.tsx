@@ -123,7 +123,7 @@ export function AppUserDetailPage() {
     const form = useFormContext<AppUserFormValues>();
     return (
       <FormSection title={tEntity('sections.hierarchy')}>
-        <EntityLookupField<AppUserFormValues>
+        <EntityLookupField
           name="organizationId"
           control={form.control}
           servicePath={ServicePath.AppOrganization.List}
@@ -131,7 +131,7 @@ export function AppUserDetailPage() {
           placeholder={tEntity('fields.organization.placeholder')}
           initialLabel={orgInitialLabel}
         />
-        <EntityLookupField<AppUserFormValues>
+        <EntityLookupField
           name="managerId"
           control={form.control}
           servicePath={ServicePath.User.Search}

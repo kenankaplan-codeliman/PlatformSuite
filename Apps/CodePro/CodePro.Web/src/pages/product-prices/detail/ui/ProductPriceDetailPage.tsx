@@ -77,21 +77,21 @@ export function ProductPriceDetailPage() {
     const form = useFormContext<ProductPriceFormValues>();
     return (
       <FormSection title={tEntity('sections.general')}>
-        <EntityLookupField<ProductPriceFormValues>
+        <EntityLookupField
           name="product"
           control={form.control}
           servicePath={CodeProServicePath.Product.Search}
           label={tEntity('fields.product.label')}
           placeholder={tEntity('fields.product.placeholder')}
         />
-        <EntityLookupField<ProductPriceFormValues>
+        <EntityLookupField
           name="supplierAccount"
           control={form.control}
           servicePath={ServicePath.Account.Search}
           label={tEntity('fields.supplier.label')}
           placeholder={tEntity('fields.supplier.placeholder')}
         />
-        <EntityLookupField<ProductPriceFormValues>
+        <EntityLookupField
           name="priceList"
           control={form.control}
           servicePath={CodeProServicePath.PriceList.Search}

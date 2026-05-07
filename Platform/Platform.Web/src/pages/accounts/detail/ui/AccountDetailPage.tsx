@@ -161,7 +161,7 @@ export function AccountDetailPage() {
           placeholder={tEntity("fields.industry.placeholder")}
           maxLength={200}
         />
-        <EntityLookupField<AccountFormValues>
+        <EntityLookupField
           name="parentAccount"
           control={form.control}
           servicePath={ServicePath.Account.Search}
