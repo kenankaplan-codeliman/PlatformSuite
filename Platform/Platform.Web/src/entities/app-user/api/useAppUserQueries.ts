@@ -1,6 +1,5 @@
-import { useQuery } from '@tanstack/react-query';
+import { useInfiniteQuery, useQuery } from '@tanstack/react-query';
 import { appUserKeys } from '../../../shared/api/queryKeys';
-import type { PaginationRequest } from '../../../shared/types/Pagination';
 import { appUserDataSource } from './appUserDataSource';
 import type { AppUserListFilter } from '../model/types';
 
@@ -13,13 +12,21 @@ export function useAppUserQuery(id: string | undefined) {
 }
 
 export interface UseAppUserListParams {
-  pagination: PaginationRequest;
   filters: AppUserListFilter;
+  pageSize?: number;
 }
 
 export function useAppUserListQuery(params: UseAppUserListParams) {
-  return useQuery({
-    queryKey: appUserKeys.list(params),
-    queryFn: () => appUserDataSource.list(params),
+  const pageSize = params.pageSize ?? 20;
+  return useInfiniteQuery({
+    queryKey: appUserKeys.list({ filters: params.filters, pageSize }),
+    queryFn: ({ pageParam }) =>
+      appUserDataSource.list({
+        pagination: { pageNumber: pageParam, pageSize },
+        filters: params.filters,
+      }),
+    initialPageParam: 1,
+    getNextPageParam: (lastPage, allPages) =>
+      lastPage.pagination.hasMoreRecord ? allPages.length + 1 : undefined,
   });
 }

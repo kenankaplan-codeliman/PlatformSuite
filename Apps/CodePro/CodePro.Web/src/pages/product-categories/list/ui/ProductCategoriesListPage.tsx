@@ -1,12 +1,7 @@
 import { useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
-import {
-  ListPageLayout,
-  defaultPaginationRequest,
-  type DataTableColumn,
-  type PaginationRequest,
-} from '@platform/ui';
+import { ListPageLayout, type DataTableColumn } from '@platform/ui';
 import { useProductCategoryListQuery } from '../../../../entities/product-category/api/useProductCategoryQueries';
 import type {
   ProductCategoryListFilter,
@@ -19,10 +14,14 @@ export function ProductCategoriesListPage() {
   const { t: tEntity } = useTranslation('entity.product-category');
   const navigate = useNavigate();
 
-  const [pagination, setPagination] = useState<PaginationRequest>(defaultPaginationRequest);
   const [filters] = useState<ProductCategoryListFilter>({});
 
-  const query = useProductCategoryListQuery({ pagination, filters });
+  const query = useProductCategoryListQuery({ filters });
+
+  const data = useMemo<ProductCategoryListItem[]>(
+    () => query.data?.pages.flatMap((p) => p.data) ?? [],
+    [query.data],
+  );
 
   const columns = useMemo<DataTableColumn<ProductCategoryListItem>[]>(
     () => [
@@ -47,13 +46,13 @@ export function ProductCategoriesListPage() {
     <ListPageLayout<ProductCategoryListItem>
       title={t('title')}
       columns={columns}
-      data={query.data?.data ?? []}
+      data={data}
       rowKey="id"
       isLoading={query.isLoading}
+      isFetchingMore={query.isFetchingNextPage}
+      hasMore={query.hasNextPage}
+      onLoadMore={() => query.fetchNextPage()}
       error={query.isError ? query.error : undefined}
-      pagination={pagination}
-      paginationResponse={query.data?.pagination}
-      onPaginationChange={setPagination}
       onCreateClick={() => navigate(RoutePaths.ProductCategoryNew)}
       createLabel={t('createButton')}
       onRowClick={(record) => navigate(RoutePaths.ProductCategoryView(record.id))}

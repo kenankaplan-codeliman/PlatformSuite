@@ -2,6 +2,7 @@ import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
 // Platform i18n önce init edilir; CRM resources'ları sonradan eklenir.
 import '@platform/ui/i18n';
+import '@platform/ui/globals.css';
 import { registerCrmTranslations } from './app/i18n.config';
 import App from './App';
 

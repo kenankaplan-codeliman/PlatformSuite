@@ -1,5 +1,4 @@
-import { useQuery } from '@tanstack/react-query';
-import type { PaginationRequest } from '@platform/ui';
+import { useInfiniteQuery, useQuery } from '@tanstack/react-query';
 import { manufacturerKeys } from '../../../shared/api/queryKeys';
 import { manufacturerDataSource } from './manufacturerDataSource';
 import type { ManufacturerListFilter } from '../model/types';
@@ -13,13 +12,21 @@ export function useManufacturerQuery(id: string | undefined) {
 }
 
 export interface UseManufacturerListParams {
-  pagination: PaginationRequest;
   filters: ManufacturerListFilter;
+  pageSize?: number;
 }
 
 export function useManufacturerListQuery(params: UseManufacturerListParams) {
-  return useQuery({
-    queryKey: manufacturerKeys.list(params),
-    queryFn: () => manufacturerDataSource.list(params),
+  const pageSize = params.pageSize ?? 20;
+  return useInfiniteQuery({
+    queryKey: manufacturerKeys.list({ filters: params.filters, pageSize }),
+    queryFn: ({ pageParam }) =>
+      manufacturerDataSource.list({
+        pagination: { pageNumber: pageParam, pageSize },
+        filters: params.filters,
+      }),
+    initialPageParam: 1,
+    getNextPageParam: (lastPage, allPages) =>
+      lastPage.pagination.hasMoreRecord ? allPages.length + 1 : undefined,
   });
 }

@@ -25,6 +25,8 @@ export { AttachmentUpload } from './widgets/attachment/ui/AttachmentUpload';
 export { AttachmentCard } from './widgets/attachment/ui/AttachmentCard';
 export { AppShell } from './widgets/app-shell/ui/AppShell';
 export type { AppShellProps } from './widgets/app-shell/ui/AppShell';
+export { AppMetaProvider, useAppMeta } from './shared/lib/app-meta/AppMetaContext';
+export type { AppMeta, AppMetaProviderProps } from './shared/lib/app-meta/AppMetaContext';
 export {
   isMenuGroup,
   type MenuItem,

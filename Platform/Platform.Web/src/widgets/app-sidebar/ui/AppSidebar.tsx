@@ -95,18 +95,20 @@ export function AppSidebar({ items, collapsed, onCollapse }: AppSidebarProps) {
       width={240}
       style={{ borderRight: '1px solid #f0f0f0', background: '#fff' }}
     >
-      <Menu
-        mode="inline"
-        theme="light"
-        items={antdItems}
-        selectedKeys={active ? [active.key] : []}
-        defaultOpenKeys={defaultOpenKeys}
-        onClick={({ key }) => {
-          const leaf = leafByKey.get(String(key));
-          if (leaf) navigate(leaf.to);
-        }}
-        style={{ borderInlineEnd: 0 }}
-      />
+      <div style={{ height: '100%', overflowY: 'auto', paddingBottom: 48 }}>
+        <Menu
+          mode="inline"
+          theme="light"
+          items={antdItems}
+          selectedKeys={active ? [active.key] : []}
+          defaultOpenKeys={defaultOpenKeys}
+          onClick={({ key }) => {
+            const leaf = leafByKey.get(String(key));
+            if (leaf) navigate(leaf.to);
+          }}
+          style={{ borderInlineEnd: 0 }}
+        />
+      </div>
     </Sider>
   );
 }

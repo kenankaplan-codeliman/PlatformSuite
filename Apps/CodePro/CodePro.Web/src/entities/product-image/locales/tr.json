@@ -1,0 +1,24 @@
+{
+  "section": "Ürün Görselleri",
+  "empty": "Bu ürün için henüz görsel yüklenmemiş.",
+  "addImage": "Görsel Ekle",
+  "isDefault": "Varsayılan",
+  "default": "Varsayılan",
+  "setDefault": "Varsayılan Yap",
+  "previous": "Önce",
+  "next": "Sonra",
+  "deleteConfirmTitle": "Görseli sil?",
+  "deleteConfirmDescription": "Bu işlem geri alınamaz.",
+  "errors": {
+    "mustBeImage": "Sadece resim dosyaları yüklenebilir.",
+    "uploadFailed": "Görsel yüklenirken hata oluştu.",
+    "deleteFailed": "Görsel silinirken hata oluştu.",
+    "reorderFailed": "Sıralama güncellenirken hata oluştu.",
+    "setDefaultFailed": "Varsayılan görsel ayarlanamadı."
+  },
+  "success": {
+    "uploaded": "Görsel yüklendi.",
+    "deleted": "Görsel silindi.",
+    "setDefault": "Varsayılan görsel güncellendi."
+  }
+}

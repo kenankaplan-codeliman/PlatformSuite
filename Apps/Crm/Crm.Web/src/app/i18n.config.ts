@@ -9,6 +9,7 @@ import opportunitiesListTr from '../pages/opportunities/list/locales/tr.json';
 import opportunitiesDetailTr from '../pages/opportunities/detail/locales/tr.json';
 import crmEnumsTr from '../shared/locales/enums/tr.json';
 import crmMenuTr from './menu/locales/tr.json';
+import crmAppTr from './locales/tr.json';
 
 /**
  * Platform i18n init'i (`@platform/ui/i18n` import'u) tamamlandıktan sonra çağrılır.
@@ -26,4 +27,5 @@ export function registerCrmTranslations(): void {
   i18n.addResourceBundle('tr', 'enums', crmEnumsTr, true, false);
 
   i18n.addResourceBundle('tr', 'app.crm-menu', crmMenuTr, true, true);
+  i18n.addResourceBundle('tr', 'app.crm', crmAppTr, true, true);
 }

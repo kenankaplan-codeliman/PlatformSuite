@@ -1,5 +1,4 @@
-import { useQuery } from '@tanstack/react-query';
-import type { PaginationRequest } from '@platform/ui';
+import { useInfiniteQuery, useQuery } from '@tanstack/react-query';
 import { questionnaireKeys } from '../../../shared/api/queryKeys';
 import { questionnaireDataSource } from './questionnaireDataSource';
 import type { QuestionnaireListFilter } from '../model/types';
@@ -13,13 +12,21 @@ export function useQuestionnaireQuery(id: string | undefined) {
 }
 
 export interface UseQuestionnaireListParams {
-  pagination: PaginationRequest;
   filters: QuestionnaireListFilter;
+  pageSize?: number;
 }
 
 export function useQuestionnaireListQuery(params: UseQuestionnaireListParams) {
-  return useQuery({
-    queryKey: questionnaireKeys.list(params),
-    queryFn: () => questionnaireDataSource.list(params),
+  const pageSize = params.pageSize ?? 20;
+  return useInfiniteQuery({
+    queryKey: questionnaireKeys.list({ filters: params.filters, pageSize }),
+    queryFn: ({ pageParam }) =>
+      questionnaireDataSource.list({
+        pagination: { pageNumber: pageParam, pageSize },
+        filters: params.filters,
+      }),
+    initialPageParam: 1,
+    getNextPageParam: (lastPage, allPages) =>
+      lastPage.pagination.hasMoreRecord ? allPages.length + 1 : undefined,
   });
 }

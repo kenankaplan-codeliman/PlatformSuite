@@ -40,7 +40,7 @@ const emptyOrganization: AppOrganizationFormValues = {
   description: '',
   type: 'DEPARTMENT',
   costCenter: null,
-  parentOrganizationId: null,
+  parentOrganization: null,
   reportsTo: null,
   isDefault: false,
   isActive: true,
@@ -67,9 +67,6 @@ export function OrganizationDetailPage() {
     label: tEnums(`organizationType.${value}`),
   }));
 
-  const parentInitialLabel = query.data?.parentOrganizationName ?? undefined;
-  const reportsToInitialLabel = query.data?.reportsToName ?? undefined;
-
   return (
     <DetailPageLayout<AppOrganizationFormValues>
       mode={mode}
@@ -92,10 +89,7 @@ export function OrganizationDetailPage() {
       afterSaveNavigation={(saved) => RoutePaths.OrganizationView(saved.id)}
     >
       <GeneralSection typeOptions={typeOptions} />
-      <HierarchySection
-        parentInitialLabel={parentInitialLabel}
-        reportsToInitialLabel={reportsToInitialLabel}
-      />
+      <HierarchySection />
     </DetailPageLayout>
   );
 
@@ -142,30 +136,22 @@ export function OrganizationDetailPage() {
     );
   }
 
-  function HierarchySection({
-    parentInitialLabel,
-    reportsToInitialLabel,
-  }: {
-    parentInitialLabel?: string;
-    reportsToInitialLabel?: string;
-  }) {
+  function HierarchySection() {
     const form = useFormContext<AppOrganizationFormValues>();
     return (
       <FormSection title={tEntity('sections.hierarchy')}>
         <EntityLookupField
-          name="parentOrganizationId"
+          name="parentOrganization"
           control={form.control}
-          servicePath={ServicePath.AppOrganization.List}
+          servicePath={ServicePath.AppOrganization.Search}
           label={tEntity('fields.parentOrganization.label')}
-          initialLabel={parentInitialLabel}
           allowClear
         />
         <EntityLookupField
           name="reportsTo"
           control={form.control}
-          servicePath={ServicePath.AppOrganization.List}
+          servicePath={ServicePath.AppOrganization.Search}
           label={tEntity('fields.reportsTo.label')}
-          initialLabel={reportsToInitialLabel}
           allowClear
         />
       </FormSection>

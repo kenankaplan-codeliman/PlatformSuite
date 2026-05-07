@@ -1,5 +1,4 @@
-import { useQuery } from '@tanstack/react-query';
-import type { PaginationRequest } from '@platform/ui';
+import { useInfiniteQuery, useQuery } from '@tanstack/react-query';
 import { priceListKeys } from '../../../shared/api/queryKeys';
 import { priceListDataSource } from './priceListDataSource';
 import type { PriceListListFilter } from '../model/types';
@@ -13,13 +12,21 @@ export function usePriceListQuery(id: string | undefined) {
 }
 
 export interface UsePriceListListParams {
-  pagination: PaginationRequest;
   filters: PriceListListFilter;
+  pageSize?: number;
 }
 
 export function usePriceListListQuery(params: UsePriceListListParams) {
-  return useQuery({
-    queryKey: priceListKeys.list(params),
-    queryFn: () => priceListDataSource.list(params),
+  const pageSize = params.pageSize ?? 20;
+  return useInfiniteQuery({
+    queryKey: priceListKeys.list({ filters: params.filters, pageSize }),
+    queryFn: ({ pageParam }) =>
+      priceListDataSource.list({
+        pagination: { pageNumber: pageParam, pageSize },
+        filters: params.filters,
+      }),
+    initialPageParam: 1,
+    getNextPageParam: (lastPage, allPages) =>
+      lastPage.pagination.hasMoreRecord ? allPages.length + 1 : undefined,
   });
 }

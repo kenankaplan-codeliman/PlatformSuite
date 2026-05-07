@@ -1,12 +1,7 @@
 import { useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
-import {
-  ListPageLayout,
-  defaultPaginationRequest,
-  type DataTableColumn,
-  type PaginationRequest,
-} from '@platform/ui';
+import { ListPageLayout, type DataTableColumn } from '@platform/ui';
 import { useOfferListQuery } from '../../../../entities/offer/api/useOfferQueries';
 import type { OfferListFilter, OfferListItem } from '../../../../entities/offer/model/types';
 import { RoutePaths } from '../../../../app/router/paths';
@@ -16,9 +11,13 @@ export function OffersListPage() {
   const { t: tEntity } = useTranslation('entity.offer');
   const navigate = useNavigate();
 
-  const [pagination, setPagination] = useState<PaginationRequest>(defaultPaginationRequest);
   const [filters] = useState<OfferListFilter>({});
-  const query = useOfferListQuery({ pagination, filters });
+  const query = useOfferListQuery({ filters });
+
+  const data = useMemo<OfferListItem[]>(
+    () => query.data?.pages.flatMap((p) => p.data) ?? [],
+    [query.data],
+  );
 
   const columns = useMemo<DataTableColumn<OfferListItem>[]>(
     () => [
@@ -39,13 +38,13 @@ export function OffersListPage() {
     <ListPageLayout<OfferListItem>
       title={t('title')}
       columns={columns}
-      data={query.data?.data ?? []}
+      data={data}
       rowKey="id"
       isLoading={query.isLoading}
+      isFetchingMore={query.isFetchingNextPage}
+      hasMore={query.hasNextPage}
+      onLoadMore={() => query.fetchNextPage()}
       error={query.isError ? query.error : undefined}
-      pagination={pagination}
-      paginationResponse={query.data?.pagination}
-      onPaginationChange={setPagination}
       onCreateClick={() => navigate(RoutePaths.OfferNew)}
       createLabel={t('createButton')}
       onRowClick={(record) => navigate(RoutePaths.OfferView(record.id))}

@@ -1,5 +1,4 @@
-import { useQuery } from '@tanstack/react-query';
-import type { PaginationRequest } from '@platform/ui';
+import { useInfiniteQuery, useQuery } from '@tanstack/react-query';
 import { contractKeys } from '../../../shared/api/queryKeys';
 import { contractDataSource } from './contractDataSource';
 import type { ContractListFilter } from '../model/types';
@@ -12,6 +11,17 @@ export function useContractQuery(id: string | undefined) {
   });
 }
 
-export function useContractListQuery(params: { pagination: PaginationRequest; filters: ContractListFilter }) {
-  return useQuery({ queryKey: contractKeys.list(params), queryFn: () => contractDataSource.list(params) });
+export function useContractListQuery(params: { filters: ContractListFilter; pageSize?: number }) {
+  const pageSize = params.pageSize ?? 20;
+  return useInfiniteQuery({
+    queryKey: contractKeys.list({ filters: params.filters, pageSize }),
+    queryFn: ({ pageParam }) =>
+      contractDataSource.list({
+        pagination: { pageNumber: pageParam, pageSize },
+        filters: params.filters,
+      }),
+    initialPageParam: 1,
+    getNextPageParam: (lastPage, allPages) =>
+      lastPage.pagination.hasMoreRecord ? allPages.length + 1 : undefined,
+  });
 }

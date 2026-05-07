@@ -1,12 +1,7 @@
 import { useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
-import {
-  ListPageLayout,
-  defaultPaginationRequest,
-  type DataTableColumn,
-  type PaginationRequest,
-} from '@platform/ui';
+import { ListPageLayout, type DataTableColumn } from '@platform/ui';
 import { useQuestionnaireListQuery } from '../../../../entities/questionnaire/api/useQuestionnaireQueries';
 import type {
   QuestionnaireListFilter,
@@ -19,10 +14,14 @@ export function QuestionnairesListPage() {
   const { t: tEntity } = useTranslation('entity.questionnaire');
   const navigate = useNavigate();
 
-  const [pagination, setPagination] = useState<PaginationRequest>(defaultPaginationRequest);
   const [filters] = useState<QuestionnaireListFilter>({});
 
-  const query = useQuestionnaireListQuery({ pagination, filters });
+  const query = useQuestionnaireListQuery({ filters });
+
+  const data = useMemo<QuestionnaireListItem[]>(
+    () => query.data?.pages.flatMap((p) => p.data) ?? [],
+    [query.data],
+  );
 
   const columns = useMemo<DataTableColumn<QuestionnaireListItem>[]>(
     () => [
@@ -51,13 +50,13 @@ export function QuestionnairesListPage() {
     <ListPageLayout<QuestionnaireListItem>
       title={t('title')}
       columns={columns}
-      data={query.data?.data ?? []}
+      data={data}
       rowKey="id"
       isLoading={query.isLoading}
+      isFetchingMore={query.isFetchingNextPage}
+      hasMore={query.hasNextPage}
+      onLoadMore={() => query.fetchNextPage()}
       error={query.isError ? query.error : undefined}
-      pagination={pagination}
-      paginationResponse={query.data?.pagination}
-      onPaginationChange={setPagination}
       onCreateClick={() => navigate(RoutePaths.QuestionnaireNew)}
       createLabel={t('createButton')}
       onRowClick={(record) => navigate(RoutePaths.QuestionnaireView(record.id))}

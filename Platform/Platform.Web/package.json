@@ -7,7 +7,8 @@
   "types": "./src/index.ts",
   "exports": {
     ".": "./src/index.ts",
-    "./i18n": "./src/app/i18n.config.ts"
+    "./i18n": "./src/app/i18n.config.ts",
+    "./globals.css": "./src/shared/styles/globals.css"
   },
   "scripts": {
     "dev": "vite",

@@ -1,3 +1,4 @@
+using Platform.Application.Common.Abstractions;
 using Platform.Application.Common.Results;
 using Platform.Application.Features.AppOrganizations.Dtos;
 using Platform.Application.Interfaces;
@@ -10,17 +11,25 @@ namespace Platform.Application.Features.AppOrganizations.Commands.CreateAppOrgan
 public sealed class CreateAppOrganizationHandler : IRequestHandler<CreateAppOrganizationCommand, Result<AppOrganizationDetailItem>>
 {
     private readonly IOrganizationRepository _repository;
+    private readonly IApplicationDbContext _db;
 
-    public CreateAppOrganizationHandler(IOrganizationRepository repository) => _repository = repository;
+    public CreateAppOrganizationHandler(IOrganizationRepository repository, IApplicationDbContext db)
+    {
+        _repository = repository;
+        _db = db;
+    }
 
     public async Task<Result<AppOrganizationDetailItem>> Handle(CreateAppOrganizationCommand request, CancellationToken cancellationToken)
     {
         var entity = request.Adapt<AppOrganization>();
-        entity.Title = await ComputeHierarchicalTitleAsync(request.OrganizationName, request.ParentOrganizationId, cancellationToken);
+        entity.Title = await ComputeHierarchicalTitleAsync(
+            request.OrganizationName, request.ParentOrganization?.Id, cancellationToken);
 
         await _repository.CreateAsync(entity, cancellationToken);
 
-        return entity.Adapt<AppOrganizationDetailItem>();
+        var dto = await AppOrganizationDetailBuilder.BuildAsync(_db, entity.Id, cancellationToken);
+        if (dto is null) return AppOrganizationErrors.NotFound;
+        return dto;
     }
 
     /// <summary>

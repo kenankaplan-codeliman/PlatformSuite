@@ -8,7 +8,6 @@ import { LoginPageLayout } from "./LoginPageLayout";
 
 export function LoginPage() {
   const { t: tFeature } = useTranslation("feature.auth-login");
-  const { t: tPage } = useTranslation("page.auth-login");
   const isAuthenticated = useSessionStore((s) => s.isAuthenticated);
 
   if (isAuthenticated) {
@@ -16,7 +15,7 @@ export function LoginPage() {
   }
 
   return (
-    <LoginPageLayout brand={tPage("brand")}>
+    <LoginPageLayout>
       <Card title={tFeature("title")}>
         <p style={{ color: "rgba(0,0,0,0.55)", marginTop: 0 }}>
           {tFeature("subtitle")}

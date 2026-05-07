@@ -3,10 +3,8 @@ import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 import {
   ListPageLayout,
-  defaultPaginationRequest,
   useEnumTranslation,
   type DataTableColumn,
-  type PaginationRequest,
 } from '@platform/ui';
 import { useLeadListQuery } from '../../../../entities/lead/api/useLeadQueries';
 import type { LeadListFilter, LeadListItem } from '../../../../entities/lead/model/types';
@@ -19,10 +17,14 @@ export function LeadsListPage() {
   const tSource = useEnumTranslation('leadSource');
   const navigate = useNavigate();
 
-  const [pagination, setPagination] = useState<PaginationRequest>(defaultPaginationRequest);
   const [filters] = useState<LeadListFilter>({});
 
-  const query = useLeadListQuery({ pagination, filters });
+  const query = useLeadListQuery({ filters });
+
+  const data = useMemo<LeadListItem[]>(
+    () => query.data?.pages.flatMap((p) => p.data) ?? [],
+    [query.data],
+  );
 
   const columns = useMemo<DataTableColumn<LeadListItem>[]>(
     () => [
@@ -42,13 +44,13 @@ export function LeadsListPage() {
     <ListPageLayout<LeadListItem>
       title={t('title')}
       columns={columns}
-      data={query.data?.data ?? []}
+      data={data}
       rowKey="id"
       isLoading={query.isLoading}
+      isFetchingMore={query.isFetchingNextPage}
+      hasMore={query.hasNextPage}
+      onLoadMore={() => query.fetchNextPage()}
       error={query.isError ? query.error : undefined}
-      pagination={pagination}
-      paginationResponse={query.data?.pagination}
-      onPaginationChange={setPagination}
       onCreateClick={() => navigate(RoutePaths.LeadNew)}
       createLabel={t('createButton')}
       onRowClick={(record) => navigate(RoutePaths.LeadView(record.id))}

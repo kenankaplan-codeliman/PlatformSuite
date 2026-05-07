@@ -1,5 +1,4 @@
-import { useQuery } from '@tanstack/react-query';
-import type { PaginationRequest } from '@platform/ui';
+import { useInfiniteQuery, useQuery } from '@tanstack/react-query';
 import { budgetKeys } from '../../../shared/api/queryKeys';
 import { budgetDataSource } from './budgetDataSource';
 import type { BudgetListFilter } from '../model/types';
@@ -12,6 +11,17 @@ export function useBudgetQuery(id: string | undefined) {
   });
 }
 
-export function useBudgetListQuery(params: { pagination: PaginationRequest; filters: BudgetListFilter }) {
-  return useQuery({ queryKey: budgetKeys.list(params), queryFn: () => budgetDataSource.list(params) });
+export function useBudgetListQuery(params: { filters: BudgetListFilter; pageSize?: number }) {
+  const pageSize = params.pageSize ?? 20;
+  return useInfiniteQuery({
+    queryKey: budgetKeys.list({ filters: params.filters, pageSize }),
+    queryFn: ({ pageParam }) =>
+      budgetDataSource.list({
+        pagination: { pageNumber: pageParam, pageSize },
+        filters: params.filters,
+      }),
+    initialPageParam: 1,
+    getNextPageParam: (lastPage, allPages) =>
+      lastPage.pagination.hasMoreRecord ? allPages.length + 1 : undefined,
+  });
 }

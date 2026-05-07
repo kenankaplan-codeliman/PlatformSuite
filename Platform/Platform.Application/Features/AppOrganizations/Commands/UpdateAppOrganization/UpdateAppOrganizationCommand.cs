@@ -1,5 +1,6 @@
 using Platform.Application.Common.Abstractions;
 using Platform.Application.Features.AppOrganizations.Dtos;
+using Platform.Application.Modals.Common;
 using Platform.Domain.Enums;
 
 namespace Platform.Application.Features.AppOrganizations.Commands.UpdateAppOrganization;
@@ -12,6 +13,6 @@ public sealed class UpdateAppOrganizationCommand : ICommand<AppOrganizationDetai
     public string Description { get; init; } = string.Empty;
     public OrganizationType Type { get; init; }
     public string? CostCenter { get; init; }
-    public Guid? ParentOrganizationId { get; init; }
-    public Guid? ReportsTo { get; init; }
+    public EntityReference? ParentOrganization { get; init; }
+    public EntityReference? ReportsTo { get; init; }
 }

@@ -1,17 +1,20 @@
 import type { ReactNode } from 'react';
-import { Layout, Space, Typography } from 'antd';
+import { Layout, Flex } from 'antd';
+import { useAppMeta } from '../../../shared/lib/app-meta/AppMetaContext';
+import { useSessionStore } from '../../../shared/lib/auth/sessionStore';
 import { UserPanel } from './UserPanel';
 
 const { Header } = Layout;
-const { Text } = Typography;
 
 export interface AppHeaderProps {
-  logo?: ReactNode;
-  brand?: string;
   extra?: ReactNode;
 }
 
-export function AppHeader({ logo, brand, extra }: AppHeaderProps) {
+export function AppHeader({ extra }: AppHeaderProps) {
+  const { logo, appName, appDescription } = useAppMeta();
+  const isAuthenticated = useSessionStore((s) => s.isAuthenticated);
+  const showText = Boolean(appName || appDescription);
+
   return (
     <Header
       style={{
@@ -21,21 +24,42 @@ export function AppHeader({ logo, brand, extra }: AppHeaderProps) {
         justifyContent: 'space-between',
         paddingInline: 24,
         height: 56,
-        lineHeight: '56px',
+        lineHeight: 1.2,
       }}
     >
-      <Space size={12}>
-        {logo}
-        {brand && (
-          <Text strong style={{ color: '#fff', fontSize: 16 }}>
-            {brand}
-          </Text>
+      <Flex align="center" gap={12}>
+        {logo && (
+          <span
+            style={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              border: '1px solid rgba(255,255,255,0.25)',
+              lineHeight: 0,
+            }}
+          >
+            {logo}
+          </span>
         )}
-      </Space>
-      <Space size={16} style={{ color: '#fff' }}>
+        {showText && (
+          <Flex vertical justify="center">
+            {appName && (
+              <span style={{ color: '#fff', fontSize: 20, fontWeight: 600, lineHeight: 1.2 }}>
+                {appName}
+              </span>
+            )}
+            {appDescription && (
+              <span style={{ color: 'rgba(255,255,255,0.65)', fontSize: 10, lineHeight: 1.2 }}>
+                {appDescription}
+              </span>
+            )}
+          </Flex>
+        )}
+      </Flex>
+      <Flex align="center" gap={16} style={{ color: '#fff' }}>
         {extra}
-        <UserPanel />
-      </Space>
+        {isAuthenticated && <UserPanel />}
+      </Flex>
     </Header>
   );
 }

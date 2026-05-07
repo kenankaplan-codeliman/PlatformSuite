@@ -3,6 +3,7 @@ using CodePro.Application.Features.BudgetCategories;
 using CodePro.Application.Features.Manufacturers;
 using CodePro.Application.Features.PriceLists;
 using CodePro.Application.Features.ProductCategories;
+using CodePro.Application.Features.ProductImages;
 using CodePro.Application.Features.ProductPrices;
 using CodePro.Application.Features.Products;
 using CodePro.Application.Features.Questionnaires;
@@ -25,6 +26,7 @@ public static class CodeProMappingConfig
         QuestionnaireMappings.Register(config);
         PriceListMappings.Register(config);
         ProductMappings.Register(config);
+        ProductImageMappings.Register(config);
         ProductPriceMappings.Register(config);
     }
 }

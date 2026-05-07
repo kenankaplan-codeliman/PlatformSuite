@@ -1,12 +1,7 @@
 import { useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
-import {
-  ListPageLayout,
-  defaultPaginationRequest,
-  type DataTableColumn,
-  type PaginationRequest,
-} from '@platform/ui';
+import { ListPageLayout, type DataTableColumn } from '@platform/ui';
 import { useProductPriceListQuery } from '../../../../entities/product-price/api/useProductPriceQueries';
 import type {
   ProductPriceListFilter,
@@ -19,10 +14,14 @@ export function ProductPricesListPage() {
   const { t: tEntity } = useTranslation('entity.product-price');
   const navigate = useNavigate();
 
-  const [pagination, setPagination] = useState<PaginationRequest>(defaultPaginationRequest);
   const [filters] = useState<ProductPriceListFilter>({});
 
-  const query = useProductPriceListQuery({ pagination, filters });
+  const query = useProductPriceListQuery({ filters });
+
+  const data = useMemo<ProductPriceListItem[]>(
+    () => query.data?.pages.flatMap((p) => p.data) ?? [],
+    [query.data],
+  );
 
   const columns = useMemo<DataTableColumn<ProductPriceListItem>[]>(
     () => [
@@ -49,13 +48,13 @@ export function ProductPricesListPage() {
     <ListPageLayout<ProductPriceListItem>
       title={t('title')}
       columns={columns}
-      data={query.data?.data ?? []}
+      data={data}
       rowKey="id"
       isLoading={query.isLoading}
+      isFetchingMore={query.isFetchingNextPage}
+      hasMore={query.hasNextPage}
+      onLoadMore={() => query.fetchNextPage()}
       error={query.isError ? query.error : undefined}
-      pagination={pagination}
-      paginationResponse={query.data?.pagination}
-      onPaginationChange={setPagination}
       onCreateClick={() => navigate(RoutePaths.ProductPriceNew)}
       createLabel={t('createButton')}
       onRowClick={(record) => navigate(RoutePaths.ProductPriceView(record.id))}

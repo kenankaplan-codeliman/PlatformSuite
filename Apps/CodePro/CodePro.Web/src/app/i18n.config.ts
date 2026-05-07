@@ -19,6 +19,7 @@ import priceListEntityTr from '../entities/price-list/locales/tr.json';
 import priceListsListTr from '../pages/price-lists/list/locales/tr.json';
 import priceListsDetailTr from '../pages/price-lists/detail/locales/tr.json';
 import productEntityTr from '../entities/product/locales/tr.json';
+import productImageEntityTr from '../entities/product-image/locales/tr.json';
 import productsListTr from '../pages/products/list/locales/tr.json';
 import productsDetailTr from '../pages/products/detail/locales/tr.json';
 import productPriceEntityTr from '../entities/product-price/locales/tr.json';
@@ -49,6 +50,7 @@ import eDocumentEntityTr from '../entities/edocument/locales/tr.json';
 import eDocumentsListTr from '../pages/edocuments/list/locales/tr.json';
 import eDocumentsDetailTr from '../pages/edocuments/detail/locales/tr.json';
 import codeProMenuTr from './menu/locales/tr.json';
+import codeProAppTr from './locales/tr.json';
 
 /**
  * Platform i18n init'i tamamlandıktan sonra çağrılır. CodePro-spesifik
@@ -80,6 +82,7 @@ export function registerCodeProTranslations(): void {
   i18n.addResourceBundle('tr', 'page.price-lists-detail', priceListsDetailTr, true, true);
 
   i18n.addResourceBundle('tr', 'entity.product', productEntityTr, true, true);
+  i18n.addResourceBundle('tr', 'entity.product-image', productImageEntityTr, true, true);
   i18n.addResourceBundle('tr', 'page.products-list', productsListTr, true, true);
   i18n.addResourceBundle('tr', 'page.products-detail', productsDetailTr, true, true);
 
@@ -120,4 +123,5 @@ export function registerCodeProTranslations(): void {
   i18n.addResourceBundle('tr', 'page.edocuments-detail', eDocumentsDetailTr, true, true);
 
   i18n.addResourceBundle('tr', 'app.codepro-menu', codeProMenuTr, true, true);
+  i18n.addResourceBundle('tr', 'app.codepro', codeProAppTr, true, true);
 }

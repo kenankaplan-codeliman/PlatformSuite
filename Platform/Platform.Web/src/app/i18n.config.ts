@@ -16,7 +16,6 @@ import authLoginTr from "../features/auth-login/locales/tr.json";
 // widgets
 import widgetAttachmentTr from "../widgets/attachment/locales/tr.json";
 // pages
-import loginPageTr from "../pages/auth/login/locales/tr.json";
 import accountsListPageTr from "../pages/accounts/list/locales/tr.json";
 import accountsDetailPageTr from "../pages/accounts/detail/locales/tr.json";
 import organizationsListPageTr from "../pages/organizations/list/locales/tr.json";
@@ -37,7 +36,6 @@ const namespaces = [
   "entity.attachment",
   "feature.auth-login",
   "widget.attachment",
-  "page.auth-login",
   "page.accounts-list",
   "page.accounts-detail",
   "page.organizations-list",
@@ -65,7 +63,6 @@ void i18n.use(initReactI18next).init({
       "entity.attachment": attachmentTr,
       "feature.auth-login": authLoginTr,
       "widget.attachment": widgetAttachmentTr,
-      "page.auth-login": loginPageTr,
       "page.accounts-list": accountsListPageTr,
       "page.accounts-detail": accountsDetailPageTr,
       "page.organizations-list": organizationsListPageTr,

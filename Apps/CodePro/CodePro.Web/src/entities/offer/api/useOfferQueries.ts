@@ -1,5 +1,4 @@
-import { useQuery } from '@tanstack/react-query';
-import type { PaginationRequest } from '@platform/ui';
+import { useInfiniteQuery, useQuery } from '@tanstack/react-query';
 import { offerKeys } from '../../../shared/api/queryKeys';
 import { offerDataSource } from './offerDataSource';
 import type { OfferListFilter } from '../model/types';
@@ -12,6 +11,17 @@ export function useOfferQuery(id: string | undefined) {
   });
 }
 
-export function useOfferListQuery(params: { pagination: PaginationRequest; filters: OfferListFilter }) {
-  return useQuery({ queryKey: offerKeys.list(params), queryFn: () => offerDataSource.list(params) });
+export function useOfferListQuery(params: { filters: OfferListFilter; pageSize?: number }) {
+  const pageSize = params.pageSize ?? 20;
+  return useInfiniteQuery({
+    queryKey: offerKeys.list({ filters: params.filters, pageSize }),
+    queryFn: ({ pageParam }) =>
+      offerDataSource.list({
+        pagination: { pageNumber: pageParam, pageSize },
+        filters: params.filters,
+      }),
+    initialPageParam: 1,
+    getNextPageParam: (lastPage, allPages) =>
+      lastPage.pagination.hasMoreRecord ? allPages.length + 1 : undefined,
+  });
 }

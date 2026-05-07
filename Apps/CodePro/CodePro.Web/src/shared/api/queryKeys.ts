@@ -21,6 +21,11 @@ export const budgetCategoryKeys = makeKeys('budget-category');
 export const questionnaireKeys = makeKeys('questionnaire');
 export const priceListKeys = makeKeys('price-list');
 export const productKeys = makeKeys('product');
+
+export const productImageKeys = {
+  all: ['product-image'] as const,
+  byProduct: (productId: string) => ['product-image', 'by-product', productId] as const,
+};
 export const productPriceKeys = makeKeys('product-price');
 export const productCatalogKeys = makeKeys('product-catalog');
 export const purchaseRequestKeys = makeKeys('purchase-request');

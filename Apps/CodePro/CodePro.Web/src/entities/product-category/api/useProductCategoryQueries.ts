@@ -1,5 +1,4 @@
-import { useQuery } from '@tanstack/react-query';
-import type { PaginationRequest } from '@platform/ui';
+import { useInfiniteQuery, useQuery } from '@tanstack/react-query';
 import { productCategoryKeys } from '../../../shared/api/queryKeys';
 import { productCategoryDataSource } from './productCategoryDataSource';
 import type { ProductCategoryListFilter } from '../model/types';
@@ -13,13 +12,21 @@ export function useProductCategoryQuery(id: string | undefined) {
 }
 
 export interface UseProductCategoryListParams {
-  pagination: PaginationRequest;
   filters: ProductCategoryListFilter;
+  pageSize?: number;
 }
 
 export function useProductCategoryListQuery(params: UseProductCategoryListParams) {
-  return useQuery({
-    queryKey: productCategoryKeys.list(params),
-    queryFn: () => productCategoryDataSource.list(params),
+  const pageSize = params.pageSize ?? 20;
+  return useInfiniteQuery({
+    queryKey: productCategoryKeys.list({ filters: params.filters, pageSize }),
+    queryFn: ({ pageParam }) =>
+      productCategoryDataSource.list({
+        pagination: { pageNumber: pageParam, pageSize },
+        filters: params.filters,
+      }),
+    initialPageParam: 1,
+    getNextPageParam: (lastPage, allPages) =>
+      lastPage.pagination.hasMoreRecord ? allPages.length + 1 : undefined,
   });
 }

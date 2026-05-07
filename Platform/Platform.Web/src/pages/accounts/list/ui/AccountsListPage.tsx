@@ -4,10 +4,6 @@ import { useNavigate } from "react-router-dom";
 import { ListPageLayout } from "../../../../shared/ui/list-page/ListPageLayout";
 import type { DataTableColumn } from "../../../../shared/ui/DataTable";
 import { useEnumTranslation } from "../../../../shared/lib/i18n/enum";
-import {
-  defaultPaginationRequest,
-  type PaginationRequest,
-} from "../../../../shared/types/Pagination";
 import { useAccountListQuery } from "../../../../entities/account/api/useAccountQueries";
 import type {
   AccountListFilter,
@@ -22,12 +18,14 @@ export function AccountsListPage() {
   const tType = useEnumTranslation("accountType");
   const navigate = useNavigate();
 
-  const [pagination, setPagination] = useState<PaginationRequest>(
-    defaultPaginationRequest,
-  );
   const [filters] = useState<AccountListFilter>({});
 
-  const query = useAccountListQuery({ pagination, filters });
+  const query = useAccountListQuery({ filters });
+
+  const data = useMemo<AccountListItem[]>(
+    () => query.data?.pages.flatMap((p) => p.data) ?? [],
+    [query.data],
+  );
 
   const columns = useMemo<DataTableColumn<AccountListItem>[]>(
     () => [
@@ -74,13 +72,13 @@ export function AccountsListPage() {
     <ListPageLayout<AccountListItem>
       title={t("title")}
       columns={columns}
-      data={query.data?.data ?? []}
+      data={data}
       rowKey="id"
       isLoading={query.isLoading}
+      isFetchingMore={query.isFetchingNextPage}
+      hasMore={query.hasNextPage}
+      onLoadMore={() => query.fetchNextPage()}
       error={query.isError ? query.error : undefined}
-      pagination={pagination}
-      paginationResponse={query.data?.pagination}
-      onPaginationChange={setPagination}
       onCreateClick={() => navigate(RoutePaths.AccountNew)}
       createLabel={t("createButton")}
       onRowClick={(record) => navigate(RoutePaths.AccountView(record.id))}

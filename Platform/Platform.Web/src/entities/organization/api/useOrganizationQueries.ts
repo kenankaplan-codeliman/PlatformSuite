@@ -1,6 +1,5 @@
-import { useQuery } from '@tanstack/react-query';
+import { useInfiniteQuery, useQuery } from '@tanstack/react-query';
 import { organizationKeys } from '../../../shared/api/queryKeys';
-import type { PaginationRequest } from '../../../shared/types/Pagination';
 import { organizationDataSource } from './organizationDataSource';
 import type { AppOrganizationListFilter } from '../model/types';
 
@@ -13,13 +12,21 @@ export function useOrganizationQuery(id: string | undefined) {
 }
 
 export interface UseOrganizationListParams {
-  pagination: PaginationRequest;
   filters: AppOrganizationListFilter;
+  pageSize?: number;
 }
 
 export function useOrganizationListQuery(params: UseOrganizationListParams) {
-  return useQuery({
-    queryKey: organizationKeys.list(params),
-    queryFn: () => organizationDataSource.list(params),
+  const pageSize = params.pageSize ?? 20;
+  return useInfiniteQuery({
+    queryKey: organizationKeys.list({ filters: params.filters, pageSize }),
+    queryFn: ({ pageParam }) =>
+      organizationDataSource.list({
+        pagination: { pageNumber: pageParam, pageSize },
+        filters: params.filters,
+      }),
+    initialPageParam: 1,
+    getNextPageParam: (lastPage, allPages) =>
+      lastPage.pagination.hasMoreRecord ? allPages.length + 1 : undefined,
   });
 }

@@ -2,6 +2,8 @@
  * Backend DTO'ları ile birebir uyumlu — `Platform.Application/Features/AppOrganizations/Dtos/**`.
  */
 
+import type { EntityReference } from '../../../shared/types/EntityReference';
+
 export type OrganizationType =
   | 'EXECUTIVE'
   | 'INTERNAL_SYSTEM'
@@ -18,10 +20,8 @@ export interface AppOrganizationDetailItem {
   title?: string | null;
   type: OrganizationType;
   costCenter?: string | null;
-  parentOrganizationId?: string | null;
-  parentOrganizationName?: string | null;
-  reportsTo?: string | null;
-  reportsToName?: string | null;
+  parentOrganization?: EntityReference | null;
+  reportsTo?: EntityReference | null;
   isDefault: boolean;
   isActive: boolean;
   createdAt?: string | null;
@@ -51,5 +51,5 @@ export interface AppOrganizationListFilter {
 /** Form için kullanılan, API'ye gönderilen shape. */
 export type AppOrganizationFormValues = Omit<
   AppOrganizationDetailItem,
-  'createdAt' | 'updatedAt' | 'parentOrganizationName' | 'reportsToName' | 'title'
+  'createdAt' | 'updatedAt' | 'title'
 >;

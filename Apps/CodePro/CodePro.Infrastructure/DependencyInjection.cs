@@ -1,6 +1,7 @@
 using CodePro.Application.Interfaces;
 using CodePro.Infrastructure.Data;
 using CodePro.Infrastructure.Repositories;
+using CodePro.Infrastructure.Services;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -23,7 +24,11 @@ public static class DependencyInjection
         services.AddScoped<IQuestionnaireRepository, QuestionnaireRepository>();
         services.AddScoped<IPriceListRepository, PriceListRepository>();
         services.AddScoped<IProductRepository, ProductRepository>();
+        services.AddScoped<IProductImageRepository, ProductImageRepository>();
         services.AddScoped<IProductPriceRepository, ProductPriceRepository>();
+
+        // ProductImage thumbnail üretimi
+        services.AddSingleton<IImageResizer, ImageSharpResizer>();
         services.AddScoped<IProductCatalogRepository, ProductCatalogRepository>();
         services.AddScoped<IPurchaseRequestRepository, PurchaseRequestRepository>();
         services.AddScoped<IPurchaseBasketRepository, PurchaseBasketRepository>();

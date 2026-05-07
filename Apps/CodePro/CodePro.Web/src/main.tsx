@@ -2,6 +2,7 @@ import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
 // Platform i18n init önce; CodePro resources'ları sonradan eklenir.
 import '@platform/ui/i18n';
+import '@platform/ui/globals.css';
 import { registerCodeProTranslations } from './app/i18n.config';
 import App from './App';
 

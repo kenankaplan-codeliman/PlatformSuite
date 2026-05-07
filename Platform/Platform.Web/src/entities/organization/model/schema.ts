@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { entityReferenceSchema } from '../../../shared/types/EntityReference';
 
 export const organizationTypeEnum = [
   'EXECUTIVE',
@@ -16,8 +17,8 @@ export const appOrganizationSchema = z.object({
   description: z.string().max(1000),
   type: z.enum(organizationTypeEnum),
   costCenter: z.string().max(100).nullish(),
-  parentOrganizationId: z.string().nullish(),
-  reportsTo: z.string().nullish(),
+  parentOrganization: entityReferenceSchema.nullish(),
+  reportsTo: entityReferenceSchema.nullish(),
   isDefault: z.boolean(),
   isActive: z.boolean(),
 });

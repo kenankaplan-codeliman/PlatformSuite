@@ -4,10 +4,6 @@ import { useNavigate } from 'react-router-dom';
 import { ListPageLayout } from '../../../../shared/ui/list-page/ListPageLayout';
 import type { DataTableColumn } from '../../../../shared/ui/DataTable';
 import { useEnumTranslation } from '../../../../shared/lib/i18n/enum';
-import {
-  defaultPaginationRequest,
-  type PaginationRequest,
-} from '../../../../shared/types/Pagination';
 import { useOrganizationListQuery } from '../../../../entities/organization/api/useOrganizationQueries';
 import type {
   AppOrganizationListFilter,
@@ -21,10 +17,14 @@ export function OrganizationsListPage() {
   const tType = useEnumTranslation('organizationType');
   const navigate = useNavigate();
 
-  const [pagination, setPagination] = useState<PaginationRequest>(defaultPaginationRequest);
   const [filters] = useState<AppOrganizationListFilter>({});
 
-  const query = useOrganizationListQuery({ pagination, filters });
+  const query = useOrganizationListQuery({ filters });
+
+  const data = useMemo<AppOrganizationListItem[]>(
+    () => query.data?.pages.flatMap((p) => p.data) ?? [],
+    [query.data],
+  );
 
   const columns = useMemo<DataTableColumn<AppOrganizationListItem>[]>(
     () => [
@@ -41,13 +41,13 @@ export function OrganizationsListPage() {
     <ListPageLayout<AppOrganizationListItem>
       title={t('title')}
       columns={columns}
-      data={query.data?.data ?? []}
+      data={data}
       rowKey="id"
       isLoading={query.isLoading}
+      isFetchingMore={query.isFetchingNextPage}
+      hasMore={query.hasNextPage}
+      onLoadMore={() => query.fetchNextPage()}
       error={query.isError ? query.error : undefined}
-      pagination={pagination}
-      paginationResponse={query.data?.pagination}
-      onPaginationChange={setPagination}
       onCreateClick={() => navigate(RoutePaths.OrganizationNew)}
       createLabel={t('createButton')}
       onRowClick={(record) => navigate(RoutePaths.OrganizationView(record.id))}

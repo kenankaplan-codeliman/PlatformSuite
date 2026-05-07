@@ -61,6 +61,7 @@ export const ServicePath = {
   },
   AppOrganization: {
     List: `${ControllerPaths.AppOrganization}/list`,
+    Search: `${ControllerPaths.AppOrganization}/search`,
     Get: `${ControllerPaths.AppOrganization}/get`,
     Create: `${ControllerPaths.AppOrganization}/create`,
     Update: `${ControllerPaths.AppOrganization}/update`,

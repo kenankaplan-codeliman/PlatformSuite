@@ -1,3 +1,4 @@
+using Platform.Application.Modals.Common;
 using Platform.Domain.Enums;
 
 namespace Platform.Application.Features.AppOrganizations.Dtos;
@@ -11,10 +12,8 @@ public class AppOrganizationDetailItem
     public string? Title { get; set; }
     public OrganizationType Type { get; set; }
     public string? CostCenter { get; set; }
-    public Guid? ParentOrganizationId { get; set; }
-    public string? ParentOrganizationName { get; set; }
-    public Guid? ReportsTo { get; set; }
-    public string? ReportsToName { get; set; }
+    public EntityReference? ParentOrganization { get; set; }
+    public EntityReference? ReportsTo { get; set; }
     public bool IsDefault { get; set; }
     public bool IsActive { get; set; }
     public DateTime? CreatedAt { get; set; }

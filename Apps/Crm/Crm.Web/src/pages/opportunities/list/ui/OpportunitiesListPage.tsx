@@ -3,10 +3,8 @@ import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 import {
   ListPageLayout,
-  defaultPaginationRequest,
   useEnumTranslation,
   type DataTableColumn,
-  type PaginationRequest,
 } from '@platform/ui';
 import { useOpportunityListQuery } from '../../../../entities/opportunity/api/useOpportunityQueries';
 import type {
@@ -21,10 +19,14 @@ export function OpportunitiesListPage() {
   const tStage = useEnumTranslation('opportunityStage');
   const navigate = useNavigate();
 
-  const [pagination, setPagination] = useState<PaginationRequest>(defaultPaginationRequest);
   const [filters] = useState<OpportunityListFilter>({});
 
-  const query = useOpportunityListQuery({ pagination, filters });
+  const query = useOpportunityListQuery({ filters });
+
+  const data = useMemo<OpportunityListItem[]>(
+    () => query.data?.pages.flatMap((p) => p.data) ?? [],
+    [query.data],
+  );
 
   const columns = useMemo<DataTableColumn<OpportunityListItem>[]>(
     () => [
@@ -55,13 +57,13 @@ export function OpportunitiesListPage() {
     <ListPageLayout<OpportunityListItem>
       title={t('title')}
       columns={columns}
-      data={query.data?.data ?? []}
+      data={data}
       rowKey="id"
       isLoading={query.isLoading}
+      isFetchingMore={query.isFetchingNextPage}
+      hasMore={query.hasNextPage}
+      onLoadMore={() => query.fetchNextPage()}
       error={query.isError ? query.error : undefined}
-      pagination={pagination}
-      paginationResponse={query.data?.pagination}
-      onPaginationChange={setPagination}
       onCreateClick={() => navigate(RoutePaths.OpportunityNew)}
       createLabel={t('createButton')}
       onRowClick={(record) => navigate(RoutePaths.OpportunityView(record.id))}

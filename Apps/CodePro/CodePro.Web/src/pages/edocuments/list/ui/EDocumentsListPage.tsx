@@ -1,12 +1,7 @@
 import { useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
-import {
-  ListPageLayout,
-  defaultPaginationRequest,
-  type DataTableColumn,
-  type PaginationRequest,
-} from '@platform/ui';
+import { ListPageLayout, type DataTableColumn } from '@platform/ui';
 import { useEDocumentListQuery } from '../../../../entities/edocument/api/useEDocumentQueries';
 import type { EDocumentListFilter, EDocumentListItem } from '../../../../entities/edocument/model/types';
 import { RoutePaths } from '../../../../app/router/paths';
@@ -16,9 +11,13 @@ export function EDocumentsListPage() {
   const { t: tEntity } = useTranslation('entity.edocument');
   const navigate = useNavigate();
 
-  const [pagination, setPagination] = useState<PaginationRequest>(defaultPaginationRequest);
   const [filters] = useState<EDocumentListFilter>({});
-  const query = useEDocumentListQuery({ pagination, filters });
+  const query = useEDocumentListQuery({ filters });
+
+  const data = useMemo<EDocumentListItem[]>(
+    () => query.data?.pages.flatMap((p) => p.data) ?? [],
+    [query.data],
+  );
 
   const columns = useMemo<DataTableColumn<EDocumentListItem>[]>(
     () => [
@@ -36,13 +35,13 @@ export function EDocumentsListPage() {
     <ListPageLayout<EDocumentListItem>
       title={t('title')}
       columns={columns}
-      data={query.data?.data ?? []}
+      data={data}
       rowKey="id"
       isLoading={query.isLoading}
+      isFetchingMore={query.isFetchingNextPage}
+      hasMore={query.hasNextPage}
+      onLoadMore={() => query.fetchNextPage()}
       error={query.isError ? query.error : undefined}
-      pagination={pagination}
-      paginationResponse={query.data?.pagination}
-      onPaginationChange={setPagination}
       onCreateClick={() => navigate(RoutePaths.EDocumentNew)}
       createLabel={t('createButton')}
       onRowClick={(record) => navigate(RoutePaths.EDocumentView(record.id))}

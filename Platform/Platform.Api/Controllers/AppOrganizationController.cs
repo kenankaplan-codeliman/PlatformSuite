@@ -5,6 +5,7 @@ using Platform.Application.Features.AppOrganizations.Commands.DeleteAppOrganizat
 using Platform.Application.Features.AppOrganizations.Commands.UpdateAppOrganization;
 using Platform.Application.Features.AppOrganizations.Queries.GetAppOrganization;
 using Platform.Application.Features.AppOrganizations.Queries.ListAppOrganizations;
+using Platform.Application.Features.AppOrganizations.Queries.SearchAppOrganizations;
 using Platform.Domain.Authorization;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
@@ -22,6 +23,11 @@ public sealed class AppOrganizationController : ControllerBase
     [HttpPost("list")]
     [PrivilegeAuthorize(PrivilegeCodes.AppOrganizationPrivilegeCodes.Read)]
     public async Task<IActionResult> ListAsync([FromBody] ListAppOrganizationsQuery query, CancellationToken ct)
+        => (await _sender.Send(query, ct)).ToActionResult(HttpContext);
+
+    [HttpPost("search")]
+    [PrivilegeAuthorize(PrivilegeCodes.AppOrganizationPrivilegeCodes.Read)]
+    public async Task<IActionResult> SearchAsync([FromBody] SearchAppOrganizationsQuery query, CancellationToken ct)
         => (await _sender.Send(query, ct)).ToActionResult(HttpContext);
 
     [HttpPost("get")]

@@ -3,10 +3,6 @@ import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 import { ListPageLayout } from '../../../../shared/ui/list-page/ListPageLayout';
 import type { DataTableColumn } from '../../../../shared/ui/DataTable';
-import {
-  defaultPaginationRequest,
-  type PaginationRequest,
-} from '../../../../shared/types/Pagination';
 import { useAppUserListQuery } from '../../../../entities/app-user/api/useAppUserQueries';
 import type {
   AppUserListFilter,
@@ -19,10 +15,14 @@ export function AppUsersListPage() {
   const { t: tEntity } = useTranslation('entity.app-user');
   const navigate = useNavigate();
 
-  const [pagination, setPagination] = useState<PaginationRequest>(defaultPaginationRequest);
   const [filters] = useState<AppUserListFilter>({});
 
-  const query = useAppUserListQuery({ pagination, filters });
+  const query = useAppUserListQuery({ filters });
+
+  const data = useMemo<AppUserListItem[]>(
+    () => query.data?.pages.flatMap((p) => p.data) ?? [],
+    [query.data],
+  );
 
   const columns = useMemo<DataTableColumn<AppUserListItem>[]>(
     () => [
@@ -48,13 +48,13 @@ export function AppUsersListPage() {
     <ListPageLayout<AppUserListItem>
       title={t('title')}
       columns={columns}
-      data={query.data?.data ?? []}
+      data={data}
       rowKey="id"
       isLoading={query.isLoading}
+      isFetchingMore={query.isFetchingNextPage}
+      hasMore={query.hasNextPage}
+      onLoadMore={() => query.fetchNextPage()}
       error={query.isError ? query.error : undefined}
-      pagination={pagination}
-      paginationResponse={query.data?.pagination}
-      onPaginationChange={setPagination}
       onCreateClick={() => navigate(RoutePaths.AppUserNew)}
       createLabel={t('createButton')}
       onRowClick={(record) => navigate(RoutePaths.AppUserView(record.id))}

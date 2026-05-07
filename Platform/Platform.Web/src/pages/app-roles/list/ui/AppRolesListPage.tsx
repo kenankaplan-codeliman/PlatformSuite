@@ -3,10 +3,6 @@ import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 import { ListPageLayout } from '../../../../shared/ui/list-page/ListPageLayout';
 import type { DataTableColumn } from '../../../../shared/ui/DataTable';
-import {
-  defaultPaginationRequest,
-  type PaginationRequest,
-} from '../../../../shared/types/Pagination';
 import { useAppRoleListQuery } from '../../../../entities/app-role/api/useAppRoleQueries';
 import type {
   AppRoleListFilter,
@@ -19,10 +15,14 @@ export function AppRolesListPage() {
   const { t: tEntity } = useTranslation('entity.app-role');
   const navigate = useNavigate();
 
-  const [pagination, setPagination] = useState<PaginationRequest>(defaultPaginationRequest);
   const [filters] = useState<AppRoleListFilter>({});
 
-  const query = useAppRoleListQuery({ pagination, filters });
+  const query = useAppRoleListQuery({ filters });
+
+  const data = useMemo<AppRoleListItem[]>(
+    () => query.data?.pages.flatMap((p) => p.data) ?? [],
+    [query.data],
+  );
 
   const columns = useMemo<DataTableColumn<AppRoleListItem>[]>(
     () => [
@@ -46,13 +46,13 @@ export function AppRolesListPage() {
     <ListPageLayout<AppRoleListItem>
       title={t('title')}
       columns={columns}
-      data={query.data?.data ?? []}
+      data={data}
       rowKey="id"
       isLoading={query.isLoading}
+      isFetchingMore={query.isFetchingNextPage}
+      hasMore={query.hasNextPage}
+      onLoadMore={() => query.fetchNextPage()}
       error={query.isError ? query.error : undefined}
-      pagination={pagination}
-      paginationResponse={query.data?.pagination}
-      onPaginationChange={setPagination}
       onCreateClick={() => navigate(RoutePaths.AppRoleNew)}
       createLabel={t('createButton')}
       onRowClick={(record) => navigate(RoutePaths.AppRoleView(record.id))}

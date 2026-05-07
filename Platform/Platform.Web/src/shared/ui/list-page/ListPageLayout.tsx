@@ -1,27 +1,30 @@
-import { type ReactNode } from "react";
-import { Pagination, Space, Typography } from "antd";
-import { useTranslation } from "react-i18next";
-import { Button } from "../Button";
-import { DataTable, type DataTableColumn } from "../DataTable";
-import { Alert } from "../feedback/Alert";
-import type {
-  PaginationRequest,
-  PaginationResponse,
-} from "../../types/Pagination";
+import { useEffect, useRef, type ReactNode } from 'react';
+import { Space, Spin, Typography } from 'antd';
+import { useTranslation } from 'react-i18next';
+import { Button } from '../Button';
+import { DataTable, type DataTableColumn } from '../DataTable';
+import { Alert } from '../feedback/Alert';
 
 const { Title } = Typography;
 
 export interface ListPageLayoutProps<T> {
   title: string;
   columns: DataTableColumn<T>[];
+  /** Akümüle edilmiş tüm sayfaların flat listesi. Caller `useInfiniteQuery`
+   *  sonucunu `pages.flatMap(p => p.data)` ile düzleştirip verir. */
   data: T[];
   rowKey: keyof T | ((record: T) => string);
-  isLoading?: boolean;
-  error?: unknown;
 
-  pagination: PaginationRequest;
-  paginationResponse?: PaginationResponse;
-  onPaginationChange: (next: PaginationRequest) => void;
+  /** İlk yükleme — tablo loading state'iyle. */
+  isLoading?: boolean;
+  /** Sonraki sayfa çekiliyor — sentinel altında küçük spinner. */
+  isFetchingMore?: boolean;
+  /** Daha fazla sayfa var mı — `false` ise sentinel devre dışı. */
+  hasMore?: boolean;
+  /** Sentinel viewport'a girdiğinde tetiklenir. */
+  onLoadMore?: () => void;
+
+  error?: unknown;
 
   filterBar?: ReactNode;
   headerActions?: ReactNode;
@@ -32,31 +35,55 @@ export interface ListPageLayoutProps<T> {
   onRowClick?: (record: T) => void;
 }
 
+/**
+ * Liste sayfaları için container. Pagination yerine **infinite scroll**:
+ * tablonun altındaki sentinel element viewport'a girdiğinde `onLoadMore`
+ * çağrılır. EntityLookupField modal'ındaki "scroll dibinde sonraki sayfa"
+ * pattern'iyle aynı.
+ */
 export function ListPageLayout<T extends object>({
   title,
   columns,
   data,
   rowKey,
   isLoading,
+  isFetchingMore,
+  hasMore,
+  onLoadMore,
   error,
-  pagination,
-  paginationResponse,
-  onPaginationChange,
   filterBar,
   headerActions,
   onCreateClick,
   createLabel,
   onRowClick,
 }: ListPageLayoutProps<T>) {
-  const { t } = useTranslation("common");
+  const { t } = useTranslation('common');
+  const sentinelRef = useRef<HTMLDivElement | null>(null);
+
+  useEffect(() => {
+    const node = sentinelRef.current;
+    if (!node || !onLoadMore) return;
+    if (!hasMore || isFetchingMore || isLoading) return;
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries.some((e) => e.isIntersecting)) {
+          onLoadMore();
+        }
+      },
+      { rootMargin: '120px' },
+    );
+    observer.observe(node);
+    return () => observer.disconnect();
+  }, [onLoadMore, hasMore, isFetchingMore, isLoading]);
 
   return (
     <div>
       <div
         style={{
-          display: "flex",
-          justifyContent: "space-between",
-          alignItems: "center",
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'center',
           marginBottom: 16,
         }}
       >
@@ -67,7 +94,7 @@ export function ListPageLayout<T extends object>({
           {headerActions}
           {onCreateClick && (
             <Button type="primary" onClick={onCreateClick}>
-              {createLabel ?? t("actions.create")}
+              {createLabel ?? t('actions.create')}
             </Button>
           )}
         </Space>
@@ -76,7 +103,7 @@ export function ListPageLayout<T extends object>({
       {filterBar && <div style={{ marginBottom: 16 }}>{filterBar}</div>}
 
       {error ? (
-        <Alert type="error" message={t("messages.unexpectedError")} />
+        <Alert type="error" message={t('messages.unexpectedError')} />
       ) : (
         <>
           <DataTable
@@ -87,31 +114,22 @@ export function ListPageLayout<T extends object>({
             onRowClick={onRowClick}
           />
 
+          {/* Sentinel — viewport'a girince onLoadMore tetiklenir. */}
           <div
+            ref={sentinelRef}
             style={{
-              marginTop: 16,
-              display: "flex",
-              justifyContent: "flex-end",
+              minHeight: 1,
+              padding: 16,
+              display: 'flex',
+              justifyContent: 'center',
+              color: 'rgba(0,0,0,0.45)',
             }}
           >
-            <Pagination
-              current={pagination.pageNumber}
-              pageSize={pagination.pageSize}
-              simple
-              showSizeChanger={false}
-              total={
-                paginationResponse?.hasMoreRecord
-                  ? pagination.pageNumber * pagination.pageSize + 1
-                  : pagination.pageNumber * pagination.pageSize
-              }
-              onChange={(pageNumber) =>
-                onPaginationChange({
-                  pageNumber,
-                  pageSize: pagination.pageSize,
-                })
-              }
-              disabled={isLoading}
-            />
+            {isFetchingMore ? (
+              <Spin size="small" />
+            ) : !hasMore && data.length > 0 ? (
+              <span style={{ fontSize: 12 }}>—</span>
+            ) : null}
           </div>
         </>
       )}

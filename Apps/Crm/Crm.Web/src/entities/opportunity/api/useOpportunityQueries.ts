@@ -1,5 +1,4 @@
-import { useQuery } from '@tanstack/react-query';
-import type { PaginationRequest } from '@platform/ui';
+import { useInfiniteQuery, useQuery } from '@tanstack/react-query';
 import { opportunityKeys } from '../../../shared/api/queryKeys';
 import { opportunityDataSource } from './opportunityDataSource';
 import type { OpportunityListFilter } from '../model/types';
@@ -13,13 +12,21 @@ export function useOpportunityQuery(id: string | undefined) {
 }
 
 export interface UseOpportunityListParams {
-  pagination: PaginationRequest;
   filters: OpportunityListFilter;
+  pageSize?: number;
 }
 
 export function useOpportunityListQuery(params: UseOpportunityListParams) {
-  return useQuery({
-    queryKey: opportunityKeys.list(params),
-    queryFn: () => opportunityDataSource.list(params),
+  const pageSize = params.pageSize ?? 20;
+  return useInfiniteQuery({
+    queryKey: opportunityKeys.list({ filters: params.filters, pageSize }),
+    queryFn: ({ pageParam }) =>
+      opportunityDataSource.list({
+        pagination: { pageNumber: pageParam, pageSize },
+        filters: params.filters,
+      }),
+    initialPageParam: 1,
+    getNextPageParam: (lastPage, allPages) =>
+      lastPage.pagination.hasMoreRecord ? allPages.length + 1 : undefined,
   });
 }

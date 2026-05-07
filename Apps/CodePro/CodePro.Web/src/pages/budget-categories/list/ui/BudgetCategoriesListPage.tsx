@@ -1,12 +1,7 @@
 import { useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
-import {
-  ListPageLayout,
-  defaultPaginationRequest,
-  type DataTableColumn,
-  type PaginationRequest,
-} from '@platform/ui';
+import { ListPageLayout, type DataTableColumn } from '@platform/ui';
 import { useBudgetCategoryListQuery } from '../../../../entities/budget-category/api/useBudgetCategoryQueries';
 import type {
   BudgetCategoryListFilter,
@@ -19,10 +14,14 @@ export function BudgetCategoriesListPage() {
   const { t: tEntity } = useTranslation('entity.budget-category');
   const navigate = useNavigate();
 
-  const [pagination, setPagination] = useState<PaginationRequest>(defaultPaginationRequest);
   const [filters] = useState<BudgetCategoryListFilter>({});
 
-  const query = useBudgetCategoryListQuery({ pagination, filters });
+  const query = useBudgetCategoryListQuery({ filters });
+
+  const data = useMemo<BudgetCategoryListItem[]>(
+    () => query.data?.pages.flatMap((p) => p.data) ?? [],
+    [query.data],
+  );
 
   const columns = useMemo<DataTableColumn<BudgetCategoryListItem>[]>(
     () => [
@@ -46,13 +45,13 @@ export function BudgetCategoriesListPage() {
     <ListPageLayout<BudgetCategoryListItem>
       title={t('title')}
       columns={columns}
-      data={query.data?.data ?? []}
+      data={data}
       rowKey="id"
       isLoading={query.isLoading}
+      isFetchingMore={query.isFetchingNextPage}
+      hasMore={query.hasNextPage}
+      onLoadMore={() => query.fetchNextPage()}
       error={query.isError ? query.error : undefined}
-      pagination={pagination}
-      paginationResponse={query.data?.pagination}
-      onPaginationChange={setPagination}
       onCreateClick={() => navigate(RoutePaths.BudgetCategoryNew)}
       createLabel={t('createButton')}
       onRowClick={(record) => navigate(RoutePaths.BudgetCategoryView(record.id))}

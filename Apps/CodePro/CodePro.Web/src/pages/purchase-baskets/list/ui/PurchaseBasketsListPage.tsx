@@ -1,12 +1,7 @@
 import { useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
-import {
-  ListPageLayout,
-  defaultPaginationRequest,
-  type DataTableColumn,
-  type PaginationRequest,
-} from '@platform/ui';
+import { ListPageLayout, type DataTableColumn } from '@platform/ui';
 import { usePurchaseBasketListQuery } from '../../../../entities/purchase-basket/api/usePurchaseBasketQueries';
 import type {
   PurchaseBasketListFilter,
@@ -19,9 +14,13 @@ export function PurchaseBasketsListPage() {
   const { t: tEntity } = useTranslation('entity.purchase-basket');
   const navigate = useNavigate();
 
-  const [pagination, setPagination] = useState<PaginationRequest>(defaultPaginationRequest);
   const [filters] = useState<PurchaseBasketListFilter>({});
-  const query = usePurchaseBasketListQuery({ pagination, filters });
+  const query = usePurchaseBasketListQuery({ filters });
+
+  const data = useMemo<PurchaseBasketListItem[]>(
+    () => query.data?.pages.flatMap((p) => p.data) ?? [],
+    [query.data],
+  );
 
   const columns = useMemo<DataTableColumn<PurchaseBasketListItem>[]>(
     () => [
@@ -37,13 +36,13 @@ export function PurchaseBasketsListPage() {
     <ListPageLayout<PurchaseBasketListItem>
       title={t('title')}
       columns={columns}
-      data={query.data?.data ?? []}
+      data={data}
       rowKey="id"
       isLoading={query.isLoading}
+      isFetchingMore={query.isFetchingNextPage}
+      hasMore={query.hasNextPage}
+      onLoadMore={() => query.fetchNextPage()}
       error={query.isError ? query.error : undefined}
-      pagination={pagination}
-      paginationResponse={query.data?.pagination}
-      onPaginationChange={setPagination}
       onCreateClick={() => navigate(RoutePaths.PurchaseBasketNew)}
       createLabel={t('createButton')}
       onRowClick={(record) => navigate(RoutePaths.PurchaseBasketView(record.id))}
