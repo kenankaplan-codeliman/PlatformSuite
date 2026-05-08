@@ -16,6 +16,14 @@ export const accountKeys = {
   detail: (id: string) => [...accountKeys.details(), id] as const,
 };
 
+export const contactKeys = {
+  all: ['contact'] as const,
+  lists: () => [...contactKeys.all, 'list'] as const,
+  list: (params: unknown) => [...contactKeys.lists(), params] as const,
+  details: () => [...contactKeys.all, 'detail'] as const,
+  detail: (id: string) => [...contactKeys.details(), id] as const,
+};
+
 export const organizationKeys = {
   all: ['organization'] as const,
   lists: () => [...organizationKeys.all, 'list'] as const,

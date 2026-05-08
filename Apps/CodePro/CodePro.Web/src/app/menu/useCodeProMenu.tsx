@@ -68,6 +68,7 @@ export function useCodeProMenu(): MenuSchema {
       children: [
         { key: 'orgs', label: t('organizations'), icon: <TeamOutlined />, to: RoutePaths.OrganizationsList },
         { key: 'accounts', label: t('accounts'), icon: <TeamOutlined />, to: RoutePaths.AccountsList },
+        { key: 'contacts', label: t('contacts'), icon: <UserOutlined />, to: RoutePaths.ContactsList },
         { key: 'users', label: t('users'), icon: <UserOutlined />, to: RoutePaths.AppUsersList },
         { key: 'roles', label: t('roles'), icon: <SafetyOutlined />, to: RoutePaths.AppRolesList },
         { key: 'questionnaires', label: t('questionnaires'), icon: <FormOutlined />, to: RoutePaths.QuestionnairesList },

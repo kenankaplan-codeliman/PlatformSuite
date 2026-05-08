@@ -6,6 +6,8 @@ import {
   AppRolesListPage,
   AppUserDetailPage,
   AppUsersListPage,
+  ContactDetailPage,
+  ContactsListPage,
   HomePage,
   LoginPage,
 } from '@platform/ui';
@@ -28,6 +30,11 @@ export const router = createBrowserRouter([
       { path: RoutePatterns.AccountNew, element: <AccountDetailPage /> },
       { path: RoutePatterns.AccountEdit, element: <AccountDetailPage /> },
       { path: RoutePatterns.AccountView, element: <AccountDetailPage /> },
+
+      { path: RoutePatterns.ContactsList, element: <ContactsListPage /> },
+      { path: RoutePatterns.ContactNew, element: <ContactDetailPage /> },
+      { path: RoutePatterns.ContactEdit, element: <ContactDetailPage /> },
+      { path: RoutePatterns.ContactView, element: <ContactDetailPage /> },
 
       { path: RoutePatterns.LeadsList, element: <LeadsListPage /> },
       { path: RoutePatterns.LeadNew, element: <LeadDetailPage /> },

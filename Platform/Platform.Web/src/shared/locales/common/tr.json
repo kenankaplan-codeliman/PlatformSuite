@@ -31,5 +31,11 @@
   },
   "validation": {
     "title": "Lütfen formdaki hataları düzeltin."
+  },
+  "relation": {
+    "name": "Ad",
+    "role": "Rol",
+    "primary": "Birincil",
+    "addRow": "Satır ekle"
   }
 }

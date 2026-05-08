@@ -19,6 +19,12 @@
   },
   "sections": {
     "general": "Genel Bilgiler",
-    "details": "Detaylar"
+    "details": "Detaylar",
+    "contacts": "Kontaklar"
+  },
+  "contacts": {
+    "addLabel": "Kontak Ekle",
+    "modalTitle": "Kontak Ara",
+    "nameColumn": "Kontak Adı"
   }
 }

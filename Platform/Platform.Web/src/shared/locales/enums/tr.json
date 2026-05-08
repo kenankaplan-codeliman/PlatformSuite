@@ -16,6 +16,8 @@
   },
   "contactStatus": {
     "Active": "Aktif",
+    "DoNotContact": "İletişime Kapalı",
+    "Unsubscribed": "Abonelik İptal",
     "Inactive": "Pasif"
   },
   "emailType": {

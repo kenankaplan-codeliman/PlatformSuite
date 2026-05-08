@@ -6,6 +6,8 @@ import {
   AppRolesListPage,
   AppUserDetailPage,
   AppUsersListPage,
+  ContactDetailPage,
+  ContactsListPage,
   HomePage,
   LoginPage,
   OrganizationDetailPage,
@@ -58,6 +60,11 @@ export const router = createBrowserRouter([
       { path: RoutePatterns.AccountNew, element: <AccountDetailPage /> },
       { path: RoutePatterns.AccountEdit, element: <AccountDetailPage /> },
       { path: RoutePatterns.AccountView, element: <AccountDetailPage /> },
+
+      { path: RoutePatterns.ContactsList, element: <ContactsListPage /> },
+      { path: RoutePatterns.ContactNew, element: <ContactDetailPage /> },
+      { path: RoutePatterns.ContactEdit, element: <ContactDetailPage /> },
+      { path: RoutePatterns.ContactView, element: <ContactDetailPage /> },
 
       { path: RoutePatterns.OrganizationsList, element: <OrganizationsListPage /> },
       { path: RoutePatterns.OrganizationNew, element: <OrganizationDetailPage /> },

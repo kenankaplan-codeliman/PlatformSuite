@@ -11,6 +11,8 @@ export { LoginPage } from './pages/auth/login/ui/LoginPage';
 export { HomePage } from './pages/home/ui/HomePage';
 export { AccountsListPage } from './pages/accounts/list/ui/AccountsListPage';
 export { AccountDetailPage } from './pages/accounts/detail/ui/AccountDetailPage';
+export { ContactsListPage } from './pages/contacts/list/ui/ContactsListPage';
+export { ContactDetailPage } from './pages/contacts/detail/ui/ContactDetailPage';
 export { OrganizationsListPage } from './pages/organizations/list/ui/OrganizationsListPage';
 export { OrganizationDetailPage } from './pages/organizations/detail/ui/OrganizationDetailPage';
 export { AppUsersListPage } from './pages/users/list/ui/AppUsersListPage';
@@ -94,12 +96,13 @@ export { SelectField, type SelectOption } from './shared/ui/form/fields/SelectFi
 export { TextAreaField } from './shared/ui/form/fields/TextAreaField';
 export { PasswordField } from './shared/ui/form/fields/PasswordField';
 export { EntityLookupField } from './shared/ui/form/fields/EntityLookupField';
+export { EntityRelationTable } from './shared/ui/form/fields/EntityRelationTable';
 
 // ─── API katmanı ─────────────────────────────────────────────────────────────
 export { httpClient } from './shared/api/httpClient';
 export { ServicePath } from './shared/api/servicePaths';
 export { mapAxiosError } from './shared/api/errorMapper';
-export { accountKeys, authKeys, organizationKeys, appUserKeys, appRoleKeys, attachmentKeys } from './shared/api/queryKeys';
+export { accountKeys, contactKeys, authKeys, organizationKeys, appUserKeys, appRoleKeys, attachmentKeys } from './shared/api/queryKeys';
 
 // ─── Hook'lar ────────────────────────────────────────────────────────────────
 export { useRouteMode } from './shared/hooks/useRouteMode';

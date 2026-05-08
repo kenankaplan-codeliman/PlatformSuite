@@ -103,8 +103,11 @@ public class SessionService : ISessionService
         if (appLogin == null)
             throw new UnAuthenticatedException("User Login not fount.");
 
+        if (appLogin.RefreshTokenExpiresAt <= DateTime.Now)
+            throw new UnAuthenticatedException("Refresh token expired.");
 
-        //Remove Old Session 
+
+        //Remove Old Session
         RemoveSessionUser(appLogin.AccessTokenId);
 
         //New Token

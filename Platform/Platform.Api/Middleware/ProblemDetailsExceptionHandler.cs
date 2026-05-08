@@ -29,6 +29,7 @@ public sealed class ProblemDetailsExceptionHandler : IExceptionHandler
         {
             BusinessException       => (StatusCodes.Status400BadRequest, "İş kuralı ihlali", "Business"),
             UnAuthenticatedException => (StatusCodes.Status401Unauthorized, "Kimlik doğrulanamadı", "Unauthenticated"),
+            UnAuthorizedException    => (StatusCodes.Status401Unauthorized, "Kimlik doğrulanamadı", "Unauthenticated"),
             UnauthorizedAccessException => (StatusCodes.Status403Forbidden, "Yetkisiz erişim", "Unauthorized"),
             KeyNotFoundException     => (StatusCodes.Status404NotFound, "Kayıt bulunamadı", "NotFound"),
             _                        => (StatusCodes.Status500InternalServerError, "Beklenmeyen hata", "Unhandled"),

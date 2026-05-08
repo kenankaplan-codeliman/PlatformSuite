@@ -1,17 +1,36 @@
-import type { ReactNode } from 'react';
+import { useState, type ReactNode } from 'react';
+import { DownOutlined, RightOutlined } from '@ant-design/icons';
 
 export interface FormSectionProps {
   title?: ReactNode;
   description?: ReactNode;
   extra?: ReactNode;
   children: ReactNode;
+  /** Header tıklanınca içerik aç/kapanır. Default false — geriye dönük uyumlu. */
+  collapsible?: boolean;
+  /** `collapsible` true iken başlangıç durumu — default açık. */
+  defaultCollapsed?: boolean;
 }
 
 /**
  * Form alanlarını mantıksal gruplayan beyaz kart paneli.
- * Başlık + açıklama + içerik.
+ * Başlık + açıklama + içerik. Opsiyonel olarak collapsible.
  */
-export function FormSection({ title, description, extra, children }: FormSectionProps) {
+export function FormSection({
+  title,
+  description,
+  extra,
+  children,
+  collapsible = false,
+  defaultCollapsed = false,
+}: FormSectionProps) {
+  const [collapsed, setCollapsed] = useState(defaultCollapsed);
+  const isCollapsed = collapsible && collapsed;
+
+  const handleToggle = () => {
+    if (collapsible) setCollapsed((c) => !c);
+  };
+
   return (
     <section
       style={{
@@ -25,47 +44,69 @@ export function FormSection({ title, description, extra, children }: FormSection
     >
       {(title || extra) && (
         <header
+          onClick={handleToggle}
           style={{
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'space-between',
             gap: 12,
             padding: '14px 20px',
-            borderBottom: '1px solid #f0f0f0',
+            borderBottom: isCollapsed ? 'none' : '1px solid #f0f0f0',
             background: '#fafafa',
+            cursor: collapsible ? 'pointer' : 'default',
+            userSelect: collapsible ? 'none' : 'auto',
           }}
         >
-          <div style={{ minWidth: 0 }}>
-            {title && (
-              <h3
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8, minWidth: 0 }}>
+            {collapsible && (
+              <span
+                aria-hidden
                 style={{
-                  margin: 0,
-                  fontSize: 15,
-                  fontWeight: 600,
-                  color: 'rgba(0, 0, 0, 0.88)',
-                  lineHeight: 1.4,
+                  display: 'inline-flex',
+                  fontSize: 11,
+                  color: 'rgba(0, 0, 0, 0.45)',
+                  transition: 'transform 120ms ease',
                 }}
               >
-                {title}
-              </h3>
+                {isCollapsed ? <RightOutlined /> : <DownOutlined />}
+              </span>
             )}
-            {description && (
-              <p
-                style={{
-                  margin: '4px 0 0',
-                  color: 'rgba(0, 0, 0, 0.55)',
-                  fontSize: 13,
-                  lineHeight: 1.5,
-                }}
-              >
-                {description}
-              </p>
-            )}
+            <div style={{ minWidth: 0 }}>
+              {title && (
+                <h3
+                  style={{
+                    margin: 0,
+                    fontSize: 15,
+                    fontWeight: 600,
+                    color: 'rgba(0, 0, 0, 0.88)',
+                    lineHeight: 1.4,
+                  }}
+                >
+                  {title}
+                </h3>
+              )}
+              {description && (
+                <p
+                  style={{
+                    margin: '4px 0 0',
+                    color: 'rgba(0, 0, 0, 0.55)',
+                    fontSize: 13,
+                    lineHeight: 1.5,
+                  }}
+                >
+                  {description}
+                </p>
+              )}
+            </div>
           </div>
-          {extra && <div>{extra}</div>}
+          {extra && (
+            <div onClick={(e) => e.stopPropagation()}>{extra}</div>
+          )}
         </header>
       )}
-      <div style={{ padding: '20px 20px 4px' }}>{children}</div>
+      {!isCollapsed && (
+        <div style={{ padding: '20px 20px 4px' }}>{children}</div>
+      )}
     </section>
   );
 }

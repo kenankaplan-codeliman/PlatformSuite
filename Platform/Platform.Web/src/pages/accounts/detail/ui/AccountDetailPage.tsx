@@ -12,6 +12,7 @@ import {
 } from "../../../../shared/ui/form/fields/SelectField";
 import { TextAreaField } from "../../../../shared/ui/form/fields/TextAreaField";
 import { EntityLookupField } from "../../../../shared/ui/form/fields/EntityLookupField";
+import { EntityRelationTable } from "../../../../shared/ui/form/fields/EntityRelationTable";
 import { ServicePath } from "../../../../shared/api/servicePaths";
 import { useRouteMode } from "../../../../shared/hooks/useRouteMode";
 import { useAccountQuery } from "../../../../entities/account/api/useAccountQueries";
@@ -117,6 +118,7 @@ export function AccountDetailPage() {
         statusOptions={statusOptions}
       />
       <DetailsSection />
+      <ContactsSection />
     </DetailPageLayout>
   );
 
@@ -129,7 +131,7 @@ export function AccountDetailPage() {
   }) {
     const form = useFormContext<AccountFormValues>();
     return (
-      <FormSection title={tEntity("sections.general")}>
+      <FormSection title={tEntity("sections.general")} collapsible>
         <TextField
           name="accountName"
           control={form.control}
@@ -172,10 +174,28 @@ export function AccountDetailPage() {
     );
   }
 
+  function ContactsSection() {
+    const form = useFormContext<AccountFormValues>();
+    return (
+      <FormSection title={tEntity("sections.contacts")} collapsible>
+        <EntityRelationTable<AccountFormValues>
+          name="contacts"
+          control={form.control}
+          servicePath={ServicePath.Contact.Search}
+          keyField="contactId"
+          keyNameField="contactName"
+          addLabel={tEntity("contacts.addLabel")}
+          modalTitle={tEntity("contacts.modalTitle")}
+          nameColumnTitle={tEntity("contacts.nameColumn")}
+        />
+      </FormSection>
+    );
+  }
+
   function DetailsSection() {
     const form = useFormContext<AccountFormValues>();
     return (
-      <FormSection title={tEntity("sections.details")}>
+      <FormSection title={tEntity("sections.details")} collapsible>
         <TextField
           name="website"
           control={form.control}

@@ -8,6 +8,12 @@ export const RoutePaths = {
   AccountView: (id: string) => `/accounts/${id}`,
   AccountEdit: (id: string) => `/accounts/${id}/edit`,
 
+  // Contact
+  ContactsList: '/contacts',
+  ContactNew: '/contacts/new',
+  ContactView: (id: string) => `/contacts/${id}`,
+  ContactEdit: (id: string) => `/contacts/${id}/edit`,
+
   // Organization (AppOrganization)
   OrganizationsList: '/organizations',
   OrganizationNew: '/organizations/new',
@@ -32,6 +38,11 @@ export const RoutePatterns = {
   AccountNew: '/accounts/new',
   AccountView: '/accounts/:id',
   AccountEdit: '/accounts/:id/edit',
+
+  ContactsList: '/contacts',
+  ContactNew: '/contacts/new',
+  ContactView: '/contacts/:id',
+  ContactEdit: '/contacts/:id/edit',
 
   OrganizationsList: '/organizations',
   OrganizationNew: '/organizations/new',
