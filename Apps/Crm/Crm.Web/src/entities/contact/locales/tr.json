@@ -1,0 +1,29 @@
+{
+  "singular": "Kontak",
+  "plural": "Kontaklar",
+  "newTitle": "Yeni Kontak",
+  "fields": {
+    "firstName": { "label": "Ad", "placeholder": "Örn: Ahmet" },
+    "lastName": { "label": "Soyad", "placeholder": "Örn: Yılmaz" },
+    "fullName": { "label": "Ad Soyad" },
+    "contactStatus": { "label": "Durum" },
+    "title": { "label": "Unvan", "placeholder": "Satış Müdürü" },
+    "department": { "label": "Departman", "placeholder": "Satış" },
+    "birthDate": { "label": "Doğum Tarihi" },
+    "description": { "label": "Açıklama" },
+    "primaryAccount": { "label": "Birincil Firma" },
+    "primaryEmail": { "label": "Birincil E-posta" },
+    "primaryPhone": { "label": "Birincil Telefon" },
+    "isActive": { "label": "Aktif" }
+  },
+  "sections": {
+    "general": "Genel Bilgiler",
+    "details": "Detaylar",
+    "accounts": "Bağlı Firmalar"
+  },
+  "accounts": {
+    "addLabel": "Firma Ekle",
+    "modalTitle": "Firma Ara",
+    "nameColumn": "Firma Adı"
+  }
+}

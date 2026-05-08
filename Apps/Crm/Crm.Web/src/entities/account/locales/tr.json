@@ -1,0 +1,30 @@
+{
+  "singular": "Firma",
+  "plural": "Firmalar",
+  "newTitle": "Yeni Firma",
+  "fields": {
+    "accountName": { "label": "Firma Adı", "placeholder": "Örn: Acme A.Ş." },
+    "accountType": { "label": "Firma Tipi" },
+    "accountStatus": { "label": "Durum" },
+    "industry": { "label": "Sektör", "placeholder": "Bilişim, İnşaat, …" },
+    "annualRevenue": { "label": "Yıllık Ciro" },
+    "numberOfEmployees": { "label": "Çalışan Sayısı" },
+    "website": { "label": "Web Sitesi", "placeholder": "https://…" },
+    "description": { "label": "Açıklama" },
+    "parentAccount": { "label": "Ana Firma" },
+    "primaryEmail": { "label": "Birincil E-posta" },
+    "primaryPhone": { "label": "Birincil Telefon" },
+    "primaryCity": { "label": "Şehir" },
+    "isActive": { "label": "Aktif" }
+  },
+  "sections": {
+    "general": "Genel Bilgiler",
+    "details": "Detaylar",
+    "contacts": "Kontaklar"
+  },
+  "contacts": {
+    "addLabel": "Kontak Ekle",
+    "modalTitle": "Kontak Ara",
+    "nameColumn": "Kontak Adı"
+  }
+}
