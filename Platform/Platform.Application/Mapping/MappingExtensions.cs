@@ -3,7 +3,7 @@ using Platform.Domain.Entities.Common;
 
 namespace Platform.Application.Mapping;
 
-internal static class MappingExtensions
+public static class MappingExtensions
 {
     private static readonly string[] BaseAndAuditFields =
     {

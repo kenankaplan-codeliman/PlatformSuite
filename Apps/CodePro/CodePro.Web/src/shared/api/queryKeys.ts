@@ -14,6 +14,7 @@ function makeKeys<TParams = unknown>(scope: string) {
   };
 }
 
+export const supplierKeys = makeKeys('supplier');
 export const brandKeys = makeKeys('brand');
 export const manufacturerKeys = makeKeys('manufacturer');
 export const productCategoryKeys = makeKeys('product-category');

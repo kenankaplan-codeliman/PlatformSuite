@@ -2,12 +2,14 @@
   "home": "Ana Sayfa",
   "groups": {
     "sales": "Satış",
+    "customers": "Müşteriler",
     "settings": "Ayarlar"
   },
   "leads": "Aday Müşteriler",
   "opportunities": "Fırsatlar",
   "accounts": "Firmalar",
   "contacts": "Kontaklar",
+  "activities": "Aktiviteler",
   "users": "Kullanıcılar",
   "roles": "Roller"
 }

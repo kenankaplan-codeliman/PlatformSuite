@@ -1,3 +1,5 @@
+using Crm.Application.Features.Accounts;
+using Crm.Application.Features.Contacts;
 using Crm.Application.Features.Leads;
 using Crm.Application.Features.Opportunities;
 using Mapster;
@@ -13,6 +15,8 @@ public static class CrmMappingConfig
 {
     public static void Register(TypeAdapterConfig config)
     {
+        AccountMappings.Register(config);
+        ContactMappings.Register(config);
         LeadMappings.Register(config);
         OpportunityMappings.Register(config);
     }

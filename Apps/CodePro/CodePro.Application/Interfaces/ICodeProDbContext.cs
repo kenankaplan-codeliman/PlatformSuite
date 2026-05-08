@@ -1,4 +1,4 @@
-using CodePro.Domain.Entities.Accounts;
+using CodePro.Domain.Entities.Suppliers;
 using CodePro.Domain.Entities.Budgets;
 using CodePro.Domain.Entities.Contracts;
 using CodePro.Domain.Entities.EDocuments;
@@ -22,7 +22,7 @@ public interface ICodeProDbContext : IApplicationDbContext
 {
     // Account extensions (CodePro-specific)
     DbSet<Supplier> Supplier { get; }
-    DbSet<AccountProductCategory> AccountProductCategory { get; }
+    DbSet<SupplierProductCategory> SupplierProductCategory { get; }
 
     // Products
     DbSet<ProductCategory> ProductCategory { get; }

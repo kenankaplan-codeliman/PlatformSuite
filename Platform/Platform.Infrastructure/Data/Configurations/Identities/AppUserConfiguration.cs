@@ -4,9 +4,9 @@ using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
 namespace Platform.Infrastructure.Data.Configurations.Identities;
 
-public class AppUserConfiguration : IEntityTypeConfiguration<AppUser>
+public class AppUserConfiguration : IEntityTypeConfiguration<User>
 {
-    public void Configure(EntityTypeBuilder<AppUser> builder)
+    public void Configure(EntityTypeBuilder<User> builder)
     {
         builder.ToTable("app_user");
 
@@ -79,7 +79,7 @@ public class AppUserConfiguration : IEntityTypeConfiguration<AppUser>
             .HasColumnName("organization_id")
             .IsRequired();
 
-        builder.HasOne<AppOrganization>()
+        builder.HasOne<Organization>()
             .WithMany()
             .HasForeignKey(e => e.OrganizationId)
             .OnDelete(DeleteBehavior.Restrict);

@@ -54,7 +54,7 @@ CREATE INDEX ix_offer_valid_until ON offer(valid_until);
 CREATE TABLE offer_invitee (
     id              UUID         NOT NULL DEFAULT gen_random_uuid(),
     offer_id        UUID         NOT NULL,
-    supplier_account_id     UUID,
+    supplier_id     UUID,
     supplier_name   VARCHAR(300) NOT NULL,
     supplier_email  VARCHAR(300),
     invited_at      TIMESTAMPTZ,

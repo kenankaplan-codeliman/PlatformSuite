@@ -30,6 +30,6 @@ public sealed class CreateProductCommand : ICommand<ProductDetailItem>
 
 public sealed class ProductSkuFormItem
 {
-    public EntityReference? SupplierAccount { get; init; }
+    public EntityReference? Supplier { get; init; }
     public string Sku { get; init; } = string.Empty;
 }

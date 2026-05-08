@@ -1,4 +1,4 @@
-using Platform.Domain.Entities.Accounts;
+using CodePro.Domain.Entities.Suppliers;
 using Platform.Domain.Entities.Common;
 using CodePro.Domain.Entities.PurchaseRequests;
 using CodePro.Domain.Enums;
@@ -26,8 +26,8 @@ public class PurchaseOrder :
     public string? Description { get; set; }
 
     /// <summary>Tedarikçi Platform Account'a referans (AccountType=Vendor).</summary>
-    public Guid SupplierAccountId { get; set; }
-    public Account SupplierAccount { get; set; } = null!;
+    public Guid SupplierId { get; set; }
+    public Supplier Supplier { get; set; } = null!;
 
     /// <summary>Bu siparişin kaynaklandığı talep (opsiyonel — elle oluşturulan siparişlerde null)</summary>
     public Guid? PurchaseRequestId { get; set; }

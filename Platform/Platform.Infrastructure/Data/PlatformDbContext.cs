@@ -1,10 +1,8 @@
 using Platform.Application.Common.Abstractions;
 using Platform.Application.Interfaces;
-using Platform.Domain.Entities.Accounts;
 using Platform.Domain.Entities.Activities;
 using Platform.Domain.Entities.Attachments;
 using Platform.Domain.Entities.Common;
-using Platform.Domain.Entities.Contacts;
 using Platform.Domain.Entities.Identities;
 using Platform.Domain.Enums;
 using Platform.Infrastructure.Data.Configurations;
@@ -37,8 +35,8 @@ public abstract class PlatformDbContext : DbContext, IApplicationDbContext
     }
 
     // ======= Identity =======
-    public DbSet<AppOrganization> AppOrganization { get; set; }
-    public DbSet<AppUser> AppUser { get; set; }
+    public DbSet<Organization> Organization { get; set; }
+    public DbSet<User> User { get; set; }
     public DbSet<AppRole> AppRole { get; set; }
     public DbSet<AppPrivilege> AppPrivilege { get; set; }
     public DbSet<AppUserRole> AppUserRole { get; set; }
@@ -52,19 +50,6 @@ public abstract class PlatformDbContext : DbContext, IApplicationDbContext
     public DbSet<PhoneCallActivity> PhoneCallActivity { get; set; }
     public DbSet<TaskActivity> TaskActivity { get; set; }
     public DbSet<AppointmentActivity> AppointmentActivity { get; set; }
-
-    // ======= Account =======
-    public DbSet<Account> Account { get; set; }
-    public DbSet<AccountEmail> AccountEmail { get; set; }
-    public DbSet<AccountPhone> AccountPhone { get; set; }
-    public DbSet<AccountAddress> AccountAddress { get; set; }
-    public DbSet<AccountContact> AccountContact { get; set; }
-
-    // ======= Contact =======
-    public DbSet<Contact> Contact { get; set; }
-    public DbSet<ContactEmail> ContactEmail { get; set; }
-    public DbSet<ContactPhone> ContactPhone { get; set; }
-    public DbSet<ContactAddress> ContactAddress { get; set; }
 
     // ======= Attachment =======
     public DbSet<AttachmentFileData> AttachmentFileData { get; set; }

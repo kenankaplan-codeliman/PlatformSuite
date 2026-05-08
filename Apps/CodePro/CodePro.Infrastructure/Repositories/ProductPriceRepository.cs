@@ -16,7 +16,7 @@ public class ProductPriceRepository : BaseEntityRepository<ProductPrice>, IProdu
     {
         return await dbSet
             .Include(p => p.Product)
-            .Include(p => p.SupplierAccount)
+            .Include(p => p.Supplier)
             .Include(p => p.PriceList)
             .FirstOrDefaultAsync(p => p.Id == Id, cancellationToken);
     }

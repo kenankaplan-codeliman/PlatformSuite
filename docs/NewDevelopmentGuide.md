@@ -1,30 +1,48 @@
 # Yeni Entity Ekleme Rehberi
 
-Bu rehber, CRM projesine yeni bir entity eklemek için izlenmesi gereken adımları kapsamaktadır.
-Tüm örnekler `Lead` entity'si baz alınarak yazılmıştır. `{Entity}` ifadesini kendi entity adınızla (örn. `Invoice`) değiştirin.
+Bu rehber, PlatformSuite repo'sunda **bir uygulamaya** (Crm, CodePro, ...) yeni bir entity eklemek için izlenmesi gereken adımları kapsamaktadır.
+Tüm örneklerde `Crm` baz alınmıştır; CodePro veya başka bir app için aynı adımlar `Apps/CodePro/CodePro.<Layer>/` yolları ile uygulanır. `{Entity}` ifadesini kendi entity adınızla (örn. `Invoice`) değiştirin.
+
+---
+
+## Hangi App'e Ekleniyor? (Karar Ağacı)
+
+Entity yazmaya başlamadan önce konumunu belirle:
+
+| Entity tipi | Konum | Örnek |
+|---|---|---|
+| Cross-cutting (User, Organization, Activity, Attachment) | `Platform.Domain` | User, AuditLog |
+| CRM bounded context (satış/müşteri) | `Apps/Crm/Crm.Domain` | Account, Contact, Lead, Opportunity |
+| CodePro bounded context (satın alma/tedarik) | `Apps/CodePro/CodePro.Domain` | Supplier, Product, Budget, PurchaseOrder |
+
+**Kural:** Bounded context çakışıyorsa (örn. "Account" CRM'de müşteri, CodePro'da Supplier) **iki ayrı entity** açılır, ortak base sınıf değil. Her app kendi semantiğini yönetir.
+
+> Detaylar: `docs/CONTRIBUTING.md` § 7-8 (Platform'a Değişiklik / Entity Tasarım Kuralları).
 
 ---
 
 ## Genel Bakış
 
-Bir entity eklemek için şu katmanlara dokunulur:
+Bir entity eklemek için şu katmanlara dokunulur (her app kendi içinde aynı yapıyı tekrarlar):
 
 ```
-1. Database          → SQL tablo scripti
-2. CRM.Domain        → Entity sınıfı, enum'lar, privilege kod'ları
-3. CRM.Application   → Feature klasörü (Commands/Queries/Dtos), Errors, Validator, Mapster config, repository interface
-4. CRM.Infrastructure → Repository implementasyonu, EF Core configuration, DbContext'e DbSet ekleme, IApplicationDbContext'e property ekle
-5. CRM.Api           → Slim controller (ISender üzerinden), DI kaydı yalnızca repository için
-6. CRM.Web (Frontend)→ Types, service, store, service paths, route paths, route dosyası, list page, detail page
+1. <App>.Database          → SQL tablo scripti (PostgreSQL)
+2. <App>.Domain            → Entity sınıfı, enum'lar, privilege kodları
+3. <App>.Application       → Feature klasörü (Commands/Queries/Dtos), Errors, Validator, Mapster config, repository interface
+4. <App>.Infrastructure    → Repository implementasyonu, EF Core configuration, DbContext'e DbSet ekleme, I<App>DbContext'e property ekle
+5. <App>.Api               → Slim controller (ISender üzerinden), DI kaydı yalnızca repository için
+6. <App>.Web (Frontend)    → entities/<x>/ (types, schema, api, model), pages/<x>/ (list, detail), router paths
 ```
 
-> Mimari referansı: `docs/Api_Architecture.md`. Handler'lar Result<T> döner, iş kuralı ihlali için exception atılmaz; cross-cutting concern'ler (logging, validation, transaction) MediatR pipeline'ında çalışır. Bu rehber pratik adımları içerir, felsefe ve detay kararlar için `docs/Api_Architecture.md`'ye bak.
+`<App>` yerine `Crm`, `CodePro` veya yeni eklenen uygulamanın adı gelir. Aşağıdaki adımlarda `Crm` baz alındı; `CRM.X` görüldüğünde **`Crm`** klasörüne (veya hedef app'inize) eşleyin. Polimorfik referans gerekiyorsa `IEntityReferenceResolver` kaydı 5. adımda eklenir.
+
+> Mimari referansı: `docs/Api_Architecture.md` (backend), `docs/Client_Architecture.md` (frontend). Handler'lar Result<T> döner, iş kuralı ihlali için exception atılmaz; cross-cutting concern'ler (logging, validation, transaction) MediatR pipeline'ında çalışır.
 
 ---
 
 ## ADIM 1 — Database: SQL Tablo Scripti
 
-**Dosya:** `CRM.Database/{Entity}.sql`
+**Dosya:** `Apps/<App>/<App>.Database/{Entity}.sql` (örn. `Apps/Crm/Crm.Database/Lead.sql`)
 
 ```sql
 CREATE TABLE {entity} (
@@ -59,18 +77,18 @@ CREATE TABLE {entity} (
 );
 ```
 
-> Script'i `docker/db-init/01-init.sh` içindeki sıraya göre çalıştırılacak şekilde kayıt altına alın.
+> Script'i `Apps/<App>/<App>.Database/` içindeki sıralı dosya adı şemasına göre yerleştirin (parent tablolar önce, FK'lar sonra). DbUp script'leri alfabetik sırayla çalıştırır.
 
 ---
 
-## ADIM 2 — CRM.Domain
+## ADIM 2 — `<App>.Domain`
 
 ### 2.1 Enum'lar (varsa)
 
-**Dosya:** `CRM.Domain/Enums/{Entity}Status.cs`
+**Dosya:** `Apps/<App>/<App>.Domain/Enums/{Entity}Status.cs`
 
 ```csharp
-namespace CRM.Domain.Enums
+namespace <App>.Domain.Enums
 {
     public enum {Entity}Status
     {
@@ -83,13 +101,13 @@ namespace CRM.Domain.Enums
 
 ### 2.2 Entity Sınıfı
 
-**Dosya:** `CRM.Domain/Entities/{Entity}s/{Entity}.cs`
+**Dosya:** `Apps/<App>/<App>.Domain/Entities/{Entity}s/{Entity}.cs`
 
 ```csharp
-using CRM.Domain.Entities.Common;
-using CRM.Domain.Enums;
+using Platform.Domain.Common;        // IBaseEntity, IOwnedEntity, IAuditableEntity, ISoftDeleteEntity
+using <App>.Domain.Enums;
 
-namespace CRM.Domain.Entities.{Entity}s
+namespace <App>.Domain.Entities.{Entity}s
 {
     public class {Entity} : IBaseEntity, ISoftDeleteEntity, IAuditableEntity, IOwnedEntity
     {
@@ -121,11 +139,11 @@ namespace CRM.Domain.Entities.{Entity}s
 }
 ```
 
-> Tüm cross-cutting concern'ler interface'ler aracılığıyla yönetilir. EF Core global query filter'ları `ISoftDeleteEntity` ve `IOwnedEntity` için otomatik uygulanır — ek kod yazmaya gerek yoktur.
+> Tüm cross-cutting concern'ler `Platform.Domain` interface'leri aracılığıyla yönetilir. EF Core global query filter'ları `ISoftDeleteEntity` ve `IOwnedEntity` için otomatik uygulanır — ek kod yazmaya gerek yoktur. Inheritance YASAK; entity Platform interface'lerini implemente eder, Platform sınıflarından türemez.
 
 ### 2.3 Privilege Kodları
 
-**Dosya:** `CRM.Domain/Authorization/PrivilegeCodes.cs` — mevcut sınıfa ekleyin:
+**Dosya:** `Apps/<App>/<App>.Domain/Authorization/<App>PrivilegeCodes.cs` — mevcut dosyaya ekleyin:
 
 ```csharp
 public static class {Entity}PrivilegeCodes
@@ -139,16 +157,18 @@ public static class {Entity}PrivilegeCodes
 }
 ```
 
+> Platform-shared privilege'lar (`User.*`, `Activity.*`) `Platform.Domain/Authorization/PrivilegeCodes.cs` içindedir. App-spesifik privilege'lar her zaman `<App>PrivilegeCodes` içinde yaşar — Platform'a sızdırma.
+
 ---
 
-## ADIM 3 — CRM.Application
+## ADIM 3 — `<App>.Application`
 
 Feature klasörü, DTO'lar, Errors sınıfı, repository interface, command/query handler'ları ve Mapster mapping kuralı.
 
 ### 3.1 Feature Klasör Yapısı
 
 ```
-CRM.Application/Features/{Entity}s/
+Apps/<App>/<App>.Application/Features/{Entity}s/
 ├── Commands/
 │   ├── Create{Entity}/
 │   │   ├── Create{Entity}Command.cs
@@ -172,12 +192,12 @@ CRM.Application/Features/{Entity}s/
 
 ### 3.2 DTO'lar
 
-**Klasör:** `CRM.Application/Features/{Entity}s/Dtos/`
+**Klasör:** `Apps/<App>/<App>.Application/Features/{Entity}s/Dtos/`
 
 **`{Entity}ListItem.cs`** — Liste görünümü için hafif DTO:
 
 ```csharp
-namespace CRM.Application.Features.{Entity}s.Dtos;
+namespace <App>.Application.Features.{Entity}s.Dtos;
 
 public class {Entity}ListItem
 {
@@ -191,7 +211,7 @@ public class {Entity}ListItem
 **`{Entity}DetailItem.cs`** — View cevabı için tam DTO:
 
 ```csharp
-namespace CRM.Application.Features.{Entity}s.Dtos;
+namespace <App>.Application.Features.{Entity}s.Dtos;
 
 public class {Entity}DetailItem
 {
@@ -208,7 +228,7 @@ public class {Entity}DetailItem
 **`{Entity}ListFilters.cs`** — Sorgu filtreleri:
 
 ```csharp
-namespace CRM.Application.Features.{Entity}s.Dtos;
+namespace <App>.Application.Features.{Entity}s.Dtos;
 
 public class {Entity}ListFilters
 {
@@ -222,12 +242,12 @@ public class {Entity}ListFilters
 
 ### 3.3 Errors
 
-**Dosya:** `CRM.Application/Features/{Entity}s/{Entity}Errors.cs`
+**Dosya:** `Apps/<App>/<App>.Application/Features/{Entity}s/{Entity}Errors.cs`
 
 ```csharp
-using CRM.Application.Common.Results;
+using <App>.Application.Common.Results;
 
-namespace CRM.Application.Features.{Entity}s;
+namespace <App>.Application.Features.{Entity}s;
 
 public static class {Entity}Errors
 {
@@ -245,12 +265,12 @@ public static class {Entity}Errors
 
 ### 3.4 Repository Interface (sadece write path)
 
-**Dosya:** `CRM.Application/Interfaces/I{Entity}Repository.cs`
+**Dosya:** `Apps/<App>/<App>.Application/Interfaces/I{Entity}Repository.cs`
 
 ```csharp
-using CRM.Domain.Entities.{Entity}s;
+using <App>.Domain.Entities.{Entity}s;
 
-namespace CRM.Application.Interfaces;
+namespace <App>.Application.Interfaces;
 
 public interface I{Entity}Repository : IEntityRepository<{Entity}>
 {
@@ -258,11 +278,11 @@ public interface I{Entity}Repository : IEntityRepository<{Entity}>
 }
 ```
 
-> **Not:** Liste sorgusu için repository metodu **açma**. Query handler `IApplicationDbContext` + `.ProjectToType<T>()` ile doğrudan EF üzerinden projeksiyon yapar. Repository yalnızca write path'i (Create/Update/Delete) ve çok özel write-side sorguları (duplicate check gibi) içerir.
+> **Not:** Liste sorgusu için repository metodu **açma**. Query handler `I<App>DbContext` + `.ProjectToType<T>()` ile doğrudan EF üzerinden projeksiyon yapar. Repository yalnızca write path'i (Create/Update/Delete) ve çok özel write-side sorguları (duplicate check gibi) içerir.
 
 ### 3.5 Mapster Mapping Config
 
-**Dosya:** `CRM.Application/Mapping/MappingConfig.cs` — mevcut `Register` metoduna kural ekle:
+**Dosya:** `Apps/<App>/<App>.Application/Mapping/MappingConfig.cs` — mevcut `Register` metoduna kural ekle:
 
 ```csharp
 config.NewConfig<{Entity}, {Entity}DetailItem>();
@@ -294,11 +314,11 @@ config.NewConfig<Update{Entity}Command, {Entity}>()
 
 ```csharp
 // Features/{Entity}s/Commands/Create{Entity}/Create{Entity}Command.cs
-using CRM.Application.Common.Abstractions;
-using CRM.Application.Common.Results;
-using CRM.Application.Features.{Entity}s.Dtos;
+using <App>.Application.Common.Abstractions;
+using <App>.Application.Common.Results;
+using <App>.Application.Features.{Entity}s.Dtos;
 
-namespace CRM.Application.Features.{Entity}s.Commands.Create{Entity};
+namespace <App>.Application.Features.{Entity}s.Commands.Create{Entity};
 
 public sealed record Create{Entity}Command(
     string Name,
@@ -312,7 +332,7 @@ public sealed record Create{Entity}Command(
 ```csharp
 using FluentValidation;
 
-namespace CRM.Application.Features.{Entity}s.Commands.Create{Entity};
+namespace <App>.Application.Features.{Entity}s.Commands.Create{Entity};
 
 public sealed class Create{Entity}Validator : AbstractValidator<Create{Entity}Command>
 {
@@ -328,14 +348,14 @@ public sealed class Create{Entity}Validator : AbstractValidator<Create{Entity}Co
 **Handler:**
 
 ```csharp
-using CRM.Application.Common.Results;
-using CRM.Application.Features.{Entity}s.Dtos;
-using CRM.Application.Interfaces;
-using CRM.Domain.Entities.{Entity}s;
+using <App>.Application.Common.Results;
+using <App>.Application.Features.{Entity}s.Dtos;
+using <App>.Application.Interfaces;
+using <App>.Domain.Entities.{Entity}s;
 using Mapster;
 using MediatR;
 
-namespace CRM.Application.Features.{Entity}s.Commands.Create{Entity};
+namespace <App>.Application.Features.{Entity}s.Commands.Create{Entity};
 
 public sealed class Create{Entity}Handler
     : IRequestHandler<Create{Entity}Command, Result<{Entity}DetailItem>>
@@ -436,8 +456,8 @@ public sealed record Get{Entity}Query(Guid Id) : IQuery<{Entity}DetailItem>;
 public sealed class Get{Entity}Handler
     : IRequestHandler<Get{Entity}Query, Result<{Entity}DetailItem>>
 {
-    private readonly IApplicationDbContext _ctx;
-    public Get{Entity}Handler(IApplicationDbContext ctx) => _ctx = ctx;
+    private readonly I<App>DbContext _ctx;
+    public Get{Entity}Handler(I<App>DbContext ctx) => _ctx = ctx;
 
     public async Task<Result<{Entity}DetailItem>> Handle(Get{Entity}Query q, CancellationToken ct)
     {
@@ -462,8 +482,8 @@ public sealed record List{Entity}sQuery(
 public sealed class List{Entity}sHandler
     : IRequestHandler<List{Entity}sQuery, Result<PaginationResult<{Entity}ListItem>>>
 {
-    private readonly IApplicationDbContext _ctx;
-    public List{Entity}sHandler(IApplicationDbContext ctx) => _ctx = ctx;
+    private readonly I<App>DbContext _ctx;
+    public List{Entity}sHandler(I<App>DbContext ctx) => _ctx = ctx;
 
     public async Task<Result<PaginationResult<{Entity}ListItem>>> Handle(
         List{Entity}sQuery q, CancellationToken ct)
@@ -502,20 +522,20 @@ public sealed class List{Entity}sHandler
 
 ---
 
-## ADIM 4 — CRM.Infrastructure
+## ADIM 4 — <App>.Infrastructure
 
 ### 4.1 EF Core Configuration
 
-**Dosya:** `CRM.Infrastructure/Data/Configurations/{Entity}s/{Entity}Configuration.cs`
+**Dosya:** `Apps/<App>/<App>.Infrastructure/Data/Configurations/{Entity}s/{Entity}Configuration.cs`
 
 ```csharp
-using CRM.Domain.Entities.{Entity}s;
-using CRM.Domain.Enums;
+using <App>.Domain.Entities.{Entity}s;
+using <App>.Domain.Enums;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
-namespace CRM.Infrastructure.Data.Configurations.{Entity}s;
+namespace <App>.Infrastructure.Data.Configurations.{Entity}s;
 
 public class {Entity}Configuration : IEntityTypeConfiguration<{Entity}>
 {
@@ -568,22 +588,22 @@ public class {Entity}Configuration : IEntityTypeConfiguration<{Entity}>
 
 ### 4.2 Repository Implementasyonu
 
-**Dosya:** `CRM.Infrastructure/Repositories/{Entity}Repository.cs`
+**Dosya:** `Apps/<App>/<App>.Infrastructure/Repositories/{Entity}Repository.cs`
 
 ```csharp
-using CRM.Application.Interfaces;
-using CRM.Application.Modals.Common;
-using CRM.Application.Modals.{Entity}Modal;
-using CRM.Domain.Entities.{Entity}s;
-using CRM.Infrastructure.Data;
-using CRM.Infrastructure.Data.Repositories;
+using <App>.Application.Interfaces;
+using <App>.Application.Modals.Common;
+using <App>.Application.Modals.{Entity}Modal;
+using <App>.Domain.Entities.{Entity}s;
+using <App>.Infrastructure.Data;
+using <App>.Infrastructure.Data.Repositories;
 using Microsoft.EntityFrameworkCore;
 
-namespace CRM.Infrastructure.Repositories
+namespace <App>.Infrastructure.Repositories
 {
     public class {Entity}Repository : BaseEntityRepository<{Entity}>, I{Entity}Repository
     {
-        public {Entity}Repository(DatabaseContext dbContext) : base(dbContext) { }
+        public {Entity}Repository(<App>DbContext dbContext) : base(dbContext) { }
 
         public override async Task<{Entity}?> GetAsync(Guid id, CancellationToken cancellationToken = default)
         {
@@ -639,50 +659,50 @@ namespace CRM.Infrastructure.Repositories
 
 ### 4.3 DbContext'e DbSet Ekle
 
-**Dosya:** `CRM.Infrastructure/Data/DatabaseContext.cs`
+**Dosya:** `Apps/<App>/<App>.Infrastructure/Data/<App>DbContext.cs`
 
 ```csharp
 // Mevcut DbSet'lerin yanına ekleyin (çoğul isim):
 public DbSet<{Entity}> {Entity}s { get; set; }
 ```
 
-### 4.4 IApplicationDbContext'e Property Ekle
+### 4.4 I<App>DbContext'e Property Ekle
 
-**Dosya:** `CRM.Application/Common/Abstractions/IApplicationDbContext.cs`
+**Dosya:** `Apps/<App>/<App>.Application/Interfaces/I<App>DbContext.cs`
 
 ```csharp
 // Query handler'ların {Entity}s üzerinden projection yapabilmesi için:
 DbSet<{Entity}> {Entity}s { get; }
 ```
 
-> Bu adım **kritik**: Query handler `IApplicationDbContext` üzerinden okur, `DatabaseContext`'i doğrudan import etmez. Yeni entity için property eklenmezse query handler derlenmez.
+> Bu adım **kritik**: Query handler `I<App>DbContext` üzerinden okur, `<App>DbContext`'i doğrudan import etmez. Yeni entity için property eklenmezse query handler derlenmez.
 
 ---
 
-## ADIM 5 — CRM.Api
+## ADIM 5 — <App>.Api
 
-Controller tek satırdır. `ISender` inject edilir, gelen request doğrudan MediatR'a gönderilir. Command / Query / Validator hepsi `CRM.Application` tarafında yaşar; controller hiçbir iş mantığı taşımaz.
+Controller tek satırdır. `ISender` inject edilir, gelen request doğrudan MediatR'a gönderilir. Command / Query / Validator hepsi `<App>.Application` tarafında yaşar; controller hiçbir iş mantığı taşımaz.
 
 ### 5.1 Controller
 
-**Dosya:** `CRM.Api/Controllers/{Entity}Controller.cs`
+**Dosya:** `Apps/<App>/<App>.Api/Controllers/{Entity}Controller.cs`
 
 ```csharp
-using CRM.Api.Authorization;
-using CRM.Api.Extensions;                                // ToActionResult
-using CRM.Application.Features.{Entity}s.Commands.Create{Entity};
-using CRM.Application.Features.{Entity}s.Commands.Update{Entity};
-using CRM.Application.Features.{Entity}s.Commands.Delete{Entity};
-using CRM.Application.Features.{Entity}s.Commands.SetState{Entity};
-using CRM.Application.Features.{Entity}s.Commands.Assign{Entity};
-using CRM.Application.Features.{Entity}s.Queries.Get{Entity};
-using CRM.Application.Features.{Entity}s.Queries.List{Entity}s;
-using CRM.Application.Features.{Entity}s.Queries.Search{Entity}s;
-using CRM.Domain.Authorization;
+using <App>.Api.Authorization;
+using <App>.Api.Extensions;                                // ToActionResult
+using <App>.Application.Features.{Entity}s.Commands.Create{Entity};
+using <App>.Application.Features.{Entity}s.Commands.Update{Entity};
+using <App>.Application.Features.{Entity}s.Commands.Delete{Entity};
+using <App>.Application.Features.{Entity}s.Commands.SetState{Entity};
+using <App>.Application.Features.{Entity}s.Commands.Assign{Entity};
+using <App>.Application.Features.{Entity}s.Queries.Get{Entity};
+using <App>.Application.Features.{Entity}s.Queries.List{Entity}s;
+using <App>.Application.Features.{Entity}s.Queries.Search{Entity}s;
+using <App>.Domain.Authorization;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
 
-namespace CRM.Api.Controllers;
+namespace <App>.Api.Controllers;
 
 [ApiController]
 [Route("api/{entity}")]
@@ -692,49 +712,49 @@ public sealed class {Entity}Controller : ControllerBase
     public {Entity}Controller(ISender sender) => _sender = sender;
 
     [HttpPost("list")]
-    [PrivilegeAuthorize(PrivilegeCodes.{Entity}PrivilegeCodes.Read)]
+    [PrivilegeAuthorize(<App>PrivilegeCodes.{Entity}PrivilegeCodes.Read)]
     public async Task<IActionResult> ListAsync(
         [FromBody] List{Entity}sQuery query, CancellationToken ct)
         => (await _sender.Send(query, ct)).ToActionResult();
 
     [HttpPost("search")]
-    [PrivilegeAuthorize(PrivilegeCodes.{Entity}PrivilegeCodes.Read)]
+    [PrivilegeAuthorize(<App>PrivilegeCodes.{Entity}PrivilegeCodes.Read)]
     public async Task<IActionResult> SearchAsync(
         [FromBody] Search{Entity}sQuery query, CancellationToken ct)
         => (await _sender.Send(query, ct)).ToActionResult();
 
     [HttpPost("get")]
-    [PrivilegeAuthorize(PrivilegeCodes.{Entity}PrivilegeCodes.Read)]
+    [PrivilegeAuthorize(<App>PrivilegeCodes.{Entity}PrivilegeCodes.Read)]
     public async Task<IActionResult> GetAsync(
         [FromBody] Get{Entity}Query query, CancellationToken ct)
         => (await _sender.Send(query, ct)).ToActionResult();
 
     [HttpPost("create")]
-    [PrivilegeAuthorize(PrivilegeCodes.{Entity}PrivilegeCodes.Create)]
+    [PrivilegeAuthorize(<App>PrivilegeCodes.{Entity}PrivilegeCodes.Create)]
     public async Task<IActionResult> CreateAsync(
         [FromBody] Create{Entity}Command cmd, CancellationToken ct)
         => (await _sender.Send(cmd, ct)).ToActionResult();
 
     [HttpPost("update")]
-    [PrivilegeAuthorize(PrivilegeCodes.{Entity}PrivilegeCodes.Update)]
+    [PrivilegeAuthorize(<App>PrivilegeCodes.{Entity}PrivilegeCodes.Update)]
     public async Task<IActionResult> UpdateAsync(
         [FromBody] Update{Entity}Command cmd, CancellationToken ct)
         => (await _sender.Send(cmd, ct)).ToActionResult();
 
     [HttpPost("delete")]
-    [PrivilegeAuthorize(PrivilegeCodes.{Entity}PrivilegeCodes.Delete)]
+    [PrivilegeAuthorize(<App>PrivilegeCodes.{Entity}PrivilegeCodes.Delete)]
     public async Task<IActionResult> DeleteAsync(
         [FromBody] Delete{Entity}Command cmd, CancellationToken ct)
         => (await _sender.Send(cmd, ct)).ToActionResult();
 
     [HttpPost("assign")]
-    [PrivilegeAuthorize(PrivilegeCodes.{Entity}PrivilegeCodes.Assign)]
+    [PrivilegeAuthorize(<App>PrivilegeCodes.{Entity}PrivilegeCodes.Assign)]
     public async Task<IActionResult> AssignAsync(
         [FromBody] Assign{Entity}Command cmd, CancellationToken ct)
         => (await _sender.Send(cmd, ct)).ToActionResult();
 
     [HttpPost("set-state")]
-    [PrivilegeAuthorize(PrivilegeCodes.{Entity}PrivilegeCodes.State)]
+    [PrivilegeAuthorize(<App>PrivilegeCodes.{Entity}PrivilegeCodes.State)]
     public async Task<IActionResult> SetStateAsync(
         [FromBody] SetState{Entity}Command cmd, CancellationToken ct)
         => (await _sender.Send(cmd, ct)).ToActionResult();
@@ -748,9 +768,9 @@ public sealed class {Entity}Controller : ControllerBase
 
 ### 5.2 Dependency Injection Kaydı
 
-**Dosya:** `CRM.Api/Configuration/DependencyInjection.cs`
+**Dosya:** `Apps/<App>/<App>.Api/Configuration/DependencyInjection.cs`
 
-Sadece repository kaydı yeterli. Handler / validator / MediatR registrasyonu `CRM.Application/DependencyInjection.cs` içinde `AddMediatR` + `AddValidatorsFromAssembly` ile assembly scan üzerinden yapılır — her yeni feature için ek kayıt gerekmez.
+Sadece repository kaydı yeterli. Handler / validator / MediatR registrasyonu `Apps/<App>/<App>.Application/DependencyInjection.cs` içinde `AddMediatR` + `AddValidatorsFromAssembly` ile assembly scan üzerinden yapılır — her yeni feature için ek kayıt gerekmez.
 
 ```csharp
 // Sadece yeni repository:
@@ -761,25 +781,40 @@ services.AddScoped<I{Entity}Repository, {Entity}Repository>();
 
 ---
 
-## ADIM 6 — Frontend (CRM.Web)
+## ADIM 6 — Frontend (`<App>.Web`)
 
-### 6.1 Type Tanımları
+> Mimari referansı: `docs/Client_Architecture.md`. Frontend FSD katmanları (`app → pages → widgets → features → entities → shared`), MVI, TanStack Query + react-hook-form + zod kullanır. Aşağıdaki şablon mevcut `Apps/Crm/Crm.Web/src/entities/account/` yapısı baz alınarak yazıldı.
 
-**Dosya:** `CRM.Web/src/types/{entity}.types.ts`
+### 6.1 Entity Klasörü (FSD)
+
+**Klasör:** `Apps/<App>/<App>.Web/src/entities/{entity}/`
+
+```
+entities/{entity}/
+├── model/
+│   ├── types.ts          # TypeScript tipleri
+│   └── schema.ts         # zod şemaları
+├── api/
+│   ├── {entity}DataSource.ts    # HTTP çağrıları (httpClient üzerinden)
+│   ├── use{Entity}Queries.ts    # TanStack Query hook'ları
+│   └── use{Entity}Mutations.ts  # Create/Update/Delete mutation'ları
+└── locales/
+    └── tr.json
+```
+
+### 6.2 Types
+
+**Dosya:** `entities/{entity}/model/types.ts`
 
 ```typescript
-import i18n from '@/config/i18n.config';
-
-// Enum sabitleri
 export const {Entity}Status = {
-  Active:   'active',
-  Inactive: 'inactive',
-  Archived: 'archived',
+  Active:   1,
+  Inactive: 2,
+  Archived: 3,
 } as const;
 
-export type {Entity}StatusValue = (typeof {Entity}Status)[keyof typeof {Entity}Status];
+export type {Entity}StatusValue = typeof {Entity}Status[keyof typeof {Entity}Status];
 
-// Liste DTO
 export interface {Entity}ListItem {
   id: string;
   name: string;
@@ -787,531 +822,278 @@ export interface {Entity}ListItem {
   isActive: boolean;
 }
 
-// Detay DTO
 export interface {Entity}DetailItem {
   id: string;
   name: string;
   description?: string;
   status: {Entity}StatusValue;
   isActive: boolean;
-  createdAt?: Date;
-  updatedAt?: Date;
+  createdAtUtc?: string;
+  updatedAtUtc?: string;
 }
 
-// Filtreler
 export interface {Entity}ListFilters {
   name?: string;
   status?: {Entity}StatusValue;
   isActive?: boolean;
 }
-
-// API request/response
-export interface {Entity}ListRequest {
-  page: number;
-  pageSize: number;
-  filters?: {Entity}ListFilters;
-}
-
-export interface {Entity}ListResponse {
-  data: {Entity}ListItem[];
-  hasMore: boolean;
-  page: number;
-  pageSize: number;
-}
-
-// Renk haritası
-const {Entity}StatusColors: Record<{Entity}StatusValue, string> = {
-  [{Entity}Status.Active]:   'green',
-  [{Entity}Status.Inactive]: 'default',
-  [{Entity}Status.Archived]: 'red',
-};
-
-// Yardımcı fonksiyonlar
-export const get{Entity}StatusLabel = (status: {Entity}StatusValue): string =>
-  i18n.t(`enums:{entity}Status.${status}`, { defaultValue: status });
-
-export const get{Entity}StatusColor = (status: {Entity}StatusValue): string =>
-  {Entity}StatusColors[status] ?? 'default';
-
-// Select bileşeni için seçenekler
-export const {entity}StatusOptions = Object.values({Entity}Status).map((value) => ({
-  label: get{Entity}StatusLabel(value),
-  value,
-}));
-
-// Ant Design tablo filtresi için
-export const {entity}StatusFilters = Object.values({Entity}Status).map((value) => ({
-  text:  get{Entity}StatusLabel(value),
-  value,
-}));
 ```
 
-### 6.2 Service Path'leri
+### 6.3 Schema (zod)
 
-**Dosya:** `CRM.Web/src/config/service.paths.ts` — `ControllerPaths` ve `ServicePath` nesnelerine ekleyin:
-
-```typescript
-// ControllerPaths'e ekle:
-{Entity}Path: `${ServiceBasePath}/api/{entity}`,
-
-// ServicePath'e ekle:
-{Entity}: {
-  List:   `${ControllerPaths.{Entity}Path}/list`,
-  Search: `${ControllerPaths.{Entity}Path}/search`,
-  Get:    `${ControllerPaths.{Entity}Path}/get`,
-  Create: `${ControllerPaths.{Entity}Path}/create`,
-  Update: `${ControllerPaths.{Entity}Path}/update`,
-  Delete: `${ControllerPaths.{Entity}Path}/delete`,
-  Assign: `${ControllerPaths.{Entity}Path}/assign`,
-  State:  `${ControllerPaths.{Entity}Path}/set-state`,
-},
-```
-
-### 6.3 Service
-
-**Dosya:** `CRM.Web/src/services/{entity}.service.ts`
+**Dosya:** `entities/{entity}/model/schema.ts`
 
 ```typescript
-import type {
-  {Entity}DetailItem,
-  {Entity}ListRequest,
-  {Entity}ListFilters,
-  {Entity}ListResponse,
-} from '@/types/{entity}.types';
-import apiClient from '@/services/api.client';
-import { apiRequest } from '@/services/api.request';
-import { ServicePath } from '@/config/service.paths';
-import type { AssignRequest, IdListRequest, IdRequest, StatusRequest } from '@/types/common.types';
+import { z } from 'zod';
 
-export const {entity}Service = {
-
-  get{Entity}s: async (
-    page: number = 1,
-    pageSize: number = 10,
-    filters?: {Entity}ListFilters
-  ): Promise<{Entity}ListResponse> => {
-    const request: {Entity}ListRequest = { page, pageSize, filters };
-    return apiRequest(() =>
-      apiClient.post<{Entity}ListResponse>(ServicePath.{Entity}.List, request).then(r => r.data)
-    );
-  },
-
-  get{Entity}ById: async (id: string): Promise<{Entity}DetailItem> => {
-    const request: IdRequest = { id };
-    return apiRequest(() =>
-      apiClient.post<{Entity}DetailItem>(ServicePath.{Entity}.Get, request).then(r => r.data)
-    );
-  },
-
-  create{Entity}: async (
-    data: Omit<Partial<{Entity}DetailItem>, 'id' | 'createdAt' | 'updatedAt'>
-  ): Promise<{Entity}DetailItem> => {
-    return apiRequest(() =>
-      apiClient.post<{Entity}DetailItem>(ServicePath.{Entity}.Create, data).then(r => r.data)
-    );
-  },
-
-  update{Entity}: async (data: Partial<{Entity}DetailItem>): Promise<{Entity}DetailItem> => {
-    return apiRequest(() =>
-      apiClient.post<{Entity}DetailItem>(ServicePath.{Entity}.Update, data).then(r => r.data)
-    );
-  },
-
-  delete{Entity}: async (request: IdListRequest): Promise<void> => {
-    return apiRequest(() =>
-      apiClient.post(ServicePath.{Entity}.Delete, request).then(() => undefined)
-    );
-  },
-
-  setStatus{Entity}: async (request: StatusRequest): Promise<void> => {
-    return apiRequest(() =>
-      apiClient.post(ServicePath.{Entity}.State, request).then(() => undefined)
-    );
-  },
-
-  assign{Entity}: async (request: AssignRequest): Promise<void> => {
-    return apiRequest(() =>
-      apiClient.post(ServicePath.{Entity}.Assign, request).then(() => undefined)
-    );
-  },
-};
-
-export default {entity}Service;
-```
-
-### 6.4 Zustand Store
-
-**Dosya:** `CRM.Web/src/stores/{entity}.store.ts`
-
-```typescript
-import {entity}Service from '@/services/{entity}.service';
-import type { {Entity}ListItem, {Entity}DetailItem, {Entity}ListFilters } from '@/types/{entity}.types';
-import { createEntityStore } from './entity.store.factory';
-
-const _store = createEntityStore<{Entity}ListItem, {Entity}DetailItem, {Entity}ListFilters, never>({
-  storeName: '{entity}-store',
-  defaultPageSize: 10,
-  initialFilters: {
-    name:     undefined,
-    status:   undefined,
-    isActive: undefined,
-  },
-  labels: { singular: '{Entity}', plural: '{Entity}ler' },
-  service: {
-    getList:  (page, pageSize, filters) => {entity}Service.get{Entity}s(page, pageSize, filters),
-    getById:  (id)     => {entity}Service.get{Entity}ById(id),
-    create:   (data)   => {entity}Service.create{Entity}(data as Omit<Partial<{Entity}DetailItem>, 'id' | 'createdAt' | 'updatedAt'>),
-    update:   (data)   => {entity}Service.update{Entity}(data as Partial<{Entity}DetailItem>),
-    delete:   (payload) => {entity}Service.delete{Entity}(payload),
-    setStatus:(payload) => {entity}Service.setStatus{Entity}(payload),
-    assign:   (payload) => {entity}Service.assign{Entity}(payload),
-  },
+export const {entity}Schema = z.object({
+  id: z.string().uuid().optional(),
+  name: z.string().min(1, 'Ad zorunludur').max(200),
+  description: z.string().max(1000).optional(),
+  status: z.number().int(),
+  isActive: z.boolean().default(true),
 });
 
-// Entity'ye özel alias'lar ile wrapper hook
-export function use{Entity}Store() {
-  const s = _store();
-  return {
-    ...s,
-    {entity}s:         s.items as {Entity}ListItem[],
-    current{Entity}:   s.currentItem as {Entity}DetailItem | null,
-    setCurrentItem:    s.setCurrentItem,
-    fetch{Entity}s:    s.fetchItems,
-    fetch{Entity}ById: s.fetchItemById,
-    create{Entity}:    s.createItem as (data: Omit<Partial<{Entity}DetailItem>, 'id' | 'createdAt' | 'updatedAt'>) => Promise<{Entity}DetailItem>,
-    update{Entity}:    s.updateItem as (data: Partial<{Entity}DetailItem>) => Promise<{Entity}DetailItem>,
-    delete{Entity}:    s.deleteItem,
-    bulkDelete{Entity}s:     s.bulkDelete,
-    bulkActivate{Entity}s:   s.bulkActivate,
-    bulkDeactivate{Entity}s: s.bulkDeactivate,
-    bulkAssign{Entity}s:     s.bulkAssign,
-    activate{Entity}:   s.activateItem,
-    deactivate{Entity}: s.deactivateItem,
-    assign{Entity}:     s.assignItem,
-  };
+export type {Entity}FormValues = z.infer<typeof {entity}Schema>;
+```
+
+### 6.4 ServicePath + QueryKeys
+
+**Dosya:** `Apps/<App>/<App>.Web/src/shared/api/servicePaths.ts` — `<App>ServicePath` nesnesine ekle:
+
+```typescript
+{Entity}: crud(`${ApiBase}/{entity}`),    // List/Get/Create/Update/Delete
+```
+
+**Dosya:** `Apps/<App>/<App>.Web/src/shared/api/queryKeys.ts` — fabrika ekle:
+
+```typescript
+export const {entity}Keys = {
+  all: ['{entity}'] as const,
+  lists: () => [...{entity}Keys.all, 'list'] as const,
+  list: (filters: unknown) => [...{entity}Keys.lists(), filters] as const,
+  details: () => [...{entity}Keys.all, 'detail'] as const,
+  detail: (id: string) => [...{entity}Keys.details(), id] as const,
+};
+```
+
+### 6.5 DataSource
+
+**Dosya:** `entities/{entity}/api/{entity}DataSource.ts`
+
+```typescript
+import { httpClient } from '@platform/ui';
+import { <App>ServicePath } from '@/shared/api/servicePaths';
+import type { {Entity}DetailItem, {Entity}ListItem, {Entity}ListFilters } from '../model/types';
+import type { PaginationInfo, PaginationResult } from '@platform/ui';
+
+export const {entity}DataSource = {
+  list: (filters: {Entity}ListFilters, pagination: PaginationInfo) =>
+    httpClient.post<PaginationResult<{Entity}ListItem>>(
+      <App>ServicePath.{Entity}.List, { filters, pagination }
+    ).then(r => r.data),
+
+  get: (id: string) =>
+    httpClient.post<{Entity}DetailItem>(
+      <App>ServicePath.{Entity}.Get, { id }
+    ).then(r => r.data),
+
+  create: (data: Partial<{Entity}DetailItem>) =>
+    httpClient.post<{Entity}DetailItem>(
+      <App>ServicePath.{Entity}.Create, data
+    ).then(r => r.data),
+
+  update: (data: Partial<{Entity}DetailItem>) =>
+    httpClient.post<{Entity}DetailItem>(
+      <App>ServicePath.{Entity}.Update, data
+    ).then(r => r.data),
+
+  delete: (ids: string[]) =>
+    httpClient.post(<App>ServicePath.{Entity}.Delete, { ids }).then(() => undefined),
+};
+```
+
+### 6.6 Query / Mutation Hook'ları
+
+**Dosya:** `entities/{entity}/api/use{Entity}Queries.ts`
+
+```typescript
+import { useQuery, useInfiniteQuery } from '@tanstack/react-query';
+import { {entity}DataSource } from './{entity}DataSource';
+import { {entity}Keys } from '@/shared/api/queryKeys';
+import type { {Entity}ListFilters } from '../model/types';
+
+export function use{Entity}Query(id: string | undefined) {
+  return useQuery({
+    queryKey: id ? {entity}Keys.detail(id) : ['{entity}', 'detail', 'none'],
+    queryFn: () => {entity}DataSource.get(id!),
+    enabled: !!id,
+  });
 }
 
-use{Entity}Store.getState = _store.getState;
-export default use{Entity}Store;
+export function use{Entity}sListQuery(filters: {Entity}ListFilters) {
+  return useInfiniteQuery({
+    queryKey: {entity}Keys.list(filters),
+    queryFn: ({ pageParam = 1 }) =>
+      {entity}DataSource.list(filters, { page: pageParam, pageSize: 20 }),
+    getNextPageParam: (last) => last.hasMore ? last.page + 1 : undefined,
+    initialPageParam: 1,
+  });
+}
 ```
 
-> `updateStatus` (bulk status değişikliği) entity'nizde varsa `service` adapter'ına ekleyin ve store wrapper'ına `bulkUpdateStatus` alias'ını dahil edin. Yoksa `never` type parametresini olduğu gibi bırakın.
-
-### 6.5 Route Path'leri
-
-**Dosya:** `CRM.Web/src/config/route.paths.ts`
-
-`BasePaths`'e base path ekleyin:
+**Dosya:** `entities/{entity}/api/use{Entity}Mutations.ts`
 
 ```typescript
-{Entity}Path: '/{entity}',
+import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { {entity}DataSource } from './{entity}DataSource';
+import { {entity}Keys } from '@/shared/api/queryKeys';
+import type { {Entity}DetailItem } from '../model/types';
+
+export function useUpsert{Entity}() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (data: Partial<{Entity}DetailItem>) =>
+      data.id ? {entity}DataSource.update(data) : {entity}DataSource.create(data),
+    onSuccess: (saved) => {
+      qc.invalidateQueries({ queryKey: {entity}Keys.lists() });
+      qc.invalidateQueries({ queryKey: {entity}Keys.detail(saved.id) });
+    },
+  });
+}
+
+export function useDelete{Entity}() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (ids: string[]) => {entity}DataSource.delete(ids),
+    onSuccess: () => qc.invalidateQueries({ queryKey: {entity}Keys.lists() }),
+  });
+}
 ```
 
-Yeni path grubunu tanımlayın:
+### 6.7 Route Paths + Routes
 
-```typescript
-export const {Entity} = {
-  List:   BasePaths.{Entity}Path,
-  New:    `${BasePaths.{Entity}Path}/new`,
-  Detail: (id: string) => `${BasePaths.{Entity}Path}/${id}`,
-  Edit:   (id: string) => `${BasePaths.{Entity}Path}/${id}?mode=edit`,
-  View:   (id: string) => `${BasePaths.{Entity}Path}/${id}?mode=view`,
-} as const;
-```
-
-`RoutePaths` export nesnesine ekleyin:
+**Dosya:** `Apps/<App>/<App>.Web/src/app/router/paths.ts`
 
 ```typescript
 export const RoutePaths = {
-  ...BasePaths,
-  // ... mevcut entity'ler ...
-  {Entity}: {Entity},
+  // ... mevcut route'lar
+  {Entities}List: '/{entity}',
+  {Entity}New: '/{entity}/new',
+  {Entity}Detail: (id: string) => `/{entity}/${id}`,
+  {Entity}Edit:   (id: string) => `/{entity}/${id}/edit`,
+} as const;
+
+export const RoutePatterns = {
+  {Entities}List:  '/{entity}',
+  {Entity}New:    '/{entity}/new',
+  {Entity}Detail: '/{entity}/:id',
+  {Entity}Edit:   '/{entity}/:id/edit',
 } as const;
 ```
 
-### 6.6 Route Dosyası
-
-**Dosya:** `CRM.Web/src/routes/{entity}.routes.tsx`
+**Dosya:** `Apps/<App>/<App>.Web/src/app/router/routes.tsx`
 
 ```tsx
-import { lazy } from 'react';
-import type { RouteObject } from 'react-router-dom';
-import { RoutePaths } from '@/config/route.paths';
+import { {Entities}ListPage } from '@/pages/{entities}/list/ui/{Entities}ListPage';
+import { {Entity}DetailPage } from '@/pages/{entities}/detail/ui/{Entity}DetailPage';
 
-const {Entity}List   = lazy(() => import('@/pages/{entity}/{Entity}List'));
-const {Entity}Detail = lazy(() => import('@/pages/{entity}/{Entity}Detail'));
-
-export const {entity}Routes: RouteObject[] = [
-  {
-    path: RoutePaths.{Entity}.List,
-    element: <{Entity}List />,
-  },
-  {
-    path: RoutePaths.{Entity}.New,
-    element: <{Entity}Detail />,
-  },
-  {
-    path: RoutePaths.{Entity}.Detail(':id'),
-    element: <{Entity}Detail />,
-  },
-];
-
-export default {entity}Routes;
+// routes array'ine ekle:
+{ path: RoutePatterns.{Entities}List, element: <{Entities}ListPage /> },
+{ path: RoutePatterns.{Entity}New,    element: <{Entity}DetailPage /> },
+{ path: RoutePatterns.{Entity}Detail, element: <{Entity}DetailPage /> },
+{ path: RoutePatterns.{Entity}Edit,   element: <{Entity}DetailPage /> },
 ```
 
-Route'ları ana router'a ekleyin (genellikle `App.tsx` veya `router.tsx`):
+### 6.8 List Page
+
+**Dosya:** `Apps/<App>/<App>.Web/src/pages/{entities}/list/ui/{Entities}ListPage.tsx`
 
 ```tsx
-import {entity}Routes from '@/routes/{entity}.routes';
-
-// routes array'ine spread edin:
-...{entity}Routes,
-```
-
-### 6.7 List Page
-
-**Dosya:** `CRM.Web/src/pages/{entity}/{Entity}List.tsx`
-
-```tsx
-import { useEffect, useState } from 'react';
-import { Button, Table, Tag, Space, Popconfirm } from 'antd';
-import type { ColumnsType } from 'antd/es/table';
 import { useNavigate } from 'react-router-dom';
-import { ListPageLayout } from '@/components/layout/ListPageLayout';
-import { RoutePaths } from '@/config/route.paths';
-import use{Entity}Store from '@/stores/{entity}.store';
-import type { {Entity}ListItem } from '@/types/{entity}.types';
-import { get{Entity}StatusLabel, get{Entity}StatusColor } from '@/types/{entity}.types';
+import { ListPageLayout, DataTable } from '@platform/ui';
+import { use{Entity}sListQuery } from '@/entities/{entity}/api/use{Entity}Queries';
+import { RoutePaths } from '@/app/router/paths';
+import type { {Entity}ListItem } from '@/entities/{entity}/model/types';
 
-export default function {Entity}List() {
+export function {Entities}ListPage() {
   const navigate = useNavigate();
-  const {
-    {entity}s,
-    fetchItems,
-    hasMore,
-    page,
-    pageSize,
-    isLoading,
-    bulkDelete{Entity}s,
-    bulkActivate{Entity}s,
-    bulkDeactivate{Entity}s,
-    bulkAssign{Entity}s,
-    delete{Entity},
-    activate{Entity},
-    deactivate{Entity},
-    filters,
-    setFilters,
-    resetFilters,
-  } = use{Entity}Store();
-
-  const [selectedRowKeys, setSelectedRowKeys] = useState<string[]>([]);
-
-  useEffect(() => {
-    fetchItems(1);
-  }, []);
-
-  const columns: ColumnsType<{Entity}ListItem> = [
-    {
-      title: 'Ad',
-      dataIndex: 'name',
-      key: 'name',
-      render: (text, record) => (
-        <a onClick={() => navigate(RoutePaths.{Entity}.View(record.id))}>{text}</a>
-      ),
-    },
-    {
-      title: 'Durum',
-      dataIndex: 'status',
-      key: 'status',
-      render: (status) => (
-        <Tag color={get{Entity}StatusColor(status)}>{get{Entity}StatusLabel(status)}</Tag>
-      ),
-    },
-    {
-      title: 'Aktif',
-      dataIndex: 'isActive',
-      key: 'isActive',
-      render: (isActive) => <Tag color={isActive ? 'green' : 'default'}>{isActive ? 'Aktif' : 'Pasif'}</Tag>,
-    },
-    {
-      title: 'İşlemler',
-      key: 'actions',
-      render: (_, record) => (
-        <Space>
-          <Button size="small" onClick={() => navigate(RoutePaths.{Entity}.Edit(record.id))}>
-            Düzenle
-          </Button>
-          <Popconfirm title="Silmek istediğinizden emin misiniz?" onConfirm={() => delete{Entity}({ ids: [record.id] })}>
-            <Button size="small" danger>Sil</Button>
-          </Popconfirm>
-        </Space>
-      ),
-    },
-  ];
+  const { data, fetchNextPage, hasNextPage, isLoading } = use{Entity}sListQuery({});
+  const rows = data?.pages.flatMap(p => p.data) ?? [];
 
   return (
     <ListPageLayout
       title="{Entity} Listesi"
-      onCreate={() => navigate(RoutePaths.{Entity}.New)}
-      bulkActions={
-        selectedRowKeys.length > 0 ? (
-          <Space>
-            <Popconfirm title="Seçilenleri silmek istediğinizden emin misiniz?" onConfirm={() => bulkDelete{Entity}s(selectedRowKeys)}>
-              <Button danger>Sil ({selectedRowKeys.length})</Button>
-            </Popconfirm>
-            <Button onClick={() => bulkActivate{Entity}s(selectedRowKeys)}>Aktifleştir</Button>
-            <Button onClick={() => bulkDeactivate{Entity}s(selectedRowKeys)}>Pasifleştir</Button>
-          </Space>
-        ) : null
-      }
+      onCreate={() => navigate(RoutePaths.{Entity}New)}
     >
-      <Table
+      <DataTable<{Entity}ListItem>
         rowKey="id"
-        columns={columns}
-        dataSource={{entity}s}
+        dataSource={rows}
         loading={isLoading}
-        rowSelection={{
-          selectedRowKeys,
-          onChange: (keys) => setSelectedRowKeys(keys as string[]),
-        }}
-        pagination={{
-          current: page,
-          pageSize,
-          showSizeChanger: false,
-          // hasMore pattern: sonraki sayfa varlığını simüle eder
-        }}
-        onChange={(pagination) => fetchItems(pagination.current ?? 1)}
+        onRow={(record) => ({ onClick: () => navigate(RoutePaths.{Entity}Detail(record.id)) })}
+        columns={[
+          { title: 'Ad', dataIndex: 'name' },
+          { title: 'Durum', dataIndex: 'status' },
+        ]}
+        onLoadMore={hasNextPage ? () => fetchNextPage() : undefined}
       />
     </ListPageLayout>
   );
 }
 ```
 
-### 6.8 Detail Page
+### 6.9 Detail Page
 
-**Dosya:** `CRM.Web/src/pages/{entity}/{Entity}Detail.tsx`
+**Dosya:** `Apps/<App>/<App>.Web/src/pages/{entities}/detail/ui/{Entity}DetailPage.tsx`
 
 ```tsx
-import { useEffect } from 'react';
-import { Form, Input, Select, Button, Space } from 'antd';
-import { useNavigate, useParams, useSearchParams } from 'react-router-dom';
-import { DetailPageLayout } from '@/components/layout/DetailPageLayout';
-import { AuditCard } from '@/components/common/AuditCard';
-import { RoutePaths } from '@/config/route.paths';
-import use{Entity}Store from '@/stores/{entity}.store';
-import type { {Entity}DetailItem } from '@/types/{entity}.types';
-import { {entity}StatusOptions } from '@/types/{entity}.types';
+import { DetailPageLayout, FormSection, TextField, SelectField } from '@platform/ui';
+import { use{Entity}Query, useUpsert{Entity}, useDelete{Entity} } from '@/entities/{entity}/api/use{Entity}Queries';
+import { {entity}Schema } from '@/entities/{entity}/model/schema';
 
-export default function {Entity}Detail() {
-  const { id } = useParams<{ id: string }>();
-  const [searchParams] = useSearchParams();
-  const navigate = useNavigate();
-  const [form] = Form.useForm<{Entity}DetailItem>();
-
-  const mode = id ? (searchParams.get('mode') ?? 'view') : 'new';
-  const isViewMode = mode === 'view';
-  const isNew = !id;
-
-  const {
-    current{Entity},
-    fetch{Entity}ById,
-    create{Entity},
-    update{Entity},
-    isLoading,
-  } = use{Entity}Store();
-
-  useEffect(() => {
-    if (id) {
-      fetch{Entity}ById(id);
-    }
-  }, [id]);
-
-  useEffect(() => {
-    if (current{Entity} && !isNew) {
-      form.setFieldsValue(current{Entity});
-    }
-  }, [current{Entity}]);
-
-  const handleSubmit = async (values: {Entity}DetailItem) => {
-    if (isNew) {
-      const result = await create{Entity}(values);
-      navigate(RoutePaths.{Entity}.View(result.id));
-    } else {
-      await update{Entity}({ ...values, id: id! });
-      navigate(RoutePaths.{Entity}.View(id!));
-    }
-  };
-
+export function {Entity}DetailPage() {
   return (
     <DetailPageLayout
-      title={isNew ? 'Yeni {Entity}' : (isViewMode ? '{Entity} Detayı' : '{Entity} Düzenle')}
-      isLoading={isLoading}
-      actions={
-        isViewMode && id ? (
-          <Button type="primary" onClick={() => navigate(RoutePaths.{Entity}.Edit(id))}>
-            Düzenle
-          </Button>
-        ) : undefined
-      }
+      entityType="{entity}"
+      useEntityQuery={use{Entity}Query}
+      useUpsertMutation={useUpsert{Entity}}
+      useDeleteMutation={useDelete{Entity}}
+      schema={{entity}Schema}
+      title={(mode, data) => mode === 'new' ? 'Yeni {Entity}' : (data?.name ?? '{Entity}')}
+      afterSaveNavigation="view"
     >
-      <Form
-        form={form}
-        layout="vertical"
-        disabled={isViewMode}
-        onFinish={handleSubmit}
-      >
-        <Form.Item name="name" label="Ad" rules={[{ required: true, message: 'Ad zorunludur' }]}>
-          <Input />
-        </Form.Item>
-
-        <Form.Item name="description" label="Açıklama">
-          <Input.TextArea rows={4} />
-        </Form.Item>
-
-        <Form.Item name="status" label="Durum" rules={[{ required: true }]}>
-          <Select options={{entity}StatusOptions} />
-        </Form.Item>
-
-        {!isViewMode && (
-          <Form.Item>
-            <Space>
-              <Button type="primary" htmlType="submit" loading={isLoading}>
-                {isNew ? 'Oluştur' : 'Güncelle'}
-              </Button>
-              <Button onClick={() => navigate(-1)}>İptal</Button>
-            </Space>
-          </Form.Item>
-        )}
-      </Form>
-
-      {/* Audit bilgisi — sadece mevcut kayıtlarda göster */}
-      {current{Entity} && (
-        <AuditCard
-          createdAt={current{Entity}.createdAt}
-          updatedAt={current{Entity}.updatedAt}
-        />
-      )}
+      <FormSection title="Genel Bilgiler">
+        <TextField name="name" label="Ad" required />
+        <TextField name="description" label="Açıklama" />
+        <SelectField name="status" label="Durum" required options={/* enum options */} />
+      </FormSection>
     </DetailPageLayout>
   );
 }
 ```
 
----
+### 6.10 Menu + i18n
+
+**Menu:** `Apps/<App>/<App>.Web/src/app/menu/use<App>Menu.tsx` — uygun grupta `{ key: '{entity}', label: t('{entity}'), to: RoutePaths.{Entities}List }` ekle.
+
+**i18n:** `entities/{entity}/locales/tr.json` ve `pages/{entities}/{list,detail}/locales/tr.json` dosyalarını oluştur. `Apps/<App>/<App>.Web/src/app/i18n.config.ts` içindeki `register<App>Translations()` çağrısı `import.meta.glob` ile bunları otomatik yükler.
+
+> **Yasaklar (CLAUDE.md):** `mode === 'view'` kontrolü sayfa kodunda yasak (field primitive'inde olmalı). Mode prop olarak geçirmek yasak (FormModeProvider kontekst). Doğrudan axios kullanımı yasak (sadece `httpClient`). Inline query key yasak (fabrika kullan).
 
 ## Mevcut Entity'ye Yeni Bir Command / Query Eklemek
 
 Entity zaten varsa ve yalnızca yeni bir use case ekliyorsanız (örn: `ConvertLeadToAccountCommand`, `GetOpportunitySummaryQuery`), kısaltılmış akış:
 
-1. **Klasörü aç.** `CRM.Application/Features/{Entity}s/Commands/{Action}{Entity}/` veya `.../Queries/{Action}{Entity}/`.
+1. **Klasörü aç.** `Apps/<App>/<App>.Application/Features/{Entity}s/Commands/{Action}{Entity}/` veya `.../Queries/{Action}{Entity}/`.
 2. **Command/Query record'ını yaz.** `ICommand<T>` veya `IQuery<T>` implement et.
 3. **(Command ise) Validator yaz.** Sadece input validation — DB'ye bakma. DB gerektiren kural handler'a gider.
 4. **Handler yaz.**
    - Command → `I{Entity}Repository` + domain metodu; iş kuralı için `return {Entity}Errors.XYZ;`
-   - Query → `IApplicationDbContext` + `.ProjectToType<T>()`
+   - Query → `I<App>DbContext` + `.ProjectToType<T>()`
 5. **Error gerekiyorsa** `{Entity}Errors.cs` içine yeni `public static readonly Error ...` ekle.
 6. **Mapster kuralı gerekliyse** `MappingConfig.cs` içine ekle.
 7. **Controller'a method ekle.** Tek satır: `(await _sender.Send(cmd, ct)).ToActionResult()`. `[PrivilegeAuthorize(...)]` ekle.
-8. **(Yeni privilege gerekiyorsa)** `PrivilegeCodes.{Entity}PrivilegeCodes` içine sabit ekle.
+8. **(Yeni privilege gerekiyorsa)** `<App>PrivilegeCodes.{Entity}PrivilegeCodes` içine sabit ekle.
 
 **DI değişmez.** MediatR handler'ları ve FluentValidation validator'ları assembly scan ile otomatik bulunur. Yeni bir `AddScoped` kaydı **gerekmez**.
 
@@ -1339,17 +1121,17 @@ Her adımı tamamladıkça işaretleyin:
 ### Backend
 
 **Database + Domain:**
-- [ ] `CRM.Database/{Entity}.sql` — Tablo scripti oluşturuldu
-- [ ] `CRM.Domain/Enums/{Entity}Status.cs` — Enum'lar oluşturuldu
-- [ ] `CRM.Domain/Entities/{Entity}s/{Entity}.cs` — Entity sınıfı oluşturuldu
-- [ ] `CRM.Domain/Authorization/PrivilegeCodes.cs` — `{Entity}PrivilegeCodes` eklendi
+- [ ] `Apps/<App>/<App>.Database/{Entity}.sql` — Tablo scripti oluşturuldu
+- [ ] `Apps/<App>/<App>.Domain/Enums/{Entity}Status.cs` — Enum'lar oluşturuldu
+- [ ] `Apps/<App>/<App>.Domain/Entities/{Entity}s/{Entity}.cs` — Entity sınıfı oluşturuldu
+- [ ] `Apps/<App>/<App>.Domain/Authorization/<App>PrivilegeCodes.cs` — `{Entity}PrivilegeCodes` eklendi
 
 **Application (feature klasörü):**
 - [ ] `Features/{Entity}s/Dtos/{Entity}DetailItem.cs`
 - [ ] `Features/{Entity}s/Dtos/{Entity}ListItem.cs`
 - [ ] `Features/{Entity}s/Dtos/{Entity}ListFilters.cs`
 - [ ] `Features/{Entity}s/{Entity}Errors.cs` — static Error sınıfı
-- [ ] `CRM.Application/Interfaces/I{Entity}Repository.cs` — write path için
+- [ ] `Apps/<App>/<App>.Application/Interfaces/I{Entity}Repository.cs` — write path için
 - [ ] `Mapping/MappingConfig.cs` — entity ↔ DTO / command config'i eklendi
 
 **Application — Commands** (her biri kendi klasörü):
@@ -1366,26 +1148,43 @@ Her adımı tamamladıkça işaretleyin:
 - [ ] `Search{Entity}sQuery + Handler`
 
 **Infrastructure:**
-- [ ] `CRM.Infrastructure/Data/Configurations/{Entity}s/{Entity}Configuration.cs`
-- [ ] `CRM.Infrastructure/Repositories/{Entity}Repository.cs` (yalnızca write path + gerekliyse `ExistsByNameAsync` gibi özel write-side query)
-- [ ] `CRM.Infrastructure/Data/DatabaseContext.cs` — `DbSet<{Entity}> {Entity}s` eklendi
-- [ ] `CRM.Application/Common/Abstractions/IApplicationDbContext.cs` — `DbSet<{Entity}> {Entity}s { get; }` eklendi
+- [ ] `Apps/<App>/<App>.Infrastructure/Data/Configurations/{Entity}s/{Entity}Configuration.cs`
+- [ ] `Apps/<App>/<App>.Infrastructure/Repositories/{Entity}Repository.cs` (yalnızca write path + gerekliyse `ExistsByNameAsync` gibi özel write-side query)
+- [ ] `Apps/<App>/<App>.Infrastructure/Data/<App>DbContext.cs` — `DbSet<{Entity}> {Entity}s` eklendi
+- [ ] `Apps/<App>/<App>.Application/Interfaces/I<App>DbContext.cs` — `DbSet<{Entity}> {Entity}s { get; }` eklendi
 
 **Api:**
-- [ ] `CRM.Api/Controllers/{Entity}Controller.cs` — Slim controller (`ISender` + `ToActionResult`)
-- [ ] `CRM.Api/Configuration/DependencyInjection.cs` — Sadece `I{Entity}Repository` kaydı (MediatR ve validator'lar assembly scan ile yüklenir)
+- [ ] `Apps/<App>/<App>.Api/Controllers/{Entity}Controller.cs` — Slim controller (`ISender` + `ToActionResult`)
+- [ ] `Apps/<App>/<App>.Api/Configuration/DependencyInjection.cs` — Sadece `I{Entity}Repository` kaydı (MediatR ve validator'lar assembly scan ile yüklenir)
 
 ### Frontend
 
-- [ ] `CRM.Web/src/types/{entity}.types.ts` — Type tanımları
-- [ ] `CRM.Web/src/config/service.paths.ts` — Service path'leri eklendi
-- [ ] `CRM.Web/src/config/route.paths.ts` — Route path'leri eklendi
-- [ ] `CRM.Web/src/services/{entity}.service.ts` — Service oluşturuldu
-- [ ] `CRM.Web/src/stores/{entity}.store.ts` — Zustand store oluşturuldu
-- [ ] `CRM.Web/src/routes/{entity}.routes.tsx` — Route dosyası oluşturuldu
-- [ ] Ana router'a `{entity}Routes` eklendi
-- [ ] `CRM.Web/src/pages/{entity}/{Entity}List.tsx` — Liste sayfası
-- [ ] `CRM.Web/src/pages/{entity}/{Entity}Detail.tsx` — Detay sayfası
+**Entity (FSD):**
+- [ ] `entities/{entity}/model/types.ts` — TS tipleri + enum sabitleri
+- [ ] `entities/{entity}/model/schema.ts` — zod şeması
+- [ ] `entities/{entity}/api/{entity}DataSource.ts` — httpClient çağrıları
+- [ ] `entities/{entity}/api/use{Entity}Queries.ts` — TanStack Query hook'ları
+- [ ] `entities/{entity}/api/use{Entity}Mutations.ts` — Upsert/Delete mutation'ları
+- [ ] `entities/{entity}/locales/tr.json` — i18n metinleri
+
+**Shared:**
+- [ ] `shared/api/servicePaths.ts` — `{Entity}` endpoint'leri eklendi
+- [ ] `shared/api/queryKeys.ts` — `{entity}Keys` fabrikası eklendi
+
+**Router:**
+- [ ] `app/router/paths.ts` — `{Entities}List`, `{Entity}Detail`, `{Entity}New`, `{Entity}Edit` path'leri
+- [ ] `app/router/routes.tsx` — Sayfaları route'lara bağla
+
+**Pages:**
+- [ ] `pages/{entities}/list/ui/{Entities}ListPage.tsx` — `ListPageLayout` + `DataTable`
+- [ ] `pages/{entities}/list/locales/tr.json`
+- [ ] `pages/{entities}/detail/ui/{Entity}DetailPage.tsx` — `DetailPageLayout` + form alanları (20-40 satır)
+- [ ] `pages/{entities}/detail/locales/tr.json`
+
+**Menu + i18n:**
+- [ ] `app/menu/use<App>Menu.tsx` — uygun grupta menü item eklendi
+- [ ] `app/menu/locales/tr.json` — menü etiketi eklendi
+- [ ] `app/i18n.config.ts` — yeni klasörler `register<App>Translations()` glob'larına dahil
 
 ---
 
@@ -1393,7 +1192,7 @@ Her adımı tamamladıkça işaretleyin:
 
 ### EF Core Global Query Filter'ları
 
-`ISoftDeleteEntity` ve `IOwnedEntity` uygulayan tüm entity'lere `DatabaseContext` üzerinden otomatik global query filter uygulanır. Hiçbir repository'de `IsDeleted == false` veya ownership filter'ı manuel yazmanıza gerek yoktur.
+`ISoftDeleteEntity` ve `IOwnedEntity` uygulayan tüm entity'lere `<App>DbContext` üzerinden otomatik global query filter uygulanır. Hiçbir repository'de `IsDeleted == false` veya ownership filter'ı manuel yazmanıza gerek yoktur.
 
 ### Audit Alanları Otomatik Doldurulur
 
@@ -1405,4 +1204,27 @@ Repository'de `PageSize + 1` kayıt çekilir. Eğer gelen kayıt sayısı `PageS
 
 ### Enum Dönüşümü
 
-C# enum'ları `EnumToStringConverter<T>` ile veritabanında `VARCHAR` olarak saklanır. Frontend'de enum değerleri lowercase string olarak tanımlanır ve C# tarafındaki enum değer adlarıyla eşleşmelidir.
+C# enum'larının veritabanında nasıl saklanacağı entity konfigürasyonunda belirlenir:
+- `EnumToStringConverter<T>` ile `VARCHAR` (insan-okur, schema sabit kalmalı)
+- Enum'un underlying tipi (`int`) ile `int` kolon (kompakt, sıralanabilir)
+
+Mevcut entity'lerin çoğu `int` saklıyor (örn. `SupplierStatus`); yeni entity için projede tutarlılığı koru. Frontend tip tanımı C# enum'unun underlying değerleriyle birebir aynı olmalı (`as const` literal map).
+
+### Polimorfik Referans (Activity Regarding gibi)
+
+App'in entity'sine Platform tarafından polimorfik referans veriliyorsa (`Activity.RegardingEntityType` gibi), `IEntityReferenceResolver` implementasyonu yaz ve DI'da kaydet:
+
+```csharp
+// Apps/<App>/<App>.Infrastructure/References/{Entity}ReferenceResolver.cs
+public class {Entity}ReferenceResolver : IEntityReferenceResolver
+{
+    public string EntityType => nameof({Entity});
+    public Task<EntityReference?> ResolveAsync(Guid id, CancellationToken ct) { ... }
+    public Task<EntityReferenceList> SearchAsync(string? text, PaginationInfo p, CancellationToken ct) { ... }
+}
+
+// Apps/<App>/<App>.Infrastructure/DependencyInjection.cs
+services.AddScoped<IEntityReferenceResolver, {Entity}ReferenceResolver>();
+```
+
+Detaylar: `docs/CONTRIBUTING.md` § 8 ve `Platform/Platform.Application/Common/References/IEntityReferenceResolver.cs`.

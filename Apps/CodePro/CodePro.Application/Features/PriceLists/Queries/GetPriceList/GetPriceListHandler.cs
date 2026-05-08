@@ -16,7 +16,7 @@ public sealed class GetPriceListHandler : IRequestHandler<GetPriceListQuery, Res
     public async Task<Result<PriceListDetailItem>> Handle(GetPriceListQuery request, CancellationToken cancellationToken)
     {
         var entity = await _db.PriceList.AsNoTracking()
-            .Include(p => p.SupplierAccount)
+            .Include(p => p.Supplier)
             .FirstOrDefaultAsync(p => p.Id == request.Id, cancellationToken);
 
         if (entity is null) return PriceListErrors.NotFound;

@@ -7,7 +7,7 @@ namespace CodePro.Application.Features.ProductPrices.Commands.CreateProductPrice
 public sealed class CreateProductPriceCommand : ICommand<ProductPriceDetailItem>
 {
     public EntityReference? Product { get; init; }
-    public EntityReference? SupplierAccount { get; init; }
+    public EntityReference? Supplier { get; init; }
     public EntityReference? PriceList { get; init; }
     public decimal MinimumQuantity { get; init; }
     public DateTime ValidFrom { get; init; }

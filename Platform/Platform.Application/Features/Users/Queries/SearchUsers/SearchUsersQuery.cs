@@ -3,7 +3,7 @@ using Platform.Application.Common.Pagination;
 using Platform.Application.Common.Results;
 using Platform.Application.Interfaces;
 using Platform.Application.Modals.Common;
-using Platform.Domain.Enums;
+using Platform.Domain.Entities.Identities;
 using MediatR;
 
 namespace Platform.Application.Features.Users.Queries.SearchUsers;
@@ -23,7 +23,7 @@ public sealed class SearchUsersHandler : IRequestHandler<SearchUsersQuery, Resul
     public Task<Result<PagedResult<EntityReference>>> Handle(SearchUsersQuery request, CancellationToken cancellationToken)
     {
         var inner = _references.LookupReference(
-            EntityType.User,
+            nameof(User),
             request.SearchText ?? string.Empty,
             new PaginationInfo(request.Pagination.PageNumber, request.Pagination.PageSize));
 

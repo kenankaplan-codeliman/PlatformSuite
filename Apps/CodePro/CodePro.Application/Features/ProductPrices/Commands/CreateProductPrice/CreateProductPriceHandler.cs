@@ -32,8 +32,8 @@ public sealed class CreateProductPriceHandler : IRequestHandler<CreateProductPri
             .AnyAsync(p => p.Id == productId, cancellationToken);
         if (!productExists) return ProductPriceErrors.ProductNotFound;
 
-        var supplierId = request.SupplierAccount?.Id ?? Guid.Empty;
-        var supplierExists = await _db.Account.AsNoTracking()
+        var supplierId = request.Supplier?.Id ?? Guid.Empty;
+        var supplierExists = await _db.Supplier.AsNoTracking()
             .AnyAsync(a => a.Id == supplierId, cancellationToken);
         if (!supplierExists) return ProductPriceErrors.SupplierNotFound;
 
@@ -55,7 +55,7 @@ public sealed class CreateProductPriceHandler : IRequestHandler<CreateProductPri
     {
         var entity = await _db.ProductPrice.AsNoTracking()
             .Include(p => p.Product)
-            .Include(p => p.SupplierAccount)
+            .Include(p => p.Supplier)
             .Include(p => p.PriceList)
             .FirstAsync(p => p.Id == id, cancellationToken);
         return entity.Adapt<ProductPriceDetailItem>();

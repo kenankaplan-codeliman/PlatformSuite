@@ -33,7 +33,7 @@ internal static class PurchaseRequestSyncHelper
                 current.IsFreeProduct = item.IsFreeProduct;
                 current.ProductId = item.ProductId;
                 current.ProductName = item.ProductName;
-                current.SupplierAccountId = item.SupplierAccountId;
+                current.SupplierId = item.SupplierId;
                 current.Quantity = item.Quantity;
                 current.UnitOfMeasure = item.UnitOfMeasure;
                 current.UnitPrice = item.UnitPrice;
@@ -51,7 +51,7 @@ internal static class PurchaseRequestSyncHelper
                     IsFreeProduct = item.IsFreeProduct,
                     ProductId = item.ProductId,
                     ProductName = item.ProductName,
-                    SupplierAccountId = item.SupplierAccountId,
+                    SupplierId = item.SupplierId,
                     Quantity = item.Quantity,
                     UnitOfMeasure = item.UnitOfMeasure,
                     UnitPrice = item.UnitPrice,

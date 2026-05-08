@@ -10,7 +10,7 @@ public sealed class UpdatePriceListValidator : AbstractValidator<UpdatePriceList
         RuleFor(x => x.Code).NotEmpty().MaximumLength(50);
         RuleFor(x => x.Name).NotEmpty().MaximumLength(200);
         RuleFor(x => x.Description).MaximumLength(1000);
-        RuleFor(x => x.SupplierAccount).NotNull();
-        RuleFor(x => x.SupplierAccount!.Id).NotEmpty().When(x => x.SupplierAccount != null);
+        RuleFor(x => x.Supplier).NotNull();
+        RuleFor(x => x.Supplier!.Id).NotEmpty().When(x => x.Supplier != null);
     }
 }

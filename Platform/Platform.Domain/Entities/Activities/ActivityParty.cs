@@ -5,7 +5,16 @@ namespace Platform.Domain.Entities.Activities;
 
 /// <summary>
 /// Aktivite Katılımcısı
-/// Bir aktiviteye katılan kişileri (kullanıcı, müşteri, kontak, harici) temsil eder.
+/// Bir aktiviteye katılan kayıtlı entity'leri (User, Account, Contact, Lead, Supplier, ...)
+/// veya harici (sistemde kaydı olmayan) kişileri temsil eder.
+///
+/// Polimorfik referans: <see cref="ParticipantEntityType"/> (string) +
+/// <see cref="ParticipantEntityId"/> (Guid?) — RegardingEntityType pattern'iyle birebir.
+/// String anahtar sayesinde her uygulama (CRM, CodePro) kendi entity'lerini party olarak
+/// kullanabilir; domain'e dokunmadan yeni katılımcı türleri eklenir.
+///
+/// Harici (External) katılımcı: <see cref="ParticipantEntityType"/> null bırakılır,
+/// sadece <see cref="Name"/> / <see cref="Email"/> / <see cref="PhoneNumber"/> doldurulur.
 /// </summary>
 public class ActivityParty : IBaseEntity
 {
@@ -19,7 +28,6 @@ public class ActivityParty : IBaseEntity
     /// İlişkili aktivite ID
     /// </summary>
     public Guid ActivityId { get; set; }
-
     #endregion
 
     #region Party Type (Rol)
@@ -29,22 +37,24 @@ public class ActivityParty : IBaseEntity
     public ActivityPartyType PartyType { get; set; }
     #endregion
 
-    #region Participant Type & Reference
+    #region Polymorphic Participant Reference
     /// <summary>
-    /// Katılımcı tipi (User, Account, Contact, External)
+    /// Katılımcı entity türü (User, Account, Contact, Lead, Supplier, ...).
+    /// Null bırakılırsa harici (External) katılımcı; <see cref="Name"/>/<see cref="Email"/>/<see cref="PhoneNumber"/>
+    /// alanları kullanılır.
     /// </summary>
-    public ActivityParticipantType ParticipantType { get; set; }
+    public string? ParticipantEntityType { get; set; }
 
     /// <summary>
-    /// Katılımcı ID (User, Account, Contact için)
-    /// External tip için null olabilir
+    /// Katılımcı entity ID (User/Account/Contact/Lead/Supplier vb. için).
+    /// External katılımcı için null.
     /// </summary>
-    public Guid? ParticipantId { get; set; }
+    public Guid? ParticipantEntityId { get; set; }
     #endregion
 
     #region External Participant Info
     /// <summary>
-    /// Harici katılımcı adı (ParticipantType = External ise)
+    /// Harici katılımcı adı (ParticipantEntityType null ise)
     /// </summary>
     public string? Name { get; set; }
 
@@ -80,56 +90,30 @@ public class ActivityParty : IBaseEntity
     /// <summary>
     /// Görüntülenecek ad (sistemdeki kayıtlar için ayrıca resolve edilmeli)
     /// </summary>
-    public string DisplayName => ParticipantType == ActivityParticipantType.External
+    public string DisplayName => IsExternal
         ? Name ?? Email ?? PhoneNumber ?? "Unknown"
-        : $"{ParticipantType}:{ParticipantId}";
+        : $"{ParticipantEntityType}:{ParticipantEntityId}";
 
     /// <summary>
     /// Harici katılımcı mı?
     /// </summary>
-    public bool IsExternal => ParticipantType == ActivityParticipantType.External;
+    public bool IsExternal =>
+        string.IsNullOrEmpty(ParticipantEntityType) || ParticipantEntityId is null;
     #endregion
 
     #region Factory Methods
     /// <summary>
-    /// Sistem kullanıcısı için ActivityParty oluştur
+    /// Sistemdeki bir entity için ActivityParty üretir (User, Account, Contact, Lead, Supplier, ...).
     /// </summary>
-    public static ActivityParty ForUser(Guid activityId, Guid userId, ActivityPartyType partyType)
+    public static ActivityParty ForEntity(
+        Guid activityId, string entityType, Guid entityId, ActivityPartyType partyType)
     {
         return new ActivityParty
         {
             ActivityId = activityId,
             PartyType = partyType,
-            ParticipantType = ActivityParticipantType.User,
-            ParticipantId = userId
-        };
-    }
-
-    /// <summary>
-    /// Account için ActivityParty oluştur
-    /// </summary>
-    public static ActivityParty ForAccount(Guid activityId, Guid accountId, ActivityPartyType partyType)
-    {
-        return new ActivityParty
-        {
-            ActivityId = activityId,
-            PartyType = partyType,
-            ParticipantType = ActivityParticipantType.Account,
-            ParticipantId = accountId
-        };
-    }
-
-    /// <summary>
-    /// Contact için ActivityParty oluştur
-    /// </summary>
-    public static ActivityParty ForContact(Guid activityId, Guid contactId, ActivityPartyType partyType)
-    {
-        return new ActivityParty
-        {
-            ActivityId = activityId,
-            PartyType = partyType,
-            ParticipantType = ActivityParticipantType.Contact,
-            ParticipantId = contactId
+            ParticipantEntityType = entityType,
+            ParticipantEntityId = entityId,
         };
     }
 
@@ -142,9 +126,8 @@ public class ActivityParty : IBaseEntity
         {
             ActivityId = activityId,
             PartyType = partyType,
-            ParticipantType = ActivityParticipantType.External,
             Email = email,
-            Name = name
+            Name = name,
         };
     }
 
@@ -157,9 +140,8 @@ public class ActivityParty : IBaseEntity
         {
             ActivityId = activityId,
             PartyType = partyType,
-            ParticipantType = ActivityParticipantType.External,
             PhoneNumber = phoneNumber,
-            Name = name
+            Name = name,
         };
     }
     #endregion

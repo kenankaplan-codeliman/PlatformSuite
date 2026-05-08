@@ -42,9 +42,6 @@ export function AppUserDetailPage() {
     return query.data ? `${query.data.firstName} ${query.data.lastName}` : tPage('viewTitle');
   }, [mode, query.data, tPage]);
 
-  const orgInitialLabel = query.data?.organizationName ?? undefined;
-  const managerInitialLabel = query.data?.managerName ?? undefined;
-
   return (
     <DetailPageLayout<AppUserFormValues>
       mode={mode}
@@ -67,10 +64,7 @@ export function AppUserDetailPage() {
       afterSaveNavigation={(saved) => RoutePaths.AppUserView(saved.id)}
     >
       <GeneralSection />
-      <HierarchySection
-        orgInitialLabel={orgInitialLabel}
-        managerInitialLabel={managerInitialLabel}
-      />
+      <HierarchySection />
     </DetailPageLayout>
   );
 
@@ -113,13 +107,7 @@ export function AppUserDetailPage() {
     );
   }
 
-  function HierarchySection({
-    orgInitialLabel,
-    managerInitialLabel,
-  }: {
-    orgInitialLabel?: string;
-    managerInitialLabel?: string;
-  }) {
+  function HierarchySection() {
     const form = useFormContext<AppUserFormValues>();
     return (
       <FormSection title={tEntity('sections.hierarchy')}>
@@ -127,17 +115,17 @@ export function AppUserDetailPage() {
           name="organizationId"
           control={form.control}
           servicePath={ServicePath.AppOrganization.List}
+          entityType="Organization"
           label={tEntity('fields.organization.label')}
           placeholder={tEntity('fields.organization.placeholder')}
-          initialLabel={orgInitialLabel}
         />
         <EntityLookupField
           name="managerId"
           control={form.control}
           servicePath={ServicePath.User.Search}
+          entityType="User"
           label={tEntity('fields.manager.label')}
           placeholder={tEntity('fields.manager.placeholder')}
-          initialLabel={managerInitialLabel}
           allowClear
         />
       </FormSection>

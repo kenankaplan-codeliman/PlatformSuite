@@ -1,6 +1,5 @@
 ﻿using Platform.Application.Modals.ActivityModal;
 using Platform.Application.Modals.Common;
-using Platform.Domain.Entities.Accounts;
 using Platform.Domain.Entities.Activities;
 using Platform.Domain.Enums;
 

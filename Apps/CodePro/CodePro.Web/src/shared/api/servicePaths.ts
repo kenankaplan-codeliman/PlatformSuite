@@ -5,6 +5,7 @@
 const ApiBase = '/api';
 
 const ControllerPaths = {
+  Supplier: `${ApiBase}/supplier`,
   Brand: `${ApiBase}/brand`,
   Manufacturer: `${ApiBase}/manufacturer`,
   ProductCategory: `${ApiBase}/product-category`,
@@ -37,6 +38,7 @@ const crudWithSearch = (base: string) => ({
 });
 
 export const CodeProServicePath = {
+  Supplier: crud(ControllerPaths.Supplier),
   Brand: crud(ControllerPaths.Brand),
   Manufacturer: crud(ControllerPaths.Manufacturer),
   ProductCategory: crudWithSearch(ControllerPaths.ProductCategory),

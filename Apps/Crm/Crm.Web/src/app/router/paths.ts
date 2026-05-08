@@ -6,6 +6,18 @@ import {
 export const RoutePaths = {
   ...PlatformRoutePaths,
 
+  // Account
+  AccountsList: '/accounts',
+  AccountNew: '/accounts/new',
+  AccountView: (id: string) => `/accounts/${id}`,
+  AccountEdit: (id: string) => `/accounts/${id}/edit`,
+
+  // Contact
+  ContactsList: '/contacts',
+  ContactNew: '/contacts/new',
+  ContactView: (id: string) => `/contacts/${id}`,
+  ContactEdit: (id: string) => `/contacts/${id}/edit`,
+
   // Lead
   LeadsList: '/leads',
   LeadNew: '/leads/new',
@@ -21,6 +33,18 @@ export const RoutePaths = {
 
 export const RoutePatterns = {
   ...PlatformRoutePatterns,
+
+  // Account
+  AccountsList: '/accounts',
+  AccountNew: '/accounts/new',
+  AccountView: '/accounts/:id',
+  AccountEdit: '/accounts/:id/edit',
+
+  // Contact
+  ContactsList: '/contacts',
+  ContactNew: '/contacts/new',
+  ContactView: '/contacts/:id',
+  ContactEdit: '/contacts/:id/edit',
 
   // Lead
   LeadsList: '/leads',

@@ -1,4 +1,4 @@
-using Platform.Domain.Entities.Accounts;
+using CodePro.Domain.Entities.Suppliers;
 using Platform.Domain.Entities.Common;
 using CodePro.Domain.Entities.Products;
 using CodePro.Domain.Entities.PurchaseOrders;
@@ -33,9 +33,9 @@ public class PurchaseRequestLine : IBaseEntity, IAuditableEntity, ISoftDeleteEnt
     public Guid? ProductPriceId { get; set; }
     public ProductPrice? ProductPrice { get; set; }
 
-    /// <summary>Fiyat eşleşirse ProductPrice.SupplierAccountId; yoksa kullanıcı manuel seçer (Platform Account, AccountType=Vendor).</summary>
-    public Guid? SupplierAccountId { get; set; }
-    public Account? SupplierAccount { get; set; }
+    /// <summary>Fiyat eşleşirse ProductPrice.SupplierId; yoksa kullanıcı manuel seçer (Platform Account, AccountType=Vendor).</summary>
+    public Guid? SupplierId { get; set; }
+    public Supplier? Supplier { get; set; }
 
     /// <summary>İstenen miktar — 3 ondalık</summary>
     public decimal Quantity { get; set; }

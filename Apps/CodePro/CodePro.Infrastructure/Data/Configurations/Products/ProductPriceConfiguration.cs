@@ -14,7 +14,7 @@ public class ProductPriceConfiguration : IEntityTypeConfiguration<ProductPrice>
         builder.Property(p => p.IsActive).HasColumnName("is_active").IsRequired().HasDefaultValue(true);
 
         builder.Property(p => p.ProductId).HasColumnName("product_id").IsRequired();
-        builder.Property(p => p.SupplierAccountId).HasColumnName("supplier_account_id").IsRequired();
+        builder.Property(p => p.SupplierId).HasColumnName("supplier_id").IsRequired();
         builder.Property(p => p.PriceListId).HasColumnName("price_list_id");
 
         builder.Property(p => p.MinimumQuantity).HasColumnName("minimum_quantity").HasColumnType("numeric(18,4)").IsRequired();
@@ -36,13 +36,13 @@ public class ProductPriceConfiguration : IEntityTypeConfiguration<ProductPrice>
             .HasForeignKey(p => p.ProductId)
             .OnDelete(DeleteBehavior.Cascade);
 
-        builder.HasOne(p => p.SupplierAccount)
+        builder.HasOne(p => p.Supplier)
             .WithMany()
-            .HasForeignKey(p => p.SupplierAccountId)
+            .HasForeignKey(p => p.SupplierId)
             .OnDelete(DeleteBehavior.Restrict);
 
         // PriceList tarafında HasMany ile tanımlandı
 
-        builder.HasIndex(p => new { p.ProductId, p.SupplierAccountId, p.ValidFrom, p.ValidUntil });
+        builder.HasIndex(p => new { p.ProductId, p.SupplierId, p.ValidFrom, p.ValidUntil });
     }
 }

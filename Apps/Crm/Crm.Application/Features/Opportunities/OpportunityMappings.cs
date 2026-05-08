@@ -3,7 +3,8 @@ using Crm.Application.Features.Opportunities.Commands.UpdateOpportunity;
 using Crm.Application.Features.Opportunities.Dtos;
 using Crm.Domain.Entities.Opportunities;
 using Platform.Application.Modals.Common;
-using Platform.Domain.Enums;
+using Crm.Domain.Entities.Accounts;
+using Crm.Domain.Entities.Contacts;
 using Mapster;
 
 namespace Crm.Application.Features.Opportunities;
@@ -14,14 +15,14 @@ public static class OpportunityMappings
     {
         config.NewConfig<Opportunity, OpportunityDetailItem>()
             .Map(d => d.Account, s => s.Account != null
-                ? new EntityReference(EntityType.Account)
+                ? new EntityReference(nameof(Account))
                 {
                     Id = s.Account.Id,
                     Name = s.Account.AccountName,
                 }
                 : null)
             .Map(d => d.PrimaryContact, s => s.PrimaryContact != null
-                ? new EntityReference(EntityType.Contact)
+                ? new EntityReference(nameof(Contact))
                 {
                     Id = s.PrimaryContact.Id,
                     Name = (s.PrimaryContact.FirstName + " " + s.PrimaryContact.LastName).Trim(),

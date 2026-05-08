@@ -26,8 +26,8 @@ public class PurchaseRequestLineItem
     public bool IsFreeProduct { get; set; }
     public Guid? ProductId { get; set; }
     public string? ProductName { get; set; }
-    public Guid? SupplierAccountId { get; set; }
-    public string? SupplierAccountName { get; set; }
+    public Guid? SupplierId { get; set; }
+    public string? SupplierName { get; set; }
     public decimal Quantity { get; set; }
     public string? UnitOfMeasure { get; set; }
     public decimal? UnitPrice { get; set; }

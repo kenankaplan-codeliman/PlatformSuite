@@ -6,14 +6,13 @@ using Platform.Infrastructure.Data;
 using Platform.Infrastructure.Data.Repositories;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
-using Microsoft.Graph.Models;
 using System;
 using System.Collections.Generic;
 using System.Text;
 
 namespace Platform.Infrastructure.Repositories
 {
-    public class OrganizationRepository : BaseEntityRepository<AppOrganization>, IOrganizationRepository
+    public class OrganizationRepository : BaseEntityRepository<Organization>, IOrganizationRepository
     {
 
         private readonly IConfiguration config;
@@ -24,15 +23,15 @@ namespace Platform.Infrastructure.Repositories
             this.config = config;
         }
 
-        public override async Task<AppOrganization?> GetAsync(Guid Id, CancellationToken cancellationToken = default)
+        public override async Task<Organization?> GetAsync(Guid Id, CancellationToken cancellationToken = default)
         {
-            return await dbContext.AppOrganization.FirstOrDefaultAsync(x => x.Id == Id, cancellationToken);
+            return await dbContext.Organization.FirstOrDefaultAsync(x => x.Id == Id, cancellationToken);
         }
 
         public async Task<Dictionary<Guid, string>> GetOrganizationHierarchyAsync(
         Guid organizationId, CancellationToken cancellationToken = default)
         {
-            var organizations = await dbContext.AppOrganization
+            var organizations = await dbContext.Organization
             .AsNoTracking()
             .Where(o => !o.IsDeleted && o.IsActive)
             .Select(o => new { o.Id, o.ParentOrganizationId, o.OrganizationName })
@@ -70,23 +69,23 @@ namespace Platform.Infrastructure.Repositories
             return result;
         }
 
-        public async Task<AppOrganization?> GetDefaultOrganization(CancellationToken cancellationToken = default)
+        public async Task<Organization?> GetDefaultOrganization(CancellationToken cancellationToken = default)
         {
-            return await dbContext.AppOrganization
+            return await dbContext.Organization
             .AsNoTracking()
             .FirstOrDefaultAsync(o => !o.IsDeleted && o.IsDefault, cancellationToken);
         }
 
-        public async Task<AppOrganization> GetOrCreateDefaultOrganization(CancellationToken cancellationToken = default)
+        public async Task<Organization> GetOrCreateDefaultOrganization(CancellationToken cancellationToken = default)
         {
-            var defaultOrganization = await dbContext.AppOrganization
+            var defaultOrganization = await dbContext.Organization
             .Where(o => o.IsActive && !o.IsDeleted && o.IsDefault)
             .FirstOrDefaultAsync(cancellationToken);
 
             if (defaultOrganization != null)
                 return defaultOrganization;
 
-            defaultOrganization = new AppOrganization
+            defaultOrganization = new Organization
             {
                 OrganizationCode = config["DefaultValues:Default_Organization_Code"]
                     ?? throw new InvalidOperationException("Default_Organization_Code is not configured."),
@@ -95,7 +94,7 @@ namespace Platform.Infrastructure.Repositories
                 IsDefault = true
             };
 
-            dbContext.AppOrganization.Add(defaultOrganization);
+            dbContext.Organization.Add(defaultOrganization);
             await dbContext.SaveChangesAsync(cancellationToken);
 
             return defaultOrganization;

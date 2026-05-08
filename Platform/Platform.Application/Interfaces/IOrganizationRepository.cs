@@ -5,10 +5,10 @@ using System.Text;
 
 namespace Platform.Application.Interfaces
 {
-    public interface IOrganizationRepository : IEntityRepository<AppOrganization>
+    public interface IOrganizationRepository : IEntityRepository<Organization>
     {
-        Task<AppOrganization?> GetDefaultOrganization(CancellationToken cancellationToken = default);
-        Task<AppOrganization> GetOrCreateDefaultOrganization(CancellationToken cancellationToken = default);
+        Task<Organization?> GetDefaultOrganization(CancellationToken cancellationToken = default);
+        Task<Organization> GetOrCreateDefaultOrganization(CancellationToken cancellationToken = default);
         Task<Dictionary<Guid, string>> GetOrganizationHierarchyAsync(Guid organizationId, CancellationToken cancellationToken = default);
     }
 

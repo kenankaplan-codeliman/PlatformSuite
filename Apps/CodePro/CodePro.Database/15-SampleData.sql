@@ -106,20 +106,14 @@ INSERT INTO app_privilege (privilege_code, privilege_name, description, created_
 ('Activity.Update',        'Aktivite Güncelleme',           '',                              '22222222-0000-0000-0000-000000000001'),
 ('Activity.Delete',        'Aktivite Silme',                '',                              '22222222-0000-0000-0000-000000000001'),
 ('Activity.UpdateStatus',  'Aktivite Durumu Değiştir',      '',                              '22222222-0000-0000-0000-000000000001'),
--- Tedarikçi (Supplier) artık Platform Account TPH alt sınıfı (AccountType=Vendor) —
--- AccountPrivilegeCodes kullanılır; Supplier.* privilege'ları kaldırıldı.
-('Account.Read',           'Firma Görüntüleme',             '',                              '22222222-0000-0000-0000-000000000001'),
-('Account.Create',         'Firma Oluşturma',               '',                              '22222222-0000-0000-0000-000000000001'),
-('Account.Update',         'Firma Güncelleme',              '',                              '22222222-0000-0000-0000-000000000001'),
-('Account.Delete',         'Firma Silme',                   '',                              '22222222-0000-0000-0000-000000000001'),
-('Account.Assign',         'Firma Atama',                   '',                              '22222222-0000-0000-0000-000000000001'),
-('Account.State',          'Firma Durum Değiştir',          '',                              '22222222-0000-0000-0000-000000000001'),
-('Contact.Read',           'Kişi Görüntüleme',              '',                              '22222222-0000-0000-0000-000000000001'),
-('Contact.Create',         'Kişi Oluşturma',                '',                              '22222222-0000-0000-0000-000000000001'),
-('Contact.Update',         'Kişi Güncelleme',               '',                              '22222222-0000-0000-0000-000000000001'),
-('Contact.Delete',         'Kişi Silme',                    '',                              '22222222-0000-0000-0000-000000000001'),
-('Contact.Assign',         'Kişi Atama',                    '',                              '22222222-0000-0000-0000-000000000001'),
-('Contact.State',          'Kişi Durum Değiştir',           '',                              '22222222-0000-0000-0000-000000000001'),
+-- Tedarikçi (Supplier) — CodePro'nun bağımsız aggregate root'u; Supplier.* privilege kodları
+-- CodePro.Domain.Authorization.CodeProPrivilegeCodes.SupplierPrivilegeCodes ile birebir.
+('Supplier.Read',          'Tedarikçi Görüntüleme',         '',                              '22222222-0000-0000-0000-000000000001'),
+('Supplier.Create',        'Tedarikçi Oluşturma',           '',                              '22222222-0000-0000-0000-000000000001'),
+('Supplier.Update',        'Tedarikçi Güncelleme',          '',                              '22222222-0000-0000-0000-000000000001'),
+('Supplier.Delete',        'Tedarikçi Silme',               '',                              '22222222-0000-0000-0000-000000000001'),
+('Supplier.Assign',        'Tedarikçi Atama',               '',                              '22222222-0000-0000-0000-000000000001'),
+('Supplier.State',         'Tedarikçi Durum Değiştir',      '',                              '22222222-0000-0000-0000-000000000001'),
 ('PurchaseRequest.Read',   'Talep Görüntüleme',             '',                              '22222222-0000-0000-0000-000000000001'),
 ('PurchaseRequest.Create', 'Talep Oluşturma',               '',                              '22222222-0000-0000-0000-000000000001'),
 ('PurchaseRequest.Update', 'Talep Güncelleme',              '',                              '22222222-0000-0000-0000-000000000001'),
@@ -156,10 +150,10 @@ INSERT INTO app_privilege (privilege_code, privilege_name, description, created_
 ('ProductCatalog.Create',  'Katalog Oluşturma',             '',                              '22222222-0000-0000-0000-000000000001'),
 ('ProductCatalog.Update',  'Katalog Güncelleme',            '',                              '22222222-0000-0000-0000-000000000001'),
 ('ProductCatalog.Delete',  'Katalog Silme',                 '',                              '22222222-0000-0000-0000-000000000001'),
-('AppOrganization.Read',   'Organizasyon Görüntüleme',      '',                              '22222222-0000-0000-0000-000000000001'),
-('AppOrganization.Create', 'Organizasyon Oluşturma',        '',                              '22222222-0000-0000-0000-000000000001'),
-('AppOrganization.Update', 'Organizasyon Güncelleme',       '',                              '22222222-0000-0000-0000-000000000001'),
-('AppOrganization.Delete', 'Organizasyon Silme',            '',                              '22222222-0000-0000-0000-000000000001'),
+('Organization.Read',      'Organizasyon Görüntüleme',      '',                              '22222222-0000-0000-0000-000000000001'),
+('Organization.Create',    'Organizasyon Oluşturma',        '',                              '22222222-0000-0000-0000-000000000001'),
+('Organization.Update',    'Organizasyon Güncelleme',       '',                              '22222222-0000-0000-0000-000000000001'),
+('Organization.Delete',    'Organizasyon Silme',            '',                              '22222222-0000-0000-0000-000000000001'),
 ('PurchaseBasket.Read',    'Sepet Görüntüleme',             '',                              '22222222-0000-0000-0000-000000000001'),
 ('PurchaseBasket.Update',  'Sepet Güncelleme',              '',                              '22222222-0000-0000-0000-000000000001'),
 ('PriceList.Read',         'Fiyat Listesi Görüntüleme',     '',                              '22222222-0000-0000-0000-000000000001'),
@@ -219,11 +213,11 @@ SELECT '33333333-0000-0000-0000-000000000001', privilege_code, 'All' FROM app_pr
 
 -- PurchaseManager: yönetsel erişim
 INSERT INTO app_role_privilege (role_id, privilege_code, access_level) VALUES
-('33333333-0000-0000-0000-000000000002', 'Account.Read',           'Organization'),
-('33333333-0000-0000-0000-000000000002', 'Account.Create',         'Organization'),
-('33333333-0000-0000-0000-000000000002', 'Account.Update',         'Organization'),
-('33333333-0000-0000-0000-000000000002', 'Account.State',          'Organization'),
-('33333333-0000-0000-0000-000000000002', 'Account.Assign',         'Organization'),
+('33333333-0000-0000-0000-000000000002', 'Supplier.Read',          'Organization'),
+('33333333-0000-0000-0000-000000000002', 'Supplier.Create',        'Organization'),
+('33333333-0000-0000-0000-000000000002', 'Supplier.Update',        'Organization'),
+('33333333-0000-0000-0000-000000000002', 'Supplier.State',         'Organization'),
+('33333333-0000-0000-0000-000000000002', 'Supplier.Assign',        'Organization'),
 ('33333333-0000-0000-0000-000000000002', 'PurchaseRequest.Read',   'Organization'),
 ('33333333-0000-0000-0000-000000000002', 'PurchaseRequest.Update', 'Organization'),
 ('33333333-0000-0000-0000-000000000002', 'PurchaseRequest.Assign', 'Organization'),
@@ -282,7 +276,7 @@ INSERT INTO app_role_privilege (role_id, privilege_code, access_level) VALUES
 
 -- Buyer: kendi kayıtları + okuma
 INSERT INTO app_role_privilege (role_id, privilege_code, access_level) VALUES
-('33333333-0000-0000-0000-000000000003', 'Account.Read',           'Organization'),
+('33333333-0000-0000-0000-000000000003', 'Supplier.Read',          'Organization'),
 ('33333333-0000-0000-0000-000000000003', 'Product.Read',           'Organization'),
 ('33333333-0000-0000-0000-000000000003', 'ProductCategory.Read',   'Organization'),
 ('33333333-0000-0000-0000-000000000003', 'ProductCatalog.Read',    'Organization'),
@@ -308,7 +302,7 @@ INSERT INTO app_role_privilege (role_id, privilege_code, access_level) VALUES
 
 -- SupplierUser: kendi tedarikçisine ait kayıtlar
 INSERT INTO app_role_privilege (role_id, privilege_code, access_level) VALUES
-('33333333-0000-0000-0000-000000000004', 'Account.Read',           'User'),
+('33333333-0000-0000-0000-000000000004', 'Supplier.Read',          'User'),
 ('33333333-0000-0000-0000-000000000004', 'Product.Read',           'User'),
 ('33333333-0000-0000-0000-000000000004', 'PurchaseOrder.Read',     'User'),
 ('33333333-0000-0000-0000-000000000004', 'Activity.Read',          'User');
@@ -341,70 +335,36 @@ INSERT INTO product_category (id, name, title, code, description, parent_categor
 -- ---------------------------------------------
 -- 8. Tedarikçiler
 -- ---------------------------------------------
--- TPH: account_type='Vendor' → Supplier alt sınıfı; account_status Platform enum'una map'lenir
--- (Active→Active, Pending→Prospect, Passive/Blacklisted→Inactive); supplier_status orijinal
--- supplier lifecycle değerini taşır.
-INSERT INTO account (id, account_name, account_type, account_status, supplier_type, supplier_status, industry, annual_revenue, number_of_employees, website, description, company_type, company_legal_type, tax_office, vkn, owner_id, organization_id, created_by, created_at) VALUES
-('55555555-0000-0000-0000-000000000001', 'Koç Bilgi Teknolojileri A.Ş.', 'Vendor', 'Active',   'Distributor',     'Active',      'Bilgi Teknolojileri', 2500000000.00, 450, 'https://www.koc-bt.com.tr',    'BT distribütörü',               'Tuzel', 'AnonimSirketi',  'Zincirlikuyu', '1234567890', '22222222-0000-0000-0000-000000000002', '11111111-0000-0000-0000-00000000001a', '22222222-0000-0000-0000-000000000001', current_timestamp),
-('55555555-0000-0000-0000-000000000002', 'Turkcell Kurumsal',            'Vendor', 'Active',   'ServiceProvider', 'Active',      'Telekomünikasyon',     12000000000.00,  5000, 'https://www.turkcell.com.tr',  'Kurumsal iletişim hizmetleri',   'Tuzel', 'AnonimSirketi',  'Maltepe',       '9876543210', '22222222-0000-0000-0000-000000000002', '11111111-0000-0000-0000-00000000001a', '22222222-0000-0000-0000-000000000001', current_timestamp),
-('55555555-0000-0000-0000-000000000003', 'Teknosa Bilişim',              'Vendor', 'Active',   'Retailer',        'Active',      'Bilgi Teknolojileri',  3500000000.00, 2000, 'https://www.teknosa.com',      'Elektronik perakende',          'Tuzel', 'AnonimSirketi',  'Beşiktaş',      '5554443332', '22222222-0000-0000-0000-000000000003', '11111111-0000-0000-0000-00000000000b', '22222222-0000-0000-0000-000000000001', current_timestamp),
-('55555555-0000-0000-0000-000000000004', 'Dell Türkiye',                 'Vendor', 'Active',   'Manufacturer',    'Active',      'Bilgi Teknolojileri',  8000000000.00,  250, 'https://www.dell.com.tr',      'Dell Türkiye resmi satış',      'Tuzel', 'LimitedSirket',  'Sarıyer',       '1112223334', '22222222-0000-0000-0000-000000000002', '11111111-0000-0000-0000-00000000001a', '22222222-0000-0000-0000-000000000001', current_timestamp),
-('55555555-0000-0000-0000-000000000005', 'HP Türkiye',                   'Vendor', 'Active',   'Manufacturer',    'Active',      'Bilgi Teknolojileri',  7000000000.00,  200, 'https://www.hp.com/tr',        'HP Türkiye resmi satış',        'Tuzel', 'LimitedSirket',  'Şişli',         '2223334445', '22222222-0000-0000-0000-000000000002', '11111111-0000-0000-0000-00000000001a', '22222222-0000-0000-0000-000000000001', current_timestamp),
-('55555555-0000-0000-0000-000000000006', 'İstikbal Mobilya',             'Vendor', 'Active',   'Manufacturer',    'Active',      'Mobilya',              4500000000.00, 3500, 'https://www.istikbal.com.tr',  'Mobilya üretim ve satış',       'Tuzel', 'AnonimSirketi',  'Kayseri',       '3334445556', '22222222-0000-0000-0000-000000000004', '11111111-0000-0000-0000-00000000001a', '22222222-0000-0000-0000-000000000001', current_timestamp),
-('55555555-0000-0000-0000-000000000007', 'Bürosit Ofis Mobilyaları',     'Vendor', 'Prospect', 'Manufacturer',    'Pending',     'Mobilya',               450000000.00,  350, 'https://www.burosit.com.tr',   'Ofis mobilyaları üreticisi',    'Tuzel', 'LimitedSirket',  'Kayseri',       '4445556667', '22222222-0000-0000-0000-000000000004', '11111111-0000-0000-0000-00000000001a', '22222222-0000-0000-0000-000000000001', current_timestamp),
-('55555555-0000-0000-0000-000000000008', 'Kırtasiye Dünyası Ltd.',       'Vendor', 'Active',   'Distributor',     'Active',      'Kırtasiye',              75000000.00,   45, 'https://www.kirtasiyedunyasi.com', 'Toptan kırtasiye satış',    'Tuzel', 'LimitedSirket',  'Kocaeli',       '5556667778', '22222222-0000-0000-0000-000000000005', '11111111-0000-0000-0000-00000000001a', '22222222-0000-0000-0000-000000000001', current_timestamp),
-('55555555-0000-0000-0000-000000000009', '3M Türkiye',                   'Vendor', 'Active',   'Manufacturer',    'Active',      'Endüstriyel',          1200000000.00,  180, 'https://www.3m.com.tr',        'İş güvenliği ürünleri',         'Tuzel', 'AnonimSirketi',  'Maslak',        '6667778889', '22222222-0000-0000-0000-000000000003', '11111111-0000-0000-0000-00000000000b', '22222222-0000-0000-0000-000000000001', current_timestamp),
-('55555555-0000-0000-0000-00000000000a', 'Eski Tedarik A.Ş.',            'Vendor', 'Inactive', 'Other',           'Blacklisted', 'Karışık',                10000000.00,   25, NULL,                           'Uyumsuzluk nedeniyle kara listede', 'Tuzel', 'AnonimSirketi', 'Ümraniye',  '7778889990', '22222222-0000-0000-0000-000000000002', '11111111-0000-0000-0000-00000000001a', '22222222-0000-0000-0000-000000000001', current_timestamp);
-
--- account_email (suppliers)
-INSERT INTO account_email (account_id, email, type, is_primary, created_by) VALUES
-('55555555-0000-0000-0000-000000000001', 'info@koc-bt.com.tr',        'Work', true, '22222222-0000-0000-0000-000000000001'),
-('55555555-0000-0000-0000-000000000002', 'kurumsal@turkcell.com.tr',  'Work', true, '22222222-0000-0000-0000-000000000001'),
-('55555555-0000-0000-0000-000000000003', 'b2b@teknosa.com',           'Work', true, '22222222-0000-0000-0000-000000000001'),
-('55555555-0000-0000-0000-000000000004', 'sales@dell.com.tr',         'Work', true, '22222222-0000-0000-0000-000000000001'),
-('55555555-0000-0000-0000-000000000005', 'sales@hp.com.tr',           'Work', true, '22222222-0000-0000-0000-000000000001'),
-('55555555-0000-0000-0000-000000000006', 'kurumsal@istikbal.com.tr',  'Work', true, '22222222-0000-0000-0000-000000000001'),
-('55555555-0000-0000-0000-000000000007', 'satis@burosit.com.tr',      'Work', true, '22222222-0000-0000-0000-000000000001'),
-('55555555-0000-0000-0000-000000000008', 'satis@kirtasiyedunyasi.com','Work', true, '22222222-0000-0000-0000-000000000001'),
-('55555555-0000-0000-0000-000000000009', 'info@3m.com.tr',            'Work', true, '22222222-0000-0000-0000-000000000001'),
-('55555555-0000-0000-0000-00000000000a', 'info@eskitedarik.com',      'Work', true, '22222222-0000-0000-0000-000000000001');
-
--- account_phone (suppliers)
-INSERT INTO account_phone (account_id, phone_number, type, is_primary, created_by) VALUES
-('55555555-0000-0000-0000-000000000001', '+90 212 555 1001', 'Work', true, '22222222-0000-0000-0000-000000000001'),
-('55555555-0000-0000-0000-000000000002', '+90 212 555 2002', 'Work', true, '22222222-0000-0000-0000-000000000001'),
-('55555555-0000-0000-0000-000000000003', '+90 216 555 3003', 'Work', true, '22222222-0000-0000-0000-000000000001'),
-('55555555-0000-0000-0000-000000000004', '+90 212 555 4004', 'Work', true, '22222222-0000-0000-0000-000000000001'),
-('55555555-0000-0000-0000-000000000005', '+90 212 555 5005', 'Work', true, '22222222-0000-0000-0000-000000000001'),
-('55555555-0000-0000-0000-000000000006', '+90 352 555 6006', 'Work', true, '22222222-0000-0000-0000-000000000001'),
-('55555555-0000-0000-0000-000000000007', '+90 352 555 7007', 'Work', true, '22222222-0000-0000-0000-000000000001'),
-('55555555-0000-0000-0000-000000000008', '+90 262 555 8008', 'Work', true, '22222222-0000-0000-0000-000000000001'),
-('55555555-0000-0000-0000-000000000009', '+90 212 555 9009', 'Work', true, '22222222-0000-0000-0000-000000000001'),
-('55555555-0000-0000-0000-00000000000a', '+90 216 555 0000', 'Work', true, '22222222-0000-0000-0000-000000000001');
-
--- account_address (suppliers)
-INSERT INTO account_address (account_id, address_line1, city, state, postal_code, country, type, is_primary, created_by) VALUES
-('55555555-0000-0000-0000-000000000001', 'Büyükdere Cad. No:199',    'İstanbul', 'İstanbul', '34394', 'Türkiye', 'Office', true, '22222222-0000-0000-0000-000000000001'),
-('55555555-0000-0000-0000-000000000002', 'Aydınevler Mah. No:1',     'İstanbul', 'İstanbul', '34854', 'Türkiye', 'Office', true, '22222222-0000-0000-0000-000000000001'),
-('55555555-0000-0000-0000-000000000003', 'Teknosa Plaza Barbaros',    'İstanbul', 'İstanbul', '34349', 'Türkiye', 'Office', true, '22222222-0000-0000-0000-000000000001'),
-('55555555-0000-0000-0000-000000000004', 'İstinye Plaza Kat 12',      'İstanbul', 'İstanbul', '34460', 'Türkiye', 'Office', true, '22222222-0000-0000-0000-000000000001'),
-('55555555-0000-0000-0000-000000000005', 'Trump Towers B Blok',       'İstanbul', 'İstanbul', '34387', 'Türkiye', 'Office', true, '22222222-0000-0000-0000-000000000001'),
-('55555555-0000-0000-0000-000000000006', 'Organize San. Bölgesi',     'Kayseri',  'Kayseri',  '38070', 'Türkiye', 'Office', true, '22222222-0000-0000-0000-000000000001'),
-('55555555-0000-0000-0000-000000000007', 'Mimarsinan OSB',             'Kayseri',  'Kayseri',  '38280', 'Türkiye', 'Office', true, '22222222-0000-0000-0000-000000000001'),
-('55555555-0000-0000-0000-000000000008', 'Gebze Plastikçiler OSB',    'Kocaeli',  'Kocaeli',  '41400', 'Türkiye', 'Office', true, '22222222-0000-0000-0000-000000000001'),
-('55555555-0000-0000-0000-000000000009', 'Nisbetiye Cad. No:5',       'İstanbul', 'İstanbul', '34340', 'Türkiye', 'Office', true, '22222222-0000-0000-0000-000000000001'),
-('55555555-0000-0000-0000-00000000000a', 'Eski Sanayi Bölgesi',       'İstanbul', 'İstanbul', '34760', 'Türkiye', 'Office', true, '22222222-0000-0000-0000-000000000001');
+-- Supplier CodePro'nun bağımsız aggregate root'u; iletişim ve adres alanları flat
+-- (contact_person_*, address_line/city/country/postal_code) tutulur.
+INSERT INTO supplier (
+    id, is_active, name, industry, website, description, annual_revenue, number_of_employees,
+    supplier_type, supplier_status, company_type, company_legal_type, tax_office, vkn,
+    contact_person_email, contact_person_phone,
+    address_line, city, country, postal_code,
+    owner_id, organization_id, created_by, created_at
+) VALUES
+('55555555-0000-0000-0000-000000000001', true,  'Koç Bilgi Teknolojileri A.Ş.', 'Bilgi Teknolojileri', 'https://www.koc-bt.com.tr',        'BT distribütörü',                    2500000000.00,  450, 'Distributor',     'Active',      'Tuzel', 'AnonimSirketi', 'Zincirlikuyu', '1234567890', 'info@koc-bt.com.tr',         '+90 212 555 1001', 'Büyükdere Cad. No:199',  'İstanbul', 'Türkiye', '34394', '22222222-0000-0000-0000-000000000002', '11111111-0000-0000-0000-00000000001a', '22222222-0000-0000-0000-000000000001', current_timestamp),
+('55555555-0000-0000-0000-000000000002', true,  'Turkcell Kurumsal',            'Telekomünikasyon',    'https://www.turkcell.com.tr',      'Kurumsal iletişim hizmetleri',       12000000000.00, 5000, 'ServiceProvider', 'Active',      'Tuzel', 'AnonimSirketi', 'Maltepe',      '9876543210', 'kurumsal@turkcell.com.tr',   '+90 212 555 2002', 'Aydınevler Mah. No:1',   'İstanbul', 'Türkiye', '34854', '22222222-0000-0000-0000-000000000002', '11111111-0000-0000-0000-00000000001a', '22222222-0000-0000-0000-000000000001', current_timestamp),
+('55555555-0000-0000-0000-000000000003', true,  'Teknosa Bilişim',              'Bilgi Teknolojileri', 'https://www.teknosa.com',          'Elektronik perakende',                3500000000.00, 2000, 'Retailer',        'Active',      'Tuzel', 'AnonimSirketi', 'Beşiktaş',     '5554443332', 'b2b@teknosa.com',            '+90 216 555 3003', 'Teknosa Plaza Barbaros', 'İstanbul', 'Türkiye', '34349', '22222222-0000-0000-0000-000000000003', '11111111-0000-0000-0000-00000000000b', '22222222-0000-0000-0000-000000000001', current_timestamp),
+('55555555-0000-0000-0000-000000000004', true,  'Dell Türkiye',                 'Bilgi Teknolojileri', 'https://www.dell.com.tr',          'Dell Türkiye resmi satış',            8000000000.00,  250, 'Manufacturer',    'Active',      'Tuzel', 'LimitedSirket', 'Sarıyer',      '1112223334', 'sales@dell.com.tr',          '+90 212 555 4004', 'İstinye Plaza Kat 12',   'İstanbul', 'Türkiye', '34460', '22222222-0000-0000-0000-000000000002', '11111111-0000-0000-0000-00000000001a', '22222222-0000-0000-0000-000000000001', current_timestamp),
+('55555555-0000-0000-0000-000000000005', true,  'HP Türkiye',                   'Bilgi Teknolojileri', 'https://www.hp.com/tr',            'HP Türkiye resmi satış',              7000000000.00,  200, 'Manufacturer',    'Active',      'Tuzel', 'LimitedSirket', 'Şişli',        '2223334445', 'sales@hp.com.tr',            '+90 212 555 5005', 'Trump Towers B Blok',    'İstanbul', 'Türkiye', '34387', '22222222-0000-0000-0000-000000000002', '11111111-0000-0000-0000-00000000001a', '22222222-0000-0000-0000-000000000001', current_timestamp),
+('55555555-0000-0000-0000-000000000006', true,  'İstikbal Mobilya',             'Mobilya',             'https://www.istikbal.com.tr',      'Mobilya üretim ve satış',             4500000000.00, 3500, 'Manufacturer',    'Active',      'Tuzel', 'AnonimSirketi', 'Kayseri',      '3334445556', 'kurumsal@istikbal.com.tr',   '+90 352 555 6006', 'Organize San. Bölgesi',  'Kayseri',  'Türkiye', '38070', '22222222-0000-0000-0000-000000000004', '11111111-0000-0000-0000-00000000001a', '22222222-0000-0000-0000-000000000001', current_timestamp),
+('55555555-0000-0000-0000-000000000007', true,  'Bürosit Ofis Mobilyaları',     'Mobilya',             'https://www.burosit.com.tr',       'Ofis mobilyaları üreticisi',           450000000.00,  350, 'Manufacturer',    'Pending',     'Tuzel', 'LimitedSirket', 'Kayseri',      '4445556667', 'satis@burosit.com.tr',       '+90 352 555 7007', 'Mimarsinan OSB',         'Kayseri',  'Türkiye', '38280', '22222222-0000-0000-0000-000000000004', '11111111-0000-0000-0000-00000000001a', '22222222-0000-0000-0000-000000000001', current_timestamp),
+('55555555-0000-0000-0000-000000000008', true,  'Kırtasiye Dünyası Ltd.',       'Kırtasiye',           'https://www.kirtasiyedunyasi.com', 'Toptan kırtasiye satış',                75000000.00,   45, 'Distributor',     'Active',      'Tuzel', 'LimitedSirket', 'Kocaeli',      '5556667778', 'satis@kirtasiyedunyasi.com', '+90 262 555 8008', 'Gebze Plastikçiler OSB', 'Kocaeli',  'Türkiye', '41400', '22222222-0000-0000-0000-000000000005', '11111111-0000-0000-0000-00000000001a', '22222222-0000-0000-0000-000000000001', current_timestamp),
+('55555555-0000-0000-0000-000000000009', true,  '3M Türkiye',                   'Endüstriyel',         'https://www.3m.com.tr',            'İş güvenliği ürünleri',               1200000000.00,  180, 'Manufacturer',    'Active',      'Tuzel', 'AnonimSirketi', 'Maslak',       '6667778889', 'info@3m.com.tr',             '+90 212 555 9009', 'Nisbetiye Cad. No:5',    'İstanbul', 'Türkiye', '34340', '22222222-0000-0000-0000-000000000003', '11111111-0000-0000-0000-00000000000b', '22222222-0000-0000-0000-000000000001', current_timestamp),
+('55555555-0000-0000-0000-00000000000a', false, 'Eski Tedarik A.Ş.',            'Karışık',             NULL,                               'Uyumsuzluk nedeniyle kara listede',     10000000.00,   25, 'Other',           'Blacklisted', 'Tuzel', 'AnonimSirketi', 'Ümraniye',     '7778889990', 'info@eskitedarik.com',       '+90 216 555 0000', 'Eski Sanayi Bölgesi',    'İstanbul', 'Türkiye', '34760', '22222222-0000-0000-0000-000000000002', '11111111-0000-0000-0000-00000000001a', '22222222-0000-0000-0000-000000000001', current_timestamp);
 
 -- supplier_user — Account-User join tablosu CodePro şemasında modellenmemiş.
 -- Account ↔ User ilişkisi bir aggregate root değil; gerektiğinde ayrı entity
 -- (örn. AccountUserAssignment) olarak eklenir. Bu satır geçici devre dışı.
--- INSERT INTO supplier_user (supplier_account_id, user_id, created_by) VALUES
+-- INSERT INTO supplier_user (supplier_id, user_id, created_by) VALUES
 -- ('55555555-0000-0000-0000-000000000001', '22222222-0000-0000-0000-000000000006', '22222222-0000-0000-0000-000000000001');
 
 -- ---------------------------------------------
 -- 9. Supplier ↔ Category Eşleşmeleri
 -- ---------------------------------------------
-INSERT INTO account_product_category (account_id, product_category_id, is_preferred, created_by) VALUES
+INSERT INTO supplier_product_category (supplier_id, product_category_id, is_preferred, created_by) VALUES
 -- Koç BT: BT tüm alt kategoriler
 ('55555555-0000-0000-0000-000000000001', '44444444-0000-0000-0000-000000000002', true,  '22222222-0000-0000-0000-000000000001'),
 ('55555555-0000-0000-0000-000000000001', '44444444-0000-0000-0000-000000000003', true,  '22222222-0000-0000-0000-000000000001'),
@@ -543,7 +503,7 @@ INSERT INTO product_keyword (product_id, keyword) VALUES
 ('88888888-0000-0000-0000-000000000014', 'kkd');
 
 -- product_sku (tedarikçi bazlı)
-INSERT INTO product_sku (product_id, supplier_account_id, sku) VALUES
+INSERT INTO product_sku (product_id, supplier_id, sku) VALUES
 ('88888888-0000-0000-0000-000000000001', '55555555-0000-0000-0000-000000000004', 'DELL-LAT5540-I7'),
 ('88888888-0000-0000-0000-000000000001', '55555555-0000-0000-0000-000000000001', 'KOC-DLLAT5540'),
 ('88888888-0000-0000-0000-000000000002', '55555555-0000-0000-0000-000000000005', 'HP-EB840G10-I7'),
@@ -572,7 +532,7 @@ INSERT INTO product_sku (product_id, supplier_account_id, sku) VALUES
 -- ---------------------------------------------
 -- 11b. Fiyat Listeleri (tedarikçi başına bir liste)
 -- ---------------------------------------------
-INSERT INTO price_list (id, code, name, description, supplier_account_id, is_active, created_by) VALUES
+INSERT INTO price_list (id, code, name, description, supplier_id, is_active, created_by) VALUES
 ('bbbbbbbb-0000-0000-0000-000000000001', 'PL-2026-0001', '2026 Koç BT Fiyat Listesi',        'Koç Bilgi Teknolojileri 2026 standart fiyatları',   '55555555-0000-0000-0000-000000000001', true, '22222222-0000-0000-0000-000000000001'),
 ('bbbbbbbb-0000-0000-0000-000000000002', 'PL-2026-0002', '2026 Turkcell Ağ Fiyat Listesi',   'Turkcell kurumsal ağ ürünleri 2026 fiyatları',       '55555555-0000-0000-0000-000000000002', true, '22222222-0000-0000-0000-000000000001'),
 ('bbbbbbbb-0000-0000-0000-000000000003', 'PL-2026-0003', '2026 Teknosa Fiyat Listesi',       'Teknosa perakende BT ürünleri 2026 fiyatları',       '55555555-0000-0000-0000-000000000003', true, '22222222-0000-0000-0000-000000000001'),
@@ -589,7 +549,7 @@ SELECT setval('price_list_seq', 9, true);
 -- ---------------------------------------------
 -- 12. Ürün Fiyatları (her satır parent PriceList'e bağlı)
 -- ---------------------------------------------
-INSERT INTO product_price (id, product_id, supplier_account_id, price_list_id, minimum_quantity, valid_from, valid_until, unit_price, currency, created_by) VALUES
+INSERT INTO product_price (id, product_id, supplier_id, price_list_id, minimum_quantity, valid_from, valid_until, unit_price, currency, created_by) VALUES
 -- Dizüstü
 ('99999999-0000-0000-0000-000000000001', '88888888-0000-0000-0000-000000000001', '55555555-0000-0000-0000-000000000004', 'bbbbbbbb-0000-0000-0000-000000000004', 1,  '2026-01-01', '2027-12-31',  42500.0000, 'TRY', '22222222-0000-0000-0000-000000000001'),
 ('99999999-0000-0000-0000-000000000002', '88888888-0000-0000-0000-000000000001', '55555555-0000-0000-0000-000000000004', 'bbbbbbbb-0000-0000-0000-000000000004', 10, '2026-01-01', '2027-12-31',  39500.0000, 'TRY', '22222222-0000-0000-0000-000000000001'),
@@ -674,7 +634,7 @@ INSERT INTO purchase_request (id, request_number, title, description, status, pr
 ('bbbbbbbb-0000-0000-0000-00000000000a', 'PR-2026-0010', 'Acil güvenlik duvarı yenileme',    'Güvenlik ihlali sonrası acil ihtiyaç',    'Setup',           'Urgent', '2026-04-15', '2026-04-22', 'TRY',   34500.00, '22222222-0000-0000-0000-000000000003', '11111111-0000-0000-0000-00000000000b', '22222222-0000-0000-0000-000000000003');
 
 -- purchase_request_line
-INSERT INTO purchase_request_line (id, purchase_request_id, is_free_product, product_id, product_name, product_price_id, supplier_account_id, quantity, unit_of_measure, unit_price, currency, total_amount, need_by_date, status, created_by) VALUES
+INSERT INTO purchase_request_line (id, purchase_request_id, is_free_product, product_id, product_name, product_price_id, supplier_id, quantity, unit_of_measure, unit_price, currency, total_amount, need_by_date, status, created_by) VALUES
 -- PR-0001: 5 adet Dell Latitude @ 42500 = 212500
 ('cccccccc-0000-0000-0000-000000000001', 'bbbbbbbb-0000-0000-0000-000000000001', false, '88888888-0000-0000-0000-000000000001', 'Dell Latitude 5540 i7', '99999999-0000-0000-0000-000000000001', '55555555-0000-0000-0000-000000000004', 5, 'Adet', 42500.0000, 'TRY', 212500.00, '2026-05-01', 'Setup', '22222222-0000-0000-0000-000000000003'),
 -- PR-0002: 2 sunucu (Dell PE R750 ve HPE DL380) 385000 + 410000 = 795000
@@ -708,7 +668,7 @@ INSERT INTO purchase_request_line (id, purchase_request_id, is_free_product, pro
 -- ---------------------------------------------
 -- 15. Satın Alma Siparişleri (PR'lardan türetilmiş)
 -- ---------------------------------------------
-INSERT INTO purchase_order (id, order_number, title, description, supplier_account_id, purchase_request_id, status, priority, order_date, expected_delivery_date, currency_code, total_amount, owner_id, organization_id, created_by) VALUES
+INSERT INTO purchase_order (id, order_number, title, description, supplier_id, purchase_request_id, status, priority, order_date, expected_delivery_date, currency_code, total_amount, owner_id, organization_id, created_by) VALUES
 -- PR-0004 (InPurchasing) → Cisco switch siparişi, Submitted
 ('dddddddd-0000-0000-0000-000000000001', 'PO-2026-0001', 'Cisco Catalyst Switch Siparişi', 'PR-2026-0004 kapsamında',       '55555555-0000-0000-0000-000000000002', 'bbbbbbbb-0000-0000-0000-000000000004', 'Submitted',  'High',   '2026-03-25', '2026-04-30', 'TRY', 625000.00, '22222222-0000-0000-0000-000000000003', '11111111-0000-0000-0000-00000000000b', '22222222-0000-0000-0000-000000000003'),
 -- PR-0005 → Kırtasiye siparişi (tek tedarikçi), Confirmed
@@ -805,7 +765,7 @@ INSERT INTO activity_task (id, task_description, reminder_at, percent_complete) 
 ('12121212-0000-0000-0000-000000000005', 'Koltuk teslimatını resepsiyon ile koordine et',         '2026-04-19 09:00+03',  0);
 
 -- activity_party — her aktiviteye en az bir taraf
-INSERT INTO activity_party (activity_id, party_type, participant_type, participant_id, name, email, sort_order) VALUES
+INSERT INTO activity_party (activity_id, party_type, participant_entity_type, participant_entity_id, name, email, sort_order) VALUES
 -- 1: Appointment Dell
 ('12121212-0000-0000-0000-000000000001', 'Organizer','User',     '22222222-0000-0000-0000-000000000002', 'Ayşe Yılmaz',       'ayse.yilmaz@codeliman.com', 0),
 ('12121212-0000-0000-0000-000000000001', 'Attendee', 'Supplier', '55555555-0000-0000-0000-000000000004', 'Dell Türkiye',      'sales@dell.com.tr',         1),
@@ -1151,29 +1111,28 @@ INSERT INTO budget_transaction (id, budget_id, transaction_type, amount, source_
 -- ---------------------------------------------
 -- 27. Ek Tedarikçi Havuzu (SupplierSeed)
 -- ---------------------------------------------
--- TPH: account_type='Vendor' → Supplier alt sınıfı (status mapping aynı kuralda)
-INSERT INTO account (
-    id, account_name, account_type, account_status,
+INSERT INTO supplier (
+    id, name,
     supplier_type, supplier_status,
     industry, annual_revenue, number_of_employees, website, description,
     company_type, company_legal_type, tax_office, vkn, mersis_no,
     is_active, owner_id, organization_id, created_by, created_at
 ) VALUES
-('cccccccc-0000-0000-0000-000000000011', 'Alfa Bilişim A.Ş.',          'Vendor', 'Active',   'Distributor',    'Active',      'Bilişim / Donanım',        85000000, 120, 'https://alfabilisim.com.tr',  'Kurumsal bilişim donanımı distribütörü',         'Tuzel',  'AnonimSirketi', 'Kozyatağı V.D.', '1234567890', '0123456789012345', true, '22222222-0000-0000-0000-000000000001', '11111111-0000-0000-0000-00000000001a', '22222222-0000-0000-0000-000000000001', current_timestamp),
-('cccccccc-0000-0000-0000-000000000012', 'Beta Yazılım Ltd. Şti.',     'Vendor', 'Active',   'ServiceProvider','Active',      'Yazılım / SaaS',           22000000,  45, 'https://betayazilim.com',     'Kurumsal yazılım ve SaaS çözümleri',             'Tuzel',  'LimitedSirket', 'Maslak V.D.',    '2345678901', '0234567890123456', true, '22222222-0000-0000-0000-000000000001', '11111111-0000-0000-0000-00000000001a', '22222222-0000-0000-0000-000000000001', current_timestamp),
-('cccccccc-0000-0000-0000-000000000013', 'Gamma Ofis Çözümleri',       'Vendor', 'Active',   'Retailer',       'Active',      'Ofis Malzemeleri',          7500000,  28, 'https://gammaofis.com.tr',    'Kırtasiye, sarf, ofis mobilyası',                'Tuzel',  'LimitedSirket', 'Başakşehir V.D.','3456789012', '0345678901234567', true, '22222222-0000-0000-0000-000000000001', '11111111-0000-0000-0000-00000000001a', '22222222-0000-0000-0000-000000000001', current_timestamp),
-('cccccccc-0000-0000-0000-000000000014', 'Delta Lojistik ve Kargo',    'Vendor', 'Active',   'ServiceProvider','Active',      'Lojistik',                 45000000, 180, 'https://deltalojistik.com',   'Yurt içi ve yurt dışı kargo',                    'Tuzel',  'AnonimSirketi', 'Ataşehir V.D.',  '4567890123', '0456789012345678', true, '22222222-0000-0000-0000-000000000001', '11111111-0000-0000-0000-00000000001a', '22222222-0000-0000-0000-000000000001', current_timestamp),
-('cccccccc-0000-0000-0000-000000000015', 'Epsilon Reklam Ajansı',      'Vendor', 'Active',   'ServiceProvider','Active',      'Pazarlama / Reklam',       12000000,  35, 'https://epsilonreklam.com',   'Dijital ve geleneksel reklam ajansı',            'Tuzel',  'LimitedSirket', 'Şişli V.D.',     '5678901234', '0567890123456789', true, '22222222-0000-0000-0000-000000000001', '11111111-0000-0000-0000-00000000001a', '22222222-0000-0000-0000-000000000001', current_timestamp),
-('cccccccc-0000-0000-0000-000000000016', 'Zeta Endüstri Makina',       'Vendor', 'Active',   'Manufacturer',   'Active',      'Endüstri / İmalat',       160000000, 250, 'https://zetamakina.com.tr',   'Endüstriyel makine üreticisi',                   'Tuzel',  'AnonimSirketi', 'İkitelli V.D.',  '6789012345', '0678901234567890', true, '22222222-0000-0000-0000-000000000001', '11111111-0000-0000-0000-00000000001a', '22222222-0000-0000-0000-000000000001', current_timestamp),
-('cccccccc-0000-0000-0000-000000000017', 'Eta Temizlik Hizmetleri',    'Vendor', 'Active',   'ServiceProvider','Active',      'Temizlik / Hizmet',         5500000,  90, 'https://etatemizlik.com',     'Kurumsal temizlik ve hijyen',                    'Tuzel',  'LimitedSirket', 'Kadıköy V.D.',   '7890123456', '0789012345678901', true, '22222222-0000-0000-0000-000000000001', '11111111-0000-0000-0000-00000000001a', '22222222-0000-0000-0000-000000000001', current_timestamp),
-('cccccccc-0000-0000-0000-000000000018', 'Theta Mühendislik A.Ş.',     'Vendor', 'Prospect', 'ServiceProvider','Pending',     'Danışmanlık / Mühendislik',18000000,  60, 'https://thetamuh.com.tr',     'Yapı ve altyapı danışmanlık',                    'Tuzel',  'AnonimSirketi', 'Çankaya V.D.',   '8901234567', '0890123456789012', true, '22222222-0000-0000-0000-000000000001', '11111111-0000-0000-0000-00000000001a', '22222222-0000-0000-0000-000000000001', current_timestamp),
-('cccccccc-0000-0000-0000-000000000019', 'Iota Seyahat Acentesi',      'Vendor', 'Active',   'ServiceProvider','Active',      'Seyahat / Turizm',          8200000,  22, 'https://iotaseyahat.com',     'Kurumsal seyahat organizasyonu',                 'Tuzel',  'LimitedSirket', 'Beyoğlu V.D.',   '9012345678', '0901234567890123', true, '22222222-0000-0000-0000-000000000001', '11111111-0000-0000-0000-00000000001a', '22222222-0000-0000-0000-000000000001', current_timestamp),
-('cccccccc-0000-0000-0000-000000000020', 'Kappa Matbaa ve Yayıncılık', 'Vendor', 'Inactive', 'Manufacturer',   'Passive',     'Matbaa / Yayın',            6800000,  40, 'https://kappamatbaa.com.tr',  'Katalog, broşür, etiket baskı',                  'Tuzel',  'LimitedSirket', 'Bakırköy V.D.',  '1123456789', '1123456789012345', true, '22222222-0000-0000-0000-000000000001', '11111111-0000-0000-0000-00000000001a', '22222222-0000-0000-0000-000000000001', current_timestamp),
-('cccccccc-0000-0000-0000-000000000021', 'Murat Tekin (Freelance)',    'Vendor', 'Active',   'ServiceProvider','Active',      'Grafik Tasarım',                NULL,   1, 'https://murattekin.design',   'Freelance grafik ve UI tasarım',                 'Gercek', NULL,            'Kartal V.D.',     NULL,         NULL,              true, '22222222-0000-0000-0000-000000000001', '11111111-0000-0000-0000-00000000001a', '22222222-0000-0000-0000-000000000001', current_timestamp),
-('cccccccc-0000-0000-0000-000000000022', 'Lambda Güvenlik Sistemleri', 'Vendor', 'Active',   'Distributor',    'Active',      'Güvenlik / Teknoloji',     29000000,  75, 'https://lambdaguvenlik.com',  'CCTV, alarm, erişim kontrol',                    'Tuzel',  'AnonimSirketi', 'Levent V.D.',    '1234567801', '1234567801234567', true, '22222222-0000-0000-0000-000000000001', '11111111-0000-0000-0000-00000000001a', '22222222-0000-0000-0000-000000000001', current_timestamp),
-('cccccccc-0000-0000-0000-000000000023', 'Mu Tıbbi Cihazlar',          'Vendor', 'Prospect', 'Distributor',    'Pending',     'Sağlık / Medikal',         14500000,  38, 'https://mutibbi.com.tr',      'Kurumsal tıbbi cihaz dağıtımı',                  'Tuzel',  'LimitedSirket', 'Üsküdar V.D.',   '2234567801', '2234567801234567', true, '22222222-0000-0000-0000-000000000001', '11111111-0000-0000-0000-00000000001a', '22222222-0000-0000-0000-000000000001', current_timestamp),
-('cccccccc-0000-0000-0000-000000000024', 'Nu Mühendislik Hızlı Çözüm', 'Vendor', 'Inactive', 'ServiceProvider','Blacklisted', 'Danışmanlık',               3200000,  10, NULL,                          'Önceki projelerde ifa sorunları nedeniyle kara listede', 'Tuzel', 'LimitedSirket', 'Pendik V.D.',    '3234567801', '3234567801234567', true, '22222222-0000-0000-0000-000000000001', '11111111-0000-0000-0000-00000000001a', '22222222-0000-0000-0000-000000000001', current_timestamp),
-('cccccccc-0000-0000-0000-000000000025', 'Xi Enerji ve Elektrik',      'Vendor', 'Active',   'Manufacturer',   'Active',      'Enerji / Elektrik',       220000000, 310, 'https://xienerji.com.tr',     'Kurumsal enerji çözümleri, UPS, trafo',          'Tuzel',  'AnonimSirketi', 'Tuzla V.D.',     '4234567801', '4234567801234567', true, '22222222-0000-0000-0000-000000000001', '11111111-0000-0000-0000-00000000001a', '22222222-0000-0000-0000-000000000001', current_timestamp)
+('cccccccc-0000-0000-0000-000000000011', 'Alfa Bilişim A.Ş.',          'Distributor',    'Active',      'Bilişim / Donanım',         85000000, 120, 'https://alfabilisim.com.tr',  'Kurumsal bilişim donanımı distribütörü',                 'Tuzel',  'AnonimSirketi', 'Kozyatağı V.D.', '1234567890', '0123456789012345', true,  '22222222-0000-0000-0000-000000000001', '11111111-0000-0000-0000-00000000001a', '22222222-0000-0000-0000-000000000001', current_timestamp),
+('cccccccc-0000-0000-0000-000000000012', 'Beta Yazılım Ltd. Şti.',     'ServiceProvider','Active',      'Yazılım / SaaS',            22000000,  45, 'https://betayazilim.com',     'Kurumsal yazılım ve SaaS çözümleri',                     'Tuzel',  'LimitedSirket', 'Maslak V.D.',    '2345678901', '0234567890123456', true,  '22222222-0000-0000-0000-000000000001', '11111111-0000-0000-0000-00000000001a', '22222222-0000-0000-0000-000000000001', current_timestamp),
+('cccccccc-0000-0000-0000-000000000013', 'Gamma Ofis Çözümleri',       'Retailer',       'Active',      'Ofis Malzemeleri',           7500000,  28, 'https://gammaofis.com.tr',    'Kırtasiye, sarf, ofis mobilyası',                        'Tuzel',  'LimitedSirket', 'Başakşehir V.D.','3456789012', '0345678901234567', true,  '22222222-0000-0000-0000-000000000001', '11111111-0000-0000-0000-00000000001a', '22222222-0000-0000-0000-000000000001', current_timestamp),
+('cccccccc-0000-0000-0000-000000000014', 'Delta Lojistik ve Kargo',    'ServiceProvider','Active',      'Lojistik',                  45000000, 180, 'https://deltalojistik.com',   'Yurt içi ve yurt dışı kargo',                            'Tuzel',  'AnonimSirketi', 'Ataşehir V.D.',  '4567890123', '0456789012345678', true,  '22222222-0000-0000-0000-000000000001', '11111111-0000-0000-0000-00000000001a', '22222222-0000-0000-0000-000000000001', current_timestamp),
+('cccccccc-0000-0000-0000-000000000015', 'Epsilon Reklam Ajansı',      'ServiceProvider','Active',      'Pazarlama / Reklam',        12000000,  35, 'https://epsilonreklam.com',   'Dijital ve geleneksel reklam ajansı',                    'Tuzel',  'LimitedSirket', 'Şişli V.D.',     '5678901234', '0567890123456789', true,  '22222222-0000-0000-0000-000000000001', '11111111-0000-0000-0000-00000000001a', '22222222-0000-0000-0000-000000000001', current_timestamp),
+('cccccccc-0000-0000-0000-000000000016', 'Zeta Endüstri Makina',       'Manufacturer',   'Active',      'Endüstri / İmalat',        160000000, 250, 'https://zetamakina.com.tr',   'Endüstriyel makine üreticisi',                           'Tuzel',  'AnonimSirketi', 'İkitelli V.D.',  '6789012345', '0678901234567890', true,  '22222222-0000-0000-0000-000000000001', '11111111-0000-0000-0000-00000000001a', '22222222-0000-0000-0000-000000000001', current_timestamp),
+('cccccccc-0000-0000-0000-000000000017', 'Eta Temizlik Hizmetleri',    'ServiceProvider','Active',      'Temizlik / Hizmet',          5500000,  90, 'https://etatemizlik.com',     'Kurumsal temizlik ve hijyen',                            'Tuzel',  'LimitedSirket', 'Kadıköy V.D.',   '7890123456', '0789012345678901', true,  '22222222-0000-0000-0000-000000000001', '11111111-0000-0000-0000-00000000001a', '22222222-0000-0000-0000-000000000001', current_timestamp),
+('cccccccc-0000-0000-0000-000000000018', 'Theta Mühendislik A.Ş.',     'ServiceProvider','Pending',     'Danışmanlık / Mühendislik', 18000000,  60, 'https://thetamuh.com.tr',     'Yapı ve altyapı danışmanlık',                            'Tuzel',  'AnonimSirketi', 'Çankaya V.D.',   '8901234567', '0890123456789012', true,  '22222222-0000-0000-0000-000000000001', '11111111-0000-0000-0000-00000000001a', '22222222-0000-0000-0000-000000000001', current_timestamp),
+('cccccccc-0000-0000-0000-000000000019', 'Iota Seyahat Acentesi',      'ServiceProvider','Active',      'Seyahat / Turizm',           8200000,  22, 'https://iotaseyahat.com',     'Kurumsal seyahat organizasyonu',                         'Tuzel',  'LimitedSirket', 'Beyoğlu V.D.',   '9012345678', '0901234567890123', true,  '22222222-0000-0000-0000-000000000001', '11111111-0000-0000-0000-00000000001a', '22222222-0000-0000-0000-000000000001', current_timestamp),
+('cccccccc-0000-0000-0000-000000000020', 'Kappa Matbaa ve Yayıncılık', 'Manufacturer',   'Passive',     'Matbaa / Yayın',             6800000,  40, 'https://kappamatbaa.com.tr',  'Katalog, broşür, etiket baskı',                          'Tuzel',  'LimitedSirket', 'Bakırköy V.D.',  '1123456789', '1123456789012345', false, '22222222-0000-0000-0000-000000000001', '11111111-0000-0000-0000-00000000001a', '22222222-0000-0000-0000-000000000001', current_timestamp),
+('cccccccc-0000-0000-0000-000000000021', 'Murat Tekin (Freelance)',    'ServiceProvider','Active',      'Grafik Tasarım',                 NULL,   1, 'https://murattekin.design',   'Freelance grafik ve UI tasarım',                         'Gercek', NULL,            'Kartal V.D.',     NULL,         NULL,              true,  '22222222-0000-0000-0000-000000000001', '11111111-0000-0000-0000-00000000001a', '22222222-0000-0000-0000-000000000001', current_timestamp),
+('cccccccc-0000-0000-0000-000000000022', 'Lambda Güvenlik Sistemleri', 'Distributor',    'Active',      'Güvenlik / Teknoloji',      29000000,  75, 'https://lambdaguvenlik.com',  'CCTV, alarm, erişim kontrol',                            'Tuzel',  'AnonimSirketi', 'Levent V.D.',    '1234567801', '1234567801234567', true,  '22222222-0000-0000-0000-000000000001', '11111111-0000-0000-0000-00000000001a', '22222222-0000-0000-0000-000000000001', current_timestamp),
+('cccccccc-0000-0000-0000-000000000023', 'Mu Tıbbi Cihazlar',          'Distributor',    'Pending',     'Sağlık / Medikal',          14500000,  38, 'https://mutibbi.com.tr',      'Kurumsal tıbbi cihaz dağıtımı',                          'Tuzel',  'LimitedSirket', 'Üsküdar V.D.',   '2234567801', '2234567801234567', true,  '22222222-0000-0000-0000-000000000001', '11111111-0000-0000-0000-00000000001a', '22222222-0000-0000-0000-000000000001', current_timestamp),
+('cccccccc-0000-0000-0000-000000000024', 'Nu Mühendislik Hızlı Çözüm', 'ServiceProvider','Blacklisted', 'Danışmanlık',                3200000,  10, NULL,                          'Önceki projelerde ifa sorunları nedeniyle kara listede', 'Tuzel',  'LimitedSirket', 'Pendik V.D.',    '3234567801', '3234567801234567', false, '22222222-0000-0000-0000-000000000001', '11111111-0000-0000-0000-00000000001a', '22222222-0000-0000-0000-000000000001', current_timestamp),
+('cccccccc-0000-0000-0000-000000000025', 'Xi Enerji ve Elektrik',      'Manufacturer',   'Active',      'Enerji / Elektrik',        220000000, 310, 'https://xienerji.com.tr',     'Kurumsal enerji çözümleri, UPS, trafo',                  'Tuzel',  'AnonimSirketi', 'Tuzla V.D.',     '4234567801', '4234567801234567', true,  '22222222-0000-0000-0000-000000000001', '11111111-0000-0000-0000-00000000001a', '22222222-0000-0000-0000-000000000001', current_timestamp)
 ON CONFLICT (id) DO NOTHING;
 
 -- ---------------------------------------------

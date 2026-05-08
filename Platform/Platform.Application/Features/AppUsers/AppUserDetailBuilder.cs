@@ -9,7 +9,7 @@ internal static class AppUserDetailBuilder
     public static async Task<AppUserDetailItem?> BuildAsync(IApplicationDbContext db, Guid id, CancellationToken cancellationToken)
     {
         var detail = await (
-            from u in db.AppUser.AsNoTracking()
+            from u in db.User.AsNoTracking()
             where u.Id == id
             select new AppUserDetailItem
             {
@@ -19,11 +19,11 @@ internal static class AppUserDetailBuilder
                 LastName = u.LastName,
                 PhoneNumber = u.PhoneNumber,
                 OrganizationId = u.OrganizationId,
-                OrganizationName = db.AppOrganization.Where(o => o.Id == u.OrganizationId)
+                OrganizationName = db.Organization.Where(o => o.Id == u.OrganizationId)
                     .Select(o => o.OrganizationName).FirstOrDefault(),
                 ManagerId = u.ManagerId,
                 ManagerName = u.ManagerId.HasValue
-                    ? db.AppUser.Where(m => m.Id == u.ManagerId).Select(m => m.FirstName + " " + m.LastName).FirstOrDefault()
+                    ? db.User.Where(m => m.Id == u.ManagerId).Select(m => m.FirstName + " " + m.LastName).FirstOrDefault()
                     : null,
                 IsActive = u.IsActive,
                 CreatedAt = u.CreatedAt,

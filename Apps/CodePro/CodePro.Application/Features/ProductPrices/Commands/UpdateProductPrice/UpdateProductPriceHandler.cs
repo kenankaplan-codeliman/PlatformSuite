@@ -34,8 +34,8 @@ public sealed class UpdateProductPriceHandler : IRequestHandler<UpdateProductPri
             .AnyAsync(p => p.Id == productId, cancellationToken);
         if (!productExists) return ProductPriceErrors.ProductNotFound;
 
-        var supplierId = request.SupplierAccount?.Id ?? Guid.Empty;
-        var supplierExists = await _db.Account.AsNoTracking()
+        var supplierId = request.Supplier?.Id ?? Guid.Empty;
+        var supplierExists = await _db.Supplier.AsNoTracking()
             .AnyAsync(a => a.Id == supplierId, cancellationToken);
         if (!supplierExists) return ProductPriceErrors.SupplierNotFound;
 
@@ -48,7 +48,7 @@ public sealed class UpdateProductPriceHandler : IRequestHandler<UpdateProductPri
         }
 
         entity.ProductId = productId;
-        entity.SupplierAccountId = supplierId;
+        entity.SupplierId = supplierId;
         entity.PriceListId = priceListId;
         entity.MinimumQuantity = request.MinimumQuantity;
         entity.ValidFrom = request.ValidFrom;
@@ -60,7 +60,7 @@ public sealed class UpdateProductPriceHandler : IRequestHandler<UpdateProductPri
 
         var saved = await _db.ProductPrice.AsNoTracking()
             .Include(p => p.Product)
-            .Include(p => p.SupplierAccount)
+            .Include(p => p.Supplier)
             .Include(p => p.PriceList)
             .FirstAsync(p => p.Id == entity.Id, cancellationToken);
         return saved.Adapt<ProductPriceDetailItem>();

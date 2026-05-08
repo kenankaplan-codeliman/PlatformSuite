@@ -8,7 +8,7 @@ CREATE TABLE IF NOT EXISTS product_price (
     id              UUID            PRIMARY KEY DEFAULT gen_random_uuid(),
     is_active       BOOLEAN         NOT NULL DEFAULT TRUE,
     product_id      UUID            NOT NULL REFERENCES product(id) ON DELETE CASCADE,
-    supplier_account_id     UUID            NOT NULL REFERENCES account(id),
+    supplier_id     UUID            NOT NULL REFERENCES supplier(id),
     price_list_id   UUID            REFERENCES price_list(id),
 
     minimum_quantity NUMERIC(18,4)  NOT NULL,
@@ -39,8 +39,8 @@ CREATE TABLE IF NOT EXISTS product_price (
 CREATE INDEX IF NOT EXISTS idx_product_price_product_id
     ON product_price(product_id) WHERE is_deleted = FALSE;
 
-CREATE INDEX IF NOT EXISTS idx_product_price_supplier_account_id
-    ON product_price(supplier_account_id) WHERE is_deleted = FALSE;
+CREATE INDEX IF NOT EXISTS idx_product_price_supplier_id
+    ON product_price(supplier_id) WHERE is_deleted = FALSE;
 
 CREATE INDEX IF NOT EXISTS idx_product_price_price_list_id
     ON product_price(price_list_id) WHERE is_deleted = FALSE;
@@ -52,7 +52,7 @@ CREATE INDEX IF NOT EXISTS idx_product_price_price_list_id
 CREATE UNIQUE INDEX IF NOT EXISTS uq_product_price_rule
     ON product_price (
         product_id,
-        supplier_account_id,
+        supplier_id,
         valid_from,
         valid_until,
         minimum_quantity,

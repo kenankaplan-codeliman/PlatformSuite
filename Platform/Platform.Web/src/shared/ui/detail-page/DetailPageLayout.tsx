@@ -179,9 +179,8 @@ export function DetailPageLayout<TValues extends FieldValues>({
         </Button>
         <Button
           type="primary"
-          htmlType="submit"
-          form="detail-page-form"
           loading={form.formState.isSubmitting}
+          onClick={() => form.handleSubmit(handleSubmit)()}
         >
           {tCommon("actions.save")}
         </Button>

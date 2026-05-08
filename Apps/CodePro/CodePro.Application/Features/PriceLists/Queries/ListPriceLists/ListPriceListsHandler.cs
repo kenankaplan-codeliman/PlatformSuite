@@ -26,8 +26,8 @@ public sealed class ListPriceListsHandler : IRequestHandler<ListPriceListsQuery,
                 || p.Code.ToLower().Contains(pattern));
         }
 
-        if (filters.SupplierAccountId.HasValue)
-            query = query.Where(p => p.SupplierAccountId == filters.SupplierAccountId.Value);
+        if (filters.SupplierId.HasValue)
+            query = query.Where(p => p.SupplierId == filters.SupplierId.Value);
 
         if (filters.IsActive.HasValue)
             query = query.Where(p => p.IsActive == filters.IsActive.Value);
@@ -46,9 +46,9 @@ public sealed class ListPriceListsHandler : IRequestHandler<ListPriceListsQuery,
                 Id = p.Id,
                 Code = p.Code,
                 Name = p.Name,
-                SupplierAccountId = p.SupplierAccountId,
-                SupplierAccountName = _db.Account.Where(a => a.Id == p.SupplierAccountId)
-                    .Select(a => a.AccountName).FirstOrDefault(),
+                SupplierId = p.SupplierId,
+                SupplierName = _db.Supplier.Where(a => a.Id == p.SupplierId)
+                    .Select(a => a.Name).FirstOrDefault(),
                 IsActive = p.IsActive,
             })
             .ToListAsync(cancellationToken);

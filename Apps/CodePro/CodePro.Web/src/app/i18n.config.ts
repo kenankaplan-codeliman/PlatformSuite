@@ -1,5 +1,8 @@
 import i18n from 'i18next';
 
+import supplierEntityTr from '../entities/supplier/locales/tr.json';
+import suppliersListTr from '../pages/suppliers/list/locales/tr.json';
+import suppliersDetailTr from '../pages/suppliers/detail/locales/tr.json';
 import brandEntityTr from '../entities/brand/locales/tr.json';
 import brandsListTr from '../pages/brands/list/locales/tr.json';
 import brandsDetailTr from '../pages/brands/detail/locales/tr.json';
@@ -57,6 +60,10 @@ import codeProAppTr from './locales/tr.json';
  * namespace'leri ekler; `enums` namespace'ini deep-merge ile genişletir.
  */
 export function registerCodeProTranslations(): void {
+  i18n.addResourceBundle('tr', 'entity.supplier', supplierEntityTr, true, true);
+  i18n.addResourceBundle('tr', 'page.suppliers-list', suppliersListTr, true, true);
+  i18n.addResourceBundle('tr', 'page.suppliers-detail', suppliersDetailTr, true, true);
+
   i18n.addResourceBundle('tr', 'entity.brand', brandEntityTr, true, true);
   i18n.addResourceBundle('tr', 'page.brands-list', brandsListTr, true, true);
   i18n.addResourceBundle('tr', 'page.brands-detail', brandsDetailTr, true, true);

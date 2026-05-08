@@ -18,7 +18,7 @@ public class ProductCatalogOrganizationConfiguration : IEntityTypeConfiguration<
             .HasForeignKey(co => co.ProductCatalogId)
             .OnDelete(DeleteBehavior.Cascade);
 
-        builder.HasOne(co => co.AppOrganization)
+        builder.HasOne(co => co.Organization)
             .WithMany()
             .HasForeignKey(co => co.AppOrganizationId)
             .OnDelete(DeleteBehavior.Restrict);

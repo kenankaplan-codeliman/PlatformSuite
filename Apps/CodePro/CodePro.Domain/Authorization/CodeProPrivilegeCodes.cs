@@ -8,8 +8,15 @@ namespace CodePro.Domain.Authorization;
 /// </summary>
 public static class CodeProPrivilegeCodes
 {
-    // Supplier privilege code'ları kaldırıldı — Tedarikçi artık Platform Account
-    // (AccountType=Vendor); AccountPrivilegeCodes (Platform) yetkili.
+    public static class SupplierPrivilegeCodes
+    {
+        public const string Read = "Supplier.Read";
+        public const string Create = "Supplier.Create";
+        public const string Update = "Supplier.Update";
+        public const string Delete = "Supplier.Delete";
+        public const string Assign = "Supplier.Assign";
+        public const string State = "Supplier.State";
+    }
 
     public static class PurchaseRequestPrivilegeCodes
     {
@@ -158,5 +165,5 @@ public static class CodeProPrivilegeCodes
     }
 
     // AppOrganizationPrivilegeCodes Platform.Domain.Authorization.PrivilegeCodes altına taşındı
-    // (AppOrganization artık Platform-seviye CRUD; tüm app'ler kullanır).
+    // (Organization artık Platform-seviye CRUD; tüm app'ler kullanır).
 }

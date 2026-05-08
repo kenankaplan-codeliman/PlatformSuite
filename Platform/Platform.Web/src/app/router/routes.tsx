@@ -1,10 +1,8 @@
 import { createBrowserRouter } from 'react-router-dom';
 import { LoginPage } from '../../pages/auth/login/ui/LoginPage';
 import { HomePage } from '../../pages/home/ui/HomePage';
-import { AccountsListPage } from '../../pages/accounts/list/ui/AccountsListPage';
-import { AccountDetailPage } from '../../pages/accounts/detail/ui/AccountDetailPage';
-import { ContactsListPage } from '../../pages/contacts/list/ui/ContactsListPage';
-import { ContactDetailPage } from '../../pages/contacts/detail/ui/ContactDetailPage';
+import { ActivitiesListPage } from '../../pages/activities/list/ui/ActivitiesListPage';
+import { ActivityDetailPage } from '../../pages/activities/detail/ui/ActivityDetailPage';
 import { OrganizationsListPage } from '../../pages/organizations/list/ui/OrganizationsListPage';
 import { OrganizationDetailPage } from '../../pages/organizations/detail/ui/OrganizationDetailPage';
 import { AppUsersListPage } from '../../pages/users/list/ui/AppUsersListPage';
@@ -21,15 +19,10 @@ export const router = createBrowserRouter([
 
   { path: RoutePaths.Home, element: protectedRoute(<HomePage />) },
 
-  { path: RoutePatterns.AccountsList, element: protectedRoute(<AccountsListPage />) },
-  { path: RoutePatterns.AccountNew, element: protectedRoute(<AccountDetailPage />) },
-  { path: RoutePatterns.AccountEdit, element: protectedRoute(<AccountDetailPage />) },
-  { path: RoutePatterns.AccountView, element: protectedRoute(<AccountDetailPage />) },
-
-  { path: RoutePatterns.ContactsList, element: protectedRoute(<ContactsListPage />) },
-  { path: RoutePatterns.ContactNew, element: protectedRoute(<ContactDetailPage />) },
-  { path: RoutePatterns.ContactEdit, element: protectedRoute(<ContactDetailPage />) },
-  { path: RoutePatterns.ContactView, element: protectedRoute(<ContactDetailPage />) },
+  { path: RoutePatterns.ActivitiesList, element: protectedRoute(<ActivitiesListPage />) },
+  { path: RoutePatterns.ActivityNew, element: protectedRoute(<ActivityDetailPage />) },
+  { path: RoutePatterns.ActivityEdit, element: protectedRoute(<ActivityDetailPage />) },
+  { path: RoutePatterns.ActivityView, element: protectedRoute(<ActivityDetailPage />) },
 
   { path: RoutePatterns.OrganizationsList, element: protectedRoute(<OrganizationsListPage />) },
   { path: RoutePatterns.OrganizationNew, element: protectedRoute(<OrganizationDetailPage />) },

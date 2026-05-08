@@ -62,9 +62,11 @@ public abstract class ActivityBase : IBaseEntity, ISoftDeleteEntity, IAuditableE
 
     #region Regarding Entity (Polymorphic Association)
     /// <summary>
-    /// İlgili entity tipi (Lead, Account, Contact, Opportunity vb.)
+    /// İlgili entity tipi (Lead, Account, Contact, Opportunity, PurchaseOrder vb.)
+    /// String olarak tutulur — yeni domain entity'leri eklendiğinde domain
+    /// değişikliği gerekmez (AttachmentFileRelation pattern'ı).
     /// </summary>
-    public EntityType? RegardingEntityType { get; set; }
+    public string? RegardingEntityType { get; set; }
 
     /// <summary>
     /// İlgili entity ID
@@ -176,11 +178,11 @@ public abstract class ActivityBase : IBaseEntity, ISoftDeleteEntity, IAuditableE
     }
 
     /// <summary>
-    /// Belirli katılımcı tipindeki katılımcıları getir
+    /// Belirli entity türündeki (User, Account, Contact, Lead, Supplier, ...) katılımcıları getir.
     /// </summary>
-    public IEnumerable<ActivityParty> GetPartiesByParticipantType(ActivityParticipantType participantType)
+    public IEnumerable<ActivityParty> GetPartiesByParticipantEntityType(string entityType)
     {
-        return Parties.Where(p => p.ParticipantType == participantType);
+        return Parties.Where(p => p.ParticipantEntityType == entityType);
     }
     #endregion
 }

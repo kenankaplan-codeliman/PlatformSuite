@@ -1,8 +1,11 @@
 using Crm.Application.Interfaces;
 using Crm.Infrastructure.Data;
+using Crm.Infrastructure.References;
 using Crm.Infrastructure.Repositories;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Platform.Application.Common.References;
+using Platform.Application.Interfaces;
 
 namespace Crm.Infrastructure;
 
@@ -16,8 +19,16 @@ public static class DependencyInjection
         services.AddScoped<ICrmDbContext>(sp => sp.GetRequiredService<CrmDbContext>());
 
         // CRM-spesifik repository'ler
+        services.AddScoped<IAccountRepository, AccountRepository>();
+        services.AddScoped<IContactRepository, ContactRepository>();
         services.AddScoped<ILeadRepository, LeadRepository>();
         services.AddScoped<IOpportunityRepository, OpportunityRepository>();
+
+        // CRM entity'leri için Activity.RegardingEntityType / ParticipantEntityType resolver kayıtları
+        services.AddScoped<IEntityReferenceResolver, AccountReferenceResolver>();
+        services.AddScoped<IEntityReferenceResolver, ContactReferenceResolver>();
+        services.AddScoped<IEntityReferenceResolver, LeadReferenceResolver>();
+        services.AddScoped<IEntityReferenceResolver, OpportunityReferenceResolver>();
 
         return services;
     }

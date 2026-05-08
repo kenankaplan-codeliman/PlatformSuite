@@ -1,7 +1,7 @@
 using CodePro.Application.Features.PurchaseOrders.Dtos;
 using CodePro.Application.Interfaces;
 using Platform.Application.Modals.Common;
-using Platform.Domain.Enums;
+using CodePro.Domain.Entities.Suppliers;
 using Microsoft.EntityFrameworkCore;
 
 namespace CodePro.Application.Features.PurchaseOrders;
@@ -18,9 +18,9 @@ internal static class PurchaseOrderDetailBuilder
                 OrderNumber = p.OrderNumber,
                 Title = p.Title,
                 Description = p.Description,
-                SupplierAccount = db.Account
-                    .Where(a => a.Id == p.SupplierAccountId)
-                    .Select(a => new EntityReference(EntityType.Account) { Id = a.Id, Name = a.AccountName })
+                Supplier = db.Supplier
+                    .Where(a => a.Id == p.SupplierId)
+                    .Select(a => new EntityReference(nameof(Supplier)) { Id = a.Id, Name = a.Name })
                     .FirstOrDefault(),
                 PurchaseRequestId = p.PurchaseRequestId,
                 Status = p.Status,

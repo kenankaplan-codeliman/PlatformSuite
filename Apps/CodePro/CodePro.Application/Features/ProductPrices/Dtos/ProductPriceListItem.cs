@@ -6,8 +6,8 @@ public class ProductPriceListItem
     public Guid ProductId { get; set; }
     public string? ProductCode { get; set; }
     public string? ProductName { get; set; }
-    public Guid SupplierAccountId { get; set; }
-    public string? SupplierAccountName { get; set; }
+    public Guid SupplierId { get; set; }
+    public string? SupplierName { get; set; }
     public Guid? PriceListId { get; set; }
     public string? PriceListName { get; set; }
     public decimal MinimumQuantity { get; set; }

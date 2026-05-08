@@ -1,0 +1,33 @@
+{
+  "singular": "Tedarikçi",
+  "plural": "Tedarikçiler",
+  "fields": {
+    "name": { "label": "Tedarikçi Adı", "placeholder": "Örn: Acme A.Ş." },
+    "industry": { "label": "Sektör", "placeholder": "Örn: Bilişim" },
+    "website": { "label": "Web Sitesi", "placeholder": "https://" },
+    "description": { "label": "Açıklama" },
+    "annualRevenue": { "label": "Yıllık Ciro" },
+    "numberOfEmployees": { "label": "Çalışan Sayısı" },
+    "supplierType": { "label": "Tedarikçi Tipi" },
+    "supplierStatus": { "label": "Durum" },
+    "companyType": { "label": "Şirket Tipi" },
+    "companyLegalType": { "label": "Şirket Hukuki Türü" },
+    "taxOffice": { "label": "Vergi Dairesi" },
+    "vkn": { "label": "VKN" },
+    "mersisNo": { "label": "Mersis No" },
+    "contactPersonName": { "label": "İletişim Kişisi" },
+    "contactPersonEmail": { "label": "E-posta" },
+    "contactPersonPhone": { "label": "Telefon" },
+    "addressLine": { "label": "Adres" },
+    "city": { "label": "Şehir" },
+    "country": { "label": "Ülke" },
+    "postalCode": { "label": "Posta Kodu" },
+    "isActive": { "label": "Aktif" }
+  },
+  "sections": {
+    "general": "Genel Bilgiler",
+    "company": "Şirket Bilgileri",
+    "contact": "İletişim",
+    "address": "Adres"
+  }
+}

@@ -1,16 +1,18 @@
 import { createBrowserRouter } from 'react-router-dom';
 import {
-  AccountDetailPage,
-  AccountsListPage,
+  ActivitiesListPage,
+  ActivityDetailPage,
   AppRoleDetailPage,
   AppRolesListPage,
   AppUserDetailPage,
   AppUsersListPage,
-  ContactDetailPage,
-  ContactsListPage,
   HomePage,
   LoginPage,
 } from '@platform/ui';
+import { AccountDetailPage } from '../../pages/accounts/detail/ui/AccountDetailPage';
+import { AccountsListPage } from '../../pages/accounts/list/ui/AccountsListPage';
+import { ContactDetailPage } from '../../pages/contacts/detail/ui/ContactDetailPage';
+import { ContactsListPage } from '../../pages/contacts/list/ui/ContactsListPage';
 import { LeadDetailPage } from '../../pages/leads/detail/ui/LeadDetailPage';
 import { LeadsListPage } from '../../pages/leads/list/ui/LeadsListPage';
 import { OpportunityDetailPage } from '../../pages/opportunities/detail/ui/OpportunityDetailPage';
@@ -35,6 +37,11 @@ export const router = createBrowserRouter([
       { path: RoutePatterns.ContactNew, element: <ContactDetailPage /> },
       { path: RoutePatterns.ContactEdit, element: <ContactDetailPage /> },
       { path: RoutePatterns.ContactView, element: <ContactDetailPage /> },
+
+      { path: RoutePatterns.ActivitiesList, element: <ActivitiesListPage /> },
+      { path: RoutePatterns.ActivityNew, element: <ActivityDetailPage /> },
+      { path: RoutePatterns.ActivityEdit, element: <ActivityDetailPage /> },
+      { path: RoutePatterns.ActivityView, element: <ActivityDetailPage /> },
 
       { path: RoutePatterns.LeadsList, element: <LeadsListPage /> },
       { path: RoutePatterns.LeadNew, element: <LeadDetailPage /> },

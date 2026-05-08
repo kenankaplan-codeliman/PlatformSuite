@@ -23,8 +23,8 @@ public sealed class UpdatePriceListHandler : IRequestHandler<UpdatePriceListComm
         var entity = await _repository.GetAsync(request.Id, cancellationToken);
         if (entity is null) return PriceListErrors.NotFound;
 
-        var supplierId = request.SupplierAccount?.Id ?? Guid.Empty;
-        var supplierExists = await _db.Account.AsNoTracking()
+        var supplierId = request.Supplier?.Id ?? Guid.Empty;
+        var supplierExists = await _db.Supplier.AsNoTracking()
             .AnyAsync(a => a.Id == supplierId, cancellationToken);
         if (!supplierExists) return PriceListErrors.SupplierNotFound;
 
@@ -35,12 +35,12 @@ public sealed class UpdatePriceListHandler : IRequestHandler<UpdatePriceListComm
         entity.Code = request.Code;
         entity.Name = request.Name;
         entity.Description = request.Description;
-        entity.SupplierAccountId = supplierId;
+        entity.SupplierId = supplierId;
 
         await _repository.UpdateAsync(entity, cancellationToken);
 
         var saved = await _db.PriceList.AsNoTracking()
-            .Include(p => p.SupplierAccount)
+            .Include(p => p.Supplier)
             .FirstAsync(p => p.Id == entity.Id, cancellationToken);
         return saved.Adapt<PriceListDetailItem>();
     }

@@ -8,6 +8,8 @@ import {
   SafetyOutlined,
   SettingOutlined,
   ContactsOutlined,
+  CalendarOutlined,
+  AppstoreOutlined,
 } from '@ant-design/icons';
 import type { MenuSchema } from '@platform/ui';
 import { RoutePaths } from '../router/paths';
@@ -23,8 +25,16 @@ export function useCrmMenu(): MenuSchema {
       children: [
         { key: 'leads', label: t('leads'), icon: <ContactsOutlined />, to: RoutePaths.LeadsList },
         { key: 'opportunities', label: t('opportunities'), icon: <FundOutlined />, to: RoutePaths.OpportunitiesList },
+      ],
+    },
+    {
+      key: 'customers',
+      label: t('groups.customers'),
+      icon: <AppstoreOutlined />,
+      children: [
         { key: 'accounts', label: t('accounts'), icon: <TeamOutlined />, to: RoutePaths.AccountsList },
         { key: 'contacts', label: t('contacts'), icon: <UserOutlined />, to: RoutePaths.ContactsList },
+        { key: 'activities', label: t('activities'), icon: <CalendarOutlined />, to: RoutePaths.ActivitiesList },
       ],
     },
     {

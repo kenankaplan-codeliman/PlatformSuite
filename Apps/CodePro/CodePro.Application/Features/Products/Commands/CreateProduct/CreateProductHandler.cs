@@ -51,8 +51,8 @@ public sealed class CreateProductHandler : IRequestHandler<CreateProductCommand,
         await ProductSyncHelper.SyncKeywordsAsync(_db, productId, request.Keywords, cancellationToken);
         await ProductSyncHelper.SyncSupplierSkusAsync(_db, productId,
             request.SupplierSkus
-                .Where(s => s.SupplierAccount != null)
-                .Select(s => new ProductSkuInput { SupplierAccountId = s.SupplierAccount!.Id, Sku = s.Sku })
+                .Where(s => s.Supplier != null)
+                .Select(s => new ProductSkuInput { SupplierId = s.Supplier!.Id, Sku = s.Sku })
                 .ToList(),
             cancellationToken);
     }

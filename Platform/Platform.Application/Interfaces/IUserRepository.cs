@@ -7,12 +7,12 @@ using System.Text;
 
 namespace Platform.Application.Interfaces
 {
-    public interface IUserRepository : IEntityRepository<AppUser>
+    public interface IUserRepository : IEntityRepository<User>
     {
         
-        Task<AppUser> GetOrCreateAsync(string email, string firstName, string lastName, string? password = null, string? azureUserId = null, Guid? organizationId = null, List<Guid>? roleIds = null, CancellationToken cancellationToken = default);
+        Task<User> GetOrCreateAsync(string email, string firstName, string lastName, string? password = null, string? azureUserId = null, Guid? organizationId = null, List<Guid>? roleIds = null, CancellationToken cancellationToken = default);
 
-        Task<AppUser?> GetByEmailAsync(string email, CancellationToken cancellationToken = default);
+        Task<User?> GetByEmailAsync(string email, CancellationToken cancellationToken = default);
         Task<Dictionary<string, AccessLevel>> GetUserPrivilegesAsync(Guid userId, CancellationToken cancellationToken = default);
     }
 }

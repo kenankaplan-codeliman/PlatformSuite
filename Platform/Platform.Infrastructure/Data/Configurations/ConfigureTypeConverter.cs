@@ -18,7 +18,7 @@ public static class ConfigureTypeConverter
         /* builder.Properties<ActivityType>().HaveConversion<EnumToStringConverter<ActivityType>>(); */
 
         // Enum to String Converters (Global)
-        var enumTypes = typeof(Platform.Domain.Enums.AccountType) // Domain assembly'den herhangi bir tip
+        var enumTypes = typeof(Platform.Domain.Enums.ActivityType) // Domain assembly'den herhangi bir tip
            .Assembly
            .GetTypes()
            .Where(t => t.IsEnum && t.Namespace == "Platform.Domain.Enums");

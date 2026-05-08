@@ -17,34 +17,16 @@ namespace Platform.Domain.Authorization
             public const string Update = "Activity.Update";
             public const string Delete = "Activity.Delete";
             public const string UpdateStatus = "Activity.UpdateStatus";
-        }
-
-        public static class AccountPrivilegeCodes
-        {
-            public const string Read = "Account.Read";
-            public const string Create = "Account.Create";
-            public const string Update = "Account.Update";
-            public const string Delete = "Account.Delete";
-            public const string Assign = "Account.Assign";
-            public const string State = "Account.State";
-        }
-
-        public static class ContactPrivilegeCodes
-        {
-            public const string Read = "Contact.Read";
-            public const string Create = "Contact.Create";
-            public const string Update = "Contact.Update";
-            public const string Delete = "Contact.Delete";
-            public const string Assign = "Contact.Assign";
-            public const string State = "Contact.State";
+            public const string Assign = "Activity.Assign";
+            public const string State = "Activity.State";
         }
 
         public static class AppOrganizationPrivilegeCodes
         {
-            public const string Read = "AppOrganization.Read";
-            public const string Create = "AppOrganization.Create";
-            public const string Update = "AppOrganization.Update";
-            public const string Delete = "AppOrganization.Delete";
+            public const string Read = "Organization.Read";
+            public const string Create = "Organization.Create";
+            public const string Update = "Organization.Update";
+            public const string Delete = "Organization.Delete";
         }
 
         public static class AppRolePrivilegeCodes

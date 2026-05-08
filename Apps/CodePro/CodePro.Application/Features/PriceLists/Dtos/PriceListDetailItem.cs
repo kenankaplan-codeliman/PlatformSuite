@@ -8,7 +8,7 @@ public class PriceListDetailItem
     public string Code { get; set; } = default!;
     public string Name { get; set; } = default!;
     public string? Description { get; set; }
-    public EntityReference? SupplierAccount { get; set; }
+    public EntityReference? Supplier { get; set; }
     public bool IsActive { get; set; }
     public DateTime? CreatedAt { get; set; }
     public DateTime? UpdatedAt { get; set; }

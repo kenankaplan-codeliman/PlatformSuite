@@ -32,8 +32,8 @@ public sealed class ListPurchaseOrdersHandler : IRequestHandler<ListPurchaseOrde
         if (filters.Priority.HasValue)
             query = query.Where(p => p.Priority == filters.Priority.Value);
 
-        if (filters.SupplierAccountId.HasValue)
-            query = query.Where(p => p.SupplierAccountId == filters.SupplierAccountId.Value);
+        if (filters.SupplierId.HasValue)
+            query = query.Where(p => p.SupplierId == filters.SupplierId.Value);
 
         if (filters.IsActive.HasValue)
             query = query.Where(p => p.IsActive == filters.IsActive.Value);
@@ -52,8 +52,8 @@ public sealed class ListPurchaseOrdersHandler : IRequestHandler<ListPurchaseOrde
                 Id = p.Id,
                 OrderNumber = p.OrderNumber,
                 Title = p.Title,
-                SupplierAccountId = p.SupplierAccountId,
-                SupplierAccountName = _db.Account.Where(a => a.Id == p.SupplierAccountId).Select(a => a.AccountName).FirstOrDefault(),
+                SupplierId = p.SupplierId,
+                SupplierName = _db.Supplier.Where(a => a.Id == p.SupplierId).Select(a => a.Name).FirstOrDefault(),
                 Status = p.Status,
                 Priority = p.Priority,
                 OrderDate = p.OrderDate,

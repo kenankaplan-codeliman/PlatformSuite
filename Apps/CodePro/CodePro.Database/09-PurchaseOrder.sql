@@ -11,7 +11,7 @@ CREATE TABLE IF NOT EXISTS purchase_order (
     title                       VARCHAR(50) NOT NULL,
     description                 TEXT,
 
-    supplier_account_id                 UUID NOT NULL REFERENCES account(id),
+    supplier_id                 UUID NOT NULL REFERENCES supplier(id),
 
     -- Kaynak talep (opsiyonel — elle oluşturulan siparişlerde null)
     purchase_request_id         UUID REFERENCES purchase_request(id),
@@ -130,7 +130,7 @@ CREATE TABLE IF NOT EXISTS purchase_order_request_line (
 );
 
 -- Indexes
-CREATE INDEX IF NOT EXISTS idx_purchase_order_supplier ON purchase_order(supplier_account_id);
+CREATE INDEX IF NOT EXISTS idx_purchase_order_supplier ON purchase_order(supplier_id);
 CREATE INDEX IF NOT EXISTS idx_purchase_order_request ON purchase_order(purchase_request_id);
 CREATE INDEX IF NOT EXISTS idx_purchase_order_organization ON purchase_order(organization_id);
 CREATE INDEX IF NOT EXISTS idx_purchase_order_owner ON purchase_order(owner_id);

@@ -40,9 +40,9 @@ internal static class PurchaseRequestDetailBuilder
                 IsFreeProduct = l.IsFreeProduct,
                 ProductId = l.ProductId,
                 ProductName = l.ProductName,
-                SupplierAccountId = l.SupplierAccountId,
-                SupplierAccountName = l.SupplierAccountId.HasValue
-                    ? db.Account.Where(a => a.Id == l.SupplierAccountId).Select(a => a.AccountName).FirstOrDefault()
+                SupplierId = l.SupplierId,
+                SupplierName = l.SupplierId.HasValue
+                    ? db.Supplier.Where(a => a.Id == l.SupplierId).Select(a => a.Name).FirstOrDefault()
                     : null,
                 Quantity = l.Quantity,
                 UnitOfMeasure = l.UnitOfMeasure,

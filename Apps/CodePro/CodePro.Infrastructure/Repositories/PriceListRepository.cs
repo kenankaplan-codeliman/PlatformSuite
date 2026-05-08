@@ -15,7 +15,7 @@ public class PriceListRepository : BaseEntityRepository<PriceList>, IPriceListRe
     public override async Task<PriceList?> GetAsync(Guid Id, CancellationToken cancellationToken = default)
     {
         return await dbSet
-            .Include(p => p.SupplierAccount)
+            .Include(p => p.Supplier)
             .FirstOrDefaultAsync(p => p.Id == Id, cancellationToken);
     }
 }

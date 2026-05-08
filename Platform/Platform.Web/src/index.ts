@@ -9,10 +9,8 @@ export { RoutePaths, RoutePatterns } from './app/router/paths';
 // ─── Sayfalar ────────────────────────────────────────────────────────────────
 export { LoginPage } from './pages/auth/login/ui/LoginPage';
 export { HomePage } from './pages/home/ui/HomePage';
-export { AccountsListPage } from './pages/accounts/list/ui/AccountsListPage';
-export { AccountDetailPage } from './pages/accounts/detail/ui/AccountDetailPage';
-export { ContactsListPage } from './pages/contacts/list/ui/ContactsListPage';
-export { ContactDetailPage } from './pages/contacts/detail/ui/ContactDetailPage';
+export { ActivitiesListPage } from './pages/activities/list/ui/ActivitiesListPage';
+export { ActivityDetailPage } from './pages/activities/detail/ui/ActivityDetailPage';
 export { OrganizationsListPage } from './pages/organizations/list/ui/OrganizationsListPage';
 export { OrganizationDetailPage } from './pages/organizations/detail/ui/OrganizationDetailPage';
 export { AppUsersListPage } from './pages/users/list/ui/AppUsersListPage';
@@ -29,6 +27,15 @@ export { AppShell } from './widgets/app-shell/ui/AppShell';
 export type { AppShellProps } from './widgets/app-shell/ui/AppShell';
 export { AppMetaProvider, useAppMeta } from './shared/lib/app-meta/AppMetaContext';
 export type { AppMeta, AppMetaProviderProps } from './shared/lib/app-meta/AppMetaContext';
+export {
+  ActivityEntityTypesProvider,
+  useActivityEntityTypes,
+} from './shared/lib/activity/ActivityEntityTypesContext';
+export type {
+  ActivityEntityTypesValue,
+  ActivityEntityTypesProviderProps,
+} from './shared/lib/activity/ActivityEntityTypesContext';
+export type { EntityLookupOption } from './shared/ui/form/fields/EntityLookupField';
 export {
   isMenuGroup,
   type MenuItem,
@@ -84,12 +91,14 @@ export type {
 // ─── Shared UI primitifleri ──────────────────────────────────────────────────
 export { Button } from './shared/ui/Button';
 export { Card } from './shared/ui/Card';
+export { Dropdown, type DropdownItem } from './shared/ui/Dropdown';
 export { DataTable, type DataTableColumn } from './shared/ui/DataTable';
 export { Alert } from './shared/ui/feedback/Alert';
 export { Spinner } from './shared/ui/feedback/Spinner';
 export { DetailPageLayout } from './shared/ui/detail-page/DetailPageLayout';
 export { ListPageLayout } from './shared/ui/list-page/ListPageLayout';
 export { FormSection } from './shared/ui/form/FormSection';
+export { FormRow } from './shared/ui/form/FormRow';
 export { TextField } from './shared/ui/form/fields/TextField';
 export { NumberField } from './shared/ui/form/fields/NumberField';
 export { SelectField, type SelectOption } from './shared/ui/form/fields/SelectField';
@@ -97,12 +106,13 @@ export { TextAreaField } from './shared/ui/form/fields/TextAreaField';
 export { PasswordField } from './shared/ui/form/fields/PasswordField';
 export { EntityLookupField } from './shared/ui/form/fields/EntityLookupField';
 export { EntityRelationTable } from './shared/ui/form/fields/EntityRelationTable';
+export { CheckboxField } from './shared/ui/form/fields/CheckboxField';
 
 // ─── API katmanı ─────────────────────────────────────────────────────────────
 export { httpClient } from './shared/api/httpClient';
 export { ServicePath } from './shared/api/servicePaths';
 export { mapAxiosError } from './shared/api/errorMapper';
-export { accountKeys, contactKeys, authKeys, organizationKeys, appUserKeys, appRoleKeys, attachmentKeys } from './shared/api/queryKeys';
+export { activityKeys, authKeys, organizationKeys, appUserKeys, appRoleKeys, attachmentKeys } from './shared/api/queryKeys';
 
 // ─── Hook'lar ────────────────────────────────────────────────────────────────
 export { useRouteMode } from './shared/hooks/useRouteMode';

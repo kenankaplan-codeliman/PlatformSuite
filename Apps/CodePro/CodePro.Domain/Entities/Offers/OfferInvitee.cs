@@ -1,4 +1,4 @@
-using Platform.Domain.Entities.Accounts;
+using CodePro.Domain.Entities.Suppliers;
 
 namespace CodePro.Domain.Entities.Offers
 {
@@ -8,8 +8,8 @@ namespace CodePro.Domain.Entities.Offers
         public Guid OfferId { get; set; }
 
         /// <summary>Davet edilen tedarikçinin Platform Account'a referansı (opsiyonel — manuel giriş için null).</summary>
-        public Guid? SupplierAccountId { get; set; }
-        public Account? SupplierAccount { get; set; }
+        public Guid? SupplierId { get; set; }
+        public Supplier? Supplier { get; set; }
 
         public string SupplierName { get; set; } = string.Empty;
         public string? SupplierEmail { get; set; }

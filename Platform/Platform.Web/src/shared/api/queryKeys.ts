@@ -8,20 +8,15 @@ export const authKeys = {
   session: () => [...authKeys.all, 'session'] as const,
 };
 
-export const accountKeys = {
-  all: ['account'] as const,
-  lists: () => [...accountKeys.all, 'list'] as const,
-  list: (params: unknown) => [...accountKeys.lists(), params] as const,
-  details: () => [...accountKeys.all, 'detail'] as const,
-  detail: (id: string) => [...accountKeys.details(), id] as const,
-};
-
-export const contactKeys = {
-  all: ['contact'] as const,
-  lists: () => [...contactKeys.all, 'list'] as const,
-  list: (params: unknown) => [...contactKeys.lists(), params] as const,
-  details: () => [...contactKeys.all, 'detail'] as const,
-  detail: (id: string) => [...contactKeys.details(), id] as const,
+export const activityKeys = {
+  all: ['activity'] as const,
+  lists: () => [...activityKeys.all, 'list'] as const,
+  list: (params: unknown) => [...activityKeys.lists(), params] as const,
+  details: () => [...activityKeys.all, 'detail'] as const,
+  detail: (type: string, id: string) =>
+    [...activityKeys.details(), type, id] as const,
+  calendars: () => [...activityKeys.all, 'calendar'] as const,
+  calendar: (params: unknown) => [...activityKeys.calendars(), params] as const,
 };
 
 export const organizationKeys = {

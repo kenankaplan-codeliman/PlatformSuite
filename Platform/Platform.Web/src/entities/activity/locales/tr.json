@@ -1,0 +1,72 @@
+{
+  "singular": "Aktivite",
+  "plural": "Aktiviteler",
+  "fields": {
+    "subject": { "label": "Konu", "placeholder": "Aktivite konusu" },
+    "activityType": { "label": "Tür" },
+    "status": { "label": "Durum" },
+    "priority": { "label": "Öncelik" },
+    "startDate": { "label": "Başlangıç" },
+    "endDate": { "label": "Bitiş" },
+    "dueDate": { "label": "Son Tarih" },
+    "owner": { "label": "Sorumlu" },
+    "regardingEntity": { "label": "İlgili Kayıt" },
+    "isActive": { "label": "Aktif" },
+    "caller": { "label": "Arayan" },
+    "recipient": { "label": "Aranan" },
+    "direction": { "label": "Yön" },
+    "callNotes": { "label": "Görüşme Notları" },
+    "recordingUrl": { "label": "Kayıt Linki" },
+    "taskDescription": { "label": "Görev Açıklaması" },
+    "percentComplete": { "label": "Tamamlanma (%)" },
+    "reminderAt": { "label": "Hatırlatma" },
+    "organizer": { "label": "Organizatör" },
+    "attendees": { "label": "Katılımcılar" },
+    "location": { "label": "Konum" },
+    "isOnline": { "label": "Online" },
+    "meetingUrl": { "label": "Toplantı Linki" },
+    "startTime": { "label": "Başlangıç Saati" },
+    "endTime": { "label": "Bitiş Saati" },
+    "isAllDay": { "label": "Tüm Gün" },
+    "reminderMinutesBefore": { "label": "Hatırlatma (dk önce)" },
+    "isRecurring": { "label": "Tekrar Eden" },
+    "meetingNotes": { "label": "Toplantı Notları" },
+    "from": { "label": "Gönderen" },
+    "to": { "label": "Alıcılar" },
+    "cc": { "label": "CC" },
+    "bcc": { "label": "BCC" },
+    "body": { "label": "İçerik" },
+    "isHtml": { "label": "HTML" },
+    "isSent": { "label": "Gönderildi" },
+    "isRead": { "label": "Okundu" }
+  },
+  "sections": {
+    "general": "Genel Bilgiler",
+    "schedule": "Zamanlama",
+    "phoneCall": "Telefon Görüşmesi Detayı",
+    "task": "Görev Detayı",
+    "appointment": "Randevu Detayı",
+    "email": "E-posta Detayı"
+  },
+  "owner": {
+    "addLabel": "Sorumlu Seç",
+    "modalTitle": "Kullanıcı Ara"
+  },
+  "regarding": {
+    "addLabel": "İlgili Kayıt Seç",
+    "modalTitle": "Firma Ara"
+  },
+  "callPerson": {
+    "modalTitle": "Kontak Ara"
+  },
+  "attendees": {
+    "addLabel": "Katılımcı Ekle",
+    "modalTitle": "Kullanıcı Ara",
+    "nameColumn": "İsim"
+  },
+  "emailContacts": {
+    "addLabel": "Alıcı Ekle",
+    "modalTitle": "Kontak Ara",
+    "nameColumn": "İsim"
+  }
+}

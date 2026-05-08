@@ -83,13 +83,13 @@ internal static class ProductSyncHelper
             .ToListAsync(cancellationToken);
 
         var desiredBySupplier = incoming
-            .Where(s => s.SupplierAccountId != Guid.Empty && !string.IsNullOrWhiteSpace(s.Sku))
-            .GroupBy(s => s.SupplierAccountId)
+            .Where(s => s.SupplierId != Guid.Empty && !string.IsNullOrWhiteSpace(s.Sku))
+            .GroupBy(s => s.SupplierId)
             .ToDictionary(g => g.Key, g => g.First().Sku.Trim());
 
-        var existingBySupplier = existing.ToDictionary(e => e.SupplierAccountId, e => e);
+        var existingBySupplier = existing.ToDictionary(e => e.SupplierId, e => e);
 
-        var toRemove = existing.Where(e => !desiredBySupplier.ContainsKey(e.SupplierAccountId)).ToList();
+        var toRemove = existing.Where(e => !desiredBySupplier.ContainsKey(e.SupplierId)).ToList();
         if (toRemove.Count > 0) db.ProductSku.RemoveRange(toRemove);
 
         foreach (var (supplierId, sku) in desiredBySupplier)
@@ -103,7 +103,7 @@ internal static class ProductSyncHelper
                 db.ProductSku.Add(new ProductSku
                 {
                     ProductId = productId,
-                    SupplierAccountId = supplierId,
+                    SupplierId = supplierId,
                     Sku = sku,
                 });
             }
@@ -113,6 +113,6 @@ internal static class ProductSyncHelper
 
 public sealed class ProductSkuInput
 {
-    public Guid SupplierAccountId { get; init; }
+    public Guid SupplierId { get; init; }
     public string Sku { get; init; } = string.Empty;
 }

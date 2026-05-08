@@ -6,8 +6,7 @@ import commonTr from "../shared/locales/common/tr.json";
 import enumsTr from "../shared/locales/enums/tr.json";
 // entities
 import userTr from "../entities/user/locales/tr.json";
-import accountTr from "../entities/account/locales/tr.json";
-import contactTr from "../entities/contact/locales/tr.json";
+import activityTr from "../entities/activity/locales/tr.json";
 import organizationTr from "../entities/organization/locales/tr.json";
 import appUserTr from "../entities/app-user/locales/tr.json";
 import appRoleTr from "../entities/app-role/locales/tr.json";
@@ -17,10 +16,8 @@ import authLoginTr from "../features/auth-login/locales/tr.json";
 // widgets
 import widgetAttachmentTr from "../widgets/attachment/locales/tr.json";
 // pages
-import accountsListPageTr from "../pages/accounts/list/locales/tr.json";
-import accountsDetailPageTr from "../pages/accounts/detail/locales/tr.json";
-import contactsListPageTr from "../pages/contacts/list/locales/tr.json";
-import contactsDetailPageTr from "../pages/contacts/detail/locales/tr.json";
+import activitiesListPageTr from "../pages/activities/list/locales/tr.json";
+import activitiesDetailPageTr from "../pages/activities/detail/locales/tr.json";
 import organizationsListPageTr from "../pages/organizations/list/locales/tr.json";
 import organizationsDetailPageTr from "../pages/organizations/detail/locales/tr.json";
 import usersListPageTr from "../pages/users/list/locales/tr.json";
@@ -32,18 +29,15 @@ const namespaces = [
   "common",
   "enums",
   "entity.user",
-  "entity.account",
-  "entity.contact",
+  "entity.activity",
   "entity.organization",
   "entity.app-user",
   "entity.app-role",
   "entity.attachment",
   "feature.auth-login",
   "widget.attachment",
-  "page.accounts-list",
-  "page.accounts-detail",
-  "page.contacts-list",
-  "page.contacts-detail",
+  "page.activities-list",
+  "page.activities-detail",
   "page.organizations-list",
   "page.organizations-detail",
   "page.users-list",
@@ -62,18 +56,15 @@ void i18n.use(initReactI18next).init({
       common: commonTr,
       enums: enumsTr,
       "entity.user": userTr,
-      "entity.account": accountTr,
-      "entity.contact": contactTr,
+      "entity.activity": activityTr,
       "entity.organization": organizationTr,
       "entity.app-user": appUserTr,
       "entity.app-role": appRoleTr,
       "entity.attachment": attachmentTr,
       "feature.auth-login": authLoginTr,
       "widget.attachment": widgetAttachmentTr,
-      "page.accounts-list": accountsListPageTr,
-      "page.accounts-detail": accountsDetailPageTr,
-      "page.contacts-list": contactsListPageTr,
-      "page.contacts-detail": contactsDetailPageTr,
+      "page.activities-list": activitiesListPageTr,
+      "page.activities-detail": activitiesDetailPageTr,
       "page.organizations-list": organizationsListPageTr,
       "page.organizations-detail": organizationsDetailPageTr,
       "page.users-list": usersListPageTr,

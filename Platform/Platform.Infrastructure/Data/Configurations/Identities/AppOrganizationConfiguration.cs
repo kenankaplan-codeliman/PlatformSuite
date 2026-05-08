@@ -4,9 +4,9 @@ using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
 namespace Platform.Infrastructure.Data.Configurations.Identities;
 
-public class AppOrganizationConfiguration : IEntityTypeConfiguration<AppOrganization>
+public class AppOrganizationConfiguration : IEntityTypeConfiguration<Organization>
 {
-    public void Configure(EntityTypeBuilder<AppOrganization> builder)
+    public void Configure(EntityTypeBuilder<Organization> builder)
     {
         builder.ToTable("app_organization");
 
@@ -85,7 +85,7 @@ public class AppOrganizationConfiguration : IEntityTypeConfiguration<AppOrganiza
             .HasColumnName("deleted_at");
 
         // Self-referencing
-        builder.HasOne<AppOrganization>()
+        builder.HasOne<Organization>()
             .WithMany()
             .HasForeignKey(e => e.ParentOrganizationId)
             .OnDelete(DeleteBehavior.Restrict);

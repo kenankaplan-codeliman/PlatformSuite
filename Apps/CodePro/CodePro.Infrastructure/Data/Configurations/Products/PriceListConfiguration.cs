@@ -17,7 +17,7 @@ public class PriceListConfiguration : IEntityTypeConfiguration<PriceList>
         builder.Property(p => p.Name).HasColumnName("name").IsRequired().HasMaxLength(100);
         builder.Property(p => p.Description).HasColumnName("description").HasColumnType("text");
 
-        builder.Property(p => p.SupplierAccountId).HasColumnName("supplier_account_id").IsRequired();
+        builder.Property(p => p.SupplierId).HasColumnName("supplier_id").IsRequired();
 
         builder.Property(p => p.CreatedBy).HasColumnName("created_by").IsRequired();
         builder.Property(p => p.CreatedAt).HasColumnName("created_at").IsRequired();
@@ -27,9 +27,9 @@ public class PriceListConfiguration : IEntityTypeConfiguration<PriceList>
         builder.Property(p => p.DeletedBy).HasColumnName("deleted_by");
         builder.Property(p => p.DeletedAt).HasColumnName("deleted_at");
 
-        builder.HasOne(p => p.SupplierAccount)
+        builder.HasOne(p => p.Supplier)
             .WithMany()
-            .HasForeignKey(p => p.SupplierAccountId)
+            .HasForeignKey(p => p.SupplierId)
             .OnDelete(DeleteBehavior.Restrict);
 
         builder.HasMany(p => p.Prices)

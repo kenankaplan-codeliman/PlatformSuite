@@ -1,0 +1,11 @@
+{
+  "title": "Aktiviteler",
+  "createButton": "Yeni Aktivite",
+  "createMenu": {
+    "phoneCall": "Telefon Görüşmesi",
+    "task": "Görev",
+    "appointment": "Randevu",
+    "email": "E-posta"
+  },
+  "empty": "Henüz aktivite eklenmedi."
+}

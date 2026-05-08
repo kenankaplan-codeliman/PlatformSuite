@@ -62,9 +62,9 @@ public sealed class UpdateAppOrganizationHandler : IRequestHandler<UpdateAppOrga
     /// org'lar memory'e yüklenir, parent → children index'i kurulur ve tüm
     /// değişiklikler tek SaveChanges ile yazılır. Cycle koruması `visited` set'i.
     /// </summary>
-    private async Task RefreshDescendantTitlesAsync(AppOrganization root, CancellationToken cancellationToken)
+    private async Task RefreshDescendantTitlesAsync(Organization root, CancellationToken cancellationToken)
     {
-        var allOrgs = await _db.AppOrganization
+        var allOrgs = await _db.Organization
             .Where(o => !o.IsDeleted)
             .ToListAsync(cancellationToken);
 

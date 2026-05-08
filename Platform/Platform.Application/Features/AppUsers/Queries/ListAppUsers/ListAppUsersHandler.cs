@@ -15,7 +15,7 @@ public sealed class ListAppUsersHandler : IRequestHandler<ListAppUsersQuery, Res
 
     public async Task<Result<PagedResult<AppUserListItem>>> Handle(ListAppUsersQuery request, CancellationToken cancellationToken)
     {
-        var query = _db.AppUser.AsNoTracking();
+        var query = _db.User.AsNoTracking();
         var filters = request.Filters;
 
         if (!string.IsNullOrWhiteSpace(filters.FullName))
@@ -55,11 +55,11 @@ public sealed class ListAppUsersHandler : IRequestHandler<ListAppUsersQuery, Res
                 LastName = u.LastName,
                 PhoneNumber = u.PhoneNumber,
                 OrganizationId = u.OrganizationId,
-                OrganizationName = _db.AppOrganization.Where(o => o.Id == u.OrganizationId)
+                OrganizationName = _db.Organization.Where(o => o.Id == u.OrganizationId)
                     .Select(o => o.OrganizationName).FirstOrDefault(),
                 ManagerId = u.ManagerId,
                 ManagerName = u.ManagerId.HasValue
-                    ? _db.AppUser.Where(m => m.Id == u.ManagerId).Select(m => m.FirstName + " " + m.LastName).FirstOrDefault()
+                    ? _db.User.Where(m => m.Id == u.ManagerId).Select(m => m.FirstName + " " + m.LastName).FirstOrDefault()
                     : null,
                 IsActive = u.IsActive,
             })

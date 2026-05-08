@@ -7,6 +7,7 @@ using CodePro.Application.Features.ProductImages;
 using CodePro.Application.Features.ProductPrices;
 using CodePro.Application.Features.Products;
 using CodePro.Application.Features.Questionnaires;
+using CodePro.Application.Features.Suppliers;
 using Mapster;
 
 namespace CodePro.Application.Mapping;
@@ -19,6 +20,7 @@ public static class CodeProMappingConfig
 {
     public static void Register(TypeAdapterConfig config)
     {
+        SupplierMappings.Register(config);
         BrandMappings.Register(config);
         ManufacturerMappings.Register(config);
         ProductCategoryMappings.Register(config);

@@ -93,7 +93,7 @@ public abstract class BaseEntityRepository<T> : IEntityRepository<T>
             throw new InvalidOperationException(
                 $"{typeof(T).Name} does not implement IOwnedEntity.");
 
-        var user = await dbContext.AppUser
+        var user = await dbContext.User
             .AsNoTracking()
             .Where(u => u.Id == newOwnerId)
             .Select(u => new { u.OrganizationId })

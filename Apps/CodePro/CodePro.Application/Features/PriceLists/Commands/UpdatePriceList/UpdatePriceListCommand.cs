@@ -10,5 +10,5 @@ public sealed class UpdatePriceListCommand : ICommand<PriceListDetailItem>
     public string Code { get; init; } = string.Empty;
     public string Name { get; init; } = string.Empty;
     public string? Description { get; init; }
-    public EntityReference? SupplierAccount { get; init; }
+    public EntityReference? Supplier { get; init; }
 }

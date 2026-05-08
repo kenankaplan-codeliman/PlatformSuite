@@ -22,11 +22,7 @@ public class AuditController : ControllerBase
 
     [HttpPost("get")]
     [ProducesResponseType(typeof(AuditInfo), 200)]
-    [PrivilegeAuthorize(
-        PrivilegeCodes.ContactPrivilegeCodes.Read,
-        PrivilegeCodes.AccountPrivilegeCodes.Read,
-        PrivilegeCodes.UserPrivilegeCodes.Read
-        )]
+    [PrivilegeAuthorize(PrivilegeCodes.UserPrivilegeCodes.Read)]
     public async Task<IActionResult> Get(AuditRequest auditRequest)
     {
         var audit = await auditCommandHandler.GetAsync(auditRequest.Id, auditRequest.EntityType);

@@ -28,7 +28,7 @@ public class AppUserRoleConfiguration : IEntityTypeConfiguration<AppUserRole>
             .IsRequired();
 
         // Relationships
-        builder.HasOne<AppUser>()
+        builder.HasOne<User>()
             .WithMany()
             .HasForeignKey(e => e.UserId)
             .OnDelete(DeleteBehavior.Cascade);

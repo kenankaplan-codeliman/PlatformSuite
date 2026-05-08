@@ -1,8 +1,5 @@
 using CodePro.Application.Interfaces;
-using CodePro.Domain.Entities.Accounts;
 using CodePro.Domain.Entities.Budgets;
-using Platform.Domain.Entities.Accounts;
-using Platform.Domain.Enums;
 using CodePro.Domain.Entities.Contracts;
 using CodePro.Domain.Entities.EDocuments;
 using CodePro.Domain.Entities.Offers;
@@ -11,6 +8,7 @@ using CodePro.Domain.Entities.PurchaseBaskets;
 using CodePro.Domain.Entities.PurchaseOrders;
 using CodePro.Domain.Entities.PurchaseRequests;
 using CodePro.Domain.Entities.Questionnaires;
+using CodePro.Domain.Entities.Suppliers;
 using Platform.Application.Interfaces;
 using Platform.Infrastructure.Data;
 using Microsoft.EntityFrameworkCore;
@@ -18,10 +16,10 @@ using Microsoft.EntityFrameworkCore;
 namespace CodePro.Infrastructure.Data;
 
 /// <summary>
-/// CodePro uygulamasına özgü DbContext. PlatformDbContext'in DbSet'lerini (Account, Contact,
-/// Activity, Identity) devralır; CodePro aggregate'leri (Supplier, Product, Offer, Contract,
-/// Budget, Purchase, Questionnaire, EDocument, Attachment) burada eklenir.
-/// ICodeProDbContext sözleşmesini implement eder.
+/// CodePro uygulamasına özgü DbContext. PlatformDbContext'in DbSet'lerini (Activity, Identity,
+/// Attachment) devralır; CodePro aggregate'leri (Supplier, Product, Offer, Contract, Budget,
+/// Purchase, Questionnaire, EDocument) burada eklenir. ICodeProDbContext sözleşmesini
+/// implement eder.
 /// </summary>
 public sealed class CodeProDbContext : PlatformDbContext, ICodeProDbContext
 {
@@ -33,12 +31,9 @@ public sealed class CodeProDbContext : PlatformDbContext, ICodeProDbContext
     {
     }
 
-    // Suppliers — Platform Account (AccountType=Vendor) kullanılıyor; ayrı DbSet yok.
-
-    // ======= Account Extensions (CodePro-specific) =======
-    // Supplier — Account TPH alt sınıfı (account_type = 'Vendor')
+    // ======= Suppliers =======
     public DbSet<Supplier> Supplier { get; set; }
-    public DbSet<AccountProductCategory> AccountProductCategory { get; set; }
+    public DbSet<SupplierProductCategory> SupplierProductCategory { get; set; }
 
     // ======= Products =======
     public DbSet<ProductCategory> ProductCategory { get; set; }
@@ -102,16 +97,5 @@ public sealed class CodeProDbContext : PlatformDbContext, ICodeProDbContext
     {
         base.OnModelCreating(modelBuilder);
         modelBuilder.ApplyConfigurationsFromAssembly(typeof(CodeProDbContext).Assembly);
-
-        // TPH: Supplier, Account.account_type = 'Vendor' satırlarını temsil eder.
-        // Diğer AccountType değerleri base Account olarak materialize edilir.
-        modelBuilder.Entity<Account>()
-            .HasDiscriminator(a => a.AccountType)
-            .HasValue<Account>(AccountType.Customer)
-            .HasValue<Account>(AccountType.Prospect)
-            .HasValue<Account>(AccountType.Partner)
-            .HasValue<Supplier>(AccountType.Vendor)
-            .HasValue<Account>(AccountType.Competitor)
-            .HasValue<Account>(AccountType.Other);
     }
 }

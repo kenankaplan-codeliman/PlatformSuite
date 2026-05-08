@@ -1,9 +1,11 @@
 using CodePro.Application.Interfaces;
 using CodePro.Infrastructure.Data;
+using CodePro.Infrastructure.References;
 using CodePro.Infrastructure.Repositories;
 using CodePro.Infrastructure.Services;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Platform.Application.Common.References;
 
 namespace CodePro.Infrastructure;
 
@@ -17,6 +19,7 @@ public static class DependencyInjection
         services.AddScoped<ICodeProDbContext>(sp => sp.GetRequiredService<CodeProDbContext>());
 
         // CodePro aggregate repository registrasyonları (aggregate başına eklenir).
+        services.AddScoped<ISupplierRepository, SupplierRepository>();
         services.AddScoped<IBrandRepository, BrandRepository>();
         services.AddScoped<IManufacturerRepository, ManufacturerRepository>();
         services.AddScoped<IProductCategoryRepository, ProductCategoryRepository>();
@@ -37,6 +40,14 @@ public static class DependencyInjection
         services.AddScoped<IContractRepository, ContractRepository>();
         services.AddScoped<IBudgetRepository, BudgetRepository>();
         services.AddScoped<IEDocumentRepository, EDocumentRepository>();
+
+        // CodePro entity'leri için Activity.RegardingEntityType / ParticipantEntityType resolver kayıtları
+        services.AddScoped<IEntityReferenceResolver, SupplierReferenceResolver>();
+        services.AddScoped<IEntityReferenceResolver, PurchaseOrderReferenceResolver>();
+        services.AddScoped<IEntityReferenceResolver, BudgetReferenceResolver>();
+        services.AddScoped<IEntityReferenceResolver, OfferReferenceResolver>();
+        services.AddScoped<IEntityReferenceResolver, ContractReferenceResolver>();
+        services.AddScoped<IEntityReferenceResolver, ProductReferenceResolver>();
 
         return services;
     }

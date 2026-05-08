@@ -27,17 +27,17 @@ public sealed class UpdateAppUserHandler : IRequestHandler<UpdateAppUserCommand,
         var entity = await _repository.GetAsync(request.Id, cancellationToken);
         if (entity is null) return AppUserErrors.NotFound;
 
-        var emailExists = await _db.AppUser.AsNoTracking()
+        var emailExists = await _db.User.AsNoTracking()
             .AnyAsync(u => u.Id != request.Id && u.Email.ToLower() == request.Email.ToLower(), cancellationToken);
         if (emailExists) return AppUserErrors.DuplicateEmail;
 
-        var orgExists = await _db.AppOrganization.AsNoTracking()
+        var orgExists = await _db.Organization.AsNoTracking()
             .AnyAsync(o => o.Id == request.OrganizationId, cancellationToken);
         if (!orgExists) return AppUserErrors.OrganizationNotFound;
 
         if (request.ManagerId.HasValue)
         {
-            var managerExists = await _db.AppUser.AsNoTracking()
+            var managerExists = await _db.User.AsNoTracking()
                 .AnyAsync(u => u.Id == request.ManagerId.Value, cancellationToken);
             if (!managerExists) return AppUserErrors.ManagerNotFound;
         }

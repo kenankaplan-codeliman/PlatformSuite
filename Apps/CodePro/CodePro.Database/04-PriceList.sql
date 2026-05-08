@@ -13,7 +13,7 @@ CREATE TABLE IF NOT EXISTS price_list (
     name            VARCHAR(100)    NOT NULL,
     description     TEXT,
 
-    supplier_account_id     UUID            NOT NULL REFERENCES account(id),
+    supplier_id     UUID            NOT NULL REFERENCES supplier(id),
 
     -- IAuditableEntity
     created_by      UUID            NOT NULL,
@@ -30,8 +30,8 @@ CREATE TABLE IF NOT EXISTS price_list (
 CREATE UNIQUE INDEX IF NOT EXISTS uq_price_list_code
     ON price_list(code) WHERE is_deleted = FALSE;
 
-CREATE INDEX IF NOT EXISTS idx_price_list_supplier_account_id
-    ON price_list(supplier_account_id) WHERE is_deleted = FALSE;
+CREATE INDEX IF NOT EXISTS idx_price_list_supplier_id
+    ON price_list(supplier_id) WHERE is_deleted = FALSE;
 
 -- Sequence for code generation (PL-YYYY-NNNN)
 CREATE SEQUENCE IF NOT EXISTS price_list_seq START 1;

@@ -1,14 +1,14 @@
 using Platform.Application.Common.Abstractions;
 using Platform.Application.Features.AppOrganizations.Dtos;
 using Platform.Application.Modals.Common;
-using Platform.Domain.Enums;
+using Platform.Domain.Entities.Identities;
 using Mapster;
 using Microsoft.EntityFrameworkCore;
 
 namespace Platform.Application.Features.AppOrganizations;
 
 /// <summary>
-/// Save sonrası fresh DTO üretimi için ortak helper. AppOrganization entity'sinde
+/// Save sonrası fresh DTO üretimi için ortak helper. Organization entity'sinde
 /// Parent/ReportsTo navigation property bulunmadığı için EntityReference projection'ı
 /// burada ayrı sorguyla doldurulur — Get / Create / Update aynı çıktıyı garanti eder.
 /// </summary>
@@ -17,7 +17,7 @@ internal static class AppOrganizationDetailBuilder
     public static async Task<AppOrganizationDetailItem?> BuildAsync(
         IApplicationDbContext db, Guid id, CancellationToken cancellationToken)
     {
-        var entity = await db.AppOrganization
+        var entity = await db.Organization
             .AsNoTracking()
             .FirstOrDefaultAsync(o => o.Id == id, cancellationToken);
 
@@ -27,9 +27,9 @@ internal static class AppOrganizationDetailBuilder
 
         if (entity.ParentOrganizationId.HasValue)
         {
-            dto.ParentOrganization = await db.AppOrganization.AsNoTracking()
+            dto.ParentOrganization = await db.Organization.AsNoTracking()
                 .Where(o => o.Id == entity.ParentOrganizationId.Value)
-                .Select(o => new EntityReference(EntityType.None)
+                .Select(o => new EntityReference(nameof(Organization))
                 {
                     Id = o.Id,
                     Name = o.Title ?? o.OrganizationName,
@@ -39,9 +39,9 @@ internal static class AppOrganizationDetailBuilder
 
         if (entity.ReportsTo.HasValue)
         {
-            dto.ReportsTo = await db.AppOrganization.AsNoTracking()
+            dto.ReportsTo = await db.Organization.AsNoTracking()
                 .Where(o => o.Id == entity.ReportsTo.Value)
-                .Select(o => new EntityReference(EntityType.None)
+                .Select(o => new EntityReference(nameof(Organization))
                 {
                     Id = o.Id,
                     Name = o.Title ?? o.OrganizationName,

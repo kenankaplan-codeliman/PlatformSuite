@@ -1,4 +1,4 @@
-using Platform.Domain.Entities.Accounts;
+using CodePro.Domain.Entities.Suppliers;
 using Platform.Domain.Entities.Common;
 
 namespace CodePro.Domain.Entities.Products;
@@ -21,8 +21,8 @@ public class PriceList :
     public string? Description { get; set; }
 
     /// <summary>Tedarikçi Platform Account'a referans.</summary>
-    public Guid SupplierAccountId { get; set; }
-    public Account SupplierAccount { get; set; } = null!;
+    public Guid SupplierId { get; set; }
+    public Supplier Supplier { get; set; } = null!;
 
     public ICollection<ProductPrice> Prices { get; } = new List<ProductPrice>();
 

@@ -21,8 +21,8 @@ public sealed class ListProductPricesHandler : IRequestHandler<ListProductPrices
         if (filters.ProductId.HasValue)
             query = query.Where(p => p.ProductId == filters.ProductId.Value);
 
-        if (filters.SupplierAccountId.HasValue)
-            query = query.Where(p => p.SupplierAccountId == filters.SupplierAccountId.Value);
+        if (filters.SupplierId.HasValue)
+            query = query.Where(p => p.SupplierId == filters.SupplierId.Value);
 
         if (filters.PriceListId.HasValue)
             query = query.Where(p => p.PriceListId == filters.PriceListId.Value);
@@ -45,8 +45,8 @@ public sealed class ListProductPricesHandler : IRequestHandler<ListProductPrices
                 ProductId = p.ProductId,
                 ProductCode = _db.Product.Where(x => x.Id == p.ProductId).Select(x => x.Code).FirstOrDefault(),
                 ProductName = _db.Product.Where(x => x.Id == p.ProductId).Select(x => x.Name).FirstOrDefault(),
-                SupplierAccountId = p.SupplierAccountId,
-                SupplierAccountName = _db.Account.Where(a => a.Id == p.SupplierAccountId).Select(a => a.AccountName).FirstOrDefault(),
+                SupplierId = p.SupplierId,
+                SupplierName = _db.Supplier.Where(a => a.Id == p.SupplierId).Select(a => a.Name).FirstOrDefault(),
                 PriceListId = p.PriceListId,
                 PriceListName = p.PriceListId.HasValue
                     ? _db.PriceList.Where(pl => pl.Id == p.PriceListId).Select(pl => pl.Name).FirstOrDefault()

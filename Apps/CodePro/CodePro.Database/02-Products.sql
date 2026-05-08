@@ -143,9 +143,9 @@ CREATE INDEX IF NOT EXISTS idx_product_keyword_product_id ON product_keyword(pro
 CREATE TABLE IF NOT EXISTS product_sku (
     id                      UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     product_id              UUID NOT NULL REFERENCES product(id),
-    supplier_account_id             UUID NOT NULL REFERENCES account(id),
+    supplier_id             UUID NOT NULL REFERENCES supplier(id),
     sku                     VARCHAR(25) NOT NULL,
-    CONSTRAINT uq_product_sku_supplier UNIQUE (product_id, supplier_account_id)
+    CONSTRAINT uq_product_sku_supplier UNIQUE (product_id, supplier_id)
 );
 
 CREATE INDEX IF NOT EXISTS idx_product_sku_product_id ON product_sku(product_id);

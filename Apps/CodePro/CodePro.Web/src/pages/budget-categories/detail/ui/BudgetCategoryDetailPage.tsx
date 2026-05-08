@@ -8,7 +8,6 @@ import {
   SelectField,
   TextAreaField,
   TextField,
-  defaultPaginationRequest,
   useRouteMode,
 } from '@platform/ui';
 import {
@@ -76,16 +75,16 @@ export function BudgetCategoryDetailPage() {
   function GeneralSection({ currentId }: { currentId: string | undefined }) {
     const form = useFormContext<BudgetCategoryFormValues>();
     const parentListQuery = useBudgetCategoryListQuery({
-      pagination: { ...defaultPaginationRequest, pageSize: 200 },
+      pageSize: 200,
       filters: { isActive: true },
     });
 
     const parentOptions = useMemo(() => {
-      const items = parentListQuery.data?.data ?? [];
+      const items = parentListQuery.data?.pages.flatMap((p) => p.data) ?? [];
       return items
         .filter((c) => c.id !== currentId)
         .map((c) => ({ value: c.id, label: c.name }));
-    }, [parentListQuery.data?.data, currentId]);
+    }, [parentListQuery.data, currentId]);
 
     return (
       <FormSection title={tEntity('sections.general')}>

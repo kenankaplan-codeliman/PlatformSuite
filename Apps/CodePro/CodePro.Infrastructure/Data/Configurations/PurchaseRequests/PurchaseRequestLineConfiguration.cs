@@ -17,7 +17,7 @@ public class PurchaseRequestLineConfiguration : IEntityTypeConfiguration<Purchas
         builder.Property(l => l.ProductId).HasColumnName("product_id");
         builder.Property(l => l.ProductName).HasColumnName("product_name").HasMaxLength(100);
         builder.Property(l => l.ProductPriceId).HasColumnName("product_price_id");
-        builder.Property(l => l.SupplierAccountId).HasColumnName("supplier_account_id");
+        builder.Property(l => l.SupplierId).HasColumnName("supplier_id");
         builder.Property(l => l.Quantity).HasColumnName("quantity").HasColumnType("numeric(18,3)").IsRequired();
         builder.Property(l => l.UnitOfMeasure).HasColumnName("unit_of_measure").HasMaxLength(25);
         builder.Property(l => l.UnitPrice).HasColumnName("unit_price").HasColumnType("numeric(18,4)");
@@ -46,9 +46,9 @@ public class PurchaseRequestLineConfiguration : IEntityTypeConfiguration<Purchas
             .HasConstraintName("fk_purchase_request_line_product_price")
             .OnDelete(DeleteBehavior.Restrict);
 
-        builder.HasOne(l => l.SupplierAccount)
+        builder.HasOne(l => l.Supplier)
             .WithMany()
-            .HasForeignKey(l => l.SupplierAccountId)
+            .HasForeignKey(l => l.SupplierId)
             .HasConstraintName("fk_purchase_request_line_supplier_account")
             .OnDelete(DeleteBehavior.Restrict);
     }

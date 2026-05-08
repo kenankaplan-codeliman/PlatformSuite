@@ -57,8 +57,8 @@ public sealed class UpdateProductHandler : IRequestHandler<UpdateProductCommand,
         await ProductSyncHelper.SyncKeywordsAsync(_db, entity.Id, request.Keywords, cancellationToken);
         await ProductSyncHelper.SyncSupplierSkusAsync(_db, entity.Id,
             request.SupplierSkus
-                .Where(s => s.SupplierAccount != null)
-                .Select(s => new ProductSkuInput { SupplierAccountId = s.SupplierAccount!.Id, Sku = s.Sku })
+                .Where(s => s.Supplier != null)
+                .Select(s => new ProductSkuInput { SupplierId = s.Supplier!.Id, Sku = s.Sku })
                 .ToList(),
             cancellationToken);
         await _db.SaveChangesAsync(cancellationToken);

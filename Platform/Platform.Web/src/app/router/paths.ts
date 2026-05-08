@@ -2,17 +2,11 @@ export const RoutePaths = {
   Home: '/',
   Login: '/auth/login',
 
-  // Account
-  AccountsList: '/accounts',
-  AccountNew: '/accounts/new',
-  AccountView: (id: string) => `/accounts/${id}`,
-  AccountEdit: (id: string) => `/accounts/${id}/edit`,
-
-  // Contact
-  ContactsList: '/contacts',
-  ContactNew: '/contacts/new',
-  ContactView: (id: string) => `/contacts/${id}`,
-  ContactEdit: (id: string) => `/contacts/${id}/edit`,
+  // Activity (polimorfik — :type ∈ phonecall|task|appointment|email)
+  ActivitiesList: '/activities',
+  ActivityNew: (type: string) => `/activities/new/${type}`,
+  ActivityView: (type: string, id: string) => `/activities/${type}/${id}`,
+  ActivityEdit: (type: string, id: string) => `/activities/${type}/${id}/edit`,
 
   // Organization (AppOrganization)
   OrganizationsList: '/organizations',
@@ -34,15 +28,10 @@ export const RoutePaths = {
 } as const;
 
 export const RoutePatterns = {
-  AccountsList: '/accounts',
-  AccountNew: '/accounts/new',
-  AccountView: '/accounts/:id',
-  AccountEdit: '/accounts/:id/edit',
-
-  ContactsList: '/contacts',
-  ContactNew: '/contacts/new',
-  ContactView: '/contacts/:id',
-  ContactEdit: '/contacts/:id/edit',
+  ActivitiesList: '/activities',
+  ActivityNew: '/activities/new/:type',
+  ActivityView: '/activities/:type/:id',
+  ActivityEdit: '/activities/:type/:id/edit',
 
   OrganizationsList: '/organizations',
   OrganizationNew: '/organizations/new',

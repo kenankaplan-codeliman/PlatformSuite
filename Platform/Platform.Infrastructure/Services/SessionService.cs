@@ -7,11 +7,11 @@ using Platform.Infrastructure.Data;
 using Platform.Infrastructure.Repositories;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
-using Microsoft.Graph.Models;
 using System.Runtime.CompilerServices;
 
 
 namespace Platform.Infrastructure.Services;
+
 public class SessionService : ISessionService
 {
     private readonly IConfiguration config;
@@ -20,7 +20,7 @@ public class SessionService : ISessionService
     private readonly IOrganizationRepository organizationRepository;
     private readonly ITokenService tokenService;
     private readonly IAppLoginRepository appLoginRepository;
-    
+
     private const string SESSION_PREFIX = "session:";
 
     public SessionService(
@@ -40,7 +40,7 @@ public class SessionService : ISessionService
         this.appLoginRepository = appLoginRepository;
     }
 
-    public async Task<AuthenticationToken> CreateSessionAsync(AppUser user, ClientInfo? clientInfo = null)
+    public async Task<AuthenticationToken> CreateSessionAsync(User user, ClientInfo? clientInfo = null)
     {
         string accessTokenId = generateTokenId();
         DateTime accessTokenExp = getAccessTokenExpire();
@@ -68,11 +68,11 @@ public class SessionService : ISessionService
         };
 
         await appLoginRepository.CreateAsync(loginHistory);
-        
+
 
         var orgMap = await organizationRepository.GetOrganizationHierarchyAsync(user.OrganizationId);
         var usrPrivileges = await userRepository.GetUserPrivilegesAsync(user.Id);
-        
+
         var contextUser = new ContextUser()
         {
             UserId = user.Id,
@@ -101,7 +101,7 @@ public class SessionService : ISessionService
         var appLogin = await appLoginRepository.GetByRefreshTokenAsync(refreshTokenId);
 
         if (appLogin == null)
-            throw new UnAuthenticatedException("User Login not fount.");
+            throw new UnAuthenticatedException("User Login not found.");
 
         if (appLogin.RefreshTokenExpiresAt <= DateTime.Now)
             throw new UnAuthenticatedException("Refresh token expired.");
@@ -225,5 +225,5 @@ public class SessionService : ISessionService
         return DateTime.Now.AddMinutes(int.Parse(config["Jwt:AccessExpireMin"]!));
     }
 
-    
+
 }

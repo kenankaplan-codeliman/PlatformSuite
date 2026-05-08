@@ -1,4 +1,4 @@
-using Platform.Domain.Entities.Accounts;
+using CodePro.Domain.Entities.Suppliers;
 using Platform.Domain.Entities.Common;
 
 namespace CodePro.Domain.Entities.Products;
@@ -12,8 +12,8 @@ public class ProductPrice : IBaseEntity, IAuditableEntity, ISoftDeleteEntity
     public Product Product { get; set; } = null!;
 
     /// <summary>Tedarikçi Platform Account'a referans (AccountType=Vendor).</summary>
-    public Guid SupplierAccountId { get; set; }
-    public Account SupplierAccount { get; set; } = null!;
+    public Guid SupplierId { get; set; }
+    public Supplier Supplier { get; set; } = null!;
 
     public Guid? PriceListId { get; set; }
     public PriceList? PriceList { get; set; }

@@ -21,7 +21,7 @@ public sealed class CreateAppOrganizationHandler : IRequestHandler<CreateAppOrga
 
     public async Task<Result<AppOrganizationDetailItem>> Handle(CreateAppOrganizationCommand request, CancellationToken cancellationToken)
     {
-        var entity = request.Adapt<AppOrganization>();
+        var entity = request.Adapt<Organization>();
         entity.Title = await ComputeHierarchicalTitleAsync(
             request.OrganizationName, request.ParentOrganization?.Id, cancellationToken);
 

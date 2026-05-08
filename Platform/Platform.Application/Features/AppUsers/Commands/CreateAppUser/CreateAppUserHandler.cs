@@ -22,22 +22,22 @@ public sealed class CreateAppUserHandler : IRequestHandler<CreateAppUserCommand,
 
     public async Task<Result<AppUserDetailItem>> Handle(CreateAppUserCommand request, CancellationToken cancellationToken)
     {
-        var emailExists = await _db.AppUser.AsNoTracking()
+        var emailExists = await _db.User.AsNoTracking()
             .AnyAsync(u => u.Email.ToLower() == request.Email.ToLower(), cancellationToken);
         if (emailExists) return AppUserErrors.DuplicateEmail;
 
-        var orgExists = await _db.AppOrganization.AsNoTracking()
+        var orgExists = await _db.Organization.AsNoTracking()
             .AnyAsync(o => o.Id == request.OrganizationId, cancellationToken);
         if (!orgExists) return AppUserErrors.OrganizationNotFound;
 
         if (request.ManagerId.HasValue)
         {
-            var managerExists = await _db.AppUser.AsNoTracking()
+            var managerExists = await _db.User.AsNoTracking()
                 .AnyAsync(u => u.Id == request.ManagerId.Value, cancellationToken);
             if (!managerExists) return AppUserErrors.ManagerNotFound;
         }
 
-        var entity = request.Adapt<AppUser>();
+        var entity = request.Adapt<User>();
         await _repository.CreateAsync(entity, cancellationToken);
 
         var detail = await AppUserDetailBuilder.BuildAsync(_db, entity.Id, cancellationToken);

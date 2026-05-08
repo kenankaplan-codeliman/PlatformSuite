@@ -13,7 +13,7 @@ public class OfferInviteeConfiguration : IEntityTypeConfiguration<OfferInvitee>
         builder.Property(e => e.Id).HasColumnName("id");
 
         builder.Property(e => e.OfferId).HasColumnName("offer_id").IsRequired();
-        builder.Property(e => e.SupplierAccountId).HasColumnName("supplier_account_id");
+        builder.Property(e => e.SupplierId).HasColumnName("supplier_id");
         builder.Property(e => e.SupplierName).HasColumnName("supplier_name").HasMaxLength(300).IsRequired();
         builder.Property(e => e.SupplierEmail).HasColumnName("supplier_email").HasMaxLength(300);
         builder.Property(e => e.InvitedAt).HasColumnName("invited_at");

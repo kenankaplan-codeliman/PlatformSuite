@@ -54,8 +54,7 @@ public class ActivityBaseConfiguration : IEntityTypeConfiguration<ActivityBase>
 
         builder.Property(e => e.RegardingEntityType)
             .HasColumnName("regarding_entity_type")
-            .HasMaxLength(50)
-            .HasConversion<EnumToStringConverter<EntityType>>();
+            .HasMaxLength(50);
 
         builder.Property(e => e.RegardingEntityId)
             .HasColumnName("regarding_entity_id");

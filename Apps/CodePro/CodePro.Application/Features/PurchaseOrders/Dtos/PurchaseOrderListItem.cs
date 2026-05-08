@@ -7,8 +7,8 @@ public class PurchaseOrderListItem
     public Guid Id { get; set; }
     public string OrderNumber { get; set; } = default!;
     public string Title { get; set; } = default!;
-    public Guid SupplierAccountId { get; set; }
-    public string? SupplierAccountName { get; set; }
+    public Guid SupplierId { get; set; }
+    public string? SupplierName { get; set; }
     public PurchaseOrderStatus Status { get; set; }
     public PurchaseOrderPriority Priority { get; set; }
     public DateTime OrderDate { get; set; }

@@ -23,7 +23,7 @@ public sealed class GetBudgetHandler : IRequestHandler<GetBudgetQuery, Result<Bu
                 Description = b.Description,
                 ScopeOrganizationId = b.ScopeOrganizationId,
                 ScopeOrganizationName = b.ScopeOrganizationId.HasValue
-                    ? _db.AppOrganization.Where(o => o.Id == b.ScopeOrganizationId).Select(o => o.OrganizationName).FirstOrDefault()
+                    ? _db.Organization.Where(o => o.Id == b.ScopeOrganizationId).Select(o => o.OrganizationName).FirstOrDefault()
                     : null,
                 BudgetCategoryId = b.BudgetCategoryId,
                 BudgetCategoryName = b.BudgetCategoryId.HasValue

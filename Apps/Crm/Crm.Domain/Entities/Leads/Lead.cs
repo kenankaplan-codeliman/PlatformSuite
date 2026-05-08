@@ -1,7 +1,7 @@
 using Crm.Domain.Enums;
-using Platform.Domain.Entities.Accounts;
+using Crm.Domain.Entities.Accounts;
 using Platform.Domain.Entities.Common;
-using Platform.Domain.Entities.Contacts;
+using Crm.Domain.Entities.Contacts;
 
 namespace Crm.Domain.Entities.Leads;
 

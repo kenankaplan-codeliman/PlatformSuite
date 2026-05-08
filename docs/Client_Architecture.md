@@ -1,6 +1,6 @@
 # Client Architecture
 
-> React tabanlı CRM uygulaması için mimari rehberidir. Hedef: ekipteki herkesin "bu dosya nereye gider?" sorusunu aynı şekilde cevaplayabilmesi.
+> PlatformSuite monorepo'sundaki React frontend uygulamaları (Crm.Web, CodePro.Web) ve `@platform/ui` paylaşılan paketinin mimari rehberidir. Hedef: ekipteki herkesin "bu dosya nereye gider?" sorusunu aynı şekilde cevaplayabilmesi.
 
 ---
 
@@ -8,11 +8,82 @@
 
 Bu proje **MVI (Model–View–Intent)** state yönetim disiplinini, **Feature-Sliced Design (FSD)** katman ayrımıyla birleştirir. Clean Architecture'ın temel ilkesine sadık kalınır: **bağımlılıklar içe doğru akar**. Alt katman üst katmanı tanımaz.
 
-Üç temel kural:
+Dört temel kural:
 
 1. **Tek yönlü veri akışı.** Kullanıcı bir *intent* üretir → reducer yeni *state* üretir → *view* state'i render eder. Yan etkiler (API çağrıları, navigasyon) açıkça tanımlı yerlerde gerçekleşir.
 2. **Bağımlılık yönü yukarıdan aşağıya.** `pages → widgets → features → entities → shared`. Ters import yasaktır.
 3. **Erken soyutlama yok.** Bir parça birden fazla yerde kullanılmadıkça ortak alana taşınmaz. Yanlış soyutlama, kopyalamadan daha pahalıdır.
+4. **Multi-app izolasyon.** `@platform/ui` paketi (`Platform/Platform.Web`) ortak primitifleri (DetailPageLayout, TextField, ServicePath, useRouteMode, ...) servis eder; her app (`Apps/Crm/Crm.Web`, `Apps/CodePro/CodePro.Web`) kendi entity/feature/page'lerini kendi içinde tanımlar. **Cross-app entity/page importu yasak.**
+
+---
+
+## 0. Multi-App Frontend Yapısı
+
+```
+PlatformSuite/
+├── Platform/Platform.Web/        # @platform/ui — paylaşılan UI kütüphanesi
+│   └── src/
+│       ├── shared/ui/            # DetailPageLayout, ListPageLayout, TextField, ...
+│       ├── shared/api/           # httpClient, ServicePath (Platform endpoint'leri), errorMapper
+│       ├── shared/hooks/         # useRouteMode, ...
+│       ├── shared/lib/i18n/      # useEnumTranslation
+│       ├── shared/types/         # Pagination, EntityReference, ApiError, FormMode
+│       ├── entities/             # platform-merkezli (user, app-user, app-role, attachment, activity, organization)
+│       ├── features/             # auth-login, auth-logout, ...
+│       ├── pages/                # LoginPage, HomePage, ActivitiesListPage, AppUsersListPage, ...
+│       ├── widgets/              # AppShell, AppHeader, AppSidebar, AttachmentPanel
+│       ├── app/                  # AppProviders, AuthGuard, RoutePaths/Patterns (platform varsayılanları)
+│       └── index.ts              # public barrel — Crm.Web ve CodePro.Web bunu tüketir
+├── Apps/Crm/Crm.Web/             # CRM app'i (@app/crm-web)
+│   └── src/
+│       ├── entities/             # account, contact, lead, opportunity
+│       ├── pages/                # accounts/, contacts/, leads/, opportunities/
+│       ├── shared/api/queryKeys.ts # accountKeys, contactKeys, leadKeys, opportunityKeys
+│       ├── shared/api/servicePaths.ts # CrmServicePath (Lead, Opportunity)
+│       ├── app/router/{paths,routes}.tsx # CRM rotaları
+│       ├── app/menu/useCrmMenu.tsx
+│       └── app/i18n.config.ts    # registerCrmTranslations
+└── Apps/CodePro/CodePro.Web/     # CodePro app'i
+    └── src/
+        ├── entities/             # supplier, brand, product, purchase-order, ...
+        ├── pages/                # suppliers/, products/, purchase-orders/, ...
+        ├── shared/api/{queryKeys,servicePaths}.ts # supplierKeys + CodeProServicePath
+        ├── app/router/...
+        └── app/i18n.config.ts    # registerCodeProTranslations
+```
+
+### 0.1 `@platform/ui` Paket Modeli
+
+Platform.Web pnpm workspace'inde `@platform/ui` adıyla yayımlanır (`package.json`). `Platform.Web/src/index.ts` public barrel'dır; sadece bu dosyadan export edilen tipler/component'ler app'lere açıktır.
+
+Crm.Web ve CodePro.Web `@platform/ui`'ı normal bir paket gibi tüketir:
+
+```ts
+import {
+  DetailPageLayout, ListPageLayout, FormSection, TextField, NumberField, SelectField,
+  EntityLookupField, EntityRelationTable, useRouteMode, useEnumTranslation,
+  httpClient, ServicePath, mapAxiosError,
+  type EntityReference, type PagedResult, type AppError,
+  RoutePaths as PlatformRoutePaths,
+} from '@platform/ui';
+```
+
+App'in kendi shared'ı `@platform/ui`'ı genişletir (extend):
+
+- **paths.ts:** `...PlatformRoutePaths` + app rotaları
+- **servicePaths.ts:** Platform `ServicePath`'i tüketir + app'e özgü `CrmServicePath` / `CodeProServicePath` ekler
+- **queryKeys.ts:** `@platform/ui`'dan gelen platform key'leri (activityKeys, authKeys vb.) tüketilirken, app key'leri (accountKeys, supplierKeys, leadKeys) burada tanımlanır
+
+### 0.2 Yer Ayrımı Kuralı
+
+| Component / hook / type kim için? | Konum |
+|---|---|
+| Tüm app'lerde aynı semantikle (Button, DataTable, DetailPageLayout) | `Platform.Web/src/shared/ui/` + `index.ts` export |
+| Platform-merkezli entity (user, app-role, organization, attachment, activity) | `Platform.Web/src/entities/<x>/` |
+| App'in iş kavramı (Account → CRM, Supplier → CodePro) | `Apps/<App>/<App>.Web/src/entities/<x>/` |
+| Auth (Login/Logout/...) | `Platform.Web/src/features/auth-*/` (paylaşılan) |
+| App-spesifik feature (`order-line-editor`) | `Apps/<App>/<App>.Web/src/features/<entity>-<eylem>/` |
+| App-spesifik sayfa | `Apps/<App>/<App>.Web/src/pages/...` |
 
 ---
 
@@ -482,20 +553,36 @@ Mode geçişleri `DetailPageLayout` tarafından merkezi olarak yönetilir. Her e
 
 ---
 
-## 12. CRM Domain Modeli
+## 12. Domain Modeli (Multi-App)
 
-### 12.1 Account
-Aggregate root. Order ve Activity'lerle ilişkilidir ama Account tarafı bunları tanımaz.
+### 12.1 Activity (Platform — paylaşılan)
+**Konum (frontend):** `Platform.Web/src/entities/activity/`
+**Konum (backend):** `Platform.Domain.Entities.Activities`
 
-### 12.2 Order + OrderDetail
-Order aggregate root, OrderDetail onun child entity'sidir.
+Tek entity, discriminated union (`PhoneCall | Email | Task | Appointment`). Polimorfik regarding referansı (`RegardingEntityType: string` + `RegardingEntityId: Guid`) ile her app'in entity'sine bağlanır. Resolver registry üzerinden CRM Account'a, CodePro Supplier'a, ileride başka app'lerin entity'lerine de gösterilebilir.
 
-- OrderDetail için **ayrı entity klasörü açılmaz**
-- `entities/order/model/types.ts` içinde `Order` ve `OrderDetail` birlikte tanımlanır
-- OrderDetail CRUD iş akışı `features/order-line-editor/` altındadır
-- Order view modda açıldığında OrderLineEditor da otomatik readonly olur (nested context)
+### 12.2 Account & Contact (CRM)
+**Konum (frontend):** `Apps/Crm/Crm.Web/src/entities/account/`, `entities/contact/`
+**Konum (backend):** `Crm.Domain.Entities.Accounts`, `Crm.Domain.Entities.Contacts`
 
-### 12.3 Activity (PhoneCall | Task | Appointment)
+Aggregate root'lardır. Account-Contact junction (`AccountContact`) Account aggregate'inin parçası — ayrı entity klasörü açılmaz. CRM'in `accountKeys` ve `contactKeys` Crm.Web'in `shared/api/queryKeys.ts`'sinde. CodePro'da yer almazlar; CodePro tarafında bir tedarikçiye benzeyen kavram gerekirse Supplier (kendi entity'si) kullanılır.
+
+### 12.3 Lead & Opportunity (CRM)
+CRM'in satış akışı entity'leri. Lead'in `convertedAccountId` / `convertedContactId` alanları aynı CRM domain'i içinde Account/Contact'a referans verir.
+
+### 12.4 Supplier (CodePro)
+**Konum (frontend):** `Apps/CodePro/CodePro.Web/src/entities/supplier/`
+**Konum (backend):** `CodePro.Domain.Entities.Suppliers`
+
+CodePro'nun kendi tedarikçi kavramı. **CRM Account'tan inherit ETMEZ** — kendi tablosunda (`supplier`), kendi yaşam döngüsünde (`SupplierStatus`, `CompanyType`, `CompanyLegalType`, `vkn`, `mersisNo`), kurumsal iletişim ve adres alanları düz alanlar olarak. PurchaseOrder, PriceList, ProductPrice, ProductSku gibi CodePro entity'leri Supplier'a `supplierId` ile referans verir.
+
+### 12.5 PurchaseOrder, Budget, Offer, Contract, Product, vb. (CodePro)
+CodePro'nun satın alma akışı entity'leri. `entities/purchase-order/`, `entities/budget/` vb. CodePro.Web içinde.
+
+### 12.6 Eski "Order" Örneği (deprecated)
+Bu doküman tarihte CRM'de Order/OrderDetail örneği üzerinden child-entity ve aggregate kavramlarını anlatıyordu. Mevcut domain'de Order entity'si **yok**; CodePro'da `PurchaseOrder` (header) + `PurchaseOrderLine` (child) bu pattern'in canlı örneğidir. PurchaseOrderLine için ayrı entity klasörü açılmaz; `entities/purchase-order/model/types.ts` içinde birlikte tanımlanır.
+
+### 12.7 Activity (eski tanım — referans için korundu)
 Tek entity, discriminated union:
 
 ```ts
@@ -566,22 +653,24 @@ app/router/guards/AuthGuard.tsx
 
 ## 14. Klasör Yapısı
 
+> Aşağıdaki yapı **referans/şablon**dur — Platform.Web'in source'u + örnek bir app'in (Crm.Web) yapısını birleştirir. Her app aynı paterny izler. CodePro.Web yapısı da paraleldir (entities/supplier, pages/suppliers, ... şeklinde).
+
 ```
-src/
-├── app/
-│   ├── providers/
-│   │   ├── QueryProvider.tsx
-│   │   ├── AuthProvider.tsx
-│   │   ├── ThemeProvider.tsx
-│   │   └── index.tsx
-│   ├── router/
-│   │   ├── routes.tsx
-│   │   ├── guards/
-│   │   │   ├── AuthGuard.tsx
-│   │   │   └── RoleGuard.tsx
-│   │   └── index.tsx
-│   └── store/
-│       └── rootStore.ts
+PlatformSuite/
+├── Platform/Platform.Web/src/   # @platform/ui — paylaşılan paket
+│   ├── app/
+│   │   ├── providers/
+│   │   │   ├── QueryProvider.tsx
+│   │   │   ├── AuthProvider.tsx
+│   │   │   ├── ThemeProvider.tsx
+│   │   │   └── AppProviders.tsx
+│   │   ├── router/
+│   │   │   ├── routes.tsx       # Platform.Web'in kendi rotaları (auth admin)
+│   │   │   ├── paths.ts         # platform RoutePaths/Patterns (Activity, AppUser, AppRole, ...)
+│   │   │   └── guards/
+│   │   │       ├── AuthGuard.tsx
+│   │   │       └── RoleGuard.tsx
+│   │   └── i18n.config.ts       # platform namespace'leri
 │
 ├── shared/
 │   ├── ui/
@@ -638,135 +727,86 @@ src/
 │       ├── common.ts
 │       └── formMode.ts
 │
-├── entities/
-│   ├── account/
-│   │   ├── model/
-│   │   │   ├── types.ts
-│   │   │   ├── schema.ts
-│   │   │   ├── permissions.ts
-│   │   │   └── mappers.ts
-│   │   ├── api/
-│   │   │   ├── accountDataSource.ts
-│   │   │   └── accountQueries.ts
-│   │   └── ui/
-│   │       ├── AccountAvatar.tsx
-│   │       ├── AccountTypeBadge.tsx
-│   │       └── AccountLookup.tsx
-│   │
-│   ├── order/
-│   │   ├── model/
-│   │   │   ├── types.ts
-│   │   │   ├── schema.ts
-│   │   │   ├── permissions.ts
-│   │   │   ├── calculations.ts
-│   │   │   └── mappers.ts
-│   │   ├── api/
-│   │   │   ├── orderDataSource.ts
-│   │   │   └── orderQueries.ts
-│   │   └── ui/
-│   │       ├── OrderStatusBadge.tsx
-│   │       └── OrderSummaryCard.tsx
-│   │
-│   └── activity/
-│       ├── model/
-│       │   ├── types.ts
-│       │   ├── schema.ts
-│       │   ├── guards.ts
-│       │   ├── permissions.ts
-│       │   └── mappers.ts
-│       ├── api/
-│       │   ├── activityDataSource.ts
-│       │   └── activityQueries.ts
-│       └── ui/
-│           ├── ActivityIcon.tsx
-│           ├── ActivityTypeBadge.tsx
-│           └── ActivityTimelineItem.tsx
+│   ├── entities/                # Platform-merkezli entity'ler
+│   │   ├── activity/
+│   │   ├── user/
+│   │   ├── app-user/
+│   │   ├── app-role/
+│   │   ├── organization/
+│   │   └── attachment/
+│   ├── features/                # Auth feature'ları
+│   │   ├── auth-login/
+│   │   ├── auth-logout/
+│   │   └── auth-forgot-password/
+│   ├── pages/                   # Platform-seviyesi admin sayfaları
+│   │   ├── auth/login/
+│   │   ├── home/
+│   │   ├── activities/
+│   │   ├── organizations/
+│   │   ├── users/
+│   │   └── app-roles/
+│   ├── widgets/
+│   │   ├── app-shell/
+│   │   ├── app-header/
+│   │   ├── app-sidebar/
+│   │   └── attachment/
+│   └── index.ts                 # public barrel — DetailPageLayout, ListPageLayout, TextField, ServicePath, ... export'ları
 │
-├── features/
-│   ├── auth-login/
-│   │   ├── model/
-│   │   ├── api/useLoginMutation.ts
-│   │   └── ui/LoginForm.tsx
-│   ├── auth-logout/
-│   ├── auth-forgot-password/
-│   │
-│   ├── account-delete/
-│   ├── order-line-editor/
-│   │   ├── model/intent.ts
-│   │   ├── model/reducer.ts
-│   │   └── ui/
-│   │       ├── OrderLineEditor.tsx
-│   │       └── OrderLineRow.tsx
-│   ├── order-status-change/
-│   │
-│   ├── activity-create/
-│   │   ├── model/
-│   │   ├── api/
-│   │   └── ui/
-│   │       ├── ActivityCreateDialog.tsx
-│   │       ├── ActivityTypeSelector.tsx
-│   │       └── forms/
-│   │           ├── PhoneCallForm.tsx
-│   │           ├── TaskForm.tsx
-│   │           └── AppointmentForm.tsx
-│   ├── activity-complete/
-│   └── activity-reschedule/
+└── Apps/Crm/Crm.Web/src/        # CRM app'i (örnek; CodePro.Web aynı patern)
+    ├── app/
+    │   ├── i18n.config.ts       # registerCrmTranslations()
+    │   ├── menu/useCrmMenu.tsx
+    │   └── router/
+    │       ├── paths.ts         # Platform paths spread + CRM rotaları (Account/Contact/Lead/Opportunity)
+    │       └── routes.tsx
+    ├── shared/api/
+    │   ├── queryKeys.ts         # accountKeys, contactKeys, leadKeys, opportunityKeys
+    │   └── servicePaths.ts      # CrmServicePath (Lead, Opportunity)
+    ├── shared/locales/enums/tr.json # CRM enum çevirileri (deep-merge platform enum'larına eklenir)
+    ├── entities/
+    │   ├── account/
+    │   │   ├── model/
+    │   │   │   ├── types.ts
+    │   │   │   ├── schema.ts
+    │   │   │   ├── permissions.ts
+    │   │   │   └── mappers.ts
+    │   │   ├── api/
+    │   │   │   ├── accountDataSource.ts
+    │   │   │   ├── useAccountQueries.ts
+    │   │   │   └── useAccountMutations.ts
+    │   │   ├── locales/tr.json
+    │   │   └── ui/
+    │   │       ├── AccountAvatar.tsx
+    │   │       ├── AccountTypeBadge.tsx
+    │   │       └── AccountLookup.tsx
+    │   ├── contact/
+    │   ├── lead/
+    │   └── opportunity/
 │
-├── widgets/
-│   ├── app-header/
-│   ├── app-sidebar/
-│   ├── account-list/
-│   │   └── ui/
-│   │       ├── AccountListFilters.tsx
-│   │       └── AccountListColumns.tsx
-│   ├── order-list/
-│   ├── activity-timeline/
-│   │   ├── model/useActivityTimeline.ts
-│   │   └── ui/
-│   │       ├── ActivityTimelineWidget.tsx
-│   │       └── ActivityTimelineFilters.tsx
-│   └── related-records/
-│
-└── pages/
-    ├── auth/
-    │   └── login/
+    ├── features/                # CRM-spesifik feature'lar (gerekiyorsa)
+    │   ├── account-delete/
+    │   └── activity-create/     # CRM'in kendi Activity-create varyantı (Activity entity Platform'da)
+    │
+    ├── widgets/                 # CRM-spesifik kompozit widget'lar
+    │   └── account-list/
     │       └── ui/
-    │           ├── LoginPage.tsx
-    │           └── LoginPageLayout.tsx
+    │           ├── AccountListFilters.tsx
+    │           └── AccountListColumns.tsx
     │
-    ├── dashboard/
-    │   └── ui/
-    │       ├── DashboardPage.tsx
-    │       ├── DashboardKpiCards.tsx
-    │       └── DashboardSalesChart.tsx
-    │
-    ├── accounts/
-    │   ├── list/
-    │   │   └── ui/AccountsListPage.tsx
-    │   └── detail/
-    │       ├── ui/AccountDetailPage.tsx
-    │       └── sections/
-    │           ├── AccountInfoSection.tsx
-    │           ├── AccountContactSection.tsx
-    │           └── AccountOrdersSection.tsx
-    │
-    ├── orders/
-    │   ├── list/
-    │   │   └── ui/OrdersListPage.tsx
-    │   └── detail/
-    │       ├── ui/OrderDetailPage.tsx
-    │       └── sections/
-    │           ├── OrderHeaderSection.tsx
-    │           └── OrderLinesSection.tsx
-    │
-    └── activities/
-        ├── list/
-        │   └── ui/
-        │       ├── ActivitiesListPage.tsx
-        │       └── ActivitiesCalendarView.tsx
-        └── detail/
-            └── ui/ActivityDetailPage.tsx
+    └── pages/
+        ├── accounts/
+        │   ├── list/
+        │   │   ├── ui/AccountsListPage.tsx
+        │   │   └── locales/tr.json
+        │   └── detail/
+        │       ├── ui/AccountDetailPage.tsx
+        │       └── locales/tr.json
+        ├── contacts/
+        ├── leads/
+        └── opportunities/
 ```
+
+CodePro.Web yapısı paraleldir: `entities/{supplier,brand,product,purchase-order,...}`, `pages/{suppliers,products,purchase-orders,...}`. CodePro'da Account/Contact/Activity menü maddesi **yoktur** — CodePro CRM değil, satın alma platformudur.
 
 ---
 
@@ -859,47 +899,86 @@ Mode ve override kombinasyonları için snapshot test'ten ziyade behavior test y
 
 **Altın kural:** Çeviri anahtarı, içeriğin *yaşadığı* katmanla aynı klasörde yaşar. İkinci bir kullanıcı gelince `shared/` veya `entity.<x>`'e promote edilir.
 
-### 19.3 Aggregate Pattern — `app/i18n.config.ts`
+### 19.3 Aggregate Pattern — Multi-App i18n
+
+i18n iki kademeli kurulur:
+
+1. **Platform.Web/src/app/i18n.config.ts** — `@platform/ui/i18n` olarak export edilir; platform namespace'lerini (common, enums, entity.user, entity.activity, ..., feature.auth-login, page.activities-list, ...) init eder.
+2. **Apps/<App>/<App>.Web/src/app/i18n.config.ts** — `register<App>Translations()` fonksiyonu ile app'in namespace'lerini ekler ve `enums` namespace'ini deep-merge ile genişletir.
+
+**Platform** (`Platform.Web/src/app/i18n.config.ts`):
 
 ```ts
-import i18n from 'i18next';
-import { initReactI18next } from 'react-i18next';
+import i18n from "i18next";
+import { initReactI18next } from "react-i18next";
 
-// shared
-import commonTr from '@/shared/locales/common/tr.json';
-import enumsTr from '@/shared/locales/enums/tr.json';
-// entities
-import userTr from '@/entities/user/locales/tr.json';
-// features
-import authLoginTr from '@/features/auth-login/locales/tr.json';
-// pages
-import loginPageTr from '@/pages/auth/login/locales/tr.json';
+import commonTr from "../shared/locales/common/tr.json";
+import enumsTr from "../shared/locales/enums/tr.json";
+import userTr from "../entities/user/locales/tr.json";
+import activityTr from "../entities/activity/locales/tr.json";
+import organizationTr from "../entities/organization/locales/tr.json";
+import attachmentTr from "../entities/attachment/locales/tr.json";
+import authLoginTr from "../features/auth-login/locales/tr.json";
+// ...
 
-i18n.use(initReactI18next).init({
-  lng: 'tr',
-  fallbackLng: 'tr',
-  defaultNS: 'common',
-  ns: [
-    'common',
-    'enums',
-    'entity.user',
-    'feature.auth-login',
-    'page.auth-login',
-  ],
+void i18n.use(initReactI18next).init({
+  lng: "tr",
+  fallbackLng: "tr",
+  defaultNS: "common",
+  ns: ["common", "enums", "entity.user", "entity.activity", "feature.auth-login", /* ... */],
   resources: {
     tr: {
       common: commonTr,
       enums: enumsTr,
-      'entity.user': userTr,
-      'feature.auth-login': authLoginTr,
-      'page.auth-login': loginPageTr,
+      "entity.user": userTr,
+      "entity.activity": activityTr,
+      "feature.auth-login": authLoginTr,
+      // ...
     },
   },
-  interpolation: { escapeValue: false }, // React XSS'e zaten korunuyor
+  interpolation: { escapeValue: false },
 });
 
 export default i18n;
 ```
+
+**App** (`Apps/Crm/Crm.Web/src/app/i18n.config.ts`):
+
+```ts
+import i18n from 'i18next';
+
+import accountEntityTr from '../entities/account/locales/tr.json';
+import contactEntityTr from '../entities/contact/locales/tr.json';
+import leadEntityTr from '../entities/lead/locales/tr.json';
+import opportunityEntityTr from '../entities/opportunity/locales/tr.json';
+import accountsListTr from '../pages/accounts/list/locales/tr.json';
+import accountsDetailTr from '../pages/accounts/detail/locales/tr.json';
+// ...
+import crmEnumsTr from '../shared/locales/enums/tr.json';
+import crmMenuTr from './menu/locales/tr.json';
+
+/**
+ * Platform i18n init'i (`@platform/ui/i18n` import'u) tamamlandıktan sonra çağrılır.
+ * CRM-spesifik namespace'leri ekler ve `enums` namespace'ini deep-merge ile genişletir.
+ */
+export function registerCrmTranslations(): void {
+  i18n.addResourceBundle('tr', 'entity.account', accountEntityTr, true, true);
+  i18n.addResourceBundle('tr', 'entity.contact', contactEntityTr, true, true);
+  i18n.addResourceBundle('tr', 'entity.lead', leadEntityTr, true, true);
+  i18n.addResourceBundle('tr', 'entity.opportunity', opportunityEntityTr, true, true);
+  i18n.addResourceBundle('tr', 'page.accounts-list', accountsListTr, true, true);
+  i18n.addResourceBundle('tr', 'page.accounts-detail', accountsDetailTr, true, true);
+  // ...
+
+  // enums namespace Platform tarafından init edildi; üzerine CRM enum'larını deep-merge et.
+  i18n.addResourceBundle('tr', 'enums', crmEnumsTr, true, false);
+  i18n.addResourceBundle('tr', 'app.crm-menu', crmMenuTr, true, true);
+}
+```
+
+App'in `main.tsx` veya provider'ında: önce `import '@platform/ui/i18n';` (platform init), ardından `registerCrmTranslations()` çağrılır.
+
+CodePro.Web aynı paterni kullanır: `registerCodeProTranslations()`. Account/Contact/Lead/Opportunity namespace'leri **CRM'de**, Supplier ve diğer CodePro entity'leri **CodePro'da** kalır; cross-app namespace import yasaktır.
 
 ### 19.4 Kullanım
 
@@ -951,9 +1030,10 @@ const tStatus = useEnumTranslation('accountStatus');
 
 ### 19.6 Yeni Entity/Feature Eklerken
 
-1. `entities/<entity>/locales/tr.json` veya `features/<entity>-<eylem>/locales/tr.json` oluştur.
-2. `app/i18n.config.ts`'e import + `ns[]` + `resources.tr['…']` girişi ekle.
-3. Kod içinde `useTranslation('<namespace>')` ile tüket.
+1. **Doğru app'te** klasör aç: Account/Contact/Lead/Opportunity → Crm.Web; Supplier/PurchaseOrder → CodePro.Web; cross-app paylaşılan (Activity, AppUser) → Platform.Web.
+2. `entities/<entity>/locales/tr.json` veya `pages/<sayfa>/locales/tr.json` oluştur.
+3. App'in `register<App>Translations()` fonksiyonuna (Platform için `i18n.config.ts`'e) import + `addResourceBundle` satırı ekle.
+4. Kod içinde `useTranslation('<namespace>')` ile tüket.
 
 ### 19.7 Yeni Dil Ekleme
 
@@ -981,8 +1061,8 @@ const tStatus = useEnumTranslation('accountStatus');
 ## 20. Karar Kaydı (ADR Başlıkları)
 
 - **ADR-001:** MVI + FSD hibrit seçildi; saf VIPER reddedildi.
-- **ADR-002:** OrderDetail ayrı entity değil; Order aggregate'inin parçası.
-- **ADR-003:** Activity tek entity, discriminated union ile.
+- **ADR-002:** Aggregate root + child entity tek `entities/<root>/` altında modellenir (PurchaseOrder + PurchaseOrderLine; AccountContact junction Account içinde).
+- **ADR-003:** Activity tek entity, discriminated union; polimorfik regarding referansı (`RegardingEntityType: string` + `RegardingEntityId: Guid`) ile cross-app çalışır.
 - **ADR-004:** State yönetimi için Zustand + useReducer; Redux eklenmedi.
 - **ADR-005:** Server state için TanStack Query.
 - **ADR-006:** Her entity kendi DataSource'una sahip.
@@ -992,7 +1072,10 @@ const tStatus = useEnumTranslation('accountStatus');
 - **ADR-010:** `DetailPageLayout` ve `ListPageLayout` ortak iskelettir; jenerik konfigürasyon-tabanlı sayfa yasak.
 - **ADR-011:** Override hiyerarşisi: Mode → Permission → Entity State → Field Override → Conditional Logic.
 - **ADR-012:** Field davranışı field primitifinde kapsüllenir; sayfa kodunda `mode === 'view'` kontrolü yapılmaz.
-- **ADR-013:** i18n kütüphanesi **i18next**; konum FSD katmanlarına paralel **hibrit** (shared merkezî + entity/feature-local). Enum çevirileri tek noktadan `shared/locales/enums/`. Aggregate `app/i18n.config.ts` içinde.
+- **ADR-013:** i18n kütüphanesi **i18next**; multi-app yapı: Platform.Web init eder, her app `register<App>Translations()` ile genişletir. Enum çevirileri Platform `shared/locales/enums/` + app `shared/locales/enums/` deep-merge.
+- **ADR-014:** Frontend paylaşılan kod `@platform/ui` paketinde (`Platform.Web`); app'ler kendi entity/feature/page'lerini kendi `Apps/<App>/<App>.Web` projesinde tutar. Cross-app entity/page importu yasak.
+- **ADR-015:** Account/Contact CRM domain entity'leri (`Crm.Web/src/entities/{account,contact}`); Supplier CodePro domain entity'si (`CodePro.Web/src/entities/supplier`); CRM Account ile CodePro Supplier ayrı entity'lerdir, ortak DB tablosunu paylaşmazlar.
+- **ADR-016:** Polimorfik referans backend tarafında `IEntityReferenceResolver` registry pattern'ı ile çözülür; her app kendi entity'leri için resolver kaydeder. Frontend tarafında `EntityLookupField` polimorfik servicePath ile çağırır.
 
 Yeni mimari kararlar `docs/adr/` altında numaralı dosyalar olarak saklanır.
 

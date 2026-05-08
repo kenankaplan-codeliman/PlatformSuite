@@ -1,5 +1,5 @@
-import { useState } from 'react';
-import { Button, Form, Tag } from 'antd';
+import { useMemo, useState } from 'react';
+import { Button, Form, Tag, Space } from 'antd';
 import { CloseOutlined, SearchOutlined } from '@ant-design/icons';
 import {
   Controller,
@@ -13,19 +13,42 @@ import type { EntityReference } from '../../../types/EntityReference';
 import type { FormMode } from '../../../types/FormMode';
 import type { FormRowItemProps } from '../FormRow';
 import { useFormMode } from '../useFormMode';
-import { SearchModal } from './SearchModal';
+import { SearchModal, type SearchModalEntityOption } from './SearchModal';
+
+/**
+ * `EntityLookupField` aramada hedef alabileceği bir entity türü:
+ *  - `entityType`: polimorfik anahtar (User, Account, Contact, Lead, Supplier, ...).
+ *  - `label`: dropdown'da gösterilecek etiket (i18n çağırımı caller'a ait).
+ *  - `icon` / `color`: opsiyonel görsel.
+ *  - `servicePath`: opsiyonel — verilirse o tür için entity-spesifik search endpoint
+ *    (örn. `ServicePath.Account.Search`) kullanılır; verilmezse `Reference.Lookup` üzerinden
+ *    registry tarafından çözülür (önerilen — yeni eklenen entity'ler için endpoint yazmaya gerek yok).
+ */
+export type EntityLookupOption = SearchModalEntityOption;
 
 export interface EntityLookupFieldProps<TValues extends FieldValues> extends FormRowItemProps {
-  /**
-   * Form alanının yolu. Component sadece `EntityReference | null` ile çalışır;
-   * `name`'in tip güvenliği yerine sade çağrı tercih edildi. Generic `TValues`
-   * sadece `control` prop'undan **infer** etmek için var — caller `<TValues>`
-   * specifier vermek zorunda değil.
-   */
   name: string;
   control: Control<TValues>;
-  /** Backend search endpoint — `ServicePath.Account.Search` gibi. */
-  servicePath: string;
+  /**
+   * Tek-tip mod (geriye dönük): tek bir search endpoint URL'i. Bu mod ile birlikte
+   * `entityTypes` verilmez. Form değeri tek `EntityReference | null` (multiple=false varsayılan)
+   * veya `EntityReference[]` (multiple=true).
+   */
+  servicePath?: string;
+  /** Tek-tip + servicePath modunda EntityReference.entityType alanına yazılacak değer. */
+  entityType?: string;
+
+  /**
+   * Çoklu-tip mod: aranabilecek türler. En az 1 öğe verilmelidir.
+   * `entityTypes.length > 1` ise modal'da bir tip selector gösterilir.
+   * Servis çağrısı ya option.servicePath'e ya da `/api/reference/lookup`'a gider.
+   */
+  entityTypes?: EntityLookupOption[];
+
+  /** Çoklu seçim. Form değeri `EntityReference[]`. */
+  multiple?: boolean;
+  /** Çoklu seçim için max kayıt. */
+  maxSelections?: number;
 
   label?: string;
   placeholder?: string;
@@ -35,7 +58,6 @@ export interface EntityLookupFieldProps<TValues extends FieldValues> extends For
   pageSize?: number;
   debounceMs?: number;
 
-  /** Modal başlığı — verilmezse `label` veya genel "Ara" kullanılır. */
   modalTitle?: string;
 
   /** Client_Architecture §8 — mode override hiyerarşisi. */
@@ -45,23 +67,35 @@ export interface EntityLookupFieldProps<TValues extends FieldValues> extends For
 }
 
 /**
- * Mode-aware entity lookup primitifi — Client_Architecture §8.
+ * Mode-aware entity lookup primitifi. Üç davranış kombinasyonunu tek bileşende
+ * tutar:
  *
- * Backend sözleşmesi:
- *   POST {servicePath}  body: { searchText, pagination: { pageNumber, pageSize } }
- *   → PagedResult<EntityReference>
+ *  1. Tek-tip + tek-seçim:
+ *     <EntityLookupField servicePath={ServicePath.User.Search} entityType="User" .../>
  *
- * UX: Form değeri kutu içinde Tag olarak gösterilir; sağdaki "Ara" butonu
- * arama modal'ını açar. Modal içinde arama input + paginated list. Bir
- * öğeye tıklamak değeri set eder ve modal'ı kapatır. Clear butonu ile
- * değer null'a çekilir.
+ *  2. Tek-tip + çoklu-seçim:
+ *     <EntityLookupField servicePath={ServicePath.Contact.Search} entityType="Contact" multiple .../>
  *
- * Form değeri her zaman `EntityReference | null`.
+ *  3. Çoklu-tip (single ya da multiple):
+ *     <EntityLookupField entityTypes={[
+ *        { entityType: 'Account',     label: 'Firma' },
+ *        { entityType: 'Contact',     label: 'Kişi' },
+ *        { entityType: 'Lead',        label: 'Aday' },
+ *        { entityType: 'Opportunity', label: 'Fırsat' },
+ *     ]} multiple .../>
+ *
+ * Form değeri:
+ *  - multiple=false → `EntityReference | null`
+ *  - multiple=true  → `EntityReference[]`
  */
 export function EntityLookupField<TValues extends FieldValues>({
   name,
   control,
   servicePath,
+  entityType,
+  entityTypes,
+  multiple = false,
+  maxSelections,
   label,
   placeholder,
   required,
@@ -79,6 +113,23 @@ export function EntityLookupField<TValues extends FieldValues>({
 
   const [modalOpen, setModalOpen] = useState(false);
 
+  const entityOptions = useMemo<EntityLookupOption[]>(() => {
+    if (entityTypes && entityTypes.length > 0) return entityTypes;
+    if (servicePath) {
+      return [
+        {
+          entityType: entityType ?? 'Entity',
+          label: label ?? entityType ?? t('actions.search'),
+          servicePath,
+        },
+      ];
+    }
+    // Fallback: registry-only single option, but caller must pass entityType.
+    return entityType
+      ? [{ entityType, label: label ?? entityType }]
+      : [];
+  }, [entityTypes, servicePath, entityType, label, t]);
+
   if (hideInMode?.includes(mode)) return null;
 
   const isViewMode = force === 'readonly' || (force !== 'editable' && mode === 'view');
@@ -90,17 +141,58 @@ export function EntityLookupField<TValues extends FieldValues>({
       name={name as Path<TValues>}
       control={control}
       render={({ field, fieldState }) => {
-        const value = field.value as EntityReference | null | undefined;
-        const displayLabel = value?.name;
+        const rawValue = field.value as EntityReference | EntityReference[] | null | undefined;
+        const valueArray: EntityReference[] = multiple
+          ? Array.isArray(rawValue)
+            ? rawValue
+            : []
+          : rawValue && !Array.isArray(rawValue)
+            ? [rawValue]
+            : [];
 
-        const handleSelect = (ref: EntityReference) => {
-          field.onChange(ref);
+        const writeValue = (next: EntityReference[]) => {
+          if (multiple) {
+            field.onChange(next);
+          } else {
+            field.onChange(next[0] ?? null);
+          }
+        };
+
+        const handleSingleSelect = (ref: EntityReference) => {
+          writeValue([ref]);
           setModalOpen(false);
         };
 
-        const handleClear = () => {
-          field.onChange(null);
+        const handleMultiConfirm = (refs: EntityReference[]) => {
+          writeValue(refs);
+          setModalOpen(false);
         };
+
+        const handleClearAll = () => writeValue([]);
+
+        const handleRemoveOne = (id: string) => {
+          writeValue(valueArray.filter((v) => v.id !== id));
+        };
+
+        const renderTags = () =>
+          valueArray.length === 0 ? null : (
+            <Space wrap size={4}>
+              {valueArray.map((v) => (
+                <Tag
+                  key={v.id}
+                  color="blue"
+                  closable={!isViewMode}
+                  onClose={(e) => {
+                    e.preventDefault();
+                    handleRemoveOne(v.id);
+                  }}
+                  style={{ marginRight: 0, fontSize: 13, padding: '0 8px' }}
+                >
+                  {v.name}
+                </Tag>
+              ))}
+            </Space>
+          );
 
         return (
           <Form.Item
@@ -110,10 +202,8 @@ export function EntityLookupField<TValues extends FieldValues>({
             help={translateError(fieldState.error?.message)}
           >
             {isViewMode ? (
-              displayLabel ? (
-                <Tag color="blue" style={{ fontSize: 13, padding: '2px 10px' }}>
-                  {displayLabel}
-                </Tag>
+              valueArray.length > 0 ? (
+                renderTags()
               ) : (
                 <span style={{ color: 'rgba(0,0,0,0.45)' }}>—</span>
               )
@@ -134,27 +224,22 @@ export function EntityLookupField<TValues extends FieldValues>({
                     gap: 8,
                   }}
                 >
-                  {displayLabel ? (
-                    <Tag
-                      color="blue"
-                      style={{ marginRight: 0, fontSize: 13, padding: '0 8px' }}
-                    >
-                      {displayLabel}
-                    </Tag>
+                  {valueArray.length > 0 ? (
+                    renderTags()
                   ) : (
                     <span style={{ color: 'rgba(0,0,0,0.25)' }}>
                       {placeholder ?? t('actions.search')}
                     </span>
                   )}
                   <span style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
-                    {allowClear && displayLabel && (
+                    {allowClear && valueArray.length > 0 && (
                       <Button
                         type="text"
                         size="small"
                         icon={<CloseOutlined />}
                         onClick={(e) => {
                           e.stopPropagation();
-                          handleClear();
+                          handleClearAll();
                         }}
                       />
                     )}
@@ -169,18 +254,24 @@ export function EntityLookupField<TValues extends FieldValues>({
                     />
                   </span>
                 </div>
-                <SearchModal
-                  open={modalOpen}
-                  onClose={() => {
-                    setModalOpen(false);
-                    field.onBlur();
-                  }}
-                  onSelect={handleSelect}
-                  servicePath={servicePath}
-                  title={dialogTitle}
-                  pageSize={pageSize}
-                  debounceMs={debounceMs}
-                />
+                {entityOptions.length > 0 && (
+                  <SearchModal
+                    open={modalOpen}
+                    onClose={() => {
+                      setModalOpen(false);
+                      field.onBlur();
+                    }}
+                    onSelect={handleSingleSelect}
+                    onConfirm={handleMultiConfirm}
+                    entityOptions={entityOptions}
+                    title={dialogTitle}
+                    pageSize={pageSize}
+                    debounceMs={debounceMs}
+                    multiple={multiple}
+                    initialSelected={multiple ? valueArray : undefined}
+                    maxSelections={maxSelections}
+                  />
+                )}
               </>
             )}
           </Form.Item>

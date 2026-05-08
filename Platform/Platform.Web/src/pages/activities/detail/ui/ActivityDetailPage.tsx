@@ -1,0 +1,542 @@
+import { useMemo } from 'react';
+import { useTranslation } from 'react-i18next';
+import { useFormContext, type Control } from 'react-hook-form';
+import { useParams } from 'react-router-dom';
+import { Alert } from '../../../../shared/ui/feedback/Alert';
+import { DetailPageLayout } from '../../../../shared/ui/detail-page/DetailPageLayout';
+import { FormSection } from '../../../../shared/ui/form/FormSection';
+import { FormRow } from '../../../../shared/ui/form/FormRow';
+import { TextField } from '../../../../shared/ui/form/fields/TextField';
+import { TextAreaField } from '../../../../shared/ui/form/fields/TextAreaField';
+import { NumberField } from '../../../../shared/ui/form/fields/NumberField';
+import { SelectField, type SelectOption } from '../../../../shared/ui/form/fields/SelectField';
+import { CheckboxField } from '../../../../shared/ui/form/fields/CheckboxField';
+import { EntityLookupField } from '../../../../shared/ui/form/fields/EntityLookupField';
+import { ServicePath } from '../../../../shared/api/servicePaths';
+import { useRouteMode } from '../../../../shared/hooks/useRouteMode';
+import { useActivityEntityTypes } from '../../../../shared/lib/activity/ActivityEntityTypesContext';
+import { useActivityQuery } from '../../../../entities/activity/api/useActivityQueries';
+import {
+  useUpsertActivity,
+  useDeleteActivity,
+} from '../../../../entities/activity/api/useActivityMutations';
+import {
+  appointmentSchema,
+  emailSchema,
+  phoneCallSchema,
+  taskSchema,
+} from '../../../../entities/activity/model/schema';
+import {
+  ACTIVITY_PRIORITIES,
+  ACTIVITY_SLUG_BY_TYPE,
+  ACTIVITY_STATUSES,
+  ACTIVITY_TYPE_BY_SLUG,
+  type ActivityFormValues,
+  type ActivityPriority,
+  type ActivityStatus,
+  type ActivityType,
+  type AppointmentFormValues,
+  type CallDirection,
+  type EmailFormValues,
+  type PhoneCallFormValues,
+  type TaskFormValues,
+} from '../../../../entities/activity/model/types';
+import { RoutePaths } from '../../../../app/router/paths';
+
+function buildEmptyValues(type: ActivityType): ActivityFormValues {
+  const baseShared = {
+    id: '',
+    subject: '',
+    status: 'NotStarted' as ActivityStatus,
+    priority: 'Normal' as ActivityPriority,
+    startDate: null,
+    endDate: null,
+    dueDate: null,
+    regardingEntity: null,
+    owner: null,
+    isActive: true,
+  };
+  switch (type) {
+    case 'PhoneCall':
+      return {
+        ...baseShared,
+        activityType: 'PhoneCall',
+        caller: null,
+        recipient: null,
+        direction: 'Outgoing',
+        callNotes: null,
+        recordingUrl: null,
+      };
+    case 'Task':
+      return {
+        ...baseShared,
+        activityType: 'Task',
+        taskDescription: null,
+        percentComplete: 0,
+        reminderAt: null,
+      };
+    case 'Appointment':
+      return {
+        ...baseShared,
+        activityType: 'Appointment',
+        organizer: null,
+        attendees: [],
+        location: null,
+        isOnline: false,
+        meetingUrl: null,
+        startTime: '',
+        endTime: '',
+        isAllDay: false,
+        reminderMinutesBefore: null,
+        reminderSet: null,
+        recurrenceRule: null,
+        isRecurring: false,
+        recurringParentId: null,
+        meetingNotes: null,
+      };
+    case 'Email':
+      return {
+        ...baseShared,
+        activityType: 'Email',
+        from: null,
+        to: [],
+        cc: null,
+        bcc: null,
+        body: '',
+        isHtml: true,
+        isSent: false,
+        isRead: false,
+        readDate: null,
+      };
+  }
+}
+
+export function ActivityDetailPage() {
+  const params = useParams<{ type?: string; id?: string }>();
+  const { mode, id } = useRouteMode();
+  const { t: tPage } = useTranslation('page.activities-detail');
+  const { t: tEntity } = useTranslation('entity.activity');
+  const { t: tEnums } = useTranslation('enums');
+
+  const activityType = params.type ? ACTIVITY_TYPE_BY_SLUG[params.type] : undefined;
+
+  const query = useActivityQuery(activityType, id);
+  const upsert = useUpsertActivity();
+  const deleteMutation = useDeleteActivity();
+
+  const title = useMemo(() => {
+    if (!activityType) return tPage('viewTitle');
+    if (mode === 'new') return tPage(`newTitle.${activityType}`);
+    if (mode === 'edit') return tPage('editTitle');
+    return query.data?.subject ?? tPage('viewTitle');
+  }, [activityType, mode, query.data, tPage]);
+
+  if (!activityType) {
+    return <Alert type="error" message={tPage('viewTitle')} />;
+  }
+
+  const statusOptions: SelectOption<ActivityStatus>[] = ACTIVITY_STATUSES.map((value) => ({
+    value,
+    label: tEnums(`activityStatus.${value}`),
+  }));
+  const priorityOptions: SelectOption<ActivityPriority>[] = ACTIVITY_PRIORITIES.map((value) => ({
+    value,
+    label: tEnums(`activityPriority.${value}`),
+  }));
+
+  const empty = buildEmptyValues(activityType);
+
+  switch (activityType) {
+    case 'PhoneCall':
+      return (
+        <DetailPageLayout<PhoneCallFormValues>
+          mode={mode}
+          title={title}
+          schema={phoneCallSchema}
+          defaultValues={empty as PhoneCallFormValues}
+          data={query.data as PhoneCallFormValues | undefined}
+          isLoading={query.isLoading}
+          error={query.isError ? query.error : undefined}
+          onSubmit={async (values) => {
+            await upsert.mutateAsync(values);
+          }}
+          onDelete={
+            id
+              ? async () => {
+                  await deleteMutation.mutateAsync([id]);
+                }
+              : undefined
+          }
+          afterSaveNavigation={(saved) =>
+            RoutePaths.ActivityView(ACTIVITY_SLUG_BY_TYPE.PhoneCall, saved.id)
+          }
+        >
+          <GeneralSection statusOptions={statusOptions} priorityOptions={priorityOptions} />
+          <PhoneCallSection />
+        </DetailPageLayout>
+      );
+
+    case 'Task':
+      return (
+        <DetailPageLayout<TaskFormValues>
+          mode={mode}
+          title={title}
+          schema={taskSchema}
+          defaultValues={empty as TaskFormValues}
+          data={query.data as TaskFormValues | undefined}
+          isLoading={query.isLoading}
+          error={query.isError ? query.error : undefined}
+          onSubmit={async (values) => {
+            await upsert.mutateAsync(values);
+          }}
+          onDelete={
+            id
+              ? async () => {
+                  await deleteMutation.mutateAsync([id]);
+                }
+              : undefined
+          }
+          afterSaveNavigation={(saved) =>
+            RoutePaths.ActivityView(ACTIVITY_SLUG_BY_TYPE.Task, saved.id)
+          }
+        >
+          <GeneralSection statusOptions={statusOptions} priorityOptions={priorityOptions} />
+          <TaskSection />
+        </DetailPageLayout>
+      );
+
+    case 'Appointment':
+      return (
+        <DetailPageLayout<AppointmentFormValues>
+          mode={mode}
+          title={title}
+          schema={appointmentSchema}
+          defaultValues={empty as AppointmentFormValues}
+          data={query.data as AppointmentFormValues | undefined}
+          isLoading={query.isLoading}
+          error={query.isError ? query.error : undefined}
+          onSubmit={async (values) => {
+            await upsert.mutateAsync(values);
+          }}
+          onDelete={
+            id
+              ? async () => {
+                  await deleteMutation.mutateAsync([id]);
+                }
+              : undefined
+          }
+          afterSaveNavigation={(saved) =>
+            RoutePaths.ActivityView(ACTIVITY_SLUG_BY_TYPE.Appointment, saved.id)
+          }
+        >
+          <GeneralSection statusOptions={statusOptions} priorityOptions={priorityOptions} />
+          <AppointmentSection />
+        </DetailPageLayout>
+      );
+
+    case 'Email':
+      return (
+        <DetailPageLayout<EmailFormValues>
+          mode={mode}
+          title={title}
+          schema={emailSchema}
+          defaultValues={empty as EmailFormValues}
+          data={query.data as EmailFormValues | undefined}
+          isLoading={query.isLoading}
+          error={query.isError ? query.error : undefined}
+          onSubmit={async (values) => {
+            await upsert.mutateAsync(values);
+          }}
+          onDelete={
+            id
+              ? async () => {
+                  await deleteMutation.mutateAsync([id]);
+                }
+              : undefined
+          }
+          afterSaveNavigation={(saved) =>
+            RoutePaths.ActivityView(ACTIVITY_SLUG_BY_TYPE.Email, saved.id)
+          }
+        >
+          <GeneralSection statusOptions={statusOptions} priorityOptions={priorityOptions} />
+          <EmailSection />
+        </DetailPageLayout>
+      );
+  }
+
+  function GeneralSection({
+    statusOptions,
+    priorityOptions,
+  }: {
+    statusOptions: SelectOption<ActivityStatus>[];
+    priorityOptions: SelectOption<ActivityPriority>[];
+  }) {
+    const form = useFormContext<ActivityFormValues>();
+    const control = form.control as unknown as Control<ActivityFormValues>;
+    const { regardingEntityTypes } = useActivityEntityTypes();
+    return (
+      <FormSection title={tEntity('sections.general')} collapsible>
+        <TextField
+          name="subject"
+          control={control}
+          label={tEntity('fields.subject.label')}
+          placeholder={tEntity('fields.subject.placeholder')}
+          required
+          maxLength={500}
+        />
+        <FormRow>
+          <SelectField<ActivityFormValues, ActivityStatus>
+            name="status"
+            control={control}
+            label={tEntity('fields.status.label')}
+            options={statusOptions}
+            required
+          />
+          <SelectField<ActivityFormValues, ActivityPriority>
+            name="priority"
+            control={control}
+            label={tEntity('fields.priority.label')}
+            options={priorityOptions}
+            required
+          />
+        </FormRow>
+        <FormRow>
+          <TextField
+            name="dueDate"
+            control={control}
+            label={tEntity('fields.dueDate.label')}
+            placeholder="YYYY-MM-DD"
+          />
+          <EntityLookupField
+            name="owner"
+            control={control}
+            servicePath={ServicePath.User.Search}
+            entityType="User"
+            label={tEntity('fields.owner.label')}
+            modalTitle={tEntity('owner.modalTitle')}
+          />
+        </FormRow>
+        <EntityLookupField
+          name="regardingEntity"
+          control={control}
+          entityTypes={regardingEntityTypes}
+          label={tEntity('fields.regardingEntity.label')}
+          modalTitle={tEntity('regarding.modalTitle')}
+        />
+      </FormSection>
+    );
+  }
+
+  function PhoneCallSection() {
+    const form = useFormContext<PhoneCallFormValues>();
+    const { partyEntityTypes } = useActivityEntityTypes();
+    const directionOptions: SelectOption<CallDirection>[] = [
+      { value: 'Incoming', label: tEnums('direction.Incoming', { defaultValue: 'Gelen' }) },
+      { value: 'Outgoing', label: tEnums('direction.Outgoing', { defaultValue: 'Giden' }) },
+    ];
+    return (
+      <FormSection title={tEntity('sections.phoneCall')} collapsible>
+        <FormRow>
+          <EntityLookupField
+            name="caller"
+            control={form.control}
+            entityTypes={partyEntityTypes}
+            label={tEntity('fields.caller.label')}
+            modalTitle={tEntity('callPerson.modalTitle')}
+          />
+          <EntityLookupField
+            name="recipient"
+            control={form.control}
+            entityTypes={partyEntityTypes}
+            label={tEntity('fields.recipient.label')}
+            modalTitle={tEntity('callPerson.modalTitle')}
+          />
+        </FormRow>
+        <SelectField<PhoneCallFormValues, CallDirection>
+          name="direction"
+          control={form.control}
+          label={tEntity('fields.direction.label')}
+          options={directionOptions}
+          required
+        />
+        <TextAreaField
+          name="callNotes"
+          control={form.control}
+          label={tEntity('fields.callNotes.label')}
+          rows={4}
+        />
+        <TextField
+          name="recordingUrl"
+          control={form.control}
+          label={tEntity('fields.recordingUrl.label')}
+          placeholder="https://..."
+        />
+      </FormSection>
+    );
+  }
+
+  function TaskSection() {
+    const form = useFormContext<TaskFormValues>();
+    return (
+      <FormSection title={tEntity('sections.task')} collapsible>
+        <TextAreaField
+          name="taskDescription"
+          control={form.control}
+          label={tEntity('fields.taskDescription.label')}
+          rows={4}
+        />
+        <FormRow>
+          <NumberField
+            name="percentComplete"
+            control={form.control}
+            label={tEntity('fields.percentComplete.label')}
+            min={0}
+            max={100}
+            step={5}
+          />
+          <TextField
+            name="reminderAt"
+            control={form.control}
+            label={tEntity('fields.reminderAt.label')}
+            placeholder="YYYY-MM-DDTHH:mm"
+          />
+        </FormRow>
+      </FormSection>
+    );
+  }
+
+  function AppointmentSection() {
+    const form = useFormContext<AppointmentFormValues>();
+    const { partyEntityTypes } = useActivityEntityTypes();
+    return (
+      <FormSection title={tEntity('sections.appointment')} collapsible>
+        <FormRow>
+          <TextField
+            name="startTime"
+            control={form.control}
+            label={tEntity('fields.startTime.label')}
+            placeholder="YYYY-MM-DDTHH:mm"
+            required
+          />
+          <TextField
+            name="endTime"
+            control={form.control}
+            label={tEntity('fields.endTime.label')}
+            placeholder="YYYY-MM-DDTHH:mm"
+            required
+          />
+        </FormRow>
+        <FormRow>
+          <CheckboxField
+            name="isAllDay"
+            control={form.control}
+            label={tEntity('fields.isAllDay.label')}
+          />
+          <CheckboxField
+            name="isOnline"
+            control={form.control}
+            label={tEntity('fields.isOnline.label')}
+          />
+          <CheckboxField
+            name="isRecurring"
+            control={form.control}
+            label={tEntity('fields.isRecurring.label')}
+          />
+        </FormRow>
+        <FormRow>
+          <TextField
+            name="location"
+            control={form.control}
+            label={tEntity('fields.location.label')}
+          />
+          <TextField
+            name="meetingUrl"
+            control={form.control}
+            label={tEntity('fields.meetingUrl.label')}
+            placeholder="https://..."
+          />
+        </FormRow>
+        <EntityLookupField
+          name="organizer"
+          control={form.control}
+          servicePath={ServicePath.User.Search}
+          entityType="User"
+          label={tEntity('fields.organizer.label')}
+          modalTitle={tEntity('owner.modalTitle')}
+        />
+        <EntityLookupField
+          name="attendees"
+          control={form.control}
+          entityTypes={partyEntityTypes}
+          multiple
+          label={tEntity('fields.attendees.label', { defaultValue: 'Katılımcılar' })}
+          modalTitle={tEntity('attendees.modalTitle', { defaultValue: 'Katılımcılar' })}
+        />
+        <NumberField
+          name="reminderMinutesBefore"
+          control={form.control}
+          label={tEntity('fields.reminderMinutesBefore.label')}
+          min={0}
+          step={5}
+        />
+        <TextAreaField
+          name="meetingNotes"
+          control={form.control}
+          label={tEntity('fields.meetingNotes.label')}
+          rows={4}
+        />
+      </FormSection>
+    );
+  }
+
+  function EmailSection() {
+    const form = useFormContext<EmailFormValues>();
+    const { partyEntityTypes } = useActivityEntityTypes();
+    return (
+      <FormSection title={tEntity('sections.email')} collapsible>
+        <EntityLookupField
+          name="from"
+          control={form.control}
+          entityTypes={partyEntityTypes}
+          label={tEntity('fields.from.label')}
+          modalTitle={tEntity('emailContacts.modalTitle')}
+        />
+        <EntityLookupField
+          name="to"
+          control={form.control}
+          entityTypes={partyEntityTypes}
+          multiple
+          label={tEntity('fields.to.label', { defaultValue: 'Alıcılar' })}
+          modalTitle={tEntity('emailContacts.modalTitle')}
+        />
+        <EntityLookupField
+          name="cc"
+          control={form.control}
+          entityTypes={partyEntityTypes}
+          multiple
+          label={tEntity('fields.cc.label', { defaultValue: 'CC' })}
+          modalTitle={tEntity('emailContacts.modalTitle')}
+        />
+        <EntityLookupField
+          name="bcc"
+          control={form.control}
+          entityTypes={partyEntityTypes}
+          multiple
+          label={tEntity('fields.bcc.label', { defaultValue: 'BCC' })}
+          modalTitle={tEntity('emailContacts.modalTitle')}
+        />
+        <CheckboxField
+          name="isHtml"
+          control={form.control}
+          label={tEntity('fields.isHtml.label')}
+        />
+        <TextAreaField
+          name="body"
+          control={form.control}
+          label={tEntity('fields.body.label')}
+          rows={8}
+        />
+      </FormSection>
+    );
+  }
+}

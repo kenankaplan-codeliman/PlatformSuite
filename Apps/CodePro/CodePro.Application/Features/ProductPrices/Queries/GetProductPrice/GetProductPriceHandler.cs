@@ -17,7 +17,7 @@ public sealed class GetProductPriceHandler : IRequestHandler<GetProductPriceQuer
     {
         var entity = await _db.ProductPrice.AsNoTracking()
             .Include(p => p.Product)
-            .Include(p => p.SupplierAccount)
+            .Include(p => p.Supplier)
             .Include(p => p.PriceList)
             .FirstOrDefaultAsync(p => p.Id == request.Id, cancellationToken);
 

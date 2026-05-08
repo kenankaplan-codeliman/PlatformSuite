@@ -15,7 +15,7 @@ public class PurchaseOrderConfiguration : IEntityTypeConfiguration<PurchaseOrder
         builder.Property(o => o.OrderNumber).HasColumnName("order_number").IsRequired().HasMaxLength(25);
         builder.Property(o => o.Title).HasColumnName("title").IsRequired().HasMaxLength(50);
         builder.Property(o => o.Description).HasColumnName("description").HasColumnType("text");
-        builder.Property(o => o.SupplierAccountId).HasColumnName("supplier_account_id").IsRequired();
+        builder.Property(o => o.SupplierId).HasColumnName("supplier_id").IsRequired();
         builder.Property(o => o.PurchaseRequestId).HasColumnName("purchase_request_id");
         builder.Property(o => o.Status).HasColumnName("status").IsRequired().HasConversion<string>().HasMaxLength(20);
         builder.Property(o => o.Priority).HasColumnName("priority").IsRequired().HasConversion<string>().HasMaxLength(10);
@@ -35,9 +35,9 @@ public class PurchaseOrderConfiguration : IEntityTypeConfiguration<PurchaseOrder
 
         builder.HasIndex(o => o.OrderNumber).IsUnique().HasDatabaseName("uq_purchase_order_number");
 
-        builder.HasOne(o => o.SupplierAccount)
+        builder.HasOne(o => o.Supplier)
             .WithMany()
-            .HasForeignKey(o => o.SupplierAccountId)
+            .HasForeignKey(o => o.SupplierId)
             .HasConstraintName("fk_purchase_order_supplier_account")
             .OnDelete(DeleteBehavior.Restrict);
 

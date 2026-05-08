@@ -60,9 +60,9 @@ CREATE TABLE IF NOT EXISTS activity_party (
     -- Party Type (Rol)
     party_type              VARCHAR(20) NOT NULL,  -- From, To, Cc, Bcc, Organizer, Attendee, Caller, Recipient, Owner, Required, Optional
     
-    -- Participant Type & Reference
-    participant_type        VARCHAR(20) NOT NULL,  -- User, Account, Contact, Lead, External
-    participant_id          UUID,
+    -- Polymorphic Participant Reference (string-based; null = external)
+    participant_entity_type VARCHAR(50),  -- User, Account, Contact, Lead, Opportunity, Supplier, PurchaseOrder, ...
+    participant_entity_id   UUID,
     
     -- External Participant Info
     name                    VARCHAR(200),
@@ -165,4 +165,4 @@ COMMENT ON COLUMN activity.activity_type IS 'Email, PhoneCall, Task, Appointment
 COMMENT ON COLUMN activity.status IS 'NotStarted, InProgress, Completed, Cancelled';
 COMMENT ON COLUMN activity.priority IS 'Low, Normal, High';
 COMMENT ON COLUMN activity_party.party_type IS 'From, To, Cc, Bcc, Organizer, Attendee, Caller, Recipient, Owner, Required, Optional';
-COMMENT ON COLUMN activity_party.participant_type IS 'User, Account, Contact, Lead, External';
+COMMENT ON COLUMN activity_party.participant_entity_type IS 'Polymorphic — User, Account, Contact, Lead, Opportunity, Supplier, PurchaseOrder, ...; NULL = external participant';

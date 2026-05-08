@@ -135,12 +135,12 @@ public sealed class ActivityController : ControllerBase
         => (await _sender.Send(cmd, ct)).ToActionResult(HttpContext);
 
     [HttpPost("assign")]
-    [PrivilegeAuthorize(PrivilegeCodes.AccountPrivilegeCodes.Assign)]
+    [PrivilegeAuthorize(PrivilegeCodes.ActivityPrivilegeCodes.Assign)]
     public async Task<IActionResult> Assign([FromBody] AssignActivityCommand cmd, CancellationToken ct)
         => (await _sender.Send(cmd, ct)).ToActionResult(HttpContext);
 
     [HttpPost("set-state")]
-    [PrivilegeAuthorize(PrivilegeCodes.AccountPrivilegeCodes.State)]
+    [PrivilegeAuthorize(PrivilegeCodes.ActivityPrivilegeCodes.State)]
     public async Task<IActionResult> SetStateAsync([FromBody] SetStateActivityCommand cmd, CancellationToken ct)
         => (await _sender.Send(cmd, ct)).ToActionResult(HttpContext);
 }

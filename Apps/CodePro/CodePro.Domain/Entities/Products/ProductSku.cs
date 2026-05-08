@@ -1,4 +1,4 @@
-using Platform.Domain.Entities.Accounts;
+using CodePro.Domain.Entities.Suppliers;
 
 namespace CodePro.Domain.Entities.Products;
 
@@ -11,8 +11,8 @@ public class ProductSku
     public Product Product { get; set; } = null!;
 
     /// <summary>Tedarikçi Platform Account'a referans (AccountType=Vendor olan kayıt).</summary>
-    public Guid SupplierAccountId { get; set; }
-    public Account SupplierAccount { get; set; } = null!;
+    public Guid SupplierId { get; set; }
+    public Supplier Supplier { get; set; } = null!;
 
     /// <summary>Tedarikçi bazlı stok kodu (maks 25 karakter)</summary>
     public string Sku { get; set; } = null!;

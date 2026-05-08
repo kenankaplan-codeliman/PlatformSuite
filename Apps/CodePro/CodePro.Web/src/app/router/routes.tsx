@@ -1,18 +1,18 @@
 import { createBrowserRouter } from 'react-router-dom';
 import {
-  AccountDetailPage,
-  AccountsListPage,
+  ActivitiesListPage,
+  ActivityDetailPage,
   AppRoleDetailPage,
   AppRolesListPage,
   AppUserDetailPage,
   AppUsersListPage,
-  ContactDetailPage,
-  ContactsListPage,
   HomePage,
   LoginPage,
   OrganizationDetailPage,
   OrganizationsListPage,
 } from '@platform/ui';
+import { SupplierDetailPage } from '../../pages/suppliers/detail/ui/SupplierDetailPage';
+import { SuppliersListPage } from '../../pages/suppliers/list/ui/SuppliersListPage';
 import { BrandDetailPage } from '../../pages/brands/detail/ui/BrandDetailPage';
 import { BrandsListPage } from '../../pages/brands/list/ui/BrandsListPage';
 import { ManufacturerDetailPage } from '../../pages/manufacturers/detail/ui/ManufacturerDetailPage';
@@ -56,15 +56,15 @@ export const router = createBrowserRouter([
     children: [
       { path: RoutePaths.Home, element: <HomePage /> },
 
-      { path: RoutePatterns.AccountsList, element: <AccountsListPage /> },
-      { path: RoutePatterns.AccountNew, element: <AccountDetailPage /> },
-      { path: RoutePatterns.AccountEdit, element: <AccountDetailPage /> },
-      { path: RoutePatterns.AccountView, element: <AccountDetailPage /> },
+      { path: RoutePatterns.SuppliersList, element: <SuppliersListPage /> },
+      { path: RoutePatterns.SupplierNew, element: <SupplierDetailPage /> },
+      { path: RoutePatterns.SupplierEdit, element: <SupplierDetailPage /> },
+      { path: RoutePatterns.SupplierView, element: <SupplierDetailPage /> },
 
-      { path: RoutePatterns.ContactsList, element: <ContactsListPage /> },
-      { path: RoutePatterns.ContactNew, element: <ContactDetailPage /> },
-      { path: RoutePatterns.ContactEdit, element: <ContactDetailPage /> },
-      { path: RoutePatterns.ContactView, element: <ContactDetailPage /> },
+      { path: RoutePatterns.ActivitiesList, element: <ActivitiesListPage /> },
+      { path: RoutePatterns.ActivityNew, element: <ActivityDetailPage /> },
+      { path: RoutePatterns.ActivityEdit, element: <ActivityDetailPage /> },
+      { path: RoutePatterns.ActivityView, element: <ActivityDetailPage /> },
 
       { path: RoutePatterns.OrganizationsList, element: <OrganizationsListPage /> },
       { path: RoutePatterns.OrganizationNew, element: <OrganizationDetailPage /> },

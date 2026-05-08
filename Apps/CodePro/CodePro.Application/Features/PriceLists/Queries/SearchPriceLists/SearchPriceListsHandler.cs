@@ -1,8 +1,8 @@
 using CodePro.Application.Interfaces;
+using CodePro.Domain.Entities.Products;
 using Platform.Application.Common.Pagination;
 using Platform.Application.Common.Results;
 using Platform.Application.Modals.Common;
-using Platform.Domain.Enums;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 
@@ -34,7 +34,7 @@ public sealed class SearchPriceListsHandler : IRequestHandler<SearchPriceListsQu
             .OrderBy(p => p.Name)
             .Skip(skip)
             .Take(pageSize + 1)
-            .Select(p => new EntityReference(EntityType.None)
+            .Select(p => new EntityReference(nameof(PriceList))
             {
                 Id = p.Id,
                 Name = p.Name,

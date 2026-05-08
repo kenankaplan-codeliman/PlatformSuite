@@ -1,8 +1,14 @@
 import i18n from 'i18next';
 
 // CRM-spesifik locale kaynakları
+import accountEntityTr from '../entities/account/locales/tr.json';
+import contactEntityTr from '../entities/contact/locales/tr.json';
 import leadEntityTr from '../entities/lead/locales/tr.json';
 import opportunityEntityTr from '../entities/opportunity/locales/tr.json';
+import accountsListTr from '../pages/accounts/list/locales/tr.json';
+import accountsDetailTr from '../pages/accounts/detail/locales/tr.json';
+import contactsListTr from '../pages/contacts/list/locales/tr.json';
+import contactsDetailTr from '../pages/contacts/detail/locales/tr.json';
 import leadsListTr from '../pages/leads/list/locales/tr.json';
 import leadsDetailTr from '../pages/leads/detail/locales/tr.json';
 import opportunitiesListTr from '../pages/opportunities/list/locales/tr.json';
@@ -16,8 +22,14 @@ import crmAppTr from './locales/tr.json';
  * CRM-spesifik namespace'leri ekler ve `enums` namespace'ini deep-merge ile genişletir.
  */
 export function registerCrmTranslations(): void {
+  i18n.addResourceBundle('tr', 'entity.account', accountEntityTr, true, true);
+  i18n.addResourceBundle('tr', 'entity.contact', contactEntityTr, true, true);
   i18n.addResourceBundle('tr', 'entity.lead', leadEntityTr, true, true);
   i18n.addResourceBundle('tr', 'entity.opportunity', opportunityEntityTr, true, true);
+  i18n.addResourceBundle('tr', 'page.accounts-list', accountsListTr, true, true);
+  i18n.addResourceBundle('tr', 'page.accounts-detail', accountsDetailTr, true, true);
+  i18n.addResourceBundle('tr', 'page.contacts-list', contactsListTr, true, true);
+  i18n.addResourceBundle('tr', 'page.contacts-detail', contactsDetailTr, true, true);
   i18n.addResourceBundle('tr', 'page.leads-list', leadsListTr, true, true);
   i18n.addResourceBundle('tr', 'page.leads-detail', leadsDetailTr, true, true);
   i18n.addResourceBundle('tr', 'page.opportunities-list', opportunitiesListTr, true, true);

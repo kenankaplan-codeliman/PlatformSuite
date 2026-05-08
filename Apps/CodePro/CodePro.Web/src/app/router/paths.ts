@@ -9,6 +9,12 @@ import {
 export const RoutePaths = {
   ...PlatformRoutePaths,
 
+  // Supplier
+  SuppliersList: '/suppliers',
+  SupplierNew: '/suppliers/new',
+  SupplierView: (id: string) => `/suppliers/${id}`,
+  SupplierEdit: (id: string) => `/suppliers/${id}/edit`,
+
   // Brand
   BrandsList: '/brands',
   BrandNew: '/brands/new',
@@ -108,6 +114,11 @@ export const RoutePaths = {
 
 export const RoutePatterns = {
   ...PlatformRoutePatterns,
+
+  SuppliersList: '/suppliers',
+  SupplierNew: '/suppliers/new',
+  SupplierView: '/suppliers/:id',
+  SupplierEdit: '/suppliers/:id/edit',
 
   BrandsList: '/brands',
   BrandNew: '/brands/new',

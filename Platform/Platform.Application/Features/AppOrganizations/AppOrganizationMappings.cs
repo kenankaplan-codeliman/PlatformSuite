@@ -14,12 +14,12 @@ public static class AppOrganizationMappings
         // ParentOrganization / ReportsTo entity'de nav property değil — yalnızca FK olarak
         // tutuluyor. EntityReference projection'ı AppOrganizationDetailBuilder içinde ayrı
         // sorguyla doldurulur; Mapster burada bu alanları görmezden gelir.
-        config.NewConfig<AppOrganization, AppOrganizationDetailItem>()
+        config.NewConfig<Organization, AppOrganizationDetailItem>()
             .Ignore(d => d.ParentOrganization!, d => d.ReportsTo!);
 
-        config.NewConfig<AppOrganization, AppOrganizationListItem>();
+        config.NewConfig<Organization, AppOrganizationListItem>();
 
-        config.NewConfig<CreateAppOrganizationCommand, AppOrganization>()
+        config.NewConfig<CreateAppOrganizationCommand, Organization>()
             .Map(d => d.ParentOrganizationId, s => s.ParentOrganization != null ? (Guid?)s.ParentOrganization.Id : null)
             .Map(d => d.ReportsTo, s => s.ReportsTo != null ? (Guid?)s.ReportsTo.Id : null)
             .Ignore(d => d.Title!, d => d.IsDefault)
@@ -27,7 +27,7 @@ public static class AppOrganizationMappings
 
         // Update için ParentOrganizationId/ReportsTo açıkça AfterMapping'de set edilir;
         // IgnoreNullValues clear (null) durumunu engellememeli.
-        config.NewConfig<UpdateAppOrganizationCommand, AppOrganization>()
+        config.NewConfig<UpdateAppOrganizationCommand, Organization>()
             .IgnoreNullValues(true)
             .Ignore(d => d.ParentOrganizationId, d => d.ReportsTo,
                     d => d.Title!, d => d.IsDefault)

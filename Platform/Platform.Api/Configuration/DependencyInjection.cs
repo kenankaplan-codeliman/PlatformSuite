@@ -1,9 +1,11 @@
 ﻿using Platform.Application.CommandHandler;
 using Platform.Application.Common.Abstractions;
+using Platform.Application.Common.References;
 using Platform.Application.Interfaces;
 using Platform.Application.Modals;
 using Platform.Application.Modals.Authentication;
 using Platform.Infrastructure.Data;
+using Platform.Infrastructure.References;
 using Platform.Infrastructure.Repositories;
 using Platform.Infrastructure.Services;
 using Microsoft.AspNetCore.DataProtection;
@@ -43,12 +45,15 @@ public static class DependencyInjection
         services.AddScoped<ITaskActivityRepository, TaskActivityRepository>();
         services.AddScoped<IPhoneCallActivityRepository, PhoneCallActivityRepository>();
 
+        // EntityReference resolver registry — Activity.RegardingEntityType polimorfik
+        // referans çözümlemesinin omurgası. Her uygulama (CRM, CodePro) AddXxxInfrastructure
+        // içinde kendi entity'leri için IEntityReferenceResolver kayıtları ekler.
+        services.AddScoped<IEntityReferenceResolverRegistry, EntityReferenceResolverRegistry>();
+        services.AddScoped<IEntityReferenceResolver, UserReferenceResolver>();
         services.AddScoped<IReferenceRepository, ReferenceRepository>();
         services.AddScoped<IUserRepository, UserRepository>();
         services.AddScoped<IOrganizationRepository, OrganizationRepository>();
         services.AddScoped<IRoleRepository, RoleRepository>();
-        services.AddScoped<IAccountRepository, AccountRepository>();
-        services.AddScoped<IContactRepository, ContactRepository>();
         services.AddScoped<IAppLoginRepository, AppLoginRepository>();
         services.AddScoped<IAuditRepository, AuditRepository>();
         services.AddScoped<IAttachmentRepository, AttachmentRepository>();

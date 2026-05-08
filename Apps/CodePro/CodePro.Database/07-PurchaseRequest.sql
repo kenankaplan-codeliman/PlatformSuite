@@ -67,9 +67,9 @@ CREATE TABLE IF NOT EXISTS purchase_request_line (
     -- Fiyat eşleşmesi sonucu set edilir (product_price'tan); eşleşme yoksa null
     product_price_id          UUID REFERENCES product_price(id),
 
-    -- Tedarikçi: fiyat eşleşirse product_price.supplier_account_id'den kopyalanır;
+    -- Tedarikçi: fiyat eşleşirse product_price.supplier_id'den kopyalanır;
     -- eşleşme yoksa veya serbest ürün ise kullanıcı manuel seçer (nullable)
-    supplier_account_id               UUID REFERENCES account(id),
+    supplier_id               UUID REFERENCES supplier(id),
 
     -- Miktar — 3 ondalık hane
     quantity                  NUMERIC(18,3) NOT NULL CHECK (quantity > 0),
@@ -111,7 +111,7 @@ CREATE INDEX IF NOT EXISTS idx_purchase_request_status ON purchase_request(statu
 CREATE INDEX IF NOT EXISTS idx_purchase_request_line_request ON purchase_request_line(purchase_request_id);
 CREATE INDEX IF NOT EXISTS idx_purchase_request_line_product ON purchase_request_line(product_id);
 CREATE INDEX IF NOT EXISTS idx_purchase_request_line_product_price ON purchase_request_line(product_price_id);
-CREATE INDEX IF NOT EXISTS idx_purchase_request_line_supplier ON purchase_request_line(supplier_account_id);
+CREATE INDEX IF NOT EXISTS idx_purchase_request_line_supplier ON purchase_request_line(supplier_id);
 CREATE INDEX IF NOT EXISTS idx_purchase_request_line_status ON purchase_request_line(status) WHERE is_deleted = FALSE;
 CREATE UNIQUE INDEX IF NOT EXISTS uq_purchase_request_number ON purchase_request(request_number) WHERE is_deleted = FALSE;
 

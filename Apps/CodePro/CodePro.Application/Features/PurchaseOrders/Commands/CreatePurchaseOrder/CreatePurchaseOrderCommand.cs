@@ -10,7 +10,7 @@ public sealed class CreatePurchaseOrderCommand : ICommand<PurchaseOrderDetailIte
     public string? OrderNumber { get; init; }
     public string Title { get; init; } = string.Empty;
     public string? Description { get; init; }
-    public EntityReference? SupplierAccount { get; init; }
+    public EntityReference? Supplier { get; init; }
     public Guid? PurchaseRequestId { get; init; }
     public PurchaseOrderPriority Priority { get; init; } = PurchaseOrderPriority.Medium;
     public DateTime OrderDate { get; init; } = DateTime.UtcNow;

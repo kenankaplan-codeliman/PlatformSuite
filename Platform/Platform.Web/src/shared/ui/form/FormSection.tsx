@@ -1,5 +1,6 @@
 import { useState, type ReactNode } from 'react';
-import { DownOutlined, RightOutlined } from '@ant-design/icons';
+import { Button } from 'antd';
+import { DownOutlined, UpOutlined } from '@ant-design/icons';
 
 export interface FormSectionProps {
   title?: ReactNode;
@@ -42,7 +43,7 @@ export function FormSection({
         overflow: 'hidden',
       }}
     >
-      {(title || extra) && (
+      {(title || extra || collapsible) && (
         <header
           onClick={handleToggle}
           style={{
@@ -57,51 +58,48 @@ export function FormSection({
             userSelect: collapsible ? 'none' : 'auto',
           }}
         >
-          <div style={{ display: 'flex', alignItems: 'center', gap: 8, minWidth: 0 }}>
-            {collapsible && (
-              <span
-                aria-hidden
+          <div style={{ minWidth: 0 }}>
+            {title && (
+              <h3
                 style={{
-                  display: 'inline-flex',
-                  fontSize: 11,
-                  color: 'rgba(0, 0, 0, 0.45)',
-                  transition: 'transform 120ms ease',
+                  margin: 0,
+                  fontSize: 15,
+                  fontWeight: 600,
+                  color: 'rgba(0, 0, 0, 0.88)',
+                  lineHeight: 1.4,
                 }}
               >
-                {isCollapsed ? <RightOutlined /> : <DownOutlined />}
-              </span>
+                {title}
+              </h3>
             )}
-            <div style={{ minWidth: 0 }}>
-              {title && (
-                <h3
-                  style={{
-                    margin: 0,
-                    fontSize: 15,
-                    fontWeight: 600,
-                    color: 'rgba(0, 0, 0, 0.88)',
-                    lineHeight: 1.4,
-                  }}
-                >
-                  {title}
-                </h3>
-              )}
-              {description && (
-                <p
-                  style={{
-                    margin: '4px 0 0',
-                    color: 'rgba(0, 0, 0, 0.55)',
-                    fontSize: 13,
-                    lineHeight: 1.5,
-                  }}
-                >
-                  {description}
-                </p>
-              )}
-            </div>
+            {description && (
+              <p
+                style={{
+                  margin: '4px 0 0',
+                  color: 'rgba(0, 0, 0, 0.55)',
+                  fontSize: 13,
+                  lineHeight: 1.5,
+                }}
+              >
+                {description}
+              </p>
+            )}
           </div>
-          {extra && (
-            <div onClick={(e) => e.stopPropagation()}>{extra}</div>
-          )}
+          <div
+            style={{ display: 'flex', alignItems: 'center', gap: 8 }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            {extra}
+            {collapsible && (
+              <Button
+                size="small"
+                icon={isCollapsed ? <DownOutlined /> : <UpOutlined />}
+                onClick={handleToggle}
+                aria-label={isCollapsed ? 'Genişlet' : 'Daralt'}
+                aria-expanded={!isCollapsed}
+              />
+            )}
+          </div>
         </header>
       )}
       {!isCollapsed && (

@@ -27,14 +27,12 @@ public class ActivityPartyConfiguration : IEntityTypeConfiguration<ActivityParty
             .IsRequired()
             .HasConversion<EnumToStringConverter<ActivityPartyType>>();
 
-        builder.Property(e => e.ParticipantType)
-            .HasColumnName("participant_type")
-            .HasMaxLength(20)
-            .IsRequired()
-            .HasConversion<EnumToStringConverter<ActivityParticipantType>>();
+        builder.Property(e => e.ParticipantEntityType)
+            .HasColumnName("participant_entity_type")
+            .HasMaxLength(50);
 
-        builder.Property(e => e.ParticipantId)
-            .HasColumnName("participant_id");
+        builder.Property(e => e.ParticipantEntityId)
+            .HasColumnName("participant_entity_id");
 
         builder.Property(e => e.Name)
             .HasColumnName("name")

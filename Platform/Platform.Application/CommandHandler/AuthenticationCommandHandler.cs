@@ -65,7 +65,7 @@ namespace Platform.Application.CommandHandler
             {
                 await unitOfWork.BeginTransactionAsync();
 
-                AppUser user = await userRepository.GetOrCreateAsync(
+                User user = await userRepository.GetOrCreateAsync(
                         azureUser.Mail ?? azureUser.UserPrincipalName ?? string.Empty,
                         azureUser.GivenName ?? string.Empty,
                         azureUser.Surname ?? string.Empty,

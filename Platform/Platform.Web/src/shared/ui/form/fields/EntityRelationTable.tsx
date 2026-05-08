@@ -239,7 +239,9 @@ export function EntityRelationTable<TValues extends FieldValues>({
         open={modalOpen}
         onClose={() => setModalOpen(false)}
         onSelect={handleAdd}
-        servicePath={servicePath}
+        entityOptions={[
+          { entityType: keyField, label: nameColumnTitle ?? label ?? '', servicePath },
+        ]}
         title={modalTitle ?? addLabel ?? label ?? t('actions.search')}
         excludeIds={excludeIds}
       />

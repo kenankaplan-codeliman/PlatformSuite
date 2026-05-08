@@ -1,0 +1,10 @@
+{
+  "newTitle": {
+    "PhoneCall": "Yeni Telefon Görüşmesi",
+    "Task": "Yeni Görev",
+    "Appointment": "Yeni Randevu",
+    "Email": "Yeni E-posta"
+  },
+  "viewTitle": "Aktivite Detayı",
+  "editTitle": "Aktiviteyi Düzenle"
+}

@@ -6,7 +6,7 @@ using Platform.Infrastructure.Data;
 using Platform.Infrastructure.Data.Repositories;
 using Microsoft.EntityFrameworkCore;
 
-public class UserRepository : BaseEntityRepository<AppUser>, IUserRepository
+public class UserRepository : BaseEntityRepository<User>, IUserRepository
 {
     private readonly IOrganizationRepository organizationRepository;
     private readonly IRoleRepository roleRepository;
@@ -20,18 +20,18 @@ public class UserRepository : BaseEntityRepository<AppUser>, IUserRepository
         this.roleRepository = roleRepository;
     }
 
-    public override async Task<AppUser?> GetAsync(Guid id, CancellationToken cancellationToken = default)
+    public override async Task<User?> GetAsync(Guid id, CancellationToken cancellationToken = default)
     {
-        return await dbContext.AppUser
+        return await dbContext.User
             .FirstOrDefaultAsync(x => x.Id == id, cancellationToken);
     }
 
-    public async Task<AppUser?> GetByEmailAsync(string email, CancellationToken cancellationToken = default)
+    public async Task<User?> GetByEmailAsync(string email, CancellationToken cancellationToken = default)
     {
         if (email == null)
             throw new ArgumentNullException(nameof(email));
 
-        return await dbContext.AppUser
+        return await dbContext.User
             .FirstOrDefaultAsync(x => EF.Functions.ILike(x.Email, email), cancellationToken);
     }
 
@@ -52,7 +52,7 @@ public class UserRepository : BaseEntityRepository<AppUser>, IUserRepository
         return result.ToDictionary(x => x.PrivilegeCode, x => x.MaxAccessLevel);
     }
 
-    public async Task<AppUser> GetOrCreateAsync(
+    public async Task<User> GetOrCreateAsync(
         string email, string firstName, string lastName,
         string? password = null, string? azureUserId = null,
         Guid? organizationId = null, List<Guid>? roleIds = null,
@@ -61,7 +61,7 @@ public class UserRepository : BaseEntityRepository<AppUser>, IUserRepository
         if (string.IsNullOrEmpty(email) || string.IsNullOrEmpty(firstName) || string.IsNullOrEmpty(lastName))
             throw new ArgumentNullException();
 
-        var user = await dbContext.AppUser
+        var user = await dbContext.User
         .FirstOrDefaultAsync(x =>
             (EF.Functions.ILike(x.Email, email) ||
             (azureUserId != null && EF.Functions.ILike(x.AzureUserId!, azureUserId))),
@@ -78,7 +78,7 @@ public class UserRepository : BaseEntityRepository<AppUser>, IUserRepository
 
         var assignedRoleIds = roleIds ?? new List<Guid> { defaultRole.Id };
 
-        user = new AppUser
+        user = new User
         {
             Email = email,
             FirstName = firstName,

@@ -1,9 +1,10 @@
-﻿using Platform.Application.Exceptions;
+using Platform.Application.Exceptions;
 using Platform.Application.Interfaces;
 using Platform.Application.Modals.ActivityModal;
 using Platform.Application.Modals.Common;
 using Platform.Domain.Entities.Activities;
 using Platform.Domain.Entities.Common;
+using Platform.Domain.Entities.Identities;
 using Platform.Domain.Enums;
 
 namespace Platform.Application.CommandHandler;
@@ -192,15 +193,8 @@ public class ActivityCommandHandler
         var modal = new PhoneCallModal();
         SetActivityBaseModal(modal, entity);
 
-        if (entity.Caller != null)
-            modal.Caller = referenceRepository.GetReference(
-                Enum.Parse<EntityType>(entity.Caller.ParticipantType.ToString()),
-                entity.Caller.ParticipantId!.Value);
-
-        if (entity.Recipient != null)
-            modal.Recipient = referenceRepository.GetReference(
-                Enum.Parse<EntityType>(entity.Recipient.ParticipantType.ToString()),
-                entity.Recipient.ParticipantId!.Value);
+        modal.Caller = ResolvePartyReference(entity.Caller);
+        modal.Recipient = ResolvePartyReference(entity.Recipient);
 
         modal.Direction = entity.CallDirection;
         modal.CallNotes = entity.CallNotes;
@@ -277,17 +271,7 @@ public class ActivityCommandHandler
         if (modal.Organizer != null)
             entity.SetOrganizer(ToActivityParty(modal.Organizer));
 
-        foreach (var attendee in modal.Attendees)
-        {
-            if (entity.Attendees.Any(p => p.ParticipantId == attendee.Id))
-                continue;
-            entity.AddAttendee(ToActivityParty(attendee));
-        }
-
-        entity.Attendees
-            .Where(p => !modal.Attendees.Any(m => m.Id == p.ParticipantId))
-            .ToList()
-            .ForEach(p => entity.Parties.Remove(p));
+        SyncPartyList(entity, entity.Attendees, modal.Attendees, entity.AddAttendee);
 
         return entity;
     }
@@ -305,31 +289,13 @@ public class ActivityCommandHandler
         modal.RecurrenceRule = entity.RecurrenceRule;
         modal.IsRecurring = entity.IsRecurring;
 
-        if (entity.Organizer?.ParticipantType == ActivityParticipantType.User)
-            modal.Organizer = referenceRepository.GetReference(EntityType.User, entity.Organizer.ParticipantId!.Value);
+        modal.Organizer = ResolvePartyReference(entity.Organizer);
 
-        modal.Attendees = new List<EntityReference>();
-
-        foreach (var attendee in entity.Attendees)
-        {
-            EntityReference? entityReference = attendee.ParticipantType switch
-            {
-                ActivityParticipantType.User when attendee.ParticipantId != null =>
-                    referenceRepository.GetReference(EntityType.User, attendee.ParticipantId.Value),
-                ActivityParticipantType.External =>
-                    new EntityReference(EntityType.None)
-                    {
-                        Name = attendee.Name ?? string.Empty,
-                        Email = attendee.Email,
-                        Phone = attendee.PhoneNumber,
-                    },
-                ActivityParticipantType.Account => throw new NotImplementedException(),
-                ActivityParticipantType.Contact => throw new NotImplementedException(),
-                _ => throw new BusinessException("Invalid attendees type")
-            };
-
-            modal.Attendees.Add(entityReference);
-        }
+        modal.Attendees = entity.Attendees
+            .Select(ResolvePartyReference)
+            .Where(r => r != null)
+            .Select(r => r!)
+            .ToList();
 
         return modal;
     }
@@ -387,7 +353,9 @@ public class ActivityCommandHandler
 
         SetToActivityBaseEntity(entity, modal);
 
-        entity.SetFrom(ToActivityParty(modal.From));
+        if (modal.From != null)
+            entity.SetFrom(ToActivityParty(modal.From));
+
         entity.Body = modal.Body;
         entity.IsHtml = modal.IsHtml;
         entity.IsSent = modal.IsSent;
@@ -402,20 +370,22 @@ public class ActivityCommandHandler
     }
 
     private static void SyncPartyList(
-        EmailActivity entity,
+        ActivityBase entity,
         IEnumerable<ActivityParty> existingParties,
-        List<EntityReference> modalItems,
+        IList<EntityReference> modalItems,
         Action<ActivityParty> addAction)
     {
+        var existingList = existingParties.ToList();
+
         foreach (var item in modalItems)
         {
-            if (existingParties.Any(p => p.ParticipantId == item.Id))
+            if (existingList.Any(p => p.ParticipantEntityId == item.Id))
                 continue;
             addAction(ToActivityParty(item));
         }
 
-        existingParties
-            .Where(p => !modalItems.Any(m => m.Id == p.ParticipantId))
+        existingList
+            .Where(p => !modalItems.Any(m => m.Id == p.ParticipantEntityId))
             .ToList()
             .ForEach(p => entity.Parties.Remove(p));
     }
@@ -431,23 +401,21 @@ public class ActivityCommandHandler
         modal.IsRead = entity.IsRead;
         modal.ReadDate = entity.ReadDate;
 
-        if (entity.From != null)
-            modal.From = referenceRepository.GetReference(
-                Enum.Parse<EntityType>(entity.From.ParticipantType.ToString()),
-                entity.From.ParticipantId!.Value);
+        modal.From = ResolvePartyReference(entity.From) ?? new EntityReference();
 
         modal.To = entity.ToRecipients
-            .Select(p => referenceRepository.GetReference(Enum.Parse<EntityType>(p.ParticipantType.ToString()), p.ParticipantId!.Value))
+            .Select(ResolvePartyReference)
+            .Where(r => r != null).Select(r => r!)
             .ToList();
 
         modal.Cc = entity.CcRecipients
-            .Select(p => referenceRepository.GetReference(
-                Enum.Parse<EntityType>(p.ParticipantType.ToString()), p.ParticipantId!.Value))
+            .Select(ResolvePartyReference)
+            .Where(r => r != null).Select(r => r!)
             .ToList();
 
         modal.Bcc = entity.BccRecipients
-            .Select(p => referenceRepository.GetReference(
-                Enum.Parse<EntityType>(p.ParticipantType.ToString()), p.ParticipantId!.Value))
+            .Select(ResolvePartyReference)
+            .Where(r => r != null).Select(r => r!)
             .ToList();
 
         return modal;
@@ -628,12 +596,45 @@ public class ActivityCommandHandler
         return await repository.DeleteAsync(entity, cancellationToken);
     }
 
-    private static ActivityParty ToActivityParty(EntityReference reference) =>
-        new ActivityParty
+    /// <summary>
+    /// EntityReference (modal) → ActivityParty (entity). EntityType ve Id varsa
+    /// polimorfik referans olarak; aksi halde harici (External) katılımcı olarak yazar.
+    /// </summary>
+    private static ActivityParty ToActivityParty(EntityReference reference)
+    {
+        var hasEntityRef =
+            !string.IsNullOrWhiteSpace(reference.EntityType) && reference.Id != Guid.Empty;
+
+        return new ActivityParty
         {
-            ParticipantType = (ActivityParticipantType)reference.EntityType,
-            ParticipantId = reference.Id
+            ParticipantEntityType = hasEntityRef ? reference.EntityType : null,
+            ParticipantEntityId = hasEntityRef ? reference.Id : null,
+            Name = reference.Name,
+            Email = reference.Email,
+            PhoneNumber = reference.Phone,
         };
+    }
+
+    /// <summary>
+    /// ActivityParty (entity) → EntityReference (modal). Kayıtlı entity ise registry
+    /// üzerinden GetReference; aksi halde harici (External) bilgilerden bir EntityReference üretir.
+    /// </summary>
+    private EntityReference? ResolvePartyReference(ActivityParty? party)
+    {
+        if (party == null) return null;
+
+        if (!string.IsNullOrEmpty(party.ParticipantEntityType) && party.ParticipantEntityId.HasValue)
+        {
+            return referenceRepository.GetReference(party.ParticipantEntityType, party.ParticipantEntityId.Value);
+        }
+
+        return new EntityReference
+        {
+            Name = party.Name ?? string.Empty,
+            Email = party.Email,
+            Phone = party.PhoneNumber,
+        };
+    }
 
     private void SetToActivityBaseEntity(ActivityBase entity, ActivityBaseModal modal)
     {
@@ -668,7 +669,6 @@ public class ActivityCommandHandler
     {
         modal.Id = entity.Id;
         modal.Subject = entity.Subject;
-        //modal.ActivityType = entity.ActivityType;
         modal.Status = entity.Status;
         modal.Priority = entity.Priority;
         modal.StartDate = entity.StartDate;
@@ -678,19 +678,8 @@ public class ActivityCommandHandler
 
         if (entity.RegardingEntityType != null && entity.RegardingEntityId != null)
             modal.RegardingEntity = referenceRepository.GetReference(
-                entity.RegardingEntityType.Value, entity.RegardingEntityId.Value);
+                entity.RegardingEntityType, entity.RegardingEntityId.Value);
 
-        modal.Owner = referenceRepository.GetReference(EntityType.User, entity.OwnerId);
-
-        // ── Modal'da karşılığı olmayan entity alanları ────────────────────────
-        // entity.CreatedBy        → IAuditableEntity — modal'a eklenmedi
-        // entity.CreatedAt        → IAuditableEntity — modal'a eklenmedi
-        // entity.UpdatedBy        → IAuditableEntity — modal'a eklenmedi
-        // entity.UpdatedAt        → IAuditableEntity — modal'a eklenmedi
-        // entity.IsDeleted        → ISoftDeleteEntity — soft delete, modal'a gerekmez
-        // entity.DeletedBy        → ISoftDeleteEntity — modal'a gerekmez
-        // entity.DeletedAt        → ISoftDeleteEntity — modal'a gerekmez
-        // entity.OrganizationId   → tenant bilgisi, modal'a eklenmedi
-        // entity.Parties          → ActivityParty koleksiyonu, ayrı modal/DTO ile yönetilmeli
+        modal.Owner = referenceRepository.GetReference(nameof(User), entity.OwnerId);
     }
 }

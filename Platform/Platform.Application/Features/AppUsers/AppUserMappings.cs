@@ -11,20 +11,20 @@ public static class AppUserMappings
 {
     public static void Register(TypeAdapterConfig config)
     {
-        config.NewConfig<AppUser, AppUserDetailItem>()
+        config.NewConfig<User, AppUserDetailItem>()
             .Ignore(d => d.OrganizationName!)
             .Ignore(d => d.ManagerName!)
             .Ignore(d => d.Roles!);
 
-        config.NewConfig<AppUser, AppUserListItem>()
+        config.NewConfig<User, AppUserListItem>()
             .Ignore(d => d.OrganizationName!)
             .Ignore(d => d.ManagerName!);
 
-        config.NewConfig<CreateAppUserCommand, AppUser>()
+        config.NewConfig<CreateAppUserCommand, User>()
             .Ignore(d => d.Manager!, d => d.AzureUserId!, d => d.PasswordHash!)
             .IgnoreAuditFields();
 
-        config.NewConfig<UpdateAppUserCommand, AppUser>()
+        config.NewConfig<UpdateAppUserCommand, User>()
             .IgnoreNullValues(true)
             .Ignore(d => d.Manager!, d => d.AzureUserId!, d => d.PasswordHash!)
             .IgnoreAuditFields();

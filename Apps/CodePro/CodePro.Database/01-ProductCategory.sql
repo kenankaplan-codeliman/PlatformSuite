@@ -29,13 +29,12 @@ CREATE TABLE IF NOT EXISTS product_category (
 );
 
 -- =============================================
--- account_product_category — Account ↔ Kategori N:N
--- (Tedarikçi rolündeki Account'ları kategorilere bağlar)
+-- supplier_product_category — Supplier ↔ ProductCategory N:N
 -- =============================================
 
-CREATE TABLE IF NOT EXISTS account_product_category (
+CREATE TABLE IF NOT EXISTS supplier_product_category (
     id                      UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    account_id              UUID NOT NULL REFERENCES account(id) ON DELETE CASCADE,
+    supplier_id             UUID NOT NULL REFERENCES supplier(id) ON DELETE CASCADE,
     product_category_id     UUID NOT NULL REFERENCES product_category(id) ON DELETE CASCADE,
     is_preferred            BOOLEAN NOT NULL DEFAULT FALSE,
 
@@ -56,6 +55,6 @@ CREATE TABLE IF NOT EXISTS account_product_category (
 
 -- Indexes
 CREATE INDEX IF NOT EXISTS idx_product_category_parent ON product_category(parent_category_id);
-CREATE INDEX IF NOT EXISTS idx_account_product_category_account ON account_product_category(account_id);
-CREATE INDEX IF NOT EXISTS idx_account_product_category_category ON account_product_category(product_category_id);
-CREATE UNIQUE INDEX IF NOT EXISTS uq_account_product_category ON account_product_category(account_id, product_category_id) WHERE is_deleted = FALSE;
+CREATE INDEX IF NOT EXISTS idx_supplier_product_category_supplier ON supplier_product_category(supplier_id);
+CREATE INDEX IF NOT EXISTS idx_supplier_product_category_category ON supplier_product_category(product_category_id);
+CREATE UNIQUE INDEX IF NOT EXISTS uq_supplier_product_category ON supplier_product_category(supplier_id, product_category_id) WHERE is_deleted = FALSE;

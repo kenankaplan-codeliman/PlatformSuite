@@ -1,7 +1,8 @@
 using CodePro.Application.Features.Products.Dtos;
 using CodePro.Application.Interfaces;
+using CodePro.Domain.Entities.Products;
 using Platform.Application.Modals.Common;
-using Platform.Domain.Enums;
+using CodePro.Domain.Entities.Suppliers;
 using Microsoft.EntityFrameworkCore;
 
 namespace CodePro.Application.Features.Products;
@@ -31,7 +32,7 @@ internal static class ProductDetailBuilder
                 AccountCodeId = p.AccountCodeId,
                 ProductCategory = db.ProductCategory
                     .Where(c => c.Id == p.ProductCategoryId)
-                    .Select(c => new EntityReference(EntityType.None) { Id = c.Id, Name = c.Name })
+                    .Select(c => new EntityReference(nameof(ProductCategory)) { Id = c.Id, Name = c.Name })
                     .FirstOrDefault(),
                 IsActive = p.IsActive,
                 CreatedAt = p.CreatedAt,
@@ -62,12 +63,12 @@ internal static class ProductDetailBuilder
 
         detail.SupplierSkus = await (
             from s in db.ProductSku.AsNoTracking()
-            join a in db.Account.AsNoTracking() on s.SupplierAccountId equals a.Id
+            join a in db.Supplier.AsNoTracking() on s.SupplierId equals a.Id
             where s.ProductId == id
             select new ProductSkuItem
             {
                 Id = s.Id,
-                SupplierAccount = new EntityReference(EntityType.Account) { Id = a.Id, Name = a.AccountName },
+                Supplier = new EntityReference(nameof(Supplier)) { Id = a.Id, Name = a.Name },
                 Sku = s.Sku,
             }
         ).ToListAsync(cancellationToken);

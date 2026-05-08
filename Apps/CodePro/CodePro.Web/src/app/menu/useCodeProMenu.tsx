@@ -17,6 +17,8 @@ import {
   UserOutlined,
   SafetyOutlined,
   ProfileOutlined,
+  ContactsOutlined,
+  CalendarOutlined,
 } from '@ant-design/icons';
 import type { MenuSchema } from '@platform/ui';
 import { RoutePaths } from '../router/paths';
@@ -25,6 +27,15 @@ export function useCodeProMenu(): MenuSchema {
   const { t } = useTranslation('app.codepro-menu');
   return [
     { key: 'home', label: t('home'), icon: <HomeOutlined />, to: RoutePaths.Home },
+    {
+      key: 'suppliers-group',
+      label: t('groups.suppliers'),
+      icon: <ContactsOutlined />,
+      children: [
+        { key: 'suppliers', label: t('suppliers'), icon: <TeamOutlined />, to: RoutePaths.SuppliersList },
+        { key: 'activities', label: t('activities'), icon: <CalendarOutlined />, to: RoutePaths.ActivitiesList },
+      ],
+    },
     {
       key: 'purchase',
       label: t('groups.purchase'),
@@ -67,8 +78,6 @@ export function useCodeProMenu(): MenuSchema {
       icon: <SettingOutlined />,
       children: [
         { key: 'orgs', label: t('organizations'), icon: <TeamOutlined />, to: RoutePaths.OrganizationsList },
-        { key: 'accounts', label: t('accounts'), icon: <TeamOutlined />, to: RoutePaths.AccountsList },
-        { key: 'contacts', label: t('contacts'), icon: <UserOutlined />, to: RoutePaths.ContactsList },
         { key: 'users', label: t('users'), icon: <UserOutlined />, to: RoutePaths.AppUsersList },
         { key: 'roles', label: t('roles'), icon: <SafetyOutlined />, to: RoutePaths.AppRolesList },
         { key: 'questionnaires', label: t('questionnaires'), icon: <FormOutlined />, to: RoutePaths.QuestionnairesList },

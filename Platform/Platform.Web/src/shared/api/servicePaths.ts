@@ -14,6 +14,7 @@ export const ControllerPaths = {
   AppOrganization: `${ApiBase}/app-organization`,
   AppRole: `${ApiBase}/app-role`,
   Attachment: `${ApiBase}/attachment`,
+  Reference: `${ApiBase}/reference`,
 } as const;
 
 export const ServicePath = {
@@ -59,6 +60,28 @@ export const ServicePath = {
     Delete: `${ControllerPaths.Contact}/delete`,
     SetState: `${ControllerPaths.Contact}/set-state`,
   },
+  Activity: {
+    List: `${ControllerPaths.Activity}/list`,
+    Calendar: `${ControllerPaths.Activity}/calendar`,
+    GetPhoneCall: `${ControllerPaths.Activity}/get/phonecall`,
+    GetTask: `${ControllerPaths.Activity}/get/task`,
+    GetAppointment: `${ControllerPaths.Activity}/get/appointment`,
+    GetEmail: `${ControllerPaths.Activity}/get/email`,
+    CreatePhoneCall: `${ControllerPaths.Activity}/create/phonecall`,
+    CreateTask: `${ControllerPaths.Activity}/create/task`,
+    CreateAppointment: `${ControllerPaths.Activity}/create/appointment`,
+    CreateEmail: `${ControllerPaths.Activity}/create/email`,
+    UpdatePhoneCall: `${ControllerPaths.Activity}/update/phonecall`,
+    UpdateTask: `${ControllerPaths.Activity}/update/task`,
+    UpdateAppointment: `${ControllerPaths.Activity}/update/appointment`,
+    UpdateEmail: `${ControllerPaths.Activity}/update/email`,
+    Delete: `${ControllerPaths.Activity}/delete`,
+    Complete: `${ControllerPaths.Activity}/complete`,
+    Cancel: `${ControllerPaths.Activity}/cancel`,
+    BulkUpdateStatus: `${ControllerPaths.Activity}/bulk-update-status`,
+    Assign: `${ControllerPaths.Activity}/assign`,
+    SetState: `${ControllerPaths.Activity}/set-state`,
+  },
   AppOrganization: {
     List: `${ControllerPaths.AppOrganization}/list`,
     Search: `${ControllerPaths.AppOrganization}/search`,
@@ -73,5 +96,13 @@ export const ServicePath = {
     /** GET stream — id append edilir */
     Download: `${ControllerPaths.Attachment}/download`,
     Delete: `${ControllerPaths.Attachment}/delete`,
+  },
+  /**
+   * Polimorfik EntityReference arama. Body:
+   *   { entityType: string, searchText?: string, pagination: { pageNumber, pageSize } }
+   * Sunucu tarafında IEntityReferenceResolverRegistry üzerinden ilgili resolver'a delege eder.
+   */
+  Reference: {
+    Lookup: `${ControllerPaths.Reference}/lookup`,
   },
 } as const;

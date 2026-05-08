@@ -53,6 +53,6 @@ public class ProductKeywordItem
 public class ProductSkuItem
 {
     public Guid Id { get; set; }
-    public EntityReference? SupplierAccount { get; set; }
+    public EntityReference? Supplier { get; set; }
     public string Sku { get; set; } = default!;
 }
