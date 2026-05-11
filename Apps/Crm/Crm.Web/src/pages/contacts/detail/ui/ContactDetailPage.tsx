@@ -1,6 +1,7 @@
 import { useMemo } from "react";
 import { useTranslation } from "react-i18next";
 import { useFormContext } from "react-hook-form";
+import { DateTimeField } from "@platform/ui";
 import { DetailPageLayout } from "@platform/ui";
 import { FormSection } from "@platform/ui";
 import { FormRow } from "@platform/ui";
@@ -175,11 +176,10 @@ export function ContactDetailPage() {
     const form = useFormContext<ContactFormValues>();
     return (
       <FormSection title={tEntity("sections.details")} collapsible>
-        <TextField
+        <DateTimeField
           name="birthDate"
           control={form.control}
           label={tEntity("fields.birthDate.label")}
-          placeholder="YYYY-MM-DD"
         />
         <TextAreaField
           name="description"

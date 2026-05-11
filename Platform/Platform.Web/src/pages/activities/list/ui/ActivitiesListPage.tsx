@@ -1,94 +1,53 @@
-import { useMemo, useState } from 'react';
+import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import {
   AppstoreOutlined,
+  CalendarOutlined,
   CheckSquareOutlined,
   DownOutlined,
   MailOutlined,
   PhoneOutlined,
   ScheduleOutlined,
+  UnorderedListOutlined,
 } from '@ant-design/icons';
 import { Button } from '../../../../shared/ui/Button';
 import {
   Dropdown,
   type DropdownItem,
 } from '../../../../shared/ui/Dropdown';
-import { ListPageLayout } from '../../../../shared/ui/list-page/ListPageLayout';
-import type { DataTableColumn } from '../../../../shared/ui/DataTable';
-import { useEnumTranslation } from '../../../../shared/lib/i18n/enum';
-import { useActivityListQuery } from '../../../../entities/activity/api/useActivityQueries';
+import { Segmented } from '../../../../shared/ui/Segmented';
+import { Space } from '../../../../shared/ui/Space';
+import { Title } from '../../../../shared/ui/Typography';
 import {
   ACTIVITY_SLUG_BY_TYPE,
   type ActivityListFilter,
-  type ActivityListItem,
-  type ActivityType,
 } from '../../../../entities/activity/model/types';
 import { RoutePaths } from '../../../../app/router/paths';
+import { ActivityListView } from './ActivityListView';
+import { ActivityCalendarView } from './ActivityCalendarView';
 
-const TYPE_ICONS: Record<ActivityType, React.ReactNode> = {
-  PhoneCall: <PhoneOutlined />,
-  Task: <CheckSquareOutlined />,
-  Appointment: <ScheduleOutlined />,
-  Email: <MailOutlined />,
-};
+type ViewMode = 'list' | 'calendar';
+
+const VIEW_PARAM = 'view';
+
+function readViewMode(params: URLSearchParams): ViewMode {
+  return params.get(VIEW_PARAM) === 'calendar' ? 'calendar' : 'list';
+}
 
 export function ActivitiesListPage() {
   const { t } = useTranslation('page.activities-list');
-  const { t: tEntity } = useTranslation('entity.activity');
-  const tType = useEnumTranslation('activityType');
-  const tStatus = useEnumTranslation('activityStatus');
-  const tPriority = useEnumTranslation('activityPriority');
   const navigate = useNavigate();
+  const [searchParams, setSearchParams] = useSearchParams();
 
   const [filters] = useState<ActivityListFilter>({});
+  const viewMode = readViewMode(searchParams);
 
-  const query = useActivityListQuery({ filters });
-
-  const data = useMemo<ActivityListItem[]>(
-    () => query.data?.pages.flatMap((p) => p.data) ?? [],
-    [query.data],
-  );
-
-  const columns = useMemo<DataTableColumn<ActivityListItem>[]>(
-    () => [
-      {
-        key: 'activityType',
-        title: tEntity('fields.activityType.label'),
-        render: (_v, r) => (
-          <span>
-            {TYPE_ICONS[r.activityType]} {tType(r.activityType)}
-          </span>
-        ),
-      },
-      {
-        key: 'subject',
-        title: tEntity('fields.subject.label'),
-        dataIndex: 'subject',
-      },
-      {
-        key: 'status',
-        title: tEntity('fields.status.label'),
-        render: (_v, r) => tStatus(r.status),
-      },
-      {
-        key: 'priority',
-        title: tEntity('fields.priority.label'),
-        render: (_v, r) => tPriority(r.priority),
-      },
-      {
-        key: 'dueDate',
-        title: tEntity('fields.dueDate.label'),
-        render: (_v, r) => (r.dueDate ? r.dueDate.slice(0, 10) : ''),
-      },
-      {
-        key: 'owner',
-        title: tEntity('fields.owner.label'),
-        render: (_v, r) => r.owner?.name ?? '',
-      },
-    ],
-    [tEntity, tPriority, tStatus, tType],
-  );
+  const handleViewChange = (value: ViewMode) => {
+    const next = new URLSearchParams(searchParams);
+    next.set(VIEW_PARAM, value);
+    setSearchParams(next, { replace: true });
+  };
 
   const createItems: DropdownItem[] = [
     {
@@ -122,31 +81,48 @@ export function ActivitiesListPage() {
   ];
 
   return (
-    <ListPageLayout<ActivityListItem>
-      title={t('title')}
-      columns={columns}
-      data={data}
-      rowKey="id"
-      isLoading={query.isLoading}
-      isFetchingMore={query.isFetchingNextPage}
-      hasMore={query.hasNextPage}
-      onLoadMore={() => query.fetchNextPage()}
-      error={query.isError ? query.error : undefined}
-      headerActions={
-        <Dropdown items={createItems}>
-          <Button type="primary" icon={<AppstoreOutlined />}>
-            {t('createButton')} <DownOutlined />
-          </Button>
-        </Dropdown>
-      }
-      onRowClick={(record) =>
-        navigate(
-          RoutePaths.ActivityView(
-            ACTIVITY_SLUG_BY_TYPE[record.activityType],
-            record.id,
-          ),
-        )
-      }
-    />
+    <div>
+      <div
+        style={{
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'center',
+          marginBottom: 16,
+        }}
+      >
+        <Title level={3} style={{ margin: 0 }}>
+          {t('title')}
+        </Title>
+        <Space>
+          <Segmented<ViewMode>
+            value={viewMode}
+            onChange={handleViewChange}
+            options={[
+              {
+                value: 'list',
+                icon: <UnorderedListOutlined />,
+                label: t('viewMode.list'),
+              },
+              {
+                value: 'calendar',
+                icon: <CalendarOutlined />,
+                label: t('viewMode.calendar'),
+              },
+            ]}
+          />
+          <Dropdown items={createItems}>
+            <Button type="primary" icon={<AppstoreOutlined />}>
+              {t('createButton')} <DownOutlined />
+            </Button>
+          </Dropdown>
+        </Space>
+      </div>
+
+      {viewMode === 'list' ? (
+        <ActivityListView filters={filters} />
+      ) : (
+        <ActivityCalendarView filters={filters} />
+      )}
+    </div>
   );
 }

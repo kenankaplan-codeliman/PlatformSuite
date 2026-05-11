@@ -8,7 +8,8 @@ import { Alert } from '../feedback/Alert';
 const { Title } = Typography;
 
 export interface ListPageLayoutProps<T> {
-  title: string;
+  /** Verilmezse layout başlık satırını render etmez (embed kullanımı için). */
+  title?: string;
   columns: DataTableColumn<T>[];
   /** Akümüle edilmiş tüm sayfaların flat listesi. Caller `useInfiniteQuery`
    *  sonucunu `pages.flatMap(p => p.data)` ile düzleştirip verir. */
@@ -77,28 +78,36 @@ export function ListPageLayout<T extends object>({
     return () => observer.disconnect();
   }, [onLoadMore, hasMore, isFetchingMore, isLoading]);
 
+  const showHeader = !!(title || headerActions || onCreateClick);
+
   return (
     <div>
-      <div
-        style={{
-          display: 'flex',
-          justifyContent: 'space-between',
-          alignItems: 'center',
-          marginBottom: 16,
-        }}
-      >
-        <Title level={3} style={{ margin: 0 }}>
-          {title}
-        </Title>
-        <Space>
-          {headerActions}
-          {onCreateClick && (
-            <Button type="primary" onClick={onCreateClick}>
-              {createLabel ?? t('actions.create')}
-            </Button>
+      {showHeader && (
+        <div
+          style={{
+            display: 'flex',
+            justifyContent: 'space-between',
+            alignItems: 'center',
+            marginBottom: 16,
+          }}
+        >
+          {title ? (
+            <Title level={3} style={{ margin: 0 }}>
+              {title}
+            </Title>
+          ) : (
+            <span />
           )}
-        </Space>
-      </div>
+          <Space>
+            {headerActions}
+            {onCreateClick && (
+              <Button type="primary" onClick={onCreateClick}>
+                {createLabel ?? t('actions.create')}
+              </Button>
+            )}
+          </Space>
+        </div>
+      )}
 
       {filterBar && <div style={{ marginBottom: 16 }}>{filterBar}</div>}
 

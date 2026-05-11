@@ -2,6 +2,7 @@ import { useMemo } from 'react';
 import { useFormContext } from 'react-hook-form';
 import { useTranslation } from 'react-i18next';
 import {
+  DateTimeField,
   DetailPageLayout,
   EntityLookupField,
   FormSection,
@@ -156,11 +157,10 @@ export function OpportunityDetailPage() {
           max={100}
           required
         />
-        <TextField
+        <DateTimeField
           name="closeDate"
           control={form.control}
           label={tEntity('fields.closeDate.label')}
-          placeholder="YYYY-MM-DD"
         />
       </FormSection>
     );

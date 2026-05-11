@@ -7,5 +7,13 @@
     "appointment": "Randevu",
     "email": "E-posta"
   },
-  "empty": "Henüz aktivite eklenmedi."
+  "empty": "Henüz aktivite eklenmedi.",
+  "viewMode": {
+    "list": "Liste",
+    "calendar": "Takvim"
+  },
+  "calendar": {
+    "today": "Bugün",
+    "error": "Takvim aktiviteleri yüklenemedi."
+  }
 }

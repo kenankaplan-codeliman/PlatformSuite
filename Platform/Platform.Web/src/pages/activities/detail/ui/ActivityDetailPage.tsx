@@ -11,6 +11,7 @@ import { TextAreaField } from '../../../../shared/ui/form/fields/TextAreaField';
 import { NumberField } from '../../../../shared/ui/form/fields/NumberField';
 import { SelectField, type SelectOption } from '../../../../shared/ui/form/fields/SelectField';
 import { CheckboxField } from '../../../../shared/ui/form/fields/CheckboxField';
+import { DateTimeField } from '../../../../shared/ui/form/fields/DateTimeField';
 import { EntityLookupField } from '../../../../shared/ui/form/fields/EntityLookupField';
 import { ServicePath } from '../../../../shared/api/servicePaths';
 import { useRouteMode } from '../../../../shared/hooks/useRouteMode';
@@ -301,11 +302,10 @@ export function ActivityDetailPage() {
           />
         </FormRow>
         <FormRow>
-          <TextField
+          <DateTimeField
             name="dueDate"
             control={control}
             label={tEntity('fields.dueDate.label')}
-            placeholder="YYYY-MM-DD"
           />
           <EntityLookupField
             name="owner"
@@ -394,11 +394,11 @@ export function ActivityDetailPage() {
             max={100}
             step={5}
           />
-          <TextField
+          <DateTimeField
             name="reminderAt"
             control={form.control}
             label={tEntity('fields.reminderAt.label')}
-            placeholder="YYYY-MM-DDTHH:mm"
+            showTime
           />
         </FormRow>
       </FormSection>
@@ -411,18 +411,18 @@ export function ActivityDetailPage() {
     return (
       <FormSection title={tEntity('sections.appointment')} collapsible>
         <FormRow>
-          <TextField
+          <DateTimeField
             name="startTime"
             control={form.control}
             label={tEntity('fields.startTime.label')}
-            placeholder="YYYY-MM-DDTHH:mm"
+            showTime
             required
           />
-          <TextField
+          <DateTimeField
             name="endTime"
             control={form.control}
             label={tEntity('fields.endTime.label')}
-            placeholder="YYYY-MM-DDTHH:mm"
+            showTime
             required
           />
         </FormRow>
