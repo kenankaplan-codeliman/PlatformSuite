@@ -1,6 +1,5 @@
 {
   "title": "Hesabınıza Giriş Yapın",
-  "subtitle": "Hesap bilgilerinizle devam edin.",
   "fields": {
     "email": { "label": "E-posta", "placeholder": "ornek@firma.com" },
     "password": { "label": "Parola", "placeholder": "••••••••" }

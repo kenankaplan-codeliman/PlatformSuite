@@ -17,9 +17,6 @@ export function LoginPage() {
   return (
     <LoginPageLayout>
       <Card title={tFeature("title")}>
-        <p style={{ color: "rgba(0,0,0,0.55)", marginTop: 0 }}>
-          {tFeature("subtitle")}
-        </p>
         <LoginForm />
       </Card>
     </LoginPageLayout>
