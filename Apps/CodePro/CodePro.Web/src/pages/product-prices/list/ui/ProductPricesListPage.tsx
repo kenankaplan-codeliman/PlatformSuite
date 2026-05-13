@@ -1,20 +1,28 @@
-import { useMemo, useState } from 'react';
+import { useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
-import { ListPageLayout, type DataTableColumn } from '@platform/ui';
+import { ListPageLayout, useUrlFilters, type DataTableColumn } from '@platform/ui';
 import { useProductPriceListQuery } from '../../../../entities/product-price/api/useProductPriceQueries';
 import type {
   ProductPriceListFilter,
   ProductPriceListItem,
 } from '../../../../entities/product-price/model/types';
+import {
+  productPriceListFilterDefaults,
+  productPriceListFilterSchema,
+} from '../../../../entities/product-price/model/listFilterSchema';
 import { RoutePaths } from '../../../../app/router/paths';
+import { ProductPricesFilterPanel } from './ProductPricesFilterPanel';
 
 export function ProductPricesListPage() {
   const { t } = useTranslation('page.product-prices-list');
   const { t: tEntity } = useTranslation('entity.product-price');
   const navigate = useNavigate();
 
-  const [filters] = useState<ProductPriceListFilter>({});
+  const { filters, setFilters, clearFilters } = useUrlFilters<ProductPriceListFilter>({
+    schema: productPriceListFilterSchema,
+    defaultValues: productPriceListFilterDefaults,
+  });
 
   const query = useProductPriceListQuery({ filters });
 
@@ -47,9 +55,17 @@ export function ProductPricesListPage() {
   return (
     <ListPageLayout<ProductPriceListItem>
       title={t('title')}
+      entityType="ProductPrice"
       columns={columns}
       data={data}
       rowKey="id"
+      filterBar={
+        <ProductPricesFilterPanel
+          values={filters}
+          onApply={setFilters}
+          onClear={clearFilters}
+        />
+      }
       isLoading={query.isLoading}
       isFetchingMore={query.isFetchingNextPage}
       hasMore={query.hasNextPage}

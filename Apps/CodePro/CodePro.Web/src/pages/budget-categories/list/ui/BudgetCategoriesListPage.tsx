@@ -1,20 +1,28 @@
-import { useMemo, useState } from 'react';
+import { useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
-import { ListPageLayout, type DataTableColumn } from '@platform/ui';
+import { ListPageLayout, useUrlFilters, type DataTableColumn } from '@platform/ui';
 import { useBudgetCategoryListQuery } from '../../../../entities/budget-category/api/useBudgetCategoryQueries';
 import type {
   BudgetCategoryListFilter,
   BudgetCategoryListItem,
 } from '../../../../entities/budget-category/model/types';
+import {
+  budgetCategoryListFilterDefaults,
+  budgetCategoryListFilterSchema,
+} from '../../../../entities/budget-category/model/listFilterSchema';
 import { RoutePaths } from '../../../../app/router/paths';
+import { BudgetCategoriesFilterPanel } from './BudgetCategoriesFilterPanel';
 
 export function BudgetCategoriesListPage() {
   const { t } = useTranslation('page.budget-categories-list');
   const { t: tEntity } = useTranslation('entity.budget-category');
   const navigate = useNavigate();
 
-  const [filters] = useState<BudgetCategoryListFilter>({});
+  const { filters, setFilters, clearFilters } = useUrlFilters<BudgetCategoryListFilter>({
+    schema: budgetCategoryListFilterSchema,
+    defaultValues: budgetCategoryListFilterDefaults,
+  });
 
   const query = useBudgetCategoryListQuery({ filters });
 
@@ -44,9 +52,17 @@ export function BudgetCategoriesListPage() {
   return (
     <ListPageLayout<BudgetCategoryListItem>
       title={t('title')}
+      entityType="BudgetCategory"
       columns={columns}
       data={data}
       rowKey="id"
+      filterBar={
+        <BudgetCategoriesFilterPanel
+          values={filters}
+          onApply={setFilters}
+          onClear={clearFilters}
+        />
+      }
       isLoading={query.isLoading}
       isFetchingMore={query.isFetchingNextPage}
       hasMore={query.hasNextPage}

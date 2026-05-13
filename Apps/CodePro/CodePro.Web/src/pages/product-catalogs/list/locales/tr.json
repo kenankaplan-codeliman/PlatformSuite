@@ -1,5 +1,8 @@
 {
   "title": "Ürün Katalogları",
   "createButton": "Yeni Katalog",
-  "empty": "Henüz katalog eklenmedi."
+  "empty": "Henüz katalog eklenmedi.",
+  "filters": {
+    "searchPlaceholder": "Katalog adı veya kodu…"
+  }
 }

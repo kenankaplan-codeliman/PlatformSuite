@@ -7,8 +7,11 @@ import {
   type FieldValues,
   type Path,
 } from 'react-hook-form';
+import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useErrorMessage } from '../../../lib/i18n/errorMessage';
+import { useEntityTypeRegistry } from '../../../lib/entity-type/EntityTypeRegistryContext';
+import { toneToTagColor } from '../../../lib/entity-type/tone';
 import type { EntityReference } from '../../../types/EntityReference';
 import type { FormMode } from '../../../types/FormMode';
 import type { FormRowItemProps } from '../FormRow';
@@ -110,6 +113,7 @@ export function EntityLookupField<TValues extends FieldValues>({
   const { mode } = useFormMode();
   const translateError = useErrorMessage();
   const { t } = useTranslation('common');
+  const entityTypeRegistry = useEntityTypeRegistry();
 
   const [modalOpen, setModalOpen] = useState(false);
 
@@ -174,25 +178,51 @@ export function EntityLookupField<TValues extends FieldValues>({
           writeValue(valueArray.filter((v) => v.id !== id));
         };
 
-        const renderTags = () =>
-          valueArray.length === 0 ? null : (
+        const renderTags = () => {
+          if (valueArray.length === 0) return null;
+          return (
             <Space wrap size={4}>
-              {valueArray.map((v) => (
-                <Tag
-                  key={v.id}
-                  color="blue"
-                  closable={!isViewMode}
-                  onClose={(e) => {
-                    e.preventDefault();
-                    handleRemoveOne(v.id);
-                  }}
-                  style={{ marginRight: 0, fontSize: 13, padding: '0 8px' }}
-                >
-                  {v.name}
-                </Tag>
-              ))}
+              {valueArray.map((v) => {
+                const meta = entityTypeRegistry.get(v.entityType);
+                const Icon = meta?.icon;
+                const href = meta?.getDetailHref?.(v.id);
+                const tag = (
+                  <Tag
+                    color={toneToTagColor(meta?.tone)}
+                    closable={!isViewMode}
+                    onClose={(e) => {
+                      e.preventDefault();
+                      e.stopPropagation();
+                      handleRemoveOne(v.id);
+                    }}
+                    icon={Icon ? <Icon /> : undefined}
+                    style={{
+                      marginRight: 0,
+                      fontSize: 13,
+                      padding: '0 8px',
+                      cursor: href ? 'pointer' : 'default',
+                    }}
+                  >
+                    {v.name}
+                  </Tag>
+                );
+                if (!href) {
+                  return <span key={v.id}>{tag}</span>;
+                }
+                return (
+                  <Link
+                    key={v.id}
+                    to={href}
+                    onClick={(e) => e.stopPropagation()}
+                    style={{ display: 'inline-flex', textDecoration: 'none' }}
+                  >
+                    {tag}
+                  </Link>
+                );
+              })}
             </Space>
           );
+        };
 
         return (
           <Form.Item

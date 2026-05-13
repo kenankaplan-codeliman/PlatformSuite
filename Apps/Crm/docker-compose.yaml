@@ -5,6 +5,9 @@
 # Dockerfile'lar build sırasında Platform/* dizinini repo root
 # context'iyle dahil eder.
 #
+# Host portları (CodePro ile çakışmaz, 80/443 doğrudan kullanılmaz):
+#   nginx 9080 / db 54321 / es 9201 / kibana 5601
+#
 # Kullanım (Apps/Crm/ klasöründen çalıştır):
 #   cd Apps/Crm
 #   docker compose up -d --build
@@ -23,7 +26,7 @@ services:
     image: nginx:1.27-alpine
     container_name: crm-nginx
     ports:
-      - "${CRM_NGINX_HOST_PORT:-80}:80"
+      - "${CRM_NGINX_HOST_PORT:-9080}:80"
     volumes:
       - ./docker/nginx/nginx.conf:/etc/nginx/nginx.conf:ro
       - ./docker/nginx/conf.d:/etc/nginx/conf.d:ro
@@ -86,7 +89,7 @@ services:
       POSTGRES_DB: crm_db
       POSTGRES_USER: ${POSTGRES_USER}
     ports:
-      - "${CRM_DB_HOST_PORT:-5432}:5432"
+      - "${CRM_DB_HOST_PORT:-54321}:5432"
     volumes:
       - crm_postgres_data:/var/lib/postgresql/data
       - ./docker/db-init:/docker-entrypoint-initdb.d:ro
@@ -110,7 +113,7 @@ services:
       ELASTIC_PASSWORD: ${ELASTIC_PASSWORD}
       ES_JAVA_OPTS: "-Xms512m -Xmx512m"
     ports:
-      - "${CRM_ES_HOST_PORT:-9200}:9200"
+      - "${CRM_ES_HOST_PORT:-9201}:9200"
     volumes:
       - crm_elastic_data:/usr/share/elasticsearch/data
     networks:

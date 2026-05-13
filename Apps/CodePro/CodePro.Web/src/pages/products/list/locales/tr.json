@@ -1,5 +1,8 @@
 {
   "title": "Ürünler",
   "createButton": "Yeni Ürün",
-  "empty": "Henüz ürün eklenmedi."
+  "empty": "Henüz ürün eklenmedi.",
+  "filters": {
+    "searchPlaceholder": "Ürün adı, kodu, açıklama…"
+  }
 }

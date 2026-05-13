@@ -1,4 +1,3 @@
-import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import {
@@ -19,13 +18,20 @@ import {
 import { Segmented } from '../../../../shared/ui/Segmented';
 import { Space } from '../../../../shared/ui/Space';
 import { Title } from '../../../../shared/ui/Typography';
+import { useEntityTypeRegistry } from '../../../../shared/lib/entity-type/EntityTypeRegistryContext';
+import { useUrlFilters } from '../../../../shared/hooks/useUrlFilters';
 import {
   ACTIVITY_SLUG_BY_TYPE,
   type ActivityListFilter,
 } from '../../../../entities/activity/model/types';
+import {
+  activityListFilterDefaults,
+  activityListFilterSchema,
+} from '../../../../entities/activity/model/listFilterSchema';
 import { RoutePaths } from '../../../../app/router/paths';
 import { ActivityListView } from '../../../../widgets/activity-list/ui/ActivityListView';
 import { ActivityCalendarView } from './ActivityCalendarView';
+import { ActivitiesFilterPanel } from './ActivitiesFilterPanel';
 
 type ViewMode = 'list' | 'calendar';
 
@@ -39,8 +45,13 @@ export function ActivitiesListPage() {
   const { t } = useTranslation('page.activities-list');
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
+  const TitleIcon = useEntityTypeRegistry().get('Activity')?.icon;
 
-  const [filters] = useState<ActivityListFilter>({});
+  const { filters, setFilters, clearFilters } = useUrlFilters<ActivityListFilter>({
+    schema: activityListFilterSchema,
+    defaultValues: activityListFilterDefaults,
+  });
+
   const viewMode = readViewMode(searchParams);
 
   const handleViewChange = (value: ViewMode) => {
@@ -90,8 +101,9 @@ export function ActivitiesListPage() {
           marginBottom: 16,
         }}
       >
-        <Title level={3} style={{ margin: 0 }}>
-          {t('title')}
+        <Title level={3} style={{ margin: 0, display: 'inline-flex', alignItems: 'center', gap: 8 }}>
+          {TitleIcon ? <TitleIcon /> : null}
+          <span>{t('title')}</span>
         </Title>
         <Space>
           <Segmented<ViewMode>
@@ -116,6 +128,14 @@ export function ActivitiesListPage() {
             </Button>
           </Dropdown>
         </Space>
+      </div>
+
+      <div style={{ marginBottom: 16 }}>
+        <ActivitiesFilterPanel
+          values={filters}
+          onApply={setFilters}
+          onClear={clearFilters}
+        />
       </div>
 
       {viewMode === 'list' ? (

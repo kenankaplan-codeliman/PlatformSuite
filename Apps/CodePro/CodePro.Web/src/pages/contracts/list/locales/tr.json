@@ -1,1 +1,8 @@
-{ "title": "Sözleşmeler", "createButton": "Yeni Sözleşme", "empty": "Henüz sözleşme eklenmedi." }
+{
+  "title": "Sözleşmeler",
+  "createButton": "Yeni Sözleşme",
+  "empty": "Henüz sözleşme eklenmedi.",
+  "filters": {
+    "searchPlaceholder": "Sözleşme no, konu, karşı taraf…"
+  }
+}

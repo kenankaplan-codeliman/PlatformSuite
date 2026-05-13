@@ -1,14 +1,20 @@
-import { useMemo, useState } from 'react';
+import { useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 import {
   ListPageLayout,
   useEnumTranslation,
+  useUrlFilters,
   type DataTableColumn,
 } from '@platform/ui';
 import { useLeadListQuery } from '../../../../entities/lead/api/useLeadQueries';
 import type { LeadListFilter, LeadListItem } from '../../../../entities/lead/model/types';
+import {
+  leadListFilterDefaults,
+  leadListFilterSchema,
+} from '../../../../entities/lead/model/listFilterSchema';
 import { RoutePaths } from '../../../../app/router/paths';
+import { LeadsFilterPanel } from './LeadsFilterPanel';
 
 export function LeadsListPage() {
   const { t } = useTranslation('page.leads-list');
@@ -17,7 +23,10 @@ export function LeadsListPage() {
   const tSource = useEnumTranslation('leadSource');
   const navigate = useNavigate();
 
-  const [filters] = useState<LeadListFilter>({});
+  const { filters, setFilters, clearFilters } = useUrlFilters<LeadListFilter>({
+    schema: leadListFilterSchema,
+    defaultValues: leadListFilterDefaults,
+  });
 
   const query = useLeadListQuery({ filters });
 
@@ -43,9 +52,17 @@ export function LeadsListPage() {
   return (
     <ListPageLayout<LeadListItem>
       title={t('title')}
+      entityType="Lead"
       columns={columns}
       data={data}
       rowKey="id"
+      filterBar={
+        <LeadsFilterPanel
+          values={filters}
+          onApply={setFilters}
+          onClear={clearFilters}
+        />
+      }
       isLoading={query.isLoading}
       isFetchingMore={query.isFetchingNextPage}
       hasMore={query.hasNextPage}

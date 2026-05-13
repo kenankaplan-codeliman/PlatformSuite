@@ -1,5 +1,8 @@
 {
   "title": "Üreticiler",
   "createButton": "Yeni Üretici",
-  "empty": "Henüz üretici eklenmedi."
+  "empty": "Henüz üretici eklenmedi.",
+  "filters": {
+    "searchPlaceholder": "Üretici adı…"
+  }
 }

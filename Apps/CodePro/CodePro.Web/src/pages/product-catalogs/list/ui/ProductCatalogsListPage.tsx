@@ -1,20 +1,28 @@
-import { useMemo, useState } from 'react';
+import { useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
-import { ListPageLayout, type DataTableColumn } from '@platform/ui';
+import { ListPageLayout, useUrlFilters, type DataTableColumn } from '@platform/ui';
 import { useProductCatalogListQuery } from '../../../../entities/product-catalog/api/useProductCatalogQueries';
 import type {
   ProductCatalogListFilter,
   ProductCatalogListItem,
 } from '../../../../entities/product-catalog/model/types';
+import {
+  productCatalogListFilterDefaults,
+  productCatalogListFilterSchema,
+} from '../../../../entities/product-catalog/model/listFilterSchema';
 import { RoutePaths } from '../../../../app/router/paths';
+import { ProductCatalogsFilterPanel } from './ProductCatalogsFilterPanel';
 
 export function ProductCatalogsListPage() {
   const { t } = useTranslation('page.product-catalogs-list');
   const { t: tEntity } = useTranslation('entity.product-catalog');
   const navigate = useNavigate();
 
-  const [filters] = useState<ProductCatalogListFilter>({});
+  const { filters, setFilters, clearFilters } = useUrlFilters<ProductCatalogListFilter>({
+    schema: productCatalogListFilterSchema,
+    defaultValues: productCatalogListFilterDefaults,
+  });
 
   const query = useProductCatalogListQuery({ filters });
 
@@ -42,9 +50,17 @@ export function ProductCatalogsListPage() {
   return (
     <ListPageLayout<ProductCatalogListItem>
       title={t('title')}
+      entityType="ProductCatalog"
       columns={columns}
       data={data}
       rowKey="id"
+      filterBar={
+        <ProductCatalogsFilterPanel
+          values={filters}
+          onApply={setFilters}
+          onClear={clearFilters}
+        />
+      }
       isLoading={query.isLoading}
       isFetchingMore={query.isFetchingNextPage}
       hasMore={query.hasNextPage}

@@ -1,5 +1,8 @@
 {
   "title": "Ürün Kategorileri",
   "createButton": "Yeni Kategori",
-  "empty": "Henüz kategori eklenmedi."
+  "empty": "Henüz kategori eklenmedi.",
+  "filters": {
+    "searchPlaceholder": "Kategori adı veya kodu…"
+  }
 }

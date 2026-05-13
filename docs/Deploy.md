@@ -2,6 +2,19 @@
 
 Bu döküman, CRM projesinin Natro VPS (Ubuntu, 6GB RAM, 100GB HDD, 2 core) üzerine Docker Compose ile deploy edilmesini adım adım anlatır.
 
+> **⚠️ Port Şeması Güncellendi**
+>
+> Container'lar artık 80/443'ü doğrudan **bind etmez**. Yeni varsayılan host port'ları:
+>
+> | Servis | CRM | CodePro |
+> |---|---|---|
+> | nginx (entrypoint) | `9080` | `9081` |
+> | PostgreSQL | `54321` | `54322` |
+> | Elasticsearch | `9201` | `9211` |
+> | Kibana | `5601` | `5611` |
+>
+> **HTTPS termination ve `:80`/`:443` yayını harici reverse proxy'nin sorumluluğundadır** (sunucu nginx'i, traefik, haproxy ya da cloud LB). Aşağıdaki **Bölüm 3 (Let's Encrypt + container içinde SSL)** legacy bir yöntemdir; yeni şemada harici proxy kullanılır.
+
 ---
 
 ## Bölüm 1: VPS İlk Kurulum
@@ -135,13 +148,25 @@ docker compose logs db    # DB init scripti çalıştı mı?
 
 | URL | Servis |
 |-----|--------|
-| `http://<VPS_IP>/` | Frontend |
-| `http://<VPS_IP>/api/swagger/index.html` | Swagger UI |
-| `http://<VPS_IP>/kibana` | Kibana |
+| `http://<VPS_IP>:9080/` | Frontend (CRM nginx) |
+| `http://<VPS_IP>:9080/api/swagger/index.html` | Swagger UI |
+| `http://<VPS_IP>:9080/kibana` | Kibana |
+
+> Harici reverse proxy çalışıyorsa istemci sadece `https://<domain>/` görür; yukarıdaki `:9080` adresleri proxy'nin upstream'idir.
 
 ---
 
-## Bölüm 3: HTTPS — Let's Encrypt + Certbot
+## Bölüm 3: HTTPS — Let's Encrypt + Certbot *(LEGACY)*
+
+> **⚠️ Bu bölüm güncel mimariyle uyumsuz.** Yeni port şemasında container nginx 80/443 değil **9080/9081** bind eder. HTTPS termination'ı **harici reverse proxy** yapar (sunucu nginx'i, traefik, haproxy, cloud LB).
+>
+> Önerilen akış:
+> 1. Sunucuda **dış nginx** (Docker dışında) kurulur, `:80`/`:443` bunu dinler.
+> 2. SSL sertifikalarını dış nginx tutar (certbot bu nginx üzerinden yenilenir).
+> 3. Dış nginx, `https://<domain>` isteklerini `proxy_pass http://localhost:9080;` (CRM) ya da `http://localhost:9081;` (CodePro) ile container'a iletir.
+> 4. Container içinde SSL gerekmez; aşağıdaki "container içinde 443 + certbot stop" akışına gerek kalmaz.
+>
+> Aşağıdaki adımlar yalnızca **tek bir uygulama** sunucuda koşacaksa ve external proxy yoksa geçerli. İki uygulamayı (CRM + CodePro) aynı sunucuda paralel çalıştırmak istiyorsanız bu bölüm yetersizdir — external proxy gereklidir.
 
 ### 3.1 — DNS Ayarı
 

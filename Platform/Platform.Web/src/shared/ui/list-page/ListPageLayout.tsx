@@ -4,12 +4,18 @@ import { useTranslation } from 'react-i18next';
 import { Button } from '../Button';
 import { DataTable, type DataTableColumn } from '../DataTable';
 import { Alert } from '../feedback/Alert';
+import { useEntityTypeRegistry } from '../../lib/entity-type/EntityTypeRegistryContext';
 
 const { Title } = Typography;
 
 export interface ListPageLayoutProps<T> {
   /** Verilmezse layout başlık satırını render etmez (embed kullanımı için). */
   title?: string;
+  /**
+   * Title'ın soluna bu entity'nin ikonu yerleştirilir (registry'den). Renk + boyut
+   * Title ile aynı (currentColor + 1em). Verilmezse ikon render edilmez.
+   */
+  entityType?: string;
   columns: DataTableColumn<T>[];
   /** Akümüle edilmiş tüm sayfaların flat listesi. Caller `useInfiniteQuery`
    *  sonucunu `pages.flatMap(p => p.data)` ile düzleştirip verir. */
@@ -44,6 +50,7 @@ export interface ListPageLayoutProps<T> {
  */
 export function ListPageLayout<T extends object>({
   title,
+  entityType,
   columns,
   data,
   rowKey,
@@ -59,6 +66,8 @@ export function ListPageLayout<T extends object>({
   onRowClick,
 }: ListPageLayoutProps<T>) {
   const { t } = useTranslation('common');
+  const entityTypeRegistry = useEntityTypeRegistry();
+  const TitleIcon = entityType ? entityTypeRegistry.get(entityType)?.icon : undefined;
   const sentinelRef = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
@@ -92,8 +101,9 @@ export function ListPageLayout<T extends object>({
           }}
         >
           {title ? (
-            <Title level={3} style={{ margin: 0 }}>
-              {title}
+            <Title level={3} style={{ margin: 0, display: 'inline-flex', alignItems: 'center', gap: 8 }}>
+              {TitleIcon ? <TitleIcon /> : null}
+              <span>{title}</span>
             </Title>
           ) : (
             <span />

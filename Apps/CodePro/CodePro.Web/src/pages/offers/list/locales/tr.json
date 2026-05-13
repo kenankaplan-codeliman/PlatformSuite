@@ -1,1 +1,8 @@
-{ "title": "Teklifler", "createButton": "Yeni Teklif", "empty": "Henüz teklif eklenmedi." }
+{
+  "title": "Teklifler",
+  "createButton": "Yeni Teklif",
+  "empty": "Henüz teklif eklenmedi.",
+  "filters": {
+    "searchPlaceholder": "Teklif no, konu, karşı taraf…"
+  }
+}

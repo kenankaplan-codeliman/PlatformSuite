@@ -35,6 +35,23 @@ export type {
   ActivityEntityTypesValue,
   ActivityEntityTypesProviderProps,
 } from './shared/lib/activity/ActivityEntityTypesContext';
+export {
+  EntityTypeRegistryProvider,
+  useEntityType,
+  useEntityTypeRegistry,
+} from './shared/lib/entity-type/EntityTypeRegistryContext';
+export type {
+  EntityTypeRegistryValue,
+  EntityTypeRegistryProviderProps,
+} from './shared/lib/entity-type/EntityTypeRegistryContext';
+export type {
+  EntityTypeKey,
+  EntityTypeMeta,
+  EntityTone,
+  EntityIcon,
+} from './shared/lib/entity-type/types';
+export { toneToTagColor } from './shared/lib/entity-type/tone';
+export { platformEntityTypes } from './shared/lib/entity-type/platformEntityTypes';
 export type { EntityLookupOption } from './shared/ui/form/fields/EntityLookupField';
 export {
   isMenuGroup,
@@ -42,6 +59,10 @@ export {
   type MenuGroup,
   type MenuSchema,
 } from './widgets/app-sidebar/model/types';
+export {
+  entityMenuItem,
+  type EntityMenuItemOverrides,
+} from './widgets/app-sidebar/lib/entityMenuItem';
 
 // ─── AppUser / AppRole entities ─────────────────────────────────────────────
 export { useAppUserQuery, useAppUserListQuery } from './entities/app-user/api/useAppUserQueries';

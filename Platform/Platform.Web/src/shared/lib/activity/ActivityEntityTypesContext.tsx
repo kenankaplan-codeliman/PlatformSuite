@@ -1,17 +1,27 @@
 import { createContext, useContext, useMemo, type ReactNode } from 'react';
+import { useTranslation } from 'react-i18next';
 import type { EntityLookupOption } from '../../ui/form/fields/EntityLookupField';
+import { useEntityTypeRegistry } from '../entity-type/EntityTypeRegistryContext';
+import type { EntityTypeKey } from '../entity-type/types';
 
 /**
- * Activity'nin polimorfik referans alanları (regarding, parties) ile uygulamanın
- * arayabileceği entity türlerini tanımlar. Her uygulama (Crm.Web, CodePro.Web)
- * kendi entity'lerini provider'a verir; Activity Detail sayfası buradan okur.
+ * Activity'nin polimorfik referans alanları (regarding, parties) ile
+ * uygulamanın **arayabileceği entity türlerini** bildirir.
  *
- * - `regardingEntityTypes`: Activity'nin "Hakkında" alanında seçilebilecek türler.
- *   Crm: Account, Contact, Lead, Opportunity. CodePro: Supplier, PurchaseOrder, ...
+ * Provider artık sadece **anahtar listesi** alır — icon/label/servicePath
+ * ortak `EntityTypeRegistry`'den (bkz. `EntityTypeRegistryContext`) otomatik
+ * çözülür. Böylece her entity için iki yerde tanım tutulmaz.
  *
- * - `partyEntityTypes`: From/To/Cc/Bcc/Caller/Recipient/Organizer/Attendee gibi
- *   katılımcı alanlarında seçilebilecek türler. Crm: User, Contact, Account.
- *   CodePro: User, Supplier.
+ *  - `regardingKeys`: Activity'nin "Hakkında" alanında seçilebilecek türler.
+ *    Crm: ['Account','Contact','Lead','Opportunity']. CodePro: ['Supplier','PurchaseOrder',...].
+ *
+ *  - `partyKeys`: From/To/Cc/Bcc/Caller/Recipient/Organizer/Attendee gibi katılımcı
+ *    alanlarında seçilebilecek türler. Crm: ['User','Contact','Account','Lead'].
+ *    CodePro: ['User','Supplier'].
+ *
+ * Tüketici (Activity Detail sayfası) hâlâ `EntityLookupOption[]` döner —
+ * registry'den çevrilmiş label ile. Bu sayede `EntityLookupField`'ın
+ * `entityTypes` prop'una doğrudan geçilebilir.
  */
 export interface ActivityEntityTypesValue {
   regardingEntityTypes: EntityLookupOption[];
@@ -25,19 +35,37 @@ const defaultValue: ActivityEntityTypesValue = {
 
 const ActivityEntityTypesContext = createContext<ActivityEntityTypesValue>(defaultValue);
 
-export interface ActivityEntityTypesProviderProps extends ActivityEntityTypesValue {
+export interface ActivityEntityTypesProviderProps {
+  regardingKeys: ReadonlyArray<EntityTypeKey>;
+  partyKeys: ReadonlyArray<EntityTypeKey>;
   children: ReactNode;
 }
 
 export function ActivityEntityTypesProvider({
   children,
-  regardingEntityTypes,
-  partyEntityTypes,
+  regardingKeys,
+  partyKeys,
 }: ActivityEntityTypesProviderProps) {
-  const value = useMemo(
-    () => ({ regardingEntityTypes, partyEntityTypes }),
-    [regardingEntityTypes, partyEntityTypes],
-  );
+  const registry = useEntityTypeRegistry();
+  const { t } = useTranslation('common');
+
+  const value = useMemo<ActivityEntityTypesValue>(() => {
+    const toOptions = (keys: ReadonlyArray<EntityTypeKey>): EntityLookupOption[] =>
+      keys.map((key) => {
+        const meta = registry.get(key);
+        return {
+          entityType: key,
+          label: meta ? t(meta.label) : key,
+          servicePath: meta?.servicePath,
+        };
+      });
+
+    return {
+      regardingEntityTypes: toOptions(regardingKeys),
+      partyEntityTypes: toOptions(partyKeys),
+    };
+  }, [registry, t, regardingKeys, partyKeys]);
+
   return (
     <ActivityEntityTypesContext.Provider value={value}>
       {children}

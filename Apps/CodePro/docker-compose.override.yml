@@ -1,7 +1,7 @@
 services:
   codepro-db:
-    ports:
-      - "127.0.0.1:5432:5432"
+    ports: !override
+      - "127.0.0.1:54322:5432"
     networks:
       - codepro_db_net
       - codepro_app_net

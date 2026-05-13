@@ -1,1 +1,8 @@
-{ "title": "E-Belgeler", "createButton": "Yeni E-Belge", "empty": "Henüz e-belge eklenmedi." }
+{
+  "title": "E-Belgeler",
+  "createButton": "Yeni E-Belge",
+  "empty": "Henüz e-belge eklenmedi.",
+  "filters": {
+    "searchPlaceholder": "Konu veya açıklama…"
+  }
+}

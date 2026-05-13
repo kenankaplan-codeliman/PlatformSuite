@@ -1,20 +1,28 @@
-import { useMemo, useState } from 'react';
+import { useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
-import { ListPageLayout, type DataTableColumn } from '@platform/ui';
+import { ListPageLayout, useUrlFilters, type DataTableColumn } from '@platform/ui';
 import { useQuestionnaireListQuery } from '../../../../entities/questionnaire/api/useQuestionnaireQueries';
 import type {
   QuestionnaireListFilter,
   QuestionnaireListItem,
 } from '../../../../entities/questionnaire/model/types';
+import {
+  questionnaireListFilterDefaults,
+  questionnaireListFilterSchema,
+} from '../../../../entities/questionnaire/model/listFilterSchema';
 import { RoutePaths } from '../../../../app/router/paths';
+import { QuestionnairesFilterPanel } from './QuestionnairesFilterPanel';
 
 export function QuestionnairesListPage() {
   const { t } = useTranslation('page.questionnaires-list');
   const { t: tEntity } = useTranslation('entity.questionnaire');
   const navigate = useNavigate();
 
-  const [filters] = useState<QuestionnaireListFilter>({});
+  const { filters, setFilters, clearFilters } = useUrlFilters<QuestionnaireListFilter>({
+    schema: questionnaireListFilterSchema,
+    defaultValues: questionnaireListFilterDefaults,
+  });
 
   const query = useQuestionnaireListQuery({ filters });
 
@@ -49,9 +57,17 @@ export function QuestionnairesListPage() {
   return (
     <ListPageLayout<QuestionnaireListItem>
       title={t('title')}
+      entityType="Questionnaire"
       columns={columns}
       data={data}
       rowKey="id"
+      filterBar={
+        <QuestionnairesFilterPanel
+          values={filters}
+          onApply={setFilters}
+          onClear={clearFilters}
+        />
+      }
       isLoading={query.isLoading}
       isFetchingMore={query.isFetchingNextPage}
       hasMore={query.hasNextPage}

@@ -1,1 +1,8 @@
-{ "title": "Bütçeler", "createButton": "Yeni Bütçe", "empty": "Henüz bütçe eklenmedi." }
+{
+  "title": "Bütçeler",
+  "createButton": "Yeni Bütçe",
+  "empty": "Henüz bütçe eklenmedi.",
+  "filters": {
+    "searchPlaceholder": "Bütçe adı veya açıklama…"
+  }
+}

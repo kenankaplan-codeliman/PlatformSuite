@@ -120,6 +120,28 @@ pnpm --filter @app/codepro-web dev
 
 VSCode kullananlar için her app'te `.vscode/launch.json` "Full Stack" compound config'leri hazır (`Crm Full Stack`, `CodePro Full Stack`). Detaylar app'lerin README'lerinde.
 
+### Port Şeması
+
+İki uygulama aynı host'ta paralel koşar — port'lar sabitlenmiş ve çakışmasızdır. **Container'lar 80/443'ü doğrudan bind etmez**; HTTPS termination ve `:80`/`:443` yayını **harici reverse proxy** (sunucu nginx'i, traefik, haproxy ya da cloud LB) sorumluluğundadır.
+
+| Servis | CRM | CodePro | Platform.Web |
+|---|---|---|---|
+| nginx (prod entrypoint, host) | `9080` | `9081` | — |
+| .NET API dev (HTTP / HTTPS) | `7100` / `7101` | `7110` / `7111` | — |
+| .NET API container (iç ağ) | `8080` | `8080` | — |
+| Vite dev server (UI) | `7180` | `7181` | `7174` |
+| PostgreSQL (host) | `54321` | `54322` | — |
+| Elasticsearch (host) | `9201` | `9211` | — |
+| Kibana (host) | `5601` | `5611` | — |
+
+Notlar:
+
+- Tüm host portları `.env` üzerinden override edilebilir: `CRM_NGINX_HOST_PORT`, `CRM_DB_HOST_PORT`, `CRM_ES_HOST_PORT`, `CRM_KIBANA_HOST_PORT` (CodePro için `CODEPRO_*` ön ekiyle). Compose default'ları yukarıdaki değerlerdir.
+- Dev'de Vite, `/api` ve `/auth` path'lerini API'ye proxy'ler (`http://localhost:7100` CRM, `http://localhost:7110` CodePro). Browser tarafında tek URL kullanılır.
+- Dev override (`docker-compose.override.yml`) PostgreSQL'i `127.0.0.1:<host_port>` ile bind eder. `ports: !override` direktifi **zorunlu** — Docker Compose array merge davranışı yüzünden olmazsa iki port birden expose edilir.
+- nginx container içi her zaman `listen 80` (Docker iç port'u); host mapping yukarıdaki değerlerle yapılır.
+- Yeni app eklenecekse bu şemayı **bozmadan** offset paterniyle devam et: CodePro = CRM + 1 ya da CRM + 10 (kibana 5601 → 5611, db 54321 → 54322). Yeni app için sonraki ofset uygun.
+
 ---
 
 ## 3. Branch Stratejisi
@@ -501,7 +523,20 @@ App'in Vite + Router/menu/i18n iskeletini mevcut `Apps/Crm/Crm.Web/`'i şablon o
 
 ### Adım 9: Docker & Deploy
 
-`Apps/Finance/docker-compose.yaml` ve `docker-compose.override.yml` için `Apps/Crm/` veya `Apps/CodePro/`'yu şablon al. Port'ları başka app'lerle çakışmayacak şekilde seç.
+`Apps/Finance/docker-compose.yaml` ve `docker-compose.override.yml` için `Apps/Crm/` veya `Apps/CodePro/`'yu şablon al. Port'ları başka app'lerle çakışmayacak şekilde seç — mevcut şema için bkz. [Port Şeması](#port-şeması).
+
+Önerilen Finance ofseti (CRM = 0, CodePro = +10 sonrası, Finance = +20):
+
+| Servis | Finance |
+|---|---|
+| nginx (host) | `9082` |
+| .NET API dev (HTTP / HTTPS) | `7120` / `7121` |
+| Vite dev server | `7182` |
+| PostgreSQL | `54323` |
+| Elasticsearch | `9221` |
+| Kibana | `5621` |
+
+Env var ön eki `FINANCE_*` (örn. `FINANCE_NGINX_HOST_PORT`). Compose default'ları yukarıdaki değerler olmalı.
 
 ### Adım 10: Doküman
 

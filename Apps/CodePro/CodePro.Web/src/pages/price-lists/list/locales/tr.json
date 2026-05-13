@@ -1,5 +1,8 @@
 {
   "title": "Fiyat Listeleri",
   "createButton": "Yeni Fiyat Listesi",
-  "empty": "Henüz fiyat listesi eklenmedi."
+  "empty": "Henüz fiyat listesi eklenmedi.",
+  "filters": {
+    "searchPlaceholder": "Liste adı veya kodu…"
+  }
 }

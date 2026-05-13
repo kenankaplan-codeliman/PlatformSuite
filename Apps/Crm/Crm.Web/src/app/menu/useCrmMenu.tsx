@@ -2,20 +2,16 @@ import { useTranslation } from 'react-i18next';
 import {
   HomeOutlined,
   RiseOutlined,
-  FundOutlined,
-  TeamOutlined,
-  UserOutlined,
-  SafetyOutlined,
   SettingOutlined,
-  ContactsOutlined,
-  CalendarOutlined,
   AppstoreOutlined,
 } from '@ant-design/icons';
-import type { MenuSchema } from '@platform/ui';
+import { entityMenuItem, useEntityTypeRegistry, type MenuSchema } from '@platform/ui';
 import { RoutePaths } from '../router/paths';
 
 export function useCrmMenu(): MenuSchema {
   const { t } = useTranslation('app.crm-menu');
+  const { get } = useEntityTypeRegistry();
+
   return [
     { key: 'home', label: t('home'), icon: <HomeOutlined />, to: RoutePaths.Home },
     {
@@ -23,8 +19,11 @@ export function useCrmMenu(): MenuSchema {
       label: t('groups.sales'),
       icon: <RiseOutlined />,
       children: [
-        { key: 'leads', label: t('leads'), icon: <ContactsOutlined />, to: RoutePaths.LeadsList },
-        { key: 'opportunities', label: t('opportunities'), icon: <FundOutlined />, to: RoutePaths.OpportunitiesList },
+        entityMenuItem(get('Lead')!, t, { label: t('leads'), to: RoutePaths.LeadsList }),
+        entityMenuItem(get('Opportunity')!, t, {
+          label: t('opportunities'),
+          to: RoutePaths.OpportunitiesList,
+        }),
       ],
     },
     {
@@ -32,9 +31,9 @@ export function useCrmMenu(): MenuSchema {
       label: t('groups.customers'),
       icon: <AppstoreOutlined />,
       children: [
-        { key: 'accounts', label: t('accounts'), icon: <TeamOutlined />, to: RoutePaths.AccountsList },
-        { key: 'contacts', label: t('contacts'), icon: <UserOutlined />, to: RoutePaths.ContactsList },
-        { key: 'activities', label: t('activities'), icon: <CalendarOutlined />, to: RoutePaths.ActivitiesList },
+        entityMenuItem(get('Account')!, t, { label: t('accounts'), to: RoutePaths.AccountsList }),
+        entityMenuItem(get('Contact')!, t, { label: t('contacts'), to: RoutePaths.ContactsList }),
+        entityMenuItem(get('Activity')!, t, { label: t('activities'), to: RoutePaths.ActivitiesList }),
       ],
     },
     {
@@ -42,8 +41,8 @@ export function useCrmMenu(): MenuSchema {
       label: t('groups.settings'),
       icon: <SettingOutlined />,
       children: [
-        { key: 'users', label: t('users'), icon: <UserOutlined />, to: RoutePaths.AppUsersList },
-        { key: 'roles', label: t('roles'), icon: <SafetyOutlined />, to: RoutePaths.AppRolesList },
+        entityMenuItem(get('User')!, t, { label: t('users'), to: RoutePaths.AppUsersList }),
+        entityMenuItem(get('AppRole')!, t, { key: 'roles', label: t('roles'), to: RoutePaths.AppRolesList }),
       ],
     },
   ];

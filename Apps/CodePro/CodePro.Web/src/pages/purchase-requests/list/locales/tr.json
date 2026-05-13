@@ -1,1 +1,8 @@
-{ "title": "Satın Alma Talepleri", "createButton": "Yeni Talep", "empty": "Henüz talep eklenmedi." }
+{
+  "title": "Satın Alma Talepleri",
+  "createButton": "Yeni Talep",
+  "empty": "Henüz talep eklenmedi.",
+  "filters": {
+    "searchPlaceholder": "Talep no veya başlık…"
+  }
+}

@@ -6,18 +6,18 @@
       "dotnetRunMessages": true,
       "launchBrowser": true,
       "launchUrl": "swagger",
-      "applicationUrl": "http://localhost:5010;https://localhost:5011",
+      "applicationUrl": "http://localhost:7110;https://localhost:7111",
       "environmentVariables": {
         "ASPNETCORE_ENVIRONMENT": "Development",
         "POSTGRES_DB": "codepro_db",
-        "POSTGRES_PORT": "5433"
+        "POSTGRES_PORT": "54322"
       }
     },
     "Production": {
       "commandName": "Project",
       "dotnetRunMessages": true,
       "launchBrowser": false,
-      "applicationUrl": "https://localhost:5011",
+      "applicationUrl": "https://localhost:7111",
       "environmentVariables": {
         "ASPNETCORE_ENVIRONMENT": "Production"
       }

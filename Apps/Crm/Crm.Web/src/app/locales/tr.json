@@ -1,4 +1,14 @@
 {
   "name": "CRM",
-  "description": "Müşteri İlişkileri Yönetimi"
+  "description": "Müşteri İlişkileri Yönetimi",
+  "entities": {
+    "account": "Firma",
+    "accounts": "Firmalar",
+    "contact": "Kişi",
+    "contacts": "Kişiler",
+    "lead": "Aday",
+    "leads": "Adaylar",
+    "opportunity": "Fırsat",
+    "opportunities": "Fırsatlar"
+  }
 }

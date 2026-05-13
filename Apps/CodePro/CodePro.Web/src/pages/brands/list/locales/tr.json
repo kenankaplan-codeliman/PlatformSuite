@@ -1,5 +1,8 @@
 {
   "title": "Markalar",
   "createButton": "Yeni Marka",
-  "empty": "Henüz marka eklenmedi."
+  "empty": "Henüz marka eklenmedi.",
+  "filters": {
+    "searchPlaceholder": "Marka adı…"
+  }
 }

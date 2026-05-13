@@ -47,6 +47,7 @@ export function AppUsersListPage() {
   return (
     <ListPageLayout<AppUserListItem>
       title={t('title')}
+      entityType="User"
       columns={columns}
       data={data}
       rowKey="id"

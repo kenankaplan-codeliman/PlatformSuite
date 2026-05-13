@@ -40,6 +40,7 @@ export function OrganizationsListPage() {
   return (
     <ListPageLayout<AppOrganizationListItem>
       title={t('title')}
+      entityType="Organization"
       columns={columns}
       data={data}
       rowKey="id"

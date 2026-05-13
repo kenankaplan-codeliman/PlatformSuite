@@ -4,7 +4,9 @@ CodePro uygulamasının izole stack'i: **Web (React + Vite)** + **API (.NET 10)*
 
 Repo'daki `Platform/*` projeleri kütüphane olarak kullanılır; Dockerfile'lar build context'ine repo root'unu alır.
 
-> **Not:** CodePro, CRM ile aynı host'ta çakışmasın diye farklı portlar kullanır (nginx 81 / db 5433 / es 9201 / kibana 5602).
+> **Port şeması:** CodePro, CRM ile aynı host'ta çakışmasın diye sabit port'lar kullanır. Hiçbir servis 80/443'e doğrudan bind etmez — prod'da harici reverse proxy / load balancer öne konur. Tüm host portları `.env` üzerinden override edilebilir.
+>
+> nginx **9081** / db **54322** / es **9211** / kibana **5611** / api dev **7110/7111** / web dev **7181**
 
 ---
 
@@ -19,7 +21,7 @@ cd Apps/CodePro
 docker compose up -d codepro-db
 ```
 
-> Bu repo'da `docker-compose.override.yml` zaten mevcut — DB'yi host'a `127.0.0.1:5432` üzerinden açar ve API'yi `Development` moduna geçirir. Detay: [DB'ye Host'tan Erişim](#dbye-hosttan-erişim).
+> Bu repo'da `docker-compose.override.yml` zaten mevcut — DB'yi host'a `127.0.0.1:54322` üzerinden açar ve API'yi `Development` moduna geçirir. Detay: [DB'ye Host'tan Erişim](#dbye-hosttan-erişim).
 
 API + Web'i F5 ile başlat (VSCode):
 
@@ -51,8 +53,8 @@ VSCode'dan API'yi debug ederken veya pgAdmin/DataGrip gibi araçlarla bağlanmak
 ```yaml
 services:
   codepro-db:
-    ports:
-      - "127.0.0.1:5432:5432"
+    ports: !override
+      - "127.0.0.1:54322:5432"
     networks:
       - codepro_db_net
       - codepro_app_net
@@ -71,6 +73,7 @@ Override neden gerekli:
 
 - `codepro_db_net` `internal: true` → port publishing devre dışı kalır. Non-internal `codepro_app_net`'e de bağlamak port'u host'a çıkarır.
 - API container'ı `Development` moduna geçer → Swagger açılır, detaylı hata.
+- `ports: !override` direktifi base compose'daki port listesinin tamamen yer değiştirmesini sağlar (aksi halde liste birleşmesi olur ve aynı port iki kez expose edilmeye çalışılır).
 
 Override sadece dev için. **Prod sunucusunda bu dosya bulunmamalıdır.**
 
@@ -80,7 +83,7 @@ Recreate:
 docker compose up -d --force-recreate codepro-db
 ```
 
-> CodePro'da host port'u override'da `5432` (default Postgres). Base compose `5433` üzerinden de yayımlamaya çalışır ama internal network nedeniyle çalışmaz — yalnızca override'daki `5432` aktif.
+> Host port'u `54322` (CRM'in `54321`'i ile çakışmaz). İki app'i aynı dev makinede paralel koşturabilirsin.
 
 ---
 
@@ -117,7 +120,7 @@ pnpm dev:codepro
 docker compose exec codepro-db psql -U $POSTGRES_USER -d codepro_db
 
 # Host'tan (override aktifken)
-psql -h localhost -p 5432 -U <user> -d codepro_db
+psql -h localhost -p 54322 -U <user> -d codepro_db
 ```
 
 ---
@@ -128,11 +131,11 @@ psql -h localhost -p 5432 -U <user> -d codepro_db
 
 | Servis | URL |
 |---|---|
-| Frontend (Vite) | http://localhost:5181 |
-| API | http://localhost:5010 |
-| API (HTTPS) | https://localhost:5011 |
-| Swagger | http://localhost:5010/swagger |
-| PostgreSQL | localhost:5432 (override) |
+| Frontend (Vite) | http://localhost:7181 |
+| API | http://localhost:7110 |
+| API (HTTPS) | https://localhost:7111 |
+| Swagger | http://localhost:7110/swagger |
+| PostgreSQL | localhost:54322 (override) |
 
 > Vite, `/api` ve `/auth` path'lerini API'ye proxy'liyor — browser'dan tek URL yeter.
 
@@ -140,24 +143,24 @@ psql -h localhost -p 5432 -U <user> -d codepro_db
 
 | Servis | URL |
 |---|---|
-| Web (nginx) | http://localhost:81 |
-| API (nginx üzerinden) | http://localhost:81/api |
-| Swagger | http://localhost:81/api/swagger (override `Development` aktifken) |
-| Kibana | http://localhost:81/kibana |
-| Elasticsearch | http://localhost:9201 |
-| PostgreSQL | localhost:5432 (override) |
+| Web (nginx) | http://localhost:9081 |
+| API (nginx üzerinden) | http://localhost:9081/api |
+| Swagger | http://localhost:9081/api/swagger (override `Development` aktifken) |
+| Kibana | http://localhost:9081/kibana |
+| Elasticsearch | http://localhost:9211 |
+| PostgreSQL | localhost:54322 (override) |
 
 ### Prod
 
 | Servis | URL |
 |---|---|
-| Web | https://codepro.\<prod-domain\> |
+| Web | https://codepro.\<prod-domain\> (harici reverse proxy → http://\<host\>:9081) |
 | API | https://codepro.\<prod-domain\>/api |
 | Kibana | https://codepro.\<prod-domain\>/kibana (kısıtlı erişim) |
 | Swagger | **Yok** (Production modunda kapalı) |
 | PostgreSQL | Dışarıdan erişim **yok** (internal network) |
 
-> Prod domain'ini sunucudaki nginx/reverse proxy konfigürasyonuna göre güncelle.
+> Container nginx 80/443 değil **9081**'i bind eder. SSL termination ve `:80`/`:443` yayını **harici reverse proxy** (haproxy, traefik, sunucu nginx'i, ya da cloud LB) sorumluluğundadır.
 
 ---
 
@@ -227,10 +230,11 @@ gunzip -c codepro_<tarih>.sql.gz | docker compose exec -T codepro-db psql -U $PO
 
 | Sorun | Çözüm |
 |---|---|
-| `Connection to localhost:5432 refused` | DB container yok ya da override uygulanmadı → `docker compose up -d --force-recreate codepro-db` |
+| `Connection to localhost:54322 refused` | DB container yok ya da override uygulanmadı → `docker compose up -d --force-recreate codepro-db` |
 | Container'da Swagger 404 | Override yoksa container `Production` modunda; override'ı oluştur, recreate |
-| `port is already allocated` | CRM 5432'yi tutmuş olabilir (`lsof -i :5432`) → birini kapat ya da override'da port değiştir |
-| Vite 5181 yerine farklı port'ta açılıyor | `vite.config.ts` içindeki `port: 5181` çakışmış → o porttaki process'i kapat |
+| `port is already allocated` | CRM 54321'i tutmuş olabilir, ya da başka servis 54322'yi (`lsof -i :54322`) → birini kapat ya da `.env`'de port değiştir |
+| Vite 7181 yerine farklı port'ta açılıyor | `vite.config.ts` içindeki `port: 7181` çakışmış → o porttaki process'i kapat |
+| API 7110 yerine 5010'da başlıyor | Eski cache → IDE'yi yeniden başlat, `.vscode/launch.json` ve `launchSettings.json` doğru olduğunu doğrula |
 | ES sağlık kontrolü kırmızı | `ES_JAVA_OPTS` belleği yetmiyor → compose'da `-Xmx` artır |
 
 ---

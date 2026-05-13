@@ -45,6 +45,7 @@ export function AppRolesListPage() {
   return (
     <ListPageLayout<AppRoleListItem>
       title={t('title')}
+      entityType="AppRole"
       columns={columns}
       data={data}
       rowKey="id"

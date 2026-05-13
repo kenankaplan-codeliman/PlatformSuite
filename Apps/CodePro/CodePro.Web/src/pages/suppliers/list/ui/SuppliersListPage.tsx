@@ -72,6 +72,7 @@ export function SuppliersListPage() {
   return (
     <ListPageLayout<SupplierListItem>
       title={t('title')}
+      entityType="Supplier"
       columns={columns}
       data={data}
       rowKey="id"

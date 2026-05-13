@@ -21,5 +21,98 @@
     "LimitedSirket": "Limited Şirket",
     "KomanditSirket": "Komandit Şirket",
     "KolektifSirket": "Kolektif Şirket"
+  },
+  "purchaseBasketStatus": {
+    "Preparing": "Hazırlanıyor",
+    "Submitted": "Gönderildi",
+    "Cancelled": "İptal"
+  },
+  "purchaseRequestStatus": {
+    "Setup": "Hazırlanıyor",
+    "PendingApproval": "Onay Bekliyor",
+    "InPurchasing": "Satın Alımda",
+    "PartialOrderCreated": "Kısmi Sipariş Oluştu",
+    "OrderCreated": "Sipariş Oluştu",
+    "Rejected": "Reddedildi",
+    "Completed": "Tamamlandı",
+    "Cancelled": "İptal"
+  },
+  "purchaseRequestPriority": {
+    "Low": "Düşük",
+    "Medium": "Orta",
+    "High": "Yüksek",
+    "Urgent": "Acil"
+  },
+  "purchaseOrderStatus": {
+    "Draft": "Taslak",
+    "Sent": "Gönderildi",
+    "Acknowledged": "Onaylandı",
+    "PartialDelivered": "Kısmi Teslim",
+    "Delivered": "Teslim Edildi",
+    "Cancelled": "İptal",
+    "Closed": "Kapalı"
+  },
+  "purchaseOrderPriority": {
+    "Low": "Düşük",
+    "Medium": "Orta",
+    "High": "Yüksek",
+    "Urgent": "Acil"
+  },
+  "offerType": {
+    "Sales": "Satış",
+    "Purchase": "Alış"
+  },
+  "offerStatus": {
+    "Draft": "Taslak",
+    "PendingInternalApproval": "İç Onay Bekliyor",
+    "InternallyApproved": "İç Onay Tamam",
+    "PendingExternalApproval": "Dış Onay Bekliyor",
+    "Sent": "Gönderildi",
+    "Won": "Kazanıldı",
+    "Lost": "Kaybedildi",
+    "Cancelled": "İptal",
+    "Expired": "Süresi Doldu"
+  },
+  "contractType": {
+    "Sales": "Satış",
+    "Purchase": "Alış",
+    "Service": "Hizmet",
+    "Nda": "Gizlilik",
+    "Framework": "Çerçeve",
+    "Other": "Diğer"
+  },
+  "contractStatus": {
+    "Draft": "Taslak",
+    "PendingInternalApproval": "İç Onay Bekliyor",
+    "InternallyApproved": "İç Onay Tamam",
+    "Sent": "Gönderildi",
+    "Signed": "İmzalandı",
+    "Active": "Aktif",
+    "Expired": "Süresi Doldu",
+    "Cancelled": "İptal",
+    "Terminated": "Sonlandırıldı"
+  },
+  "budgetStatus": {
+    "Draft": "Taslak",
+    "InInternalApproval": "İç Onayda",
+    "Active": "Aktif",
+    "Depleted": "Tükenmiş",
+    "Expired": "Süresi Doldu",
+    "Passive": "Pasif",
+    "Rejected": "Reddedildi"
+  },
+  "budgetPeriodType": {
+    "Yearly": "Yıllık",
+    "Quarterly": "Çeyreklik",
+    "Monthly": "Aylık",
+    "Custom": "Özel"
+  },
+  "eDocumentStatus": {
+    "Draft": "Taslak",
+    "Sent": "Gönderildi",
+    "PartiallyApproved": "Kısmi Onay",
+    "Approved": "Onaylandı",
+    "Rejected": "Reddedildi",
+    "Cancelled": "İptal"
   }
 }

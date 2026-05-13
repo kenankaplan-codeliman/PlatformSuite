@@ -79,6 +79,7 @@ export function AccountsListPage() {
   return (
     <ListPageLayout<AccountListItem>
       title={t("title")}
+      entityType="Account"
       columns={columns}
       data={data}
       rowKey="id"

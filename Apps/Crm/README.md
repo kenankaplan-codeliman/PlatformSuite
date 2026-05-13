@@ -4,6 +4,10 @@ CRM uygulamasının izole stack'i: **Web (React + Vite)** + **API (.NET 10)** + 
 
 Repo'daki `Platform/*` projeleri kütüphane olarak kullanılır; Dockerfile'lar build context'ine repo root'unu alır.
 
+> **Port şeması:** CRM, CodePro ile aynı host'ta çakışmasın diye sabit port'lar kullanır. Hiçbir servis 80/443'e doğrudan bind etmez — prod'da harici reverse proxy / load balancer öne konur. Tüm host portları `.env` üzerinden override edilebilir.
+>
+> nginx **9080** / db **54321** / es **9201** / kibana **5601** / api dev **7100/7101** / web dev **7180**
+
 ---
 
 ## Hızlı Başlangıç (Dev)
@@ -44,13 +48,13 @@ docker compose down -v         # volume'lar dahil sil (DB sıfırlanır)
 
 ## DB'ye Host'tan Erişim
 
-VSCode'dan API'yi debug ederken veya pgAdmin/DataGrip gibi araçlarla bağlanmak için DB'nin host'a açılması gerekir. `Apps/Crm/` altında **`docker-compose.override.yml`** oluştur:
+VSCode'dan API'yi debug ederken veya pgAdmin/DataGrip gibi araçlarla bağlanmak için DB'nin host'a açılması gerekir. `Apps/Crm/docker-compose.override.yml` bunu sağlıyor:
 
 ```yaml
 services:
   crm-db:
-    ports:
-      - "127.0.0.1:5432:5432"
+    ports: !override
+      - "127.0.0.1:54321:5432"
     networks:
       - crm_db_net
       - crm_app_net
@@ -69,6 +73,7 @@ Override neden gerekli:
 
 - `crm_db_net` `internal: true` → port publishing devre dışı kalır. Non-internal `crm_app_net`'e de bağlamak port'u host'a çıkarır.
 - API container'ı `Development` moduna geçer → Swagger açılır, detaylı hata.
+- `ports: !override` direktifi base compose'daki port listesinin tamamen yer değiştirmesini sağlar (aksi halde liste birleşmesi olur).
 
 Override sadece dev için. **Prod sunucusunda bu dosya bulunmamalıdır.**
 
@@ -113,7 +118,7 @@ pnpm dev:crm
 docker compose exec crm-db psql -U $POSTGRES_USER -d crm_db
 
 # Host'tan (override aktifken)
-psql -h localhost -p 5432 -U <user> -d crm_db
+psql -h localhost -p 54321 -U <user> -d crm_db
 ```
 
 ---
@@ -124,11 +129,11 @@ psql -h localhost -p 5432 -U <user> -d crm_db
 
 | Servis | URL |
 |---|---|
-| Frontend (Vite) | http://localhost:5180 |
-| API | http://localhost:5000 |
-| API (HTTPS) | https://localhost:5001 |
-| Swagger | http://localhost:5000/swagger |
-| PostgreSQL | localhost:5432 (override gerekli) |
+| Frontend (Vite) | http://localhost:7180 |
+| API | http://localhost:7100 |
+| API (HTTPS) | https://localhost:7101 |
+| Swagger | http://localhost:7100/swagger |
+| PostgreSQL | localhost:54321 (override gerekli) |
 
 > Vite, `/api` ve `/auth` path'lerini API'ye proxy'liyor — browser'dan tek URL yeter.
 
@@ -136,24 +141,24 @@ psql -h localhost -p 5432 -U <user> -d crm_db
 
 | Servis | URL |
 |---|---|
-| Web (nginx) | http://localhost:80 |
-| API (nginx üzerinden) | http://localhost:80/api |
+| Web (nginx) | http://localhost:9080 |
+| API (nginx üzerinden) | http://localhost:9080/api |
 | Swagger | **Yok** (container `Production` modunda; override ile `Development` yaparsan açılır) |
-| Kibana | http://localhost:80/kibana |
-| Elasticsearch | http://localhost:9200 |
-| PostgreSQL | localhost:5432 (override gerekli) |
+| Kibana | http://localhost:9080/kibana |
+| Elasticsearch | http://localhost:9201 |
+| PostgreSQL | localhost:54321 (override gerekli) |
 
 ### Prod
 
 | Servis | URL |
 |---|---|
-| Web | https://crm.\<prod-domain\> |
+| Web | https://crm.\<prod-domain\> (harici reverse proxy → http://\<host\>:9080) |
 | API | https://crm.\<prod-domain\>/api |
 | Kibana | https://crm.\<prod-domain\>/kibana (kısıtlı erişim) |
 | Swagger | **Yok** (Production modunda kapalı) |
 | PostgreSQL | Dışarıdan erişim **yok** (internal network) |
 
-> Prod domain'ini sunucudaki nginx/reverse proxy konfigürasyonuna göre güncelle.
+> Container nginx 80/443 değil **9080**'i bind eder. SSL termination ve `:80`/`:443` yayını **harici reverse proxy** (haproxy, traefik, sunucu nginx'i, ya da cloud LB) sorumluluğundadır.
 
 ---
 
@@ -221,10 +226,11 @@ gunzip -c crm_<tarih>.sql.gz | docker compose exec -T crm-db psql -U $POSTGRES_U
 
 | Sorun | Çözüm |
 |---|---|
-| `Connection to localhost:5432 refused` | DB-only çalıştırdın ama override yok → override'ı oluştur, recreate |
+| `Connection to localhost:54321 refused` | DB-only çalıştırdın ama override yok → override'ı oluştur, recreate |
 | Container'da Swagger 404 | Container `Production` modunda; override ile `Development` yap |
-| `port is already allocated` | Başka servis 5432'yi tutuyor (`lsof -i :5432`) → kapat veya `.env`'de `CRM_DB_HOST_PORT` değiştir |
-| Vite 5180 yerine farklı port'ta açılıyor | `vite.config.ts` içindeki `port: 5180` çakışmış → o porttaki process'i kapat |
+| `port is already allocated` | Başka servis 54321'i tutuyor (`lsof -i :54321`) → kapat veya `.env`'de `CRM_DB_HOST_PORT` değiştir |
+| Vite 7180 yerine farklı port'ta açılıyor | `vite.config.ts` içindeki `port: 7180` çakışmış → o porttaki process'i kapat |
+| API 7100 yerine 5000'de başlıyor | Eski cache → IDE'yi yeniden başlat, `.vscode/launch.json` ve `launchSettings.json` doğru olduğunu doğrula |
 | ES sağlık kontrolü kırmızı | `ES_JAVA_OPTS` belleği yetmiyor → compose'da `-Xmx` artır |
 
 ---

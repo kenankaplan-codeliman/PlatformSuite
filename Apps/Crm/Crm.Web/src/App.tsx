@@ -4,10 +4,17 @@ import {
   ActivityEntityTypesProvider,
   AppProviders,
   AppMetaProvider,
-  type EntityLookupOption,
+  EntityTypeRegistryProvider,
+  platformEntityTypes,
 } from '@platform/ui';
 import { router } from './app/router/routes';
+import { crmEntityTypes } from './shared/entity-type/crmEntityTypes';
 import crmLogo from './assets/crm-logo.svg';
+
+const crmEntityTypeRegistry = [...platformEntityTypes, ...crmEntityTypes];
+
+const crmRegardingKeys = ['Account', 'Contact', 'Lead', 'Opportunity'] as const;
+const crmPartyKeys = ['User', 'Contact', 'Account', 'Lead'] as const;
 
 function CrmAppMeta({ children }: { children: React.ReactNode }) {
   const { t } = useTranslation('app.crm');
@@ -22,37 +29,18 @@ function CrmAppMeta({ children }: { children: React.ReactNode }) {
   );
 }
 
-function CrmActivityEntityTypes({ children }: { children: React.ReactNode }) {
-  const { t } = useTranslation('app.crm');
-  const regardingEntityTypes: EntityLookupOption[] = [
-    { entityType: 'Account', label: t('entities.account', { defaultValue: 'Firma' }) },
-    { entityType: 'Contact', label: t('entities.contact', { defaultValue: 'Kişi' }) },
-    { entityType: 'Lead', label: t('entities.lead', { defaultValue: 'Aday' }) },
-    { entityType: 'Opportunity', label: t('entities.opportunity', { defaultValue: 'Fırsat' }) },
-  ];
-  const partyEntityTypes: EntityLookupOption[] = [
-    { entityType: 'User', label: t('entities.user', { defaultValue: 'Kullanıcı' }) },
-    { entityType: 'Contact', label: t('entities.contact', { defaultValue: 'Kişi' }) },
-    { entityType: 'Account', label: t('entities.account', { defaultValue: 'Firma' }) },
-    { entityType: 'Lead', label: t('entities.lead', { defaultValue: 'Aday' }) },
-  ];
-  return (
-    <ActivityEntityTypesProvider
-      regardingEntityTypes={regardingEntityTypes}
-      partyEntityTypes={partyEntityTypes}
-    >
-      {children}
-    </ActivityEntityTypesProvider>
-  );
-}
-
 export default function App() {
   return (
     <AppProviders>
       <CrmAppMeta>
-        <CrmActivityEntityTypes>
-          <RouterProvider router={router} />
-        </CrmActivityEntityTypes>
+        <EntityTypeRegistryProvider entries={crmEntityTypeRegistry}>
+          <ActivityEntityTypesProvider
+            regardingKeys={crmRegardingKeys}
+            partyKeys={crmPartyKeys}
+          >
+            <RouterProvider router={router} />
+          </ActivityEntityTypesProvider>
+        </EntityTypeRegistryProvider>
       </CrmAppMeta>
     </AppProviders>
   );

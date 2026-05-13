@@ -13,8 +13,9 @@
       "console": "internalConsole",
       "env": {
         "ASPNETCORE_ENVIRONMENT": "Development",
-        "ASPNETCORE_URLS": "http://localhost:5000;https://localhost:5001",
-        "POSTGRES_DB": "crm_db"
+        "ASPNETCORE_URLS": "http://localhost:7100;https://localhost:7101",
+        "POSTGRES_DB": "crm_db",
+        "POSTGRES_PORT": "54321"
       },
       "serverReadyAction": {
         "action": "openExternally",
@@ -34,9 +35,9 @@
       "console": "internalConsole",
       "env": {
         "ASPNETCORE_ENVIRONMENT": "Development",
-        "ASPNETCORE_URLS": "http://localhost:5010;https://localhost:5011",
+        "ASPNETCORE_URLS": "http://localhost:7110;https://localhost:7111",
         "POSTGRES_DB": "codepro_db",
-        "POSTGRES_PORT": "5433"
+        "POSTGRES_PORT": "54322"
       },
       "serverReadyAction": {
         "action": "openExternally",
@@ -80,7 +81,7 @@
       "name": "Crm Browser (attach)",
       "type": "chrome",
       "request": "launch",
-      "url": "http://localhost:5180",
+      "url": "http://localhost:7180",
       "webRoot": "${workspaceFolder}/Apps/Crm/Crm.Web",
       "sourceMaps": true,
       "userDataDir": "${workspaceFolder}/.vscode/.chrome-crm"
@@ -89,7 +90,7 @@
       "name": "CodePro Browser (attach)",
       "type": "chrome",
       "request": "launch",
-      "url": "http://localhost:5181",
+      "url": "http://localhost:7181",
       "webRoot": "${workspaceFolder}/Apps/CodePro/CodePro.Web",
       "sourceMaps": true,
       "userDataDir": "${workspaceFolder}/.vscode/.chrome-codepro"

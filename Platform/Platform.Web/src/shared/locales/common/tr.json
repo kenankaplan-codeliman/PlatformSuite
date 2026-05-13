@@ -54,5 +54,15 @@
   "tabs": {
     "details": "Genel",
     "activities": "İlişkili Aktiviteler"
+  },
+  "entities": {
+    "user": "Kullanıcı",
+    "users": "Kullanıcılar",
+    "appRole": "Rol",
+    "appRoles": "Roller",
+    "organization": "Organizasyon",
+    "organizations": "Organizasyonlar",
+    "activity": "Aktivite",
+    "activities": "Aktiviteler"
   }
 }

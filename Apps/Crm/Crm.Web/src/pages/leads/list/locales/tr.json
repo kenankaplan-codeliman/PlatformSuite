@@ -1,5 +1,8 @@
 {
   "title": "Adaylar",
   "createButton": "Yeni Aday",
-  "empty": "Henüz aday eklenmedi."
+  "empty": "Henüz aday eklenmedi.",
+  "filters": {
+    "searchPlaceholder": "Konu, ad, e-posta, şirket…"
+  }
 }

@@ -5,8 +5,8 @@
 # Dockerfile'lar build sırasında Platform/* dizinini repo root
 # context'iyle dahil eder.
 #
-# Host portları CRM ile çakışmasın diye farklı:
-#   nginx 81 / db 5433 / es 9201 / kibana 5602
+# Host portları (CRM ile çakışmaz, 80/443 doğrudan kullanılmaz):
+#   nginx 9081 / db 54322 / es 9211 / kibana 5611
 #
 # Kullanım (Apps/CodePro/ klasöründen çalıştır):
 #   cd Apps/CodePro
@@ -26,7 +26,7 @@ services:
     image: nginx:1.27-alpine
     container_name: codepro-nginx
     ports:
-      - "${CODEPRO_NGINX_HOST_PORT:-81}:80"
+      - "${CODEPRO_NGINX_HOST_PORT:-9081}:80"
     volumes:
       - ./docker/nginx/nginx.conf:/etc/nginx/nginx.conf:ro
       - ./docker/nginx/conf.d:/etc/nginx/conf.d:ro
@@ -89,7 +89,7 @@ services:
       POSTGRES_DB: codepro_db
       POSTGRES_USER: ${POSTGRES_USER}
     ports:
-      - "${CODEPRO_DB_HOST_PORT:-5433}:5432"
+      - "${CODEPRO_DB_HOST_PORT:-54322}:5432"
     volumes:
       - codepro_postgres_data:/var/lib/postgresql/data
       - ./docker/db-init:/docker-entrypoint-initdb.d:ro
@@ -113,7 +113,7 @@ services:
       ELASTIC_PASSWORD: ${ELASTIC_PASSWORD}
       ES_JAVA_OPTS: "-Xms512m -Xmx512m"
     ports:
-      - "${CODEPRO_ES_HOST_PORT:-9201}:9200"
+      - "${CODEPRO_ES_HOST_PORT:-9211}:9200"
     volumes:
       - codepro_elastic_data:/usr/share/elasticsearch/data
     networks:
@@ -158,7 +158,7 @@ services:
       SERVER_BASEPATH: "/kibana"
       SERVER_REWRITEBASEPATH: "true"
     ports:
-      - "${CODEPRO_KIBANA_HOST_PORT:-5602}:5601"
+      - "${CODEPRO_KIBANA_HOST_PORT:-5611}:5601"
     depends_on:
       codepro-elasticsearch:
         condition: service_healthy

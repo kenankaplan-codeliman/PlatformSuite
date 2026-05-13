@@ -1,5 +1,8 @@
 {
   "title": "Kontaklar",
   "createButton": "Yeni Kontak",
-  "empty": "Henüz kontak eklenmedi."
+  "empty": "Henüz kontak eklenmedi.",
+  "filters": {
+    "searchPlaceholder": "Kontak adı…"
+  }
 }

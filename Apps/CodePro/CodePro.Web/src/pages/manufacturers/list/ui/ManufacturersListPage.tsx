@@ -1,20 +1,28 @@
-import { useMemo, useState } from 'react';
+import { useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
-import { ListPageLayout, type DataTableColumn } from '@platform/ui';
+import { ListPageLayout, useUrlFilters, type DataTableColumn } from '@platform/ui';
 import { useManufacturerListQuery } from '../../../../entities/manufacturer/api/useManufacturerQueries';
 import type {
   ManufacturerListFilter,
   ManufacturerListItem,
 } from '../../../../entities/manufacturer/model/types';
+import {
+  manufacturerListFilterDefaults,
+  manufacturerListFilterSchema,
+} from '../../../../entities/manufacturer/model/listFilterSchema';
 import { RoutePaths } from '../../../../app/router/paths';
+import { ManufacturersFilterPanel } from './ManufacturersFilterPanel';
 
 export function ManufacturersListPage() {
   const { t } = useTranslation('page.manufacturers-list');
   const { t: tEntity } = useTranslation('entity.manufacturer');
   const navigate = useNavigate();
 
-  const [filters] = useState<ManufacturerListFilter>({});
+  const { filters, setFilters, clearFilters } = useUrlFilters<ManufacturerListFilter>({
+    schema: manufacturerListFilterSchema,
+    defaultValues: manufacturerListFilterDefaults,
+  });
 
   const query = useManufacturerListQuery({ filters });
 
@@ -43,9 +51,17 @@ export function ManufacturersListPage() {
   return (
     <ListPageLayout<ManufacturerListItem>
       title={t('title')}
+      entityType="Manufacturer"
       columns={columns}
       data={data}
       rowKey="id"
+      filterBar={
+        <ManufacturersFilterPanel
+          values={filters}
+          onApply={setFilters}
+          onClear={clearFilters}
+        />
+      }
       isLoading={query.isLoading}
       isFetchingMore={query.isFetchingNextPage}
       hasMore={query.hasNextPage}

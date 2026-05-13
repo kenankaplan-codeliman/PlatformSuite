@@ -1,20 +1,28 @@
-import { useMemo, useState } from 'react';
+import { useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
-import { ListPageLayout, type DataTableColumn } from '@platform/ui';
+import { ListPageLayout, useUrlFilters, type DataTableColumn } from '@platform/ui';
 import { useProductListQuery } from '../../../../entities/product/api/useProductQueries';
 import type {
   ProductListFilter,
   ProductListItem,
 } from '../../../../entities/product/model/types';
+import {
+  productListFilterDefaults,
+  productListFilterSchema,
+} from '../../../../entities/product/model/listFilterSchema';
 import { RoutePaths } from '../../../../app/router/paths';
+import { ProductsFilterPanel } from './ProductsFilterPanel';
 
 export function ProductsListPage() {
   const { t } = useTranslation('page.products-list');
   const { t: tEntity } = useTranslation('entity.product');
   const navigate = useNavigate();
 
-  const [filters] = useState<ProductListFilter>({});
+  const { filters, setFilters, clearFilters } = useUrlFilters<ProductListFilter>({
+    schema: productListFilterSchema,
+    defaultValues: productListFilterDefaults,
+  });
 
   const query = useProductListQuery({ filters });
 
@@ -42,9 +50,17 @@ export function ProductsListPage() {
   return (
     <ListPageLayout<ProductListItem>
       title={t('title')}
+      entityType="Product"
       columns={columns}
       data={data}
       rowKey="id"
+      filterBar={
+        <ProductsFilterPanel
+          values={filters}
+          onApply={setFilters}
+          onClear={clearFilters}
+        />
+      }
       isLoading={query.isLoading}
       isFetchingMore={query.isFetchingNextPage}
       hasMore={query.hasNextPage}

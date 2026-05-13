@@ -15,5 +15,10 @@
   "calendar": {
     "today": "Bugün",
     "error": "Takvim aktiviteleri yüklenemedi."
+  },
+  "filters": {
+    "searchPlaceholder": "Konu ara…",
+    "dueDateFrom": "Vade (Başlangıç)",
+    "dueDateTo": "Vade (Bitiş)"
   }
 }
