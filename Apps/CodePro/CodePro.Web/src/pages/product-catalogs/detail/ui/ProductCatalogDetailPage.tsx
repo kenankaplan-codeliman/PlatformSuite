@@ -2,12 +2,13 @@ import { useMemo } from 'react';
 import { useFormContext } from 'react-hook-form';
 import { useTranslation } from 'react-i18next';
 import {
-  AttachmentPanel,
+  AttachmentSection,
   DetailPageLayout,
   FormSection,
   TextAreaField,
   TextField,
   useRouteMode,
+  type DetailPageTab,
 } from '@platform/ui';
 import { useProductCatalogQuery } from '../../../../entities/product-catalog/api/useProductCatalogQueries';
 import {
@@ -54,6 +55,7 @@ export function ProductCatalogDetailPage() {
   const { mode, id } = useRouteMode();
   const { t: tPage } = useTranslation('page.product-catalogs-detail');
   const { t: tEntity } = useTranslation('entity.product-catalog');
+  const { t: tCommon } = useTranslation('common');
 
   const query = useProductCatalogQuery(id);
   const upsert = useUpsertProductCatalog();
@@ -66,6 +68,14 @@ export function ProductCatalogDetailPage() {
   }, [mode, query.data?.name, tPage]);
 
   const formData = useMemo(() => mapDataToForm(query.data), [query.data]);
+
+  const tabs: DetailPageTab[] = [
+    {
+      key: 'attachments',
+      label: tCommon('tabs.attachments'),
+      content: <AttachmentSection entityType="ProductCatalog" entityId={id} />,
+    },
+  ];
 
   return (
     <DetailPageLayout<ProductCatalogFormValues>
@@ -87,10 +97,10 @@ export function ProductCatalogDetailPage() {
           : undefined
       }
       afterSaveNavigation={(saved) => RoutePaths.ProductCatalogView(saved.id)}
+      tabs={tabs}
     >
       <GeneralSection />
       <RelationsSummary data={query.data} />
-      <AttachmentPanel entityType="ProductCatalog" entityId={id} />
     </DetailPageLayout>
   );
 

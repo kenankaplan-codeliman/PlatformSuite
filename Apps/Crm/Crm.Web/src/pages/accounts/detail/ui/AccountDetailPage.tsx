@@ -16,6 +16,7 @@ import { EntityRelationTable } from "@platform/ui";
 import { ServicePath } from "@platform/ui";
 import { useRouteMode } from "@platform/ui";
 import { RelatedActivitiesTab, type DetailPageTab } from "@platform/ui";
+import { AttachmentsField } from "@platform/ui";
 import { useAccountQuery } from "../../../../entities/account/api/useAccountQueries";
 import {
   useUpsertAccount,
@@ -27,7 +28,14 @@ import type {
   AccountStatus,
   AccountType,
 } from "../../../../entities/account/model/types";
+import {
+  accountDocumentTypes,
+  getAccountDocumentTypeLabel,
+} from "../../../../entities/account/model/documentTypes";
 import { RoutePaths } from "../../../../app/router/paths";
+
+const ACCOUNT_ATTACHMENT_ACCEPT =
+  ".pdf,.doc,.docx,.xls,.xlsx,.jpg,.jpeg,.png";
 
 const ACCOUNT_TYPES: AccountType[] = [
   "Customer",
@@ -135,6 +143,15 @@ export function AccountDetailPage() {
       />
       <DetailsSection />
       <ContactsSection />
+      <FormSection title={tEntity("sections.attachments")} collapsible>
+        <AttachmentsField
+          entityType="Account"
+          entityId={id}
+          accept={ACCOUNT_ATTACHMENT_ACCEPT}
+          documentTypes={accountDocumentTypes}
+          documentTypeLabel={getAccountDocumentTypeLabel}
+        />
+      </FormSection>
     </DetailPageLayout>
   );
 

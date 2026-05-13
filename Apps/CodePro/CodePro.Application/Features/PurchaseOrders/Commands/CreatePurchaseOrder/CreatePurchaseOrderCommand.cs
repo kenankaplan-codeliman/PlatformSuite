@@ -1,11 +1,12 @@
 using CodePro.Application.Features.PurchaseOrders.Dtos;
 using CodePro.Domain.Enums;
 using Platform.Application.Common.Abstractions;
+using Platform.Application.Common.Attachments;
 using Platform.Application.Modals.Common;
 
 namespace CodePro.Application.Features.PurchaseOrders.Commands.CreatePurchaseOrder;
 
-public sealed class CreatePurchaseOrderCommand : ICommand<PurchaseOrderDetailItem>
+public sealed class CreatePurchaseOrderCommand : ICommand<PurchaseOrderDetailItem>, IAttachmentCarrier
 {
     public string? OrderNumber { get; init; }
     public string Title { get; init; } = string.Empty;
@@ -17,4 +18,5 @@ public sealed class CreatePurchaseOrderCommand : ICommand<PurchaseOrderDetailIte
     public DateTime? ExpectedDeliveryDate { get; init; }
     public string? CurrencyCode { get; init; }
     public List<PurchaseOrderLineItem> Lines { get; init; } = new();
+    public List<AttachmentAssociation> Attachments { get; init; } = new();
 }

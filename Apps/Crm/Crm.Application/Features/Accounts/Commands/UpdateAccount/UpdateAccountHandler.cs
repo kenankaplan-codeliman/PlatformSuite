@@ -1,10 +1,8 @@
-using Platform.Application.Common.Abstractions;
-using Crm.Application.Interfaces;
 using Platform.Application.Common.Results;
-using Crm.Application.Features.Accounts;
-using Crm.Application.Features.Accounts.Dtos;
 using Platform.Application.Interfaces;
 using Crm.Application.Interfaces;
+using Crm.Application.Features.Accounts.Dtos;
+using Crm.Domain.Entities.Accounts;
 using Mapster;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
@@ -14,11 +12,16 @@ namespace Crm.Application.Features.Accounts.Commands.UpdateAccount;
 public sealed class UpdateAccountHandler : IRequestHandler<UpdateAccountCommand, Result<AccountDetailItem>>
 {
     private readonly IAccountRepository _repository;
+    private readonly IAttachmentRepository _attachmentRepository;
     private readonly ICrmDbContext _db;
 
-    public UpdateAccountHandler(IAccountRepository repository, ICrmDbContext db)
+    public UpdateAccountHandler(
+        IAccountRepository repository,
+        IAttachmentRepository attachmentRepository,
+        ICrmDbContext db)
     {
         _repository = repository;
+        _attachmentRepository = attachmentRepository;
         _db = db;
     }
 
@@ -29,6 +32,12 @@ public sealed class UpdateAccountHandler : IRequestHandler<UpdateAccountCommand,
 
         request.Adapt(entity);
         await _repository.UpdateAsync(entity, cancellationToken);
+
+        if (request.Attachments.Count > 0)
+        {
+            var metadataIds = request.Attachments.Select(a => a.MetadataId).ToList();
+            await _attachmentRepository.AssociateAsync(metadataIds, entity.Id, nameof(Account), cancellationToken);
+        }
 
         return await BuildDetailAsync(entity.Id, cancellationToken);
     }

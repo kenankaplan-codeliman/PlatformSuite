@@ -1,0 +1,38 @@
+using Platform.Domain.Entities.Common;
+using System;
+using System.Collections.Generic;
+using System.Text;
+
+namespace Platform.Domain.Entities.Identities
+{
+    public class AuthUser : IBaseEntity, IAuditableEntity, ISoftDeleteEntity
+    {
+        public Guid Id { get; set; }
+        public required string Email { get; set; }
+        public required string FirstName { get; set; }
+        public required string LastName { get; set; }
+        public string? PhoneNumber { get; set; }
+
+        public string FullName => $"{FirstName} {LastName}";
+
+        public Guid OrganizationId { get; set; }
+
+        /// <summary>Hiyerarşik yönetim — kullanıcı → manager (self-reference, opsiyonel).</summary>
+        public Guid? ManagerId { get; set; }
+        public AuthUser? Manager { get; set; }
+
+        public string? AzureUserId { get; set; }
+        public string? PasswordHash { get; set; }
+        public bool IsActive { get; private set; } = true;
+
+        // IAuditableEntity
+        public Guid CreatedBy { get; private set; }
+        public DateTime CreatedAt { get; private set; }
+        public Guid? UpdatedBy { get; private set; }
+        public DateTime? UpdatedAt { get; private set; }
+        // ISoftDeleteEntity
+        public bool IsDeleted { get; private set; }
+        public Guid? DeletedBy { get; private set; }
+        public DateTime? DeletedAt { get; private set; }
+    }
+}

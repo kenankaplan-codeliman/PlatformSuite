@@ -120,6 +120,31 @@ pnpm --filter @app/codepro-web dev
 
 VSCode kullananlar için her app'te `.vscode/launch.json` "Full Stack" compound config'leri hazır (`Crm Full Stack`, `CodePro Full Stack`). Detaylar app'lerin README'lerinde.
 
+### Seed Kullanıcılar (Dev/Test)
+
+Migrator açılışta iki seed katmanı yükler: **InitData** her zaman çalışır, **SampleData** yalnızca `IHostEnvironment.IsProduction()` `false` olduğu ortamlarda yüklenir. Tüm seed user'ların parolası aynıdır: **`123`** (`SeedPasswordVariables.DefaultPassword`). Hash runtime'da `IPasswordHasher` üzerinden üretilip script'lere `$DefaultPasswordHash$` değişkeniyle enjekte edilir — yani algoritma değişse bile script'lerde hardcoded hash bulunmaz.
+
+> ⚠️ Bu parolalar **yalnızca local/dev/staging içindir**. Production deploy'unda InitData kullanıcılarının parolası deploy sonrası ilk login akışında değiştirilmeli; SampleData zaten production'da çalışmaz.
+
+#### InitData kullanıcıları (her ortamda mevcut)
+
+| E-posta | Ad Soyad | Rol | Organizasyon | Parola |
+|---|---|---|---|---|
+| `admin@admin` | Admin User | Administrators | Default Organization (`MAIN`) | `123` |
+| `user@user` | Standard User | Standard Users | Default Organization (`MAIN`) | `123` |
+
+#### SampleData kullanıcıları (production hariç)
+
+| E-posta | Ad Soyad | Rol | Organizasyon | Manager | Parola |
+|---|---|---|---|---|---|
+| `ayse.yilmaz@example.com` | Ayşe Yılmaz | Administrators | Satış Departmanı (`SALES`) | — | `123` |
+| `mehmet.demir@example.com` | Mehmet Demir | Standard Users | Satış Departmanı (`SALES`) | Ayşe Yılmaz | `123` |
+| `zeynep.kara@example.com` | Zeynep Kara | Administrators | Satın Alma Departmanı (`PURCH`) | — | `123` |
+| `ali.sahin@example.com` | Ali Şahin | Standard Users | Satın Alma Departmanı (`PURCH`) | Zeynep Kara | `123` |
+| `elif.aydin@example.com` | Elif Aydın | Standard Users | Operasyon Şubesi (`OPS`) | — | `123` |
+
+Tüm sample organizasyonlar Default Organization (`MAIN`) altında child birim olarak yer alır (`parent_organization_id`). Sample organizasyonlar Platform `SampleData/V001__Identity.sql` script'inde, sample kullanıcılar yine aynı script'te oluşturulur ve `auth_user_role` üzerinden uygun role bağlanır.
+
 ### Port Şeması
 
 İki uygulama aynı host'ta paralel koşar — port'lar sabitlenmiş ve çakışmasızdır. **Container'lar 80/443'ü doğrudan bind etmez**; HTTPS termination ve `:80`/`:443` yayını **harici reverse proxy** (sunucu nginx'i, traefik, haproxy ya da cloud LB) sorumluluğundadır.

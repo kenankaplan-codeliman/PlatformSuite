@@ -1,12 +1,15 @@
 ﻿using Platform.Application.CommandHandler;
 using Platform.Application.Common.Abstractions;
 using Platform.Application.Common.References;
+using Platform.Application.Common.Security;
 using Platform.Application.Interfaces;
 using Platform.Application.Modals;
 using Platform.Application.Modals.Authentication;
 using Platform.Infrastructure.Data;
+using Platform.Infrastructure.HostedServices;
 using Platform.Infrastructure.References;
 using Platform.Infrastructure.Repositories;
+using Platform.Infrastructure.Security;
 using Platform.Infrastructure.Services;
 using Microsoft.AspNetCore.DataProtection;
 
@@ -32,6 +35,7 @@ public static class DependencyInjection
         services.AddSingleton<IContextAuthorization, ContextAuthorization>();
 
         services.AddScoped<ITokenService, JwtTokenService>();
+        services.AddSingleton<IPasswordHasher, BCryptPasswordHasher>();
         services.AddScoped<IUnitOfWork, UnitOfWork>();
         services.AddScoped<IMicrosoftGraphService, MicrosoftGraphService>();
 
@@ -50,14 +54,18 @@ public static class DependencyInjection
         // içinde kendi entity'leri için IEntityReferenceResolver kayıtları ekler.
         services.AddScoped<IEntityReferenceResolverRegistry, EntityReferenceResolverRegistry>();
         services.AddScoped<IEntityReferenceResolver, UserReferenceResolver>();
+        services.AddScoped<IEntityReferenceResolver, AppOrganizationReferenceResolver>();
+        services.AddScoped<IEntityReferenceResolver, AppRoleReferenceResolver>();
         services.AddScoped<IReferenceRepository, ReferenceRepository>();
-        services.AddScoped<IUserRepository, UserRepository>();
-        services.AddScoped<IOrganizationRepository, OrganizationRepository>();
-        services.AddScoped<IRoleRepository, RoleRepository>();
-        services.AddScoped<IAppLoginRepository, AppLoginRepository>();
+        services.AddScoped<IAuthUserRepository, AuthUserRepository>();
+        services.AddScoped<IAuthOrganizationRepository, AuthOrganizationRepository>();
+        services.AddScoped<IAuthRoleRepository, AuthRoleRepository>();
+        services.AddScoped<IAuthUserLoginRepository, AuthUserLoginRepository>();
         services.AddScoped<IAuditRepository, AuditRepository>();
         services.AddScoped<IAttachmentRepository, AttachmentRepository>();
 
+        // Süresi geçen draft attachment'ları saatte bir temizler.
+        services.AddHostedService<AttachmentCleanupService>();
 
         //Command Handler (Activity henüz MediatR thin-wrapper ile çalışıyor)
         services.AddScoped<AuthenticationCommandHandler>();

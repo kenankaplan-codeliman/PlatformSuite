@@ -1,10 +1,11 @@
 using CodePro.Application.Features.Offers.Dtos;
 using CodePro.Domain.Enums;
 using Platform.Application.Common.Abstractions;
+using Platform.Application.Common.Attachments;
 
 namespace CodePro.Application.Features.Offers.Commands.CreateOffer;
 
-public sealed class CreateOfferCommand : ICommand<OfferDetailItem>
+public sealed class CreateOfferCommand : ICommand<OfferDetailItem>, IAttachmentCarrier
 {
     public string OfferNumber { get; init; } = string.Empty;
     public OfferType OfferType { get; init; }
@@ -18,4 +19,5 @@ public sealed class CreateOfferCommand : ICommand<OfferDetailItem>
     public decimal DiscountPercentage { get; init; }
     public string? Notes { get; init; }
     public List<OfferItemItem> Items { get; init; } = new();
+    public List<AttachmentAssociation> Attachments { get; init; } = new();
 }

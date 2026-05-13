@@ -11,10 +11,10 @@ namespace Platform.Application.Features.AppOrganizations.Commands.UpdateAppOrgan
 
 public sealed class UpdateAppOrganizationHandler : IRequestHandler<UpdateAppOrganizationCommand, Result<AppOrganizationDetailItem>>
 {
-    private readonly IOrganizationRepository _repository;
+    private readonly IAuthOrganizationRepository _repository;
     private readonly IApplicationDbContext _db;
 
-    public UpdateAppOrganizationHandler(IOrganizationRepository repository, IApplicationDbContext db)
+    public UpdateAppOrganizationHandler(IAuthOrganizationRepository repository, IApplicationDbContext db)
     {
         _repository = repository;
         _db = db;
@@ -62,9 +62,9 @@ public sealed class UpdateAppOrganizationHandler : IRequestHandler<UpdateAppOrga
     /// org'lar memory'e yüklenir, parent → children index'i kurulur ve tüm
     /// değişiklikler tek SaveChanges ile yazılır. Cycle koruması `visited` set'i.
     /// </summary>
-    private async Task RefreshDescendantTitlesAsync(Organization root, CancellationToken cancellationToken)
+    private async Task RefreshDescendantTitlesAsync(AuthOrganization root, CancellationToken cancellationToken)
     {
-        var allOrgs = await _db.Organization
+        var allOrgs = await _db.AuthOrganization
             .Where(o => !o.IsDeleted)
             .ToListAsync(cancellationToken);
 

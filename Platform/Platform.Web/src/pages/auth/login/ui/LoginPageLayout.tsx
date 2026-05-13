@@ -1,4 +1,6 @@
 import type { ReactNode } from 'react';
+// TODO: shared/ui'de Layout wrapper'ı (app-shell composition primitivi olarak) eklenince migrate et.
+// eslint-disable-next-line no-restricted-imports
 import { Layout } from 'antd';
 import { AppHeader } from '../../../../widgets/app-header/ui/AppHeader';
 

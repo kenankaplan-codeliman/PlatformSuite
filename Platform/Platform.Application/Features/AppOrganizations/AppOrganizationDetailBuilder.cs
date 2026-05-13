@@ -17,7 +17,7 @@ internal static class AppOrganizationDetailBuilder
     public static async Task<AppOrganizationDetailItem?> BuildAsync(
         IApplicationDbContext db, Guid id, CancellationToken cancellationToken)
     {
-        var entity = await db.Organization
+        var entity = await db.AuthOrganization
             .AsNoTracking()
             .FirstOrDefaultAsync(o => o.Id == id, cancellationToken);
 
@@ -27,9 +27,9 @@ internal static class AppOrganizationDetailBuilder
 
         if (entity.ParentOrganizationId.HasValue)
         {
-            dto.ParentOrganization = await db.Organization.AsNoTracking()
+            dto.ParentOrganization = await db.AuthOrganization.AsNoTracking()
                 .Where(o => o.Id == entity.ParentOrganizationId.Value)
-                .Select(o => new EntityReference(nameof(Organization))
+                .Select(o => new EntityReference(nameof(AuthOrganization))
                 {
                     Id = o.Id,
                     Name = o.Title ?? o.OrganizationName,
@@ -39,9 +39,9 @@ internal static class AppOrganizationDetailBuilder
 
         if (entity.ReportsTo.HasValue)
         {
-            dto.ReportsTo = await db.Organization.AsNoTracking()
+            dto.ReportsTo = await db.AuthOrganization.AsNoTracking()
                 .Where(o => o.Id == entity.ReportsTo.Value)
-                .Select(o => new EntityReference(nameof(Organization))
+                .Select(o => new EntityReference(nameof(AuthOrganization))
                 {
                     Id = o.Id,
                     Name = o.Title ?? o.OrganizationName,

@@ -3,6 +3,7 @@ using CodePro.Application.Interfaces;
 using CodePro.Domain.Entities.PurchaseRequests;
 using CodePro.Domain.Enums;
 using Platform.Application.Common.Results;
+using Platform.Application.Interfaces;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 
@@ -11,11 +12,16 @@ namespace CodePro.Application.Features.PurchaseRequests.Commands.CreatePurchaseR
 public sealed class CreatePurchaseRequestHandler : IRequestHandler<CreatePurchaseRequestCommand, Result<PurchaseRequestDetailItem>>
 {
     private readonly IPurchaseRequestRepository _repository;
+    private readonly IAttachmentRepository _attachmentRepository;
     private readonly ICodeProDbContext _db;
 
-    public CreatePurchaseRequestHandler(IPurchaseRequestRepository repository, ICodeProDbContext db)
+    public CreatePurchaseRequestHandler(
+        IPurchaseRequestRepository repository,
+        IAttachmentRepository attachmentRepository,
+        ICodeProDbContext db)
     {
         _repository = repository;
+        _attachmentRepository = attachmentRepository;
         _db = db;
     }
 
@@ -47,6 +53,12 @@ public sealed class CreatePurchaseRequestHandler : IRequestHandler<CreatePurchas
         {
             await PurchaseRequestSyncHelper.SyncLinesAsync(_db, entity.Id, request.Lines, cancellationToken);
             await _db.SaveChangesAsync(cancellationToken);
+        }
+
+        if (request.Attachments.Count > 0)
+        {
+            var metadataIds = request.Attachments.Select(a => a.MetadataId).ToList();
+            await _attachmentRepository.AssociateAsync(metadataIds, entity.Id, nameof(PurchaseRequest), cancellationToken);
         }
 
         var detail = await PurchaseRequestDetailBuilder.BuildAsync(_db, entity.Id, cancellationToken);

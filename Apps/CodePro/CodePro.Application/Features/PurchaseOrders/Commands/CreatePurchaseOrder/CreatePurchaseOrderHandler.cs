@@ -3,6 +3,7 @@ using CodePro.Application.Interfaces;
 using CodePro.Domain.Entities.PurchaseOrders;
 using CodePro.Domain.Enums;
 using Platform.Application.Common.Results;
+using Platform.Application.Interfaces;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 
@@ -11,11 +12,16 @@ namespace CodePro.Application.Features.PurchaseOrders.Commands.CreatePurchaseOrd
 public sealed class CreatePurchaseOrderHandler : IRequestHandler<CreatePurchaseOrderCommand, Result<PurchaseOrderDetailItem>>
 {
     private readonly IPurchaseOrderRepository _repository;
+    private readonly IAttachmentRepository _attachmentRepository;
     private readonly ICodeProDbContext _db;
 
-    public CreatePurchaseOrderHandler(IPurchaseOrderRepository repository, ICodeProDbContext db)
+    public CreatePurchaseOrderHandler(
+        IPurchaseOrderRepository repository,
+        IAttachmentRepository attachmentRepository,
+        ICodeProDbContext db)
     {
         _repository = repository;
+        _attachmentRepository = attachmentRepository;
         _db = db;
     }
 
@@ -53,6 +59,12 @@ public sealed class CreatePurchaseOrderHandler : IRequestHandler<CreatePurchaseO
         {
             await PurchaseOrderSyncHelper.SyncLinesAsync(_db, entity.Id, request.Lines, cancellationToken);
             await _db.SaveChangesAsync(cancellationToken);
+        }
+
+        if (request.Attachments.Count > 0)
+        {
+            var metadataIds = request.Attachments.Select(a => a.MetadataId).ToList();
+            await _attachmentRepository.AssociateAsync(metadataIds, entity.Id, nameof(PurchaseOrder), cancellationToken);
         }
 
         var detail = await PurchaseOrderDetailBuilder.BuildAsync(_db, entity.Id, cancellationToken);

@@ -1,6 +1,8 @@
 using CodePro.Application.Features.Budgets.Dtos;
 using CodePro.Application.Interfaces;
+using CodePro.Domain.Entities.Budgets;
 using Platform.Application.Common.Results;
+using Platform.Application.Interfaces;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 
@@ -9,11 +11,16 @@ namespace CodePro.Application.Features.Budgets.Commands.UpdateBudget;
 public sealed class UpdateBudgetHandler : IRequestHandler<UpdateBudgetCommand, Result<BudgetDetailItem>>
 {
     private readonly IBudgetRepository _repository;
+    private readonly IAttachmentRepository _attachmentRepository;
     private readonly ICodeProDbContext _db;
 
-    public UpdateBudgetHandler(IBudgetRepository repository, ICodeProDbContext db)
+    public UpdateBudgetHandler(
+        IBudgetRepository repository,
+        IAttachmentRepository attachmentRepository,
+        ICodeProDbContext db)
     {
         _repository = repository;
+        _attachmentRepository = attachmentRepository;
         _db = db;
     }
 
@@ -43,6 +50,12 @@ public sealed class UpdateBudgetHandler : IRequestHandler<UpdateBudgetCommand, R
 
         await _repository.UpdateAsync(entity, cancellationToken);
 
+        if (request.Attachments.Count > 0)
+        {
+            var metadataIds = request.Attachments.Select(a => a.MetadataId).ToList();
+            await _attachmentRepository.AssociateAsync(metadataIds, entity.Id, nameof(Budget), cancellationToken);
+        }
+
         var result = await _db.Budget.AsNoTracking()
             .Where(b => b.Id == entity.Id)
             .Select(b => new BudgetDetailItem
@@ -52,7 +65,7 @@ public sealed class UpdateBudgetHandler : IRequestHandler<UpdateBudgetCommand, R
                 Description = b.Description,
                 ScopeOrganizationId = b.ScopeOrganizationId,
                 ScopeOrganizationName = b.ScopeOrganizationId.HasValue
-                    ? _db.Organization.Where(o => o.Id == b.ScopeOrganizationId).Select(o => o.OrganizationName).FirstOrDefault()
+                    ? _db.AuthOrganization.Where(o => o.Id == b.ScopeOrganizationId).Select(o => o.OrganizationName).FirstOrDefault()
                     : null,
                 BudgetCategoryId = b.BudgetCategoryId,
                 BudgetCategoryName = b.BudgetCategoryId.HasValue

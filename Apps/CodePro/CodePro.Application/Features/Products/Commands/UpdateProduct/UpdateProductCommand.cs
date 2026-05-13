@@ -1,11 +1,12 @@
 using CodePro.Application.Features.Products.Commands.CreateProduct;
 using CodePro.Application.Features.Products.Dtos;
 using Platform.Application.Common.Abstractions;
+using Platform.Application.Common.Attachments;
 using Platform.Application.Modals.Common;
 
 namespace CodePro.Application.Features.Products.Commands.UpdateProduct;
 
-public sealed class UpdateProductCommand : ICommand<ProductDetailItem>
+public sealed class UpdateProductCommand : ICommand<ProductDetailItem>, IAttachmentCarrier
 {
     public Guid Id { get; init; }
     public string Code { get; init; } = string.Empty;
@@ -28,4 +29,5 @@ public sealed class UpdateProductCommand : ICommand<ProductDetailItem>
     public List<Guid> ManufacturerIds { get; init; } = new();
     public List<string> Keywords { get; init; } = new();
     public List<ProductSkuFormItem> SupplierSkus { get; init; } = new();
+    public List<AttachmentAssociation> Attachments { get; init; } = new();
 }

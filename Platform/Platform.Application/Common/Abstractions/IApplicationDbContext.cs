@@ -15,13 +15,13 @@ namespace Platform.Application.Common.Abstractions;
 public interface IApplicationDbContext
 {
     // Identity
-    DbSet<Organization> Organization { get; }
-    DbSet<User> User { get; }
-    DbSet<AppRole> AppRole { get; }
-    DbSet<AppPrivilege> AppPrivilege { get; }
-    DbSet<AppUserRole> AppUserRole { get; }
-    DbSet<AppRolePrivilege> AppRolePrivilege { get; }
-    DbSet<AppLogin> AppLogin { get; }
+    DbSet<AuthOrganization> AuthOrganization { get; }
+    DbSet<AuthUser> AuthUser { get; }
+    DbSet<AuthRole> AuthRole { get; }
+    DbSet<AuthPrivilege> AuthPrivilege { get; }
+    DbSet<AuthUserRole> AuthUserRole { get; }
+    DbSet<AuthRolePrivilege> AuthRolePrivilege { get; }
+    DbSet<AuthUserLogin> AuthUserLogin { get; }
 
     // Activity
     DbSet<ActivityBase> Activity { get; }

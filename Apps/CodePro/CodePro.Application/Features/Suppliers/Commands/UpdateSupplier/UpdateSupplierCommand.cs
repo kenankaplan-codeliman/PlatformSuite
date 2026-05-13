@@ -1,10 +1,11 @@
 using CodePro.Application.Features.Suppliers.Dtos;
 using CodePro.Domain.Enums;
 using Platform.Application.Common.Abstractions;
+using Platform.Application.Common.Attachments;
 
 namespace CodePro.Application.Features.Suppliers.Commands.UpdateSupplier;
 
-public sealed class UpdateSupplierCommand : ICommand<SupplierDetailItem>
+public sealed class UpdateSupplierCommand : ICommand<SupplierDetailItem>, IAttachmentCarrier
 {
     public Guid Id { get; init; }
     public string Name { get; init; } = string.Empty;
@@ -30,4 +31,6 @@ public sealed class UpdateSupplierCommand : ICommand<SupplierDetailItem>
     public string? City { get; init; }
     public string? Country { get; init; }
     public string? PostalCode { get; init; }
+
+    public List<AttachmentAssociation> Attachments { get; init; } = new();
 }

@@ -2,13 +2,14 @@ import { useMemo } from 'react';
 import { useFormContext } from 'react-hook-form';
 import { useTranslation } from 'react-i18next';
 import {
-  AttachmentPanel,
+  AttachmentSection,
   DetailPageLayout,
   FormSection,
   SelectField,
   TextAreaField,
   TextField,
   useRouteMode,
+  type DetailPageTab,
 } from '@platform/ui';
 import {
   useProductCategoryListQuery,
@@ -35,6 +36,7 @@ export function ProductCategoryDetailPage() {
   const { mode, id } = useRouteMode();
   const { t: tPage } = useTranslation('page.product-categories-detail');
   const { t: tEntity } = useTranslation('entity.product-category');
+  const { t: tCommon } = useTranslation('common');
 
   const query = useProductCategoryQuery(id);
   const upsert = useUpsertProductCategory();
@@ -45,6 +47,14 @@ export function ProductCategoryDetailPage() {
     if (mode === 'edit') return tPage('editTitle');
     return query.data?.title ?? query.data?.name ?? tPage('viewTitle');
   }, [mode, query.data?.title, query.data?.name, tPage]);
+
+  const tabs: DetailPageTab[] = [
+    {
+      key: 'attachments',
+      label: tCommon('tabs.attachments'),
+      content: <AttachmentSection entityType="ProductCategory" entityId={id} />,
+    },
+  ];
 
   return (
     <DetailPageLayout<ProductCategoryFormValues>
@@ -66,9 +76,9 @@ export function ProductCategoryDetailPage() {
           : undefined
       }
       afterSaveNavigation={(saved) => RoutePaths.ProductCategoryView(saved.id)}
+      tabs={tabs}
     >
       <GeneralSection currentId={id} />
-      <AttachmentPanel entityType="ProductCategory" entityId={id} />
     </DetailPageLayout>
   );
 

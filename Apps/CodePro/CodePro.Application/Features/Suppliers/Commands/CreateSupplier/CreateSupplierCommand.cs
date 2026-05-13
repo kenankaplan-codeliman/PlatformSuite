@@ -1,10 +1,11 @@
 using CodePro.Application.Features.Suppliers.Dtos;
 using CodePro.Domain.Enums;
 using Platform.Application.Common.Abstractions;
+using Platform.Application.Common.Attachments;
 
 namespace CodePro.Application.Features.Suppliers.Commands.CreateSupplier;
 
-public sealed class CreateSupplierCommand : ICommand<SupplierDetailItem>
+public sealed class CreateSupplierCommand : ICommand<SupplierDetailItem>, IAttachmentCarrier
 {
     public string Name { get; init; } = string.Empty;
     public string? Industry { get; init; }
@@ -29,4 +30,6 @@ public sealed class CreateSupplierCommand : ICommand<SupplierDetailItem>
     public string? City { get; init; }
     public string? Country { get; init; }
     public string? PostalCode { get; init; }
+
+    public List<AttachmentAssociation> Attachments { get; init; } = new();
 }

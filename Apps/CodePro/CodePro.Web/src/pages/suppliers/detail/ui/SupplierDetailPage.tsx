@@ -2,7 +2,7 @@ import { useMemo } from 'react';
 import { useFormContext } from 'react-hook-form';
 import { useTranslation } from 'react-i18next';
 import {
-  AttachmentPanel,
+  AttachmentSection,
   DetailPageLayout,
   FormRow,
   FormSection,
@@ -98,9 +98,14 @@ export function SupplierDetailPage() {
     return query.data?.name ?? tPage('viewTitle');
   }, [mode, query.data?.name, tPage]);
 
-  const tabs: DetailPageTab[] | undefined =
-    mode === 'new' || !id
-      ? undefined
+  const tabs: DetailPageTab[] = [
+    {
+      key: 'attachments',
+      label: tCommon('tabs.attachments'),
+      content: <AttachmentSection entityType="Supplier" entityId={id} />,
+    },
+    ...(mode === 'new' || !id
+      ? []
       : [
           {
             key: 'activities',
@@ -109,7 +114,8 @@ export function SupplierDetailPage() {
               <RelatedActivitiesTab entityType="Supplier" entityId={id} />
             ),
           },
-        ];
+        ]),
+  ];
 
   return (
     <DetailPageLayout<SupplierFormValues>
@@ -137,7 +143,6 @@ export function SupplierDetailPage() {
       <CompanySection />
       <ContactSection />
       <AddressSection />
-      <AttachmentPanel entityType="Supplier" entityId={id} />
     </DetailPageLayout>
   );
 

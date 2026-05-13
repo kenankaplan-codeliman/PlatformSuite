@@ -15,9 +15,11 @@
     </PackageReference>
     <PackageReference Include="Microsoft.Graph" Version="5.100.0" />
     <PackageReference Include="Microsoft.Graph.Core" Version="3.2.5" />
+    <PackageReference Include="Microsoft.Extensions.Hosting.Abstractions" Version="10.0.0" />
     <PackageReference Include="Microsoft.IdentityModel.Tokens" Version="8.15.0" />
     <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="10.0.0" />
     <PackageReference Include="System.IdentityModel.Tokens.Jwt" Version="8.15.0" />
+    <PackageReference Include="dbup-postgresql" Version="6.0.3" />
 
     <!-- NU1903 override: EntityFrameworkCore.Tools design-time zinciri üzerinden
          `System.Security.Cryptography.Xml` 9.0.0 (zafiyetli) geliyordu.
@@ -33,6 +35,10 @@
   <ItemGroup>
     <ProjectReference Include="..\Platform.Application\Platform.Application.csproj" />
     <ProjectReference Include="..\Platform.Domain\Platform.Domain.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <EmbeddedResource Include="Data\Scripts\**\*.sql" />
   </ItemGroup>
 
 </Project>

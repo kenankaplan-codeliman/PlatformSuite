@@ -11,20 +11,19 @@ public static class AppUserMappings
 {
     public static void Register(TypeAdapterConfig config)
     {
-        config.NewConfig<User, AppUserDetailItem>()
-            .Ignore(d => d.OrganizationName!)
-            .Ignore(d => d.ManagerName!)
-            .Ignore(d => d.Roles!);
+        // Detail/List item içindeki Organization & Manager EntityReference'ları
+        // builder/handler tarafından elle projection ile doldurulur; auto-map yok.
+        config.NewConfig<AuthUser, AppUserDetailItem>()
+            .Ignore(d => d.Organization!, d => d.Manager!, d => d.Roles!);
 
-        config.NewConfig<User, AppUserListItem>()
-            .Ignore(d => d.OrganizationName!)
-            .Ignore(d => d.ManagerName!);
+        config.NewConfig<AuthUser, AppUserListItem>()
+            .Ignore(d => d.Organization!, d => d.Manager!);
 
-        config.NewConfig<CreateAppUserCommand, User>()
+        config.NewConfig<CreateAppUserCommand, AuthUser>()
             .Ignore(d => d.Manager!, d => d.AzureUserId!, d => d.PasswordHash!)
             .IgnoreAuditFields();
 
-        config.NewConfig<UpdateAppUserCommand, User>()
+        config.NewConfig<UpdateAppUserCommand, AuthUser>()
             .IgnoreNullValues(true)
             .Ignore(d => d.Manager!, d => d.AzureUserId!, d => d.PasswordHash!)
             .IgnoreAuditFields();

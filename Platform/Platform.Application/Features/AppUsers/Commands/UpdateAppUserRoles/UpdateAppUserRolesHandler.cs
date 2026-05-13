@@ -6,10 +6,10 @@ namespace Platform.Application.Features.AppUsers.Commands.UpdateAppUserRoles;
 
 public sealed class UpdateAppUserRolesHandler : IRequestHandler<UpdateAppUserRolesCommand, Result>
 {
-    private readonly IUserRepository _userRepository;
-    private readonly IRoleRepository _roleRepository;
+    private readonly IAuthUserRepository _userRepository;
+    private readonly IAuthRoleRepository _roleRepository;
 
-    public UpdateAppUserRolesHandler(IUserRepository userRepository, IRoleRepository roleRepository)
+    public UpdateAppUserRolesHandler(IAuthUserRepository userRepository, IAuthRoleRepository roleRepository)
     {
         _userRepository = userRepository;
         _roleRepository = roleRepository;

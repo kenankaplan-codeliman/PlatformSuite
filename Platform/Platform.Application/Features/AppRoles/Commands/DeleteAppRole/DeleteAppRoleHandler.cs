@@ -6,9 +6,9 @@ namespace Platform.Application.Features.AppRoles.Commands.DeleteAppRole;
 
 public sealed class DeleteAppRoleHandler : IRequestHandler<DeleteAppRoleCommand, Result>
 {
-    private readonly IRoleRepository _repository;
+    private readonly IAuthRoleRepository _repository;
 
-    public DeleteAppRoleHandler(IRoleRepository repository) => _repository = repository;
+    public DeleteAppRoleHandler(IAuthRoleRepository repository) => _repository = repository;
 
     public async Task<Result> Handle(DeleteAppRoleCommand request, CancellationToken cancellationToken)
     {

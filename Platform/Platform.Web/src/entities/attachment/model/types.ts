@@ -1,54 +1,34 @@
 /**
  * Backend DTO'su ile birebir uyumlu — Platform.Application/Features/Attachments/Dtos/AttachmentMetadataItem.
+ *
+ * documentType serbest string'tir; geçerli değer listesi her app tarafında
+ * tanımlanır (örn. Apps/Crm/Crm.Web/src/entities/account/model/documentTypes.ts).
  */
-
-export type DocumentType =
-  | 'Other'
-  | 'TicaretSicilGazetesi'
-  | 'VergiLevhasi'
-  | 'ImzaSirkuleri'
-  | 'FaaliyetBelgesi'
-  | 'KapasiteRaporu'
-  | 'AnaSozlesme'
-  | 'KurulusKarari'
-  | 'TicaretSicilBelgesi'
-  | 'MersisBelgesi'
-  | 'MaliTablo'
-  | 'BilancoBelgesi'
-  | 'KrediDerecelendirme'
-  | 'BankaReferansBelgesi'
-  | 'IsoSertifikasi'
-  | 'UrununUygunlukBelgesi'
-  | 'AkreditasyonBelgesi'
-  | 'Sozlesme'
-  | 'Teklif'
-  | 'Siparis'
-  | 'Fatura'
-  | 'Irsaliye'
-  | 'Sartname'
-  | 'TeknikDokuman'
-  | 'VekaletName'
-  | 'YetkiYazisi'
-  | 'ReferansMektubu'
-  | 'IflasSorgulama';
 
 export interface AttachmentMetadataItem {
   id: string;
   fileName: string;
   contentType: string;
   fileSize: number;
-  documentType: DocumentType;
+  documentType: string;
   subject?: string | null;
   description?: string | null;
   createdAt: string;
   createdBy: string;
 }
 
-export interface UploadAttachmentInput {
+export interface UploadAttachmentDraftInput {
   file: File;
-  entityId: string;
-  entityType: string;
-  documentType: DocumentType;
+  documentType: string;
   subject?: string;
   description?: string;
+}
+
+/**
+ * Parent CreateXCommand / UpdateXCommand içinde Attachments listesine konan
+ * referans. Sadece metadataId taşır — documentType / subject / description
+ * draft upload zamanı kaydedilmiştir.
+ */
+export interface AttachmentAssociation {
+  metadataId: string;
 }

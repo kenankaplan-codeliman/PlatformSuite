@@ -2,7 +2,7 @@ import { useMemo } from 'react';
 import { useFormContext } from 'react-hook-form';
 import { useTranslation } from 'react-i18next';
 import {
-  AttachmentPanel,
+  AttachmentSection,
   DetailPageLayout,
   FormSection,
   NumberField,
@@ -51,16 +51,22 @@ export function OfferDetailPage() {
     return query.data?.subject ?? tPage('viewTitle');
   }, [mode, query.data?.subject, tPage]);
 
-  const tabs: DetailPageTab[] | undefined =
-    mode === 'new' || !id
-      ? undefined
+  const tabs: DetailPageTab[] = [
+    {
+      key: 'attachments',
+      label: tCommon('tabs.attachments'),
+      content: <AttachmentSection entityType="Offer" entityId={id} />,
+    },
+    ...(mode === 'new' || !id
+      ? []
       : [
           {
             key: 'activities',
             label: tCommon('tabs.activities'),
             content: <RelatedActivitiesTab entityType="Offer" entityId={id} />,
           },
-        ];
+        ]),
+  ];
 
   return (
     <DetailPageLayout<OfferFormValues>
@@ -77,7 +83,6 @@ export function OfferDetailPage() {
       tabs={tabs}
     >
       <General />
-      <AttachmentPanel entityType="Offer" entityId={id} />
     </DetailPageLayout>
   );
 

@@ -1,10 +1,11 @@
 using CodePro.Application.Features.Contracts.Dtos;
 using CodePro.Domain.Enums;
 using Platform.Application.Common.Abstractions;
+using Platform.Application.Common.Attachments;
 
 namespace CodePro.Application.Features.Contracts.Commands.UpdateContract;
 
-public sealed class UpdateContractCommand : ICommand<ContractDetailItem>
+public sealed class UpdateContractCommand : ICommand<ContractDetailItem>, IAttachmentCarrier
 {
     public Guid Id { get; init; }
     public string ContractNumber { get; init; } = string.Empty;
@@ -24,4 +25,5 @@ public sealed class UpdateContractCommand : ICommand<ContractDetailItem>
     public int ReminderDaysBefore { get; init; }
     public string? Notes { get; init; }
     public ContractStatus Status { get; init; }
+    public List<AttachmentAssociation> Attachments { get; init; } = new();
 }

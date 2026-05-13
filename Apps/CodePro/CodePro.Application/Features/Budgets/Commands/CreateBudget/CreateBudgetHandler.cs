@@ -3,6 +3,7 @@ using CodePro.Application.Interfaces;
 using CodePro.Domain.Entities.Budgets;
 using CodePro.Domain.Enums;
 using Platform.Application.Common.Results;
+using Platform.Application.Interfaces;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 
@@ -11,11 +12,16 @@ namespace CodePro.Application.Features.Budgets.Commands.CreateBudget;
 public sealed class CreateBudgetHandler : IRequestHandler<CreateBudgetCommand, Result<BudgetDetailItem>>
 {
     private readonly IBudgetRepository _repository;
+    private readonly IAttachmentRepository _attachmentRepository;
     private readonly ICodeProDbContext _db;
 
-    public CreateBudgetHandler(IBudgetRepository repository, ICodeProDbContext db)
+    public CreateBudgetHandler(
+        IBudgetRepository repository,
+        IAttachmentRepository attachmentRepository,
+        ICodeProDbContext db)
     {
         _repository = repository;
+        _attachmentRepository = attachmentRepository;
         _db = db;
     }
 
@@ -44,6 +50,12 @@ public sealed class CreateBudgetHandler : IRequestHandler<CreateBudgetCommand, R
         };
         await _repository.CreateAsync(entity, cancellationToken);
 
+        if (request.Attachments.Count > 0)
+        {
+            var metadataIds = request.Attachments.Select(a => a.MetadataId).ToList();
+            await _attachmentRepository.AssociateAsync(metadataIds, entity.Id, nameof(Budget), cancellationToken);
+        }
+
         return await BuildDetailAsync(entity.Id, cancellationToken);
     }
 
@@ -58,7 +70,7 @@ public sealed class CreateBudgetHandler : IRequestHandler<CreateBudgetCommand, R
                 Description = b.Description,
                 ScopeOrganizationId = b.ScopeOrganizationId,
                 ScopeOrganizationName = b.ScopeOrganizationId.HasValue
-                    ? _db.Organization.Where(o => o.Id == b.ScopeOrganizationId).Select(o => o.OrganizationName).FirstOrDefault()
+                    ? _db.AuthOrganization.Where(o => o.Id == b.ScopeOrganizationId).Select(o => o.OrganizationName).FirstOrDefault()
                     : null,
                 BudgetCategoryId = b.BudgetCategoryId,
                 BudgetCategoryName = b.BudgetCategoryId.HasValue

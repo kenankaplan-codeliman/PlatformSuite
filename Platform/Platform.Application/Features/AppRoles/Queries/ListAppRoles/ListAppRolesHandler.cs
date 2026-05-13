@@ -16,7 +16,7 @@ public sealed class ListAppRolesHandler : IRequestHandler<ListAppRolesQuery, Res
 
     public async Task<Result<PagedResult<AppRoleListItem>>> Handle(ListAppRolesQuery request, CancellationToken cancellationToken)
     {
-        var query = _db.AppRole.AsNoTracking();
+        var query = _db.AuthRole.AsNoTracking();
         var filters = request.Filters;
 
         if (!string.IsNullOrWhiteSpace(filters.RoleName))

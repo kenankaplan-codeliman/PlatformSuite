@@ -1,9 +1,11 @@
 using Crm.Application.Interfaces;
 using Crm.Infrastructure.Data;
+using Crm.Infrastructure.Data.Migrations;
 using Crm.Infrastructure.References;
 using Crm.Infrastructure.Repositories;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Platform.Application.Common.Database;
 using Platform.Application.Common.References;
 using Platform.Application.Interfaces;
 
@@ -17,6 +19,9 @@ public static class DependencyInjection
     {
         // ICrmDbContext → CrmDbContext (CrmDbContext zaten HostBuilderExtensions tarafından kayıt edildi).
         services.AddScoped<ICrmDbContext>(sp => sp.GetRequiredService<CrmDbContext>());
+
+        // DB migration runner — Program.cs'te app.RunDatabaseMigrationsAsync() tarafından çağrılır.
+        services.AddScoped<IDatabaseMigrator, CrmDatabaseMigrator>();
 
         // CRM-spesifik repository'ler
         services.AddScoped<IAccountRepository, AccountRepository>();

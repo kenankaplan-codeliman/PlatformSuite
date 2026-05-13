@@ -3,6 +3,7 @@ using CodePro.Application.Interfaces;
 using CodePro.Domain.Entities.Contracts;
 using CodePro.Domain.Enums;
 using Platform.Application.Common.Results;
+using Platform.Application.Interfaces;
 using Mapster;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
@@ -12,11 +13,16 @@ namespace CodePro.Application.Features.Contracts.Commands.CreateContract;
 public sealed class CreateContractHandler : IRequestHandler<CreateContractCommand, Result<ContractDetailItem>>
 {
     private readonly IContractRepository _repository;
+    private readonly IAttachmentRepository _attachmentRepository;
     private readonly ICodeProDbContext _db;
 
-    public CreateContractHandler(IContractRepository repository, ICodeProDbContext db)
+    public CreateContractHandler(
+        IContractRepository repository,
+        IAttachmentRepository attachmentRepository,
+        ICodeProDbContext db)
     {
         _repository = repository;
+        _attachmentRepository = attachmentRepository;
         _db = db;
     }
 
@@ -47,6 +53,12 @@ public sealed class CreateContractHandler : IRequestHandler<CreateContractComman
             Status = ContractStatus.Draft,
         };
         await _repository.CreateAsync(entity, cancellationToken);
+
+        if (request.Attachments.Count > 0)
+        {
+            var metadataIds = request.Attachments.Select(a => a.MetadataId).ToList();
+            await _attachmentRepository.AssociateAsync(metadataIds, entity.Id, nameof(Contract), cancellationToken);
+        }
 
         return entity.Adapt<ContractDetailItem>();
     }

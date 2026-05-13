@@ -16,7 +16,7 @@ public sealed class ListAppOrganizationsHandler : IRequestHandler<ListAppOrganiz
 
     public async Task<Result<PagedResult<AppOrganizationListItem>>> Handle(ListAppOrganizationsQuery request, CancellationToken cancellationToken)
     {
-        var query = _db.Organization.AsNoTracking();
+        var query = _db.AuthOrganization.AsNoTracking();
         var filters = request.Filters;
 
         if (!string.IsNullOrWhiteSpace(filters.OrganizationName))
@@ -63,7 +63,7 @@ public sealed class ListAppOrganizationsHandler : IRequestHandler<ListAppOrganiz
 
         if (parentIds.Count > 0)
         {
-            var parents = await _db.Organization.AsNoTracking()
+            var parents = await _db.AuthOrganization.AsNoTracking()
                 .Where(o => parentIds.Contains(o.Id))
                 .Select(o => new { o.Id, o.OrganizationName })
                 .ToDictionaryAsync(o => o.Id, o => o.OrganizationName, cancellationToken);

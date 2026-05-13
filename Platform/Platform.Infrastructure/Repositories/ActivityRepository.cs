@@ -98,7 +98,7 @@ public class ActivityRepository : BaseEntityRepository<ActivityBase>, IActivityR
     {
         var query =
             from a in dbContext.Activity.AsNoTracking().IgnoreAutoIncludes()
-            join u in dbContext.User.AsNoTracking()
+            join u in dbContext.AuthUser.AsNoTracking()
                 on a.OwnerId equals u.Id into userGroup
             from u in userGroup.DefaultIfEmpty()
             select new { Activity = a, User = u };
@@ -167,7 +167,7 @@ public class ActivityRepository : BaseEntityRepository<ActivityBase>, IActivityR
             EndDate = p.EndDate,
             DueDate = p.DueDate,
             IsActive = p.IsActive,
-            Owner = new EntityReference(nameof(User))
+            Owner = new EntityReference(nameof(AuthUser))
             {
                 Id = p.OwnerId ?? Guid.Empty,
                 Name = $"{p.OwnerIdFirstName} {p.OwnerIdLastName}".Trim()

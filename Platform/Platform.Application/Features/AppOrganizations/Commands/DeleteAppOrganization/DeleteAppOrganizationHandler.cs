@@ -6,9 +6,9 @@ namespace Platform.Application.Features.AppOrganizations.Commands.DeleteAppOrgan
 
 public sealed class DeleteAppOrganizationHandler : IRequestHandler<DeleteAppOrganizationCommand, Result>
 {
-    private readonly IOrganizationRepository _repository;
+    private readonly IAuthOrganizationRepository _repository;
 
-    public DeleteAppOrganizationHandler(IOrganizationRepository repository) => _repository = repository;
+    public DeleteAppOrganizationHandler(IAuthOrganizationRepository repository) => _repository = repository;
 
     public async Task<Result> Handle(DeleteAppOrganizationCommand request, CancellationToken cancellationToken)
     {

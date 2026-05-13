@@ -16,7 +16,7 @@ public sealed class SearchAppOrganizationsHandler : IRequestHandler<SearchAppOrg
 
     public async Task<Result<PagedResult<EntityReference>>> Handle(SearchAppOrganizationsQuery request, CancellationToken cancellationToken)
     {
-        var query = _db.Organization.AsNoTracking().Where(o => o.IsActive);
+        var query = _db.AuthOrganization.AsNoTracking().Where(o => o.IsActive);
 
         if (!string.IsNullOrWhiteSpace(request.SearchText))
         {
@@ -35,7 +35,7 @@ public sealed class SearchAppOrganizationsHandler : IRequestHandler<SearchAppOrg
             .OrderBy(o => o.Title ?? o.OrganizationName)
             .Skip(skip)
             .Take(pageSize + 1)
-            .Select(o => new EntityReference(nameof(Organization))
+            .Select(o => new EntityReference(nameof(AuthOrganization))
             {
                 Id = o.Id,
                 Name = o.Title ?? o.OrganizationName,

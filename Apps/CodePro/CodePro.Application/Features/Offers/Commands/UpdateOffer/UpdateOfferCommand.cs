@@ -1,10 +1,11 @@
 using CodePro.Application.Features.Offers.Dtos;
 using CodePro.Domain.Enums;
 using Platform.Application.Common.Abstractions;
+using Platform.Application.Common.Attachments;
 
 namespace CodePro.Application.Features.Offers.Commands.UpdateOffer;
 
-public sealed class UpdateOfferCommand : ICommand<OfferDetailItem>
+public sealed class UpdateOfferCommand : ICommand<OfferDetailItem>, IAttachmentCarrier
 {
     public Guid Id { get; init; }
     public string OfferNumber { get; init; } = string.Empty;
@@ -20,4 +21,5 @@ public sealed class UpdateOfferCommand : ICommand<OfferDetailItem>
     public string? Notes { get; init; }
     public OfferStatus Status { get; init; }
     public List<OfferItemItem> Items { get; init; } = new();
+    public List<AttachmentAssociation> Attachments { get; init; } = new();
 }

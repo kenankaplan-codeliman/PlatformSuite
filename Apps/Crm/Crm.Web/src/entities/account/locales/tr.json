@@ -20,7 +20,8 @@
   "sections": {
     "general": "Genel Bilgiler",
     "details": "Detaylar",
-    "contacts": "Kontaklar"
+    "contacts": "Kontaklar",
+    "attachments": "Ek Dosyalar"
   },
   "contacts": {
     "addLabel": "Kontak Ekle",

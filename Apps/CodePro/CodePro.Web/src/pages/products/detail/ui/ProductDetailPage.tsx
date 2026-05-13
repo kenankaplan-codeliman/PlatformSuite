@@ -2,7 +2,7 @@ import { useMemo } from 'react';
 import { useFieldArray, useFormContext } from 'react-hook-form';
 import { useTranslation } from 'react-i18next';
 import {
-  AttachmentPanel,
+  AttachmentSection,
   Button,
   DetailPageLayout,
   EntityLookupField,
@@ -93,9 +93,14 @@ export function ProductDetailPage() {
 
   const formData = useMemo(() => mapDataToForm(query.data), [query.data]);
 
-  const tabs: DetailPageTab[] | undefined =
-    mode === 'new' || !id
-      ? undefined
+  const tabs: DetailPageTab[] = [
+    {
+      key: 'attachments',
+      label: tCommon('tabs.attachments'),
+      content: <AttachmentSection entityType="Product" entityId={id} />,
+    },
+    ...(mode === 'new' || !id
+      ? []
       : [
           {
             key: 'activities',
@@ -104,7 +109,8 @@ export function ProductDetailPage() {
               <RelatedActivitiesTab entityType="Product" entityId={id} />
             ),
           },
-        ];
+        ]),
+  ];
 
   return (
     <DetailPageLayout<ProductFormValues>
@@ -133,7 +139,6 @@ export function ProductDetailPage() {
       <KeywordsSection />
       <SupplierSkusSection />
       <ProductImagesSection productId={id} />
-      <AttachmentPanel entityType="Product" entityId={id} />
     </DetailPageLayout>
   );
 

@@ -5,34 +5,36 @@ import type { AppError } from '../../../shared/types/ApiError';
 import { attachmentDataSource } from './attachmentDataSource';
 import type {
   AttachmentMetadataItem,
-  UploadAttachmentInput,
+  UploadAttachmentDraftInput,
 } from '../model/types';
 
-export function useUploadAttachment() {
-  const queryClient = useQueryClient();
-
-  return useMutation<AttachmentMetadataItem, AppError, UploadAttachmentInput>({
+/**
+ * Bir dosyayı draft olarak yükler. İlişkilendirme parent entity command'ı
+ * gönderildiğinde gerçekleşir; bu yüzden bu mutation cache'i invalidate etmez.
+ */
+export function useUploadAttachmentDraft() {
+  return useMutation<AttachmentMetadataItem, AppError, UploadAttachmentDraftInput>({
     mutationFn: async (input) => {
       try {
-        return await attachmentDataSource.upload(input);
+        return await attachmentDataSource.uploadDraft(input);
       } catch (err) {
         throw mapAxiosError(err);
       }
-    },
-    onSuccess: (_saved, input) => {
-      queryClient.invalidateQueries({
-        queryKey: attachmentKeys.byEntity(input.entityType, input.entityId),
-      });
     },
   });
 }
 
 interface DeleteAttachmentInput {
   id: string;
-  entityId: string;
-  entityType: string;
+  entityId?: string;
+  entityType?: string;
 }
 
+/**
+ * Bir attachment'ı siler. Parent entity'e ilişkilendirilmişse (entityId/entityType
+ * verildiyse) o entity'nin attachment listesi invalidate edilir. Draft (henüz
+ * ilişkilendirilmemiş) silme işlemlerinde invalidate yapılmaz.
+ */
 export function useDeleteAttachment() {
   const queryClient = useQueryClient();
 
@@ -45,9 +47,11 @@ export function useDeleteAttachment() {
       }
     },
     onSuccess: (_void, input) => {
-      queryClient.invalidateQueries({
-        queryKey: attachmentKeys.byEntity(input.entityType, input.entityId),
-      });
+      if (input.entityId && input.entityType) {
+        queryClient.invalidateQueries({
+          queryKey: attachmentKeys.byEntity(input.entityType, input.entityId),
+        });
+      }
     },
   });
 }

@@ -2,6 +2,7 @@ using Platform.Application.Common.Abstractions;
 using Platform.Application.Common.Pagination;
 using Platform.Application.Common.Results;
 using Platform.Application.Features.AppUsers.Dtos;
+using Platform.Application.Modals.Common;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 
@@ -15,7 +16,7 @@ public sealed class ListAppUsersHandler : IRequestHandler<ListAppUsersQuery, Res
 
     public async Task<Result<PagedResult<AppUserListItem>>> Handle(ListAppUsersQuery request, CancellationToken cancellationToken)
     {
-        var query = _db.User.AsNoTracking();
+        var query = _db.AuthUser.AsNoTracking();
         var filters = request.Filters;
 
         if (!string.IsNullOrWhiteSpace(filters.FullName))
@@ -47,30 +48,52 @@ public sealed class ListAppUsersHandler : IRequestHandler<ListAppUsersQuery, Res
             .OrderBy(u => u.FirstName).ThenBy(u => u.LastName)
             .Skip(skip)
             .Take(pageSize + 1)
-            .Select(u => new AppUserListItem
+            .Select(u => new
             {
-                Id = u.Id,
-                Email = u.Email,
-                FirstName = u.FirstName,
-                LastName = u.LastName,
-                PhoneNumber = u.PhoneNumber,
-                OrganizationId = u.OrganizationId,
-                OrganizationName = _db.Organization.Where(o => o.Id == u.OrganizationId)
-                    .Select(o => o.OrganizationName).FirstOrDefault(),
-                ManagerId = u.ManagerId,
-                ManagerName = u.ManagerId.HasValue
-                    ? _db.User.Where(m => m.Id == u.ManagerId).Select(m => m.FirstName + " " + m.LastName).FirstOrDefault()
+                u.Id,
+                u.Email,
+                u.FirstName,
+                u.LastName,
+                u.PhoneNumber,
+                u.IsActive,
+                Org = _db.AuthOrganization.Where(o => o.Id == u.OrganizationId)
+                    .Select(o => new { o.Id, o.OrganizationName, o.Title })
+                    .FirstOrDefault(),
+                Mgr = u.ManagerId.HasValue
+                    ? _db.AuthUser.Where(m => m.Id == u.ManagerId)
+                        .Select(m => new { m.Id, m.FirstName, m.LastName, m.Email })
+                        .FirstOrDefault()
                     : null,
-                IsActive = u.IsActive,
             })
             .ToListAsync(cancellationToken);
 
         var hasMore = items.Count > pageSize;
         if (hasMore) items.RemoveAt(items.Count - 1);
 
+        var result = items.Select(u => new AppUserListItem
+        {
+            Id = u.Id,
+            Email = u.Email,
+            FirstName = u.FirstName,
+            LastName = u.LastName,
+            PhoneNumber = u.PhoneNumber,
+            IsActive = u.IsActive,
+            Organization = u.Org == null ? null : new EntityReference("Organization")
+            {
+                Id = u.Org.Id,
+                Name = u.Org.Title ?? u.Org.OrganizationName,
+            },
+            Manager = u.Mgr == null ? null : new EntityReference("User")
+            {
+                Id = u.Mgr.Id,
+                Name = u.Mgr.FirstName + " " + u.Mgr.LastName,
+                Email = u.Mgr.Email,
+            },
+        }).ToList();
+
         return new PagedResult<AppUserListItem>
         {
-            Data = items,
+            Data = result,
             Pagination = new PaginationResponse
             {
                 PageNumber = pageNumber,

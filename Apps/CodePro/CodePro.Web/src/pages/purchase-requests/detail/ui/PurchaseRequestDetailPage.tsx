@@ -2,12 +2,13 @@ import { useMemo } from 'react';
 import { useFormContext } from 'react-hook-form';
 import { useTranslation } from 'react-i18next';
 import {
-  AttachmentPanel,
+  AttachmentSection,
   DetailPageLayout,
   FormSection,
   TextAreaField,
   TextField,
   useRouteMode,
+  type DetailPageTab,
 } from '@platform/ui';
 import { usePurchaseRequestQuery } from '../../../../entities/purchase-request/api/usePurchaseRequestQueries';
 import {
@@ -35,6 +36,7 @@ export function PurchaseRequestDetailPage() {
   const { mode, id } = useRouteMode();
   const { t: tPage } = useTranslation('page.purchase-requests-detail');
   const { t: tEntity } = useTranslation('entity.purchase-request');
+  const { t: tCommon } = useTranslation('common');
 
   const query = usePurchaseRequestQuery(id);
   const upsert = useUpsertPurchaseRequest();
@@ -45,6 +47,14 @@ export function PurchaseRequestDetailPage() {
     if (mode === 'edit') return tPage('editTitle');
     return query.data?.title ?? tPage('viewTitle');
   }, [mode, query.data?.title, tPage]);
+
+  const tabs: DetailPageTab[] = [
+    {
+      key: 'attachments',
+      label: tCommon('tabs.attachments'),
+      content: <AttachmentSection entityType="PurchaseRequest" entityId={id} />,
+    },
+  ];
 
   return (
     <DetailPageLayout<PurchaseRequestFormValues>
@@ -58,9 +68,9 @@ export function PurchaseRequestDetailPage() {
       onSubmit={async (values) => { await upsert.mutateAsync(values); }}
       onDelete={id ? async () => { await del.mutateAsync(id); } : undefined}
       afterSaveNavigation={(saved) => RoutePaths.PurchaseRequestView(saved.id)}
+      tabs={tabs}
     >
       <General />
-      <AttachmentPanel entityType="PurchaseRequest" entityId={id} />
     </DetailPageLayout>
   );
 

@@ -8,7 +8,7 @@ internal static class AppRoleDetailBuilder
 {
     public static async Task<AppRoleDetailItem?> BuildAsync(IApplicationDbContext db, Guid id, CancellationToken cancellationToken)
     {
-        var detail = await db.AppRole.AsNoTracking()
+        var detail = await db.AuthRole.AsNoTracking()
             .Where(r => r.Id == id)
             .Select(r => new AppRoleDetailItem
             {
@@ -24,7 +24,7 @@ internal static class AppRoleDetailBuilder
 
         if (detail is null) return null;
 
-        detail.Privileges = await db.AppRolePrivilege.AsNoTracking()
+        detail.Privileges = await db.AuthRolePrivilege.AsNoTracking()
             .Where(rp => rp.RoleId == id && rp.IsActive)
             .Select(rp => new AppRolePrivilegeItem
             {

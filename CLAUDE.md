@@ -23,17 +23,15 @@ PlatformSuite/
 │   ├── Crm/
 │   │   ├── Crm.Domain/             # Account, Contact, Lead, Opportunity
 │   │   ├── Crm.Application/        # Account/Contact/Lead/Opportunity feature'ları
-│   │   ├── Crm.Infrastructure/     # CrmDbContext, CRM repository'leri, CRM resolver'ları
+│   │   ├── Crm.Infrastructure/     # CrmDbContext, CRM repository'leri, resolver'ları + Data/Scripts/ (DbUp SQL migrations)
 │   │   ├── Crm.Api/                # AccountController, ContactController, LeadController, OpportunityController
-│   │   ├── Crm.Web/                # CRM React app'i (Account/Contact/Lead/Opportunity sayfaları)
-│   │   └── Crm.Database/           # CRM SQL schema scriptleri
+│   │   └── Crm.Web/                # CRM React app'i (Account/Contact/Lead/Opportunity sayfaları)
 │   └── CodePro/
 │       ├── CodePro.Domain/         # Supplier, PurchaseOrder, Budget, Offer, Contract, Product, ...
 │       ├── CodePro.Application/    # CodePro feature'ları
-│       ├── CodePro.Infrastructure/ # CodeProDbContext, CodePro repository'leri/resolver'ları
+│       ├── CodePro.Infrastructure/ # CodeProDbContext, repository'leri/resolver'ları + Data/Scripts/ (DbUp SQL migrations)
 │       ├── CodePro.Api/            # SupplierController, PurchaseOrderController, ...
-│       ├── CodePro.Web/            # CodePro React app'i (Supplier + satın alma sayfaları)
-│       └── CodePro.Database/       # CodePro SQL schema scriptleri
+│       └── CodePro.Web/            # CodePro React app'i (Supplier + satın alma sayfaları)
 ```
 
 **Temel kural:** `Platform/` içindeki her şey **paylaşılan altyapı**. Bir entity hangi uygulamanın iş kavramıysa o uygulamanın klasörüne yer alır; Platform'a ancak gerçekten cross-cutting (Activity, Identity, Attachment) ise konur.

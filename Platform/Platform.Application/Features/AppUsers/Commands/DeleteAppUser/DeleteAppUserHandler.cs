@@ -6,9 +6,9 @@ namespace Platform.Application.Features.AppUsers.Commands.DeleteAppUser;
 
 public sealed class DeleteAppUserHandler : IRequestHandler<DeleteAppUserCommand, Result>
 {
-    private readonly IUserRepository _repository;
+    private readonly IAuthUserRepository _repository;
 
-    public DeleteAppUserHandler(IUserRepository repository) => _repository = repository;
+    public DeleteAppUserHandler(IAuthUserRepository repository) => _repository = repository;
 
     public async Task<Result> Handle(DeleteAppUserCommand request, CancellationToken cancellationToken)
     {

@@ -544,7 +544,7 @@ Bir entity, alan veya davranış eklemeden önce şu soruları sor:
 1. **Issue aç** — Platform'da ne değişecek, hangi uygulamaları etkileyecek.
 2. **ADR yaz** — Mimari karar gerektiren değişiklikler için `docs/adr/` altında yeni bir karar kaydı.
 3. **Feature branch** — Değişikliği yap, hem Platform'u hem etkilenen App'leri build et: `dotnet build PlatformSuite.slnx`.
-4. **Schema etkisi varsa Platform.Database script'i yaz** — `Platform/Platform.Database/` altında yeni `.sql` dosyası ekle (idempotent, PostgreSQL).
+4. **Schema etkisi varsa Platform migration script'i yaz** — `Platform/Platform.Infrastructure/Data/Scripts/` altında yeni `V{NNN}__{Konu}.sql` dosyası ekle (idempotent, PostgreSQL). Bkz. §9.
 5. **Tüm App'lerde uyumu doğrula** — Solution'ı build et + her App.Web için `pnpm typecheck` çalıştır.
 6. **Tek PR'da gönder** — Monorepo + project reference olduğu için Platform + tüm etkilenen App'ler aynı PR'da koordine edilir.
 
@@ -643,40 +643,54 @@ DI'da kayıt: `services.AddScoped<IEntityReferenceResolver, SupplierReferenceRes
 
 ## 9. SQL Migration Yazım Kuralları
 
+### Yaklaşım
+
+EF Core migration **kullanılmaz**. Schema değişiklikleri manuel `.sql` script'leriyle yazılır ve **DbUp** üzerinden API startup'ında otomatik çalıştırılır. Uygulanan script'ler `__schema_versions` journal tablosunda tutulur — her dosya bir kez koşar. Forward-only; geri alma (Down) yok, expand/contract ile yürünür.
+
+Runner'lar her app'in Infrastructure projesinde:
+- `Apps/Crm/Crm.Infrastructure/Data/Migrations/CrmDatabaseMigrator.cs`
+- `Apps/CodePro/CodePro.Infrastructure/Data/Migrations/CodeProDatabaseMigrator.cs`
+
+Sözleşme: `Platform.Application.Common.Database.IDatabaseMigrator`. Çağrı noktası: her `Program.cs` içinde `await app.RunDatabaseMigrationsAsync()` (UsePlatformPipeline'dan önce).
+
 ### Temel Kurallar
 
-1. **EF Core migration üretme.** Tüm schema değişiklikleri manuel `.sql` dosyalarıyla.
-2. **PostgreSQL syntax** — `IF NOT EXISTS`, `snake_case` tablo/kolon adı, `uuid` PK, `timestamptz` zaman.
-3. **Idempotent olmalı** — `IF NOT EXISTS` / `IF EXISTS` ile birden fazla çalıştırılsa bile hata vermemeli.
-4. **Bir script, bir amaç** — Birden fazla bağımsız değişikliği tek dosyaya tıkıştırma.
-5. **Forward-only kurulumda script sırası önemli** — FK'lar bağımlı tabloların üstünde durur.
+1. **PostgreSQL syntax** — `IF NOT EXISTS`, `snake_case` tablo/kolon adı, `uuid` PK, `timestamptz` zaman.
+2. **Idempotent olmalı** — `IF NOT EXISTS` / `IF EXISTS` ile birden fazla çalıştırılsa bile hata vermemeli (DbUp tek sefer koşar; idempotency dev fresh DB / DB restore senaryosu için emniyet).
+3. **Bir script, bir amaç** — Birden fazla bağımsız değişikliği tek dosyaya tıkıştırma.
+4. **FK'lar bağımlı tabloların üstünde durur** — Sıra prefix'i bağımlılık yönüne göre belirlenir.
+5. **Embedded resource** — Yeni `.sql` dosyası ilgili Infrastructure'da otomatik gömülür (csproj zaten `<EmbeddedResource Include="Data\Scripts\*.sql" />`).
 
 ### Konum
 
 | Scope | Klasör |
 |---|---|
-| Platform (Identity, Activity, Attachment, vs.) | `Platform/Platform.Database/` |
-| CRM bounded context | `Apps/Crm/Crm.Database/` |
-| CodePro bounded context | `Apps/CodePro/CodePro.Database/` |
+| Platform (Identity, Activity, Attachment) | `Platform/Platform.Infrastructure/Data/Scripts/` |
+| CRM bounded context | `Apps/Crm/Crm.Infrastructure/Data/Scripts/` |
+| CodePro bounded context | `Apps/CodePro/CodePro.Infrastructure/Data/Scripts/` |
 
 ### Naming Convention
 
 ```
-{Sıra}-{TabloVeyaKonu}.sql
+V{NNN}__{Konu}.sql
 
-01-Identity.sql
-02-Activity.sql
-03-Account.sql
-04-Contact.sql
-00-Supplier.sql
+V001__Identity.sql
+V002__Activity.sql
+V003__Attachment.sql
+V004__Account-Add-Industry.sql
+V999__InitializeData.sql    ← her projede son sıra (seed data)
 ```
 
-Sıra prefix'i bağımlılık yönüne göre belirlenir (parent tablo önce). Açıklayıcı PascalCase isim.
+- `V` + üç haneli sıra + iki alt çizgi + PascalCase açıklama.
+- DbUp script'leri **resource adına göre alfabetik** sıralar — üç hane 998 schema dosyasına kadar nefes alır.
+- Sıradaki numara: ilgili klasördeki en yüksek schema script'i + 1. **`V999__InitializeData.sql` rezerve**; her zaman en son koşar, yeni entity script'leri (V005, V006, ...) onun altına eklenir.
+- **InitializeData script'leri** her projede tek dosyadır ve yalnızca o projenin privilege/role-privilege/seed-user kayıtlarını üretir. Yeni bir entity privilege'ı eklenince V999 dosyasına yeni satır eklenir (DbUp tek koşum yaptığı için **mevcut prod DB'lerde re-run olmaz**; ya `WHERE NOT EXISTS` idempotency'ye güvenip yeni bir `V{N+1}__{Entity}Privileges.sql` delta script'i yazılır, ya da admin UI üzerinden eklenir).
+- `WHERE NOT EXISTS` ile idempotent yazılır; password hash'leri runtime'da migrator'ın `IPasswordHasher` ile hesapladığı DbUp variable'larıdır (`$AdminPasswordHash$`, `$UserPasswordHash$`).
 
 ### Idempotent Örnek (PostgreSQL)
 
 ```sql
--- Apps/CodePro/CodePro.Database/00-Supplier.sql
+-- Apps/CodePro/CodePro.Infrastructure/Data/Scripts/V001__Supplier.sql
 CREATE TABLE IF NOT EXISTS supplier (
     id                    uuid PRIMARY KEY,
     organization_id       uuid NOT NULL,
@@ -702,19 +716,19 @@ CREATE UNIQUE INDEX IF NOT EXISTS ux_supplier_vkn
     ON supplier(organization_id, vkn) WHERE is_deleted = false AND vkn IS NOT NULL;
 ```
 
-### Schema Değişikliği
+### Schema Değişikliği (Production-safe)
 
-Mevcut tabloya kolon eklerken ayrı script ekle, mevcut script'i güncelleme (eğer DB sıfırlanmadığı bir ortam söz konusu ise):
+Mevcut tabloya kolon eklerken **yeni** script aç, mevcut script'i güncelleme — DbUp eski script'i tekrar koşmaz, değişikliğin etki etmez:
 
 ```sql
--- Apps/Crm/Crm.Database/02-Account-Add-Industry.sql
+-- Apps/Crm/Crm.Infrastructure/Data/Scripts/V005__Account-Add-Industry.sql
 ALTER TABLE account ADD COLUMN IF NOT EXISTS industry text;
 
 CREATE INDEX IF NOT EXISTS ix_account_industry
     ON account(industry) WHERE is_deleted = false;
 ```
 
-Geliştirme aşamasında DB sıfırlanabiliyorsa: doğrudan kaynak script'i güncelle, ek dosya açma.
+> Geliştirme aşamasında DB'yi sıfırlayıp baştan başlatabiliyorsan ve script henüz hiçbir DB'de uygulanmamışsa: dosyayı yerinde değiştirip DB'yi yeniden kurmak da geçerlidir. Production'a bir kere gittikten sonra her değişiklik yeni dosyada.
 
 ### Expand/Contract Pattern (Production Breaking Change)
 

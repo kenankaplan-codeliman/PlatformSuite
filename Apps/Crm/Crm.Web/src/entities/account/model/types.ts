@@ -2,7 +2,7 @@
  * Backend DTO'ları ile birebir uyumlu — `Platform.Application/Features/Accounts/Dtos/**`.
  */
 
-import type { EntityReference } from '@platform/ui';
+import type { AttachmentAssociation, EntityReference } from '@platform/ui';
 
 export type AccountStatus = 'Prospect' | 'Active' | 'AtRisk' | 'Inactive' | 'Churned';
 export type AccountType = 'Customer' | 'Prospect' | 'Partner' | 'Vendor' | 'Competitor' | 'Other';
@@ -87,5 +87,13 @@ export interface AccountListFilter {
   isActive?: boolean;
 }
 
-/** Form için kullanılan, API'ye gönderilen shape. */
-export type AccountFormValues = Omit<AccountDetailItem, 'createdAt' | 'updatedAt'>;
+/**
+ * Form için kullanılan, API'ye gönderilen shape.
+ *
+ * attachments: schema'da tutulmaz; DetailPageLayout submit anında
+ * AttachmentsField'ların pending listelerini collector'dan toplayıp
+ * payload'a enjekte eder. Backend CreateAccountCommand.Attachments'a binding.
+ */
+export type AccountFormValues = Omit<AccountDetailItem, 'createdAt' | 'updatedAt'> & {
+  attachments?: AttachmentAssociation[];
+};

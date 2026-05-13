@@ -10,10 +10,10 @@ namespace Platform.Application.Features.AppUsers.Commands.UpdateAppUser;
 
 public sealed class UpdateAppUserHandler : IRequestHandler<UpdateAppUserCommand, Result<AppUserDetailItem>>
 {
-    private readonly IUserRepository _repository;
+    private readonly IAuthUserRepository _repository;
     private readonly IApplicationDbContext _db;
 
-    public UpdateAppUserHandler(IUserRepository repository, IApplicationDbContext db)
+    public UpdateAppUserHandler(IAuthUserRepository repository, IApplicationDbContext db)
     {
         _repository = repository;
         _db = db;
@@ -27,17 +27,17 @@ public sealed class UpdateAppUserHandler : IRequestHandler<UpdateAppUserCommand,
         var entity = await _repository.GetAsync(request.Id, cancellationToken);
         if (entity is null) return AppUserErrors.NotFound;
 
-        var emailExists = await _db.User.AsNoTracking()
+        var emailExists = await _db.AuthUser.AsNoTracking()
             .AnyAsync(u => u.Id != request.Id && u.Email.ToLower() == request.Email.ToLower(), cancellationToken);
         if (emailExists) return AppUserErrors.DuplicateEmail;
 
-        var orgExists = await _db.Organization.AsNoTracking()
+        var orgExists = await _db.AuthOrganization.AsNoTracking()
             .AnyAsync(o => o.Id == request.OrganizationId, cancellationToken);
         if (!orgExists) return AppUserErrors.OrganizationNotFound;
 
         if (request.ManagerId.HasValue)
         {
-            var managerExists = await _db.User.AsNoTracking()
+            var managerExists = await _db.AuthUser.AsNoTracking()
                 .AnyAsync(u => u.Id == request.ManagerId.Value, cancellationToken);
             if (!managerExists) return AppUserErrors.ManagerNotFound;
         }

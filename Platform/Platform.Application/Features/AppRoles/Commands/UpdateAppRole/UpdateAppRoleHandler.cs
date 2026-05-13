@@ -10,10 +10,10 @@ namespace Platform.Application.Features.AppRoles.Commands.UpdateAppRole;
 
 public sealed class UpdateAppRoleHandler : IRequestHandler<UpdateAppRoleCommand, Result<AppRoleDetailItem>>
 {
-    private readonly IRoleRepository _repository;
+    private readonly IAuthRoleRepository _repository;
     private readonly IApplicationDbContext _db;
 
-    public UpdateAppRoleHandler(IRoleRepository repository, IApplicationDbContext db)
+    public UpdateAppRoleHandler(IAuthRoleRepository repository, IApplicationDbContext db)
     {
         _repository = repository;
         _db = db;
@@ -25,7 +25,7 @@ public sealed class UpdateAppRoleHandler : IRequestHandler<UpdateAppRoleCommand,
         if (entity is null) return AppRoleErrors.NotFound;
 
         var name = request.RoleName.Trim();
-        var nameExists = await _db.AppRole.AsNoTracking()
+        var nameExists = await _db.AuthRole.AsNoTracking()
             .AnyAsync(r => r.Id != request.Id && r.RoleName.ToLower() == name.ToLower(), cancellationToken);
         if (nameExists) return AppRoleErrors.DuplicateName;
 

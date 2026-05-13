@@ -680,6 +680,6 @@ public class ActivityCommandHandler
             modal.RegardingEntity = referenceRepository.GetReference(
                 entity.RegardingEntityType, entity.RegardingEntityId.Value);
 
-        modal.Owner = referenceRepository.GetReference(nameof(User), entity.OwnerId);
+        modal.Owner = referenceRepository.GetReference(nameof(AuthUser), entity.OwnerId);
     }
 }

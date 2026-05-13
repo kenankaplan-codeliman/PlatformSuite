@@ -1,10 +1,7 @@
-using Platform.Application.Common.Abstractions;
-using Crm.Application.Interfaces;
 using Platform.Application.Common.Results;
-using Crm.Application.Features.Accounts;
-using Crm.Application.Features.Accounts.Dtos;
 using Platform.Application.Interfaces;
 using Crm.Application.Interfaces;
+using Crm.Application.Features.Accounts.Dtos;
 using Crm.Domain.Entities.Accounts;
 using Mapster;
 using MediatR;
@@ -15,11 +12,16 @@ namespace Crm.Application.Features.Accounts.Commands.CreateAccount;
 public sealed class CreateAccountHandler : IRequestHandler<CreateAccountCommand, Result<AccountDetailItem>>
 {
     private readonly IAccountRepository _repository;
+    private readonly IAttachmentRepository _attachmentRepository;
     private readonly ICrmDbContext _db;
 
-    public CreateAccountHandler(IAccountRepository repository, ICrmDbContext db)
+    public CreateAccountHandler(
+        IAccountRepository repository,
+        IAttachmentRepository attachmentRepository,
+        ICrmDbContext db)
     {
         _repository = repository;
+        _attachmentRepository = attachmentRepository;
         _db = db;
     }
 
@@ -27,6 +29,12 @@ public sealed class CreateAccountHandler : IRequestHandler<CreateAccountCommand,
     {
         var entity = request.Adapt<Account>();
         await _repository.CreateAsync(entity, cancellationToken);
+
+        if (request.Attachments.Count > 0)
+        {
+            var metadataIds = request.Attachments.Select(a => a.MetadataId).ToList();
+            await _attachmentRepository.AssociateAsync(metadataIds, entity.Id, nameof(Account), cancellationToken);
+        }
 
         return await BuildDetailAsync(entity.Id, cancellationToken);
     }

@@ -38,7 +38,9 @@
       "Bash(echo \"=== exit: $? ===\")",
       "Bash(git -C /Users/kenankaplan/Projects/platform-suite status platform.ui)",
       "Bash(git -C /Users/kenankaplan/Projects/platform-suite status platform/ platform.ui)",
-      "Bash(git push:*)"
+      "Bash(git push:*)",
+      "Bash(npx pnpm@9.15.0 --filter @platform/ui build)",
+      "Bash(npx pnpm@9.15.0 --filter @app/crm-web build)"
     ]
   }
 }

@@ -59,7 +59,7 @@ public sealed class ListBudgetsHandler : IRequestHandler<ListBudgetsQuery, Resul
                     ? _db.BudgetCategory.Where(c => c.Id == b.BudgetCategoryId).Select(c => c.Name).FirstOrDefault()
                     : null,
                 ScopeOrganizationName = b.ScopeOrganizationId.HasValue
-                    ? _db.Organization.Where(o => o.Id == b.ScopeOrganizationId).Select(o => o.OrganizationName).FirstOrDefault()
+                    ? _db.AuthOrganization.Where(o => o.Id == b.ScopeOrganizationId).Select(o => o.OrganizationName).FirstOrDefault()
                     : null,
                 IsActive = b.IsActive,
             })

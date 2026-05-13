@@ -1,10 +1,12 @@
 using CodePro.Application.Interfaces;
 using CodePro.Infrastructure.Data;
+using CodePro.Infrastructure.Data.Migrations;
 using CodePro.Infrastructure.References;
 using CodePro.Infrastructure.Repositories;
 using CodePro.Infrastructure.Services;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Platform.Application.Common.Database;
 using Platform.Application.Common.References;
 
 namespace CodePro.Infrastructure;
@@ -17,6 +19,9 @@ public static class DependencyInjection
     {
         // ICodeProDbContext → CodeProDbContext (CodeProDbContext HostBuilderExtensions tarafından kayıt edildi).
         services.AddScoped<ICodeProDbContext>(sp => sp.GetRequiredService<CodeProDbContext>());
+
+        // DB migration runner — Program.cs'te app.RunDatabaseMigrationsAsync() tarafından çağrılır.
+        services.AddScoped<IDatabaseMigrator, CodeProDatabaseMigrator>();
 
         // CodePro aggregate repository registrasyonları (aggregate başına eklenir).
         services.AddScoped<ISupplierRepository, SupplierRepository>();

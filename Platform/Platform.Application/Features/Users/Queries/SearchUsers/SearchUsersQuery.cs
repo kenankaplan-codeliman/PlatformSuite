@@ -23,7 +23,7 @@ public sealed class SearchUsersHandler : IRequestHandler<SearchUsersQuery, Resul
     public Task<Result<PagedResult<EntityReference>>> Handle(SearchUsersQuery request, CancellationToken cancellationToken)
     {
         var inner = _references.LookupReference(
-            nameof(User),
+            nameof(AuthUser),
             request.SearchText ?? string.Empty,
             new PaginationInfo(request.Pagination.PageNumber, request.Pagination.PageSize));
 

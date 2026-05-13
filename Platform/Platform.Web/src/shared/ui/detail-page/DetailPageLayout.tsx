@@ -23,6 +23,10 @@ import { Spinner } from "../feedback/Spinner";
 import { Alert } from "../feedback/Alert";
 import { FormModeProvider } from "../form/FormModeContext";
 import type { FormMode } from "../../types/FormMode";
+import {
+  AttachmentsProvider,
+  useAttachmentsCollector,
+} from "../../../widgets/attachment/model/AttachmentsContext";
 
 const { Title } = Typography;
 
@@ -77,7 +81,17 @@ export interface DetailPageLayoutProps<TValues extends FieldValues> {
 const DETAILS_TAB_KEY = "details";
 const TAB_QUERY_PARAM = "tab";
 
-export function DetailPageLayout<TValues extends FieldValues>({
+export function DetailPageLayout<TValues extends FieldValues>(
+  props: DetailPageLayoutProps<TValues>,
+) {
+  return (
+    <AttachmentsProvider>
+      <DetailPageLayoutInner {...props} />
+    </AttachmentsProvider>
+  );
+}
+
+function DetailPageLayoutInner<TValues extends FieldValues>({
   mode: rawMode,
   modeOverride,
   title,
@@ -98,6 +112,7 @@ export function DetailPageLayout<TValues extends FieldValues>({
   const navigate = useNavigate();
   const { pathname } = useLocation();
   const [searchParams, setSearchParams] = useSearchParams();
+  const attachmentsCollector = useAttachmentsCollector();
 
   const mode: FormMode = modeOverride ?? rawMode;
 
@@ -114,9 +129,17 @@ export function DetailPageLayout<TValues extends FieldValues>({
   }, [data, mode, form]);
 
   const handleSubmit: SubmitHandler<TValues> = async (values) => {
-    await onSubmit(values);
+    // AttachmentsField'lar pending dosyaları collector'a register etti;
+    // submit anında command payload'una "attachments" olarak enjekte edilir.
+    const pending = attachmentsCollector?.getPendingAttachments() ?? [];
+    const payload =
+      pending.length > 0
+        ? ({ ...values, attachments: pending } as TValues)
+        : values;
+    await onSubmit(payload);
+    attachmentsCollector?.reset();
     if (afterSaveNavigation) {
-      navigate(afterSaveNavigation(values));
+      navigate(afterSaveNavigation(payload));
     }
   };
 
@@ -246,7 +269,10 @@ export function DetailPageLayout<TValues extends FieldValues>({
         {renderActions()}
       </div>
 
-      <FormModeProvider mode={mode} isDirty={form.formState.isDirty}>
+      <FormModeProvider
+        mode={mode}
+        isDirty={form.formState.isDirty || (attachmentsCollector?.isDirty ?? false)}
+      >
         <FormProvider {...form}>
           {tabs && tabs.length > 0 ? (
             <Tabs

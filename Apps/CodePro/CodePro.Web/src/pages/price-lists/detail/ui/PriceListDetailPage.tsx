@@ -2,7 +2,7 @@ import { useMemo } from 'react';
 import { useFormContext } from 'react-hook-form';
 import { useTranslation } from 'react-i18next';
 import {
-  AttachmentPanel,
+  AttachmentSection,
   DetailPageLayout,
   EntityLookupField,
   FormSection,
@@ -10,6 +10,7 @@ import {
   TextAreaField,
   TextField,
   useRouteMode,
+  type DetailPageTab,
 } from '@platform/ui';
 import { usePriceListQuery } from '../../../../entities/price-list/api/usePriceListQueries';
 import {
@@ -33,6 +34,7 @@ export function PriceListDetailPage() {
   const { mode, id } = useRouteMode();
   const { t: tPage } = useTranslation('page.price-lists-detail');
   const { t: tEntity } = useTranslation('entity.price-list');
+  const { t: tCommon } = useTranslation('common');
 
   const query = usePriceListQuery(id);
   const upsert = useUpsertPriceList();
@@ -43,6 +45,14 @@ export function PriceListDetailPage() {
     if (mode === 'edit') return tPage('editTitle');
     return query.data?.name ?? tPage('viewTitle');
   }, [mode, query.data?.name, tPage]);
+
+  const tabs: DetailPageTab[] = [
+    {
+      key: 'attachments',
+      label: tCommon('tabs.attachments'),
+      content: <AttachmentSection entityType="PriceList" entityId={id} />,
+    },
+  ];
 
   return (
     <DetailPageLayout<PriceListFormValues>
@@ -64,9 +74,9 @@ export function PriceListDetailPage() {
           : undefined
       }
       afterSaveNavigation={(saved) => RoutePaths.PriceListView(saved.id)}
+      tabs={tabs}
     >
       <GeneralSection />
-      <AttachmentPanel entityType="PriceList" entityId={id} />
     </DetailPageLayout>
   );
 

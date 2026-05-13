@@ -16,21 +16,21 @@ public class SessionService : ISessionService
 {
     private readonly IConfiguration config;
     private readonly ICacheService cache;
-    private readonly IUserRepository userRepository;
-    private readonly IOrganizationRepository organizationRepository;
+    private readonly IAuthUserRepository userRepository;
+    private readonly IAuthOrganizationRepository organizationRepository;
     private readonly ITokenService tokenService;
-    private readonly IAppLoginRepository appLoginRepository;
+    private readonly IAuthUserLoginRepository appLoginRepository;
 
     private const string SESSION_PREFIX = "session:";
 
     public SessionService(
         IConfiguration config,
         ICacheService cache,
-        IUserRepository userRepository,
-        IOrganizationRepository organizationRepository,
-        IRoleRepository roleRepository,
+        IAuthUserRepository userRepository,
+        IAuthOrganizationRepository organizationRepository,
+        IAuthRoleRepository roleRepository,
         ITokenService tokenService,
-        IAppLoginRepository appLoginRepository)
+        IAuthUserLoginRepository appLoginRepository)
     {
         this.config = config;
         this.cache = cache;
@@ -40,7 +40,7 @@ public class SessionService : ISessionService
         this.appLoginRepository = appLoginRepository;
     }
 
-    public async Task<AuthenticationToken> CreateSessionAsync(User user, ClientInfo? clientInfo = null)
+    public async Task<AuthenticationToken> CreateSessionAsync(AuthUser user, ClientInfo? clientInfo = null)
     {
         string accessTokenId = generateTokenId();
         DateTime accessTokenExp = getAccessTokenExpire();
@@ -54,7 +54,7 @@ public class SessionService : ISessionService
 
 
         // LoginHistory'ye kaydet
-        var loginHistory = new AppLogin
+        var loginHistory = new AuthUserLogin
         {
             UserId = user.Id,
             LoginDate = DateTime.UtcNow,

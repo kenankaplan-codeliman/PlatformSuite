@@ -1,5 +1,3 @@
-using Platform.Domain.Enums;
-
 namespace Platform.Application.Features.Attachments.Dtos;
 
 /// <summary>
@@ -11,7 +9,7 @@ public class AttachmentMetadataItem
     public string FileName { get; set; } = default!;
     public string ContentType { get; set; } = default!;
     public long FileSize { get; set; }
-    public DocumentType DocumentType { get; set; }
+    public string DocumentType { get; set; } = "Other";
     public string? Subject { get; set; }
     public string? Description { get; set; }
     public DateTime CreatedAt { get; set; }

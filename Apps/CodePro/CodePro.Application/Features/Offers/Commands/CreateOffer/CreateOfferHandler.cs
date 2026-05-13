@@ -3,6 +3,7 @@ using CodePro.Application.Interfaces;
 using CodePro.Domain.Entities.Offers;
 using CodePro.Domain.Enums;
 using Platform.Application.Common.Results;
+using Platform.Application.Interfaces;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 
@@ -11,11 +12,16 @@ namespace CodePro.Application.Features.Offers.Commands.CreateOffer;
 public sealed class CreateOfferHandler : IRequestHandler<CreateOfferCommand, Result<OfferDetailItem>>
 {
     private readonly IOfferRepository _repository;
+    private readonly IAttachmentRepository _attachmentRepository;
     private readonly ICodeProDbContext _db;
 
-    public CreateOfferHandler(IOfferRepository repository, ICodeProDbContext db)
+    public CreateOfferHandler(
+        IOfferRepository repository,
+        IAttachmentRepository attachmentRepository,
+        ICodeProDbContext db)
     {
         _repository = repository;
+        _attachmentRepository = attachmentRepository;
         _db = db;
     }
 
@@ -51,6 +57,12 @@ public sealed class CreateOfferHandler : IRequestHandler<CreateOfferCommand, Res
         {
             await OfferSyncHelper.SyncItemsAsync(_db, entity.Id, request.Items, cancellationToken);
             await _db.SaveChangesAsync(cancellationToken);
+        }
+
+        if (request.Attachments.Count > 0)
+        {
+            var metadataIds = request.Attachments.Select(a => a.MetadataId).ToList();
+            await _attachmentRepository.AssociateAsync(metadataIds, entity.Id, nameof(Offer), cancellationToken);
         }
 
         var detail = await OfferDetailBuilder.BuildAsync(_db, entity.Id, cancellationToken);

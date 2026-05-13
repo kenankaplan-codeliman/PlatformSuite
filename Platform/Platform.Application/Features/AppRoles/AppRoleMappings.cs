@@ -11,14 +11,14 @@ public static class AppRoleMappings
 {
     public static void Register(TypeAdapterConfig config)
     {
-        config.NewConfig<AppRole, AppRoleDetailItem>()
+        config.NewConfig<AuthRole, AppRoleDetailItem>()
             .Ignore(d => d.Privileges!);
-        config.NewConfig<AppRole, AppRoleListItem>();
+        config.NewConfig<AuthRole, AppRoleListItem>();
 
-        config.NewConfig<CreateAppRoleCommand, AppRole>()
+        config.NewConfig<CreateAppRoleCommand, AuthRole>()
             .IgnoreAuditFields();
 
-        config.NewConfig<UpdateAppRoleCommand, AppRole>()
+        config.NewConfig<UpdateAppRoleCommand, AuthRole>()
             .IgnoreNullValues(true)
             .IgnoreAuditFields();
     }

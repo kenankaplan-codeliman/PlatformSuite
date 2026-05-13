@@ -1,10 +1,11 @@
 using CodePro.Application.Features.Contracts.Dtos;
 using CodePro.Domain.Enums;
 using Platform.Application.Common.Abstractions;
+using Platform.Application.Common.Attachments;
 
 namespace CodePro.Application.Features.Contracts.Commands.CreateContract;
 
-public sealed class CreateContractCommand : ICommand<ContractDetailItem>
+public sealed class CreateContractCommand : ICommand<ContractDetailItem>, IAttachmentCarrier
 {
     public string ContractNumber { get; init; } = string.Empty;
     public string Subject { get; init; } = string.Empty;
@@ -22,4 +23,5 @@ public sealed class CreateContractCommand : ICommand<ContractDetailItem>
     public string? AdditionalResponsibleUserIds { get; init; }
     public int ReminderDaysBefore { get; init; } = 30;
     public string? Notes { get; init; }
+    public List<AttachmentAssociation> Attachments { get; init; } = new();
 }

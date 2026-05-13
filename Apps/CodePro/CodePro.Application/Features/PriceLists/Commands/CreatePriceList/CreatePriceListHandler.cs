@@ -2,6 +2,7 @@ using CodePro.Application.Features.PriceLists.Dtos;
 using CodePro.Application.Interfaces;
 using CodePro.Domain.Entities.Products;
 using Platform.Application.Common.Results;
+using Platform.Application.Interfaces;
 using Mapster;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
@@ -11,11 +12,16 @@ namespace CodePro.Application.Features.PriceLists.Commands.CreatePriceList;
 public sealed class CreatePriceListHandler : IRequestHandler<CreatePriceListCommand, Result<PriceListDetailItem>>
 {
     private readonly IPriceListRepository _repository;
+    private readonly IAttachmentRepository _attachmentRepository;
     private readonly ICodeProDbContext _db;
 
-    public CreatePriceListHandler(IPriceListRepository repository, ICodeProDbContext db)
+    public CreatePriceListHandler(
+        IPriceListRepository repository,
+        IAttachmentRepository attachmentRepository,
+        ICodeProDbContext db)
     {
         _repository = repository;
+        _attachmentRepository = attachmentRepository;
         _db = db;
     }
 
@@ -36,6 +42,12 @@ public sealed class CreatePriceListHandler : IRequestHandler<CreatePriceListComm
         if (codeExists) return PriceListErrors.DuplicateCode;
 
         await _repository.CreateAsync(entity, cancellationToken);
+
+        if (request.Attachments.Count > 0)
+        {
+            var metadataIds = request.Attachments.Select(a => a.MetadataId).ToList();
+            await _attachmentRepository.AssociateAsync(metadataIds, entity.Id, nameof(PriceList), cancellationToken);
+        }
 
         return await BuildDetailAsync(entity.Id, cancellationToken);
     }

@@ -1,10 +1,11 @@
 using CodePro.Application.Features.PurchaseRequests.Dtos;
 using CodePro.Domain.Enums;
 using Platform.Application.Common.Abstractions;
+using Platform.Application.Common.Attachments;
 
 namespace CodePro.Application.Features.PurchaseRequests.Commands.CreatePurchaseRequest;
 
-public sealed class CreatePurchaseRequestCommand : ICommand<PurchaseRequestDetailItem>
+public sealed class CreatePurchaseRequestCommand : ICommand<PurchaseRequestDetailItem>, IAttachmentCarrier
 {
     public string? RequestNumber { get; init; }
     public string Title { get; init; } = string.Empty;
@@ -14,4 +15,5 @@ public sealed class CreatePurchaseRequestCommand : ICommand<PurchaseRequestDetai
     public DateTime? RequiredDate { get; init; }
     public string? CurrencyCode { get; init; }
     public List<PurchaseRequestLineItem> Lines { get; init; } = new();
+    public List<AttachmentAssociation> Attachments { get; init; } = new();
 }

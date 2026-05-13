@@ -17,11 +17,12 @@ public class AttachmentFileMetadataConfiguration : IEntityTypeConfiguration<Atta
         builder.Property(m => m.FileSize).HasColumnName("file_size").IsRequired();
         builder.Property(m => m.DocumentType)
             .HasColumnName("document_type")
-            .HasConversion<string>()
+            .IsRequired()
             .HasMaxLength(100)
-            .HasDefaultValue(Platform.Domain.Enums.DocumentType.Other);
+            .HasDefaultValue("Other");
         builder.Property(m => m.Subject).HasColumnName("subject").HasMaxLength(500);
         builder.Property(m => m.Description).HasColumnName("description").HasColumnType("text");
+        builder.Property(m => m.ExpiresAt).HasColumnName("expires_at");
         builder.Property(m => m.IsActive).HasColumnName("is_active").IsRequired().HasDefaultValue(true);
         builder.Property(m => m.OwnerId).HasColumnName("owner_id").IsRequired();
         builder.Property(m => m.OrganizationId).HasColumnName("organization_id").IsRequired();
@@ -44,5 +45,7 @@ public class AttachmentFileMetadataConfiguration : IEntityTypeConfiguration<Atta
             .HasForeignKey(r => r.MetadataId)
             .HasConstraintName("fk_attachment_relation_metadata")
             .OnDelete(DeleteBehavior.Cascade);
+
+        builder.HasIndex(m => m.ExpiresAt).HasDatabaseName("ix_attachment_metadata_expires_at");
     }
 }

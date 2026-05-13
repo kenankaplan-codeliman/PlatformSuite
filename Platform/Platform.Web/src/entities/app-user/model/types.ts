@@ -1,12 +1,10 @@
+import type { EntityReference } from '../../../shared/types/EntityReference';
+
 /**
  * Backend DTO'ları ile birebir uyumlu — Platform.Application/Features/AppUsers/Dtos/**
+ * Organization ve Manager EntityReference shape'inde gelir; EntityLookupField
+ * doğrudan tüketir.
  */
-
-export interface AppUserRoleItem {
-  id: string;
-  roleName: string;
-  description?: string | null;
-}
 
 export interface AppUserDetailItem {
   id: string;
@@ -14,14 +12,16 @@ export interface AppUserDetailItem {
   firstName: string;
   lastName: string;
   phoneNumber?: string | null;
-  organizationId: string;
-  organizationName?: string | null;
-  managerId?: string | null;
-  managerName?: string | null;
+  organization: EntityReference | null;
+  manager: EntityReference | null;
+  /**
+   * Kullanıcının rolleri (entityType="AppRole"). Detail page'de
+   * EntityLookupField multiple ile düzenlenir.
+   */
+  roles: EntityReference[];
   isActive: boolean;
   createdAt?: string | null;
   updatedAt?: string | null;
-  roles: AppUserRoleItem[];
 }
 
 export interface AppUserListItem {
@@ -30,10 +30,8 @@ export interface AppUserListItem {
   firstName: string;
   lastName: string;
   phoneNumber?: string | null;
-  organizationId: string;
-  organizationName?: string | null;
-  managerId?: string | null;
-  managerName?: string | null;
+  organization: EntityReference | null;
+  manager: EntityReference | null;
   isActive: boolean;
 }
 
@@ -50,7 +48,8 @@ export interface AppUserFormValues {
   firstName: string;
   lastName: string;
   phoneNumber?: string | null;
-  organizationId: string;
-  managerId?: string | null;
+  organization: EntityReference | null;
+  manager: EntityReference | null;
+  roles: EntityReference[];
   isActive: boolean;
 }

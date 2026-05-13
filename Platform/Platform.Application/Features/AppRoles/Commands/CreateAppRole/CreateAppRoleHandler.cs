@@ -12,10 +12,10 @@ namespace Platform.Application.Features.AppRoles.Commands.CreateAppRole;
 
 public sealed class CreateAppRoleHandler : IRequestHandler<CreateAppRoleCommand, Result<AppRoleDetailItem>>
 {
-    private readonly IRoleRepository _repository;
+    private readonly IAuthRoleRepository _repository;
     private readonly IApplicationDbContext _db;
 
-    public CreateAppRoleHandler(IRoleRepository repository, IApplicationDbContext db)
+    public CreateAppRoleHandler(IAuthRoleRepository repository, IApplicationDbContext db)
     {
         _repository = repository;
         _db = db;
@@ -24,11 +24,11 @@ public sealed class CreateAppRoleHandler : IRequestHandler<CreateAppRoleCommand,
     public async Task<Result<AppRoleDetailItem>> Handle(CreateAppRoleCommand request, CancellationToken cancellationToken)
     {
         var name = request.RoleName.Trim();
-        var nameExists = await _db.AppRole.AsNoTracking()
+        var nameExists = await _db.AuthRole.AsNoTracking()
             .AnyAsync(r => r.RoleName.ToLower() == name.ToLower(), cancellationToken);
         if (nameExists) return AppRoleErrors.DuplicateName;
 
-        var entity = new AppRole
+        var entity = new AuthRole
         {
             RoleName = name,
             Description = request.Description?.Trim(),

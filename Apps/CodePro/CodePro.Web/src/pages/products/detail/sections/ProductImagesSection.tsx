@@ -9,7 +9,7 @@ import {
   UploadOutlined,
 } from '@ant-design/icons';
 import { useTranslation } from 'react-i18next';
-import { Alert, Button, FormSection, Spinner, useFormMode } from '@platform/ui';
+import { Alert, Button, EmptyState, FormSection, Spinner, useFormMode } from '@platform/ui';
 import { productImageDataSource } from '../../../../entities/product-image/api/productImageDataSource';
 import { useProductImageListQuery } from '../../../../entities/product-image/api/useProductImageQueries';
 import {
@@ -123,13 +123,13 @@ export function ProductImagesSection({ productId }: ProductImagesSectionProps) {
       }
     >
       {!productId ? (
-        <Alert type="info" message={t('empty')} />
+        <EmptyState />
       ) : query.isLoading ? (
         <Spinner />
       ) : query.isError ? (
         <Alert type="error" message={t('errors.uploadFailed')} />
       ) : images.length === 0 ? (
-        <Alert type="info" message={t('empty')} />
+        <EmptyState />
       ) : (
         <div
           style={{

@@ -21,6 +21,8 @@ builder.Services
 
 var app = builder.Build();
 
+await app.RunDatabaseMigrationsAsync();
+
 app.UsePlatformPipeline();
 
 app.Run();

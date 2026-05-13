@@ -17,6 +17,24 @@ interface IdBody {
   id: string;
 }
 
+/**
+ * Form Organization/Manager (EntityReference) → Backend Command (flat IDs).
+ * Form değeri EntityReference shape (popup'tan {id,name,entityType,...}); command
+ * yalnızca <c>OrganizationId</c> ve <c>ManagerId</c> bekler.
+ */
+function toCommand(values: AppUserFormValues) {
+  return {
+    id: values.id,
+    email: values.email,
+    firstName: values.firstName,
+    lastName: values.lastName,
+    phoneNumber: values.phoneNumber,
+    organizationId: values.organization?.id ?? '',
+    managerId: values.manager?.id ?? null,
+    isActive: values.isActive,
+  };
+}
+
 export const appUserDataSource = {
   list: async (body: AppUserListBody): Promise<PagedResult<AppUserListItem>> => {
     const response = await httpClient.post<PagedResult<AppUserListItem>>(
@@ -37,7 +55,7 @@ export const appUserDataSource = {
   create: async (values: AppUserFormValues): Promise<AppUserDetailItem> => {
     const response = await httpClient.post<AppUserDetailItem>(
       ServicePath.User.Create,
-      values,
+      toCommand(values),
     );
     return response.data;
   },
@@ -45,7 +63,7 @@ export const appUserDataSource = {
   update: async (values: AppUserFormValues): Promise<AppUserDetailItem> => {
     const response = await httpClient.post<AppUserDetailItem>(
       ServicePath.User.Update,
-      values,
+      toCommand(values),
     );
     return response.data;
   },

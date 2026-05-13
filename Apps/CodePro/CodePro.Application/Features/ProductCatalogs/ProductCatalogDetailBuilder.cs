@@ -41,7 +41,7 @@ internal static class ProductCatalogDetailBuilder
 
         detail.Organizations = await (
             from co in db.ProductCatalogOrganization.AsNoTracking()
-            join o in db.Organization.AsNoTracking() on co.AppOrganizationId equals o.Id
+            join o in db.AuthOrganization.AsNoTracking() on co.AppOrganizationId equals o.Id
             where co.ProductCatalogId == id
             select new ProductCatalogOrganizationItem
             {

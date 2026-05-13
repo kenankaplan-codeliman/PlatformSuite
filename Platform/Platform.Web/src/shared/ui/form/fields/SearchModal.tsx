@@ -169,6 +169,9 @@ export function SearchModal({
   useEffect(() => {
     if (!open) return;
     let cancelled = false;
+    // Fetch-on-open: modal açıldığında veya arama metni değiştiğinde sayfa 1'i çek.
+    // setState çağrısı async fetch akışının doğal parçası; cancellation cleanup ile race güvenli.
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setIsLoading(true);
     (async () => {
       try {
@@ -189,9 +192,14 @@ export function SearchModal({
 
   useEffect(() => {
     if (!open) return;
+    // Reset-on-open: modal her açılışta başlangıç state'ine dön. Caller props
+    // değiştiğinde de eski seçim/arama temizlenir. Cascading render olmaz çünkü
+    // bu state'ler render'da yeniden kullanılmadan modal kapanıp açılıyor.
+    /* eslint-disable react-hooks/set-state-in-effect */
     setSearchText(initialSearchText);
     setActiveType(entityOptions[0]?.entityType ?? "");
     setSelected(initialSelected ?? []);
+    /* eslint-enable react-hooks/set-state-in-effect */
   }, [open, initialSearchText, entityOptions, initialSelected]);
 
   const handleScroll = useCallback(

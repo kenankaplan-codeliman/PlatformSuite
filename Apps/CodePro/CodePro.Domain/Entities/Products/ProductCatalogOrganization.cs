@@ -9,5 +9,5 @@ public class ProductCatalogOrganization
     public ProductCatalog ProductCatalog { get; set; } = null!;
 
     public Guid AppOrganizationId { get; set; }
-    public Organization Organization { get; set; } = null!;
+    public AuthOrganization Organization { get; set; } = null!;
 }

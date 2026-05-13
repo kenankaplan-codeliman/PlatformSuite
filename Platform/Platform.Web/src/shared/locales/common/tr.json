@@ -28,7 +28,7 @@
     "deleteSuccess": "Başarıyla silindi.",
     "unexpectedError": "Beklenmeyen bir hata oluştu.",
     "sessionExpired": "Oturum süresi doldu, lütfen tekrar giriş yapın.",
-    "noData": "Sonuç bulunamadı.",
+    "noData": "Kayıt bulunamadı.",
     "selected": "Seçili",
     "selectedCount_one": "{{count}} kayıt seçildi",
     "selectedCount_other": "{{count}} kayıt seçildi"
@@ -53,7 +53,8 @@
   },
   "tabs": {
     "details": "Genel",
-    "activities": "İlişkili Aktiviteler"
+    "activities": "İlişkili Aktiviteler",
+    "attachments": "Belgeler"
   },
   "entities": {
     "user": "Kullanıcı",

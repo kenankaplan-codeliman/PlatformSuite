@@ -13,7 +13,7 @@ namespace CodePro.Domain.Entities.Budgets
         public string? Description { get; set; }
 
         public Guid? ScopeOrganizationId { get; set; }
-        public Organization? ScopeOrganization { get; set; }
+        public AuthOrganization? ScopeOrganization { get; set; }
 
         public Guid? BudgetCategoryId { get; set; }
         public BudgetCategory? BudgetCategory { get; set; }

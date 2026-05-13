@@ -2,7 +2,7 @@ import { useMemo } from 'react';
 import { useFormContext } from 'react-hook-form';
 import { useTranslation } from 'react-i18next';
 import {
-  AttachmentPanel,
+  AttachmentSection,
   DetailPageLayout,
   FormSection,
   NumberField,
@@ -55,9 +55,14 @@ export function ContractDetailPage() {
     return query.data?.subject ?? tPage('viewTitle');
   }, [mode, query.data?.subject, tPage]);
 
-  const tabs: DetailPageTab[] | undefined =
-    mode === 'new' || !id
-      ? undefined
+  const tabs: DetailPageTab[] = [
+    {
+      key: 'attachments',
+      label: tCommon('tabs.attachments'),
+      content: <AttachmentSection entityType="Contract" entityId={id} />,
+    },
+    ...(mode === 'new' || !id
+      ? []
       : [
           {
             key: 'activities',
@@ -66,7 +71,8 @@ export function ContractDetailPage() {
               <RelatedActivitiesTab entityType="Contract" entityId={id} />
             ),
           },
-        ];
+        ]),
+  ];
 
   return (
     <DetailPageLayout<ContractFormValues>
@@ -83,7 +89,6 @@ export function ContractDetailPage() {
       tabs={tabs}
     >
       <General />
-      <AttachmentPanel entityType="Contract" entityId={id} />
     </DetailPageLayout>
   );
 

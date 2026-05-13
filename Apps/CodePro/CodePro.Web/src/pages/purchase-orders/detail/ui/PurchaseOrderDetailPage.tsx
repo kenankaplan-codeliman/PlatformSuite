@@ -2,7 +2,7 @@ import { useMemo } from 'react';
 import { useFormContext } from 'react-hook-form';
 import { useTranslation } from 'react-i18next';
 import {
-  AttachmentPanel,
+  AttachmentSection,
   DetailPageLayout,
   EntityLookupField,
   FormSection,
@@ -53,9 +53,14 @@ export function PurchaseOrderDetailPage() {
     return query.data?.title ?? tPage('viewTitle');
   }, [mode, query.data?.title, tPage]);
 
-  const tabs: DetailPageTab[] | undefined =
-    mode === 'new' || !id
-      ? undefined
+  const tabs: DetailPageTab[] = [
+    {
+      key: 'attachments',
+      label: tCommon('tabs.attachments'),
+      content: <AttachmentSection entityType="PurchaseOrder" entityId={id} />,
+    },
+    ...(mode === 'new' || !id
+      ? []
       : [
           {
             key: 'activities',
@@ -64,7 +69,8 @@ export function PurchaseOrderDetailPage() {
               <RelatedActivitiesTab entityType="PurchaseOrder" entityId={id} />
             ),
           },
-        ];
+        ]),
+  ];
 
   return (
     <DetailPageLayout<PurchaseOrderFormValues>
@@ -81,7 +87,6 @@ export function PurchaseOrderDetailPage() {
       tabs={tabs}
     >
       <General />
-      <AttachmentPanel entityType="PurchaseOrder" entityId={id} />
     </DetailPageLayout>
   );
 

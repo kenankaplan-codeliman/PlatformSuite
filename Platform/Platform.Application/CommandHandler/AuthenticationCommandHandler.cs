@@ -1,4 +1,5 @@
-﻿using Platform.Application.Exceptions;
+﻿using Platform.Application.Common.Security;
+using Platform.Application.Exceptions;
 using Platform.Application.Interfaces;
 using Platform.Application.Modals;
 using Platform.Application.Modals.Authentication;
@@ -11,15 +12,17 @@ namespace Platform.Application.CommandHandler
         private readonly IUnitOfWork unitOfWork;
         private readonly IMicrosoftGraphService microsoftGraphService;
         private readonly IContextUser contextUser;
-        private readonly IUserRepository userRepository;
+        private readonly IAuthUserRepository userRepository;
         private readonly ISessionService sessionService;
+        private readonly IPasswordHasher passwordHasher;
 
         public AuthenticationCommandHandler(
             IUnitOfWork unitOfWork,
             IMicrosoftGraphService microsoftGraphService,
             IContextUser currentUserContext,
-            IUserRepository userRepository,
-            ISessionService sessionService
+            IAuthUserRepository userRepository,
+            ISessionService sessionService,
+            IPasswordHasher passwordHasher
             )
         {
             this.sessionService = sessionService;
@@ -27,6 +30,7 @@ namespace Platform.Application.CommandHandler
             this.microsoftGraphService = microsoftGraphService;
             this.contextUser = currentUserContext;
             this.userRepository = userRepository;
+            this.passwordHasher = passwordHasher;
         }
 
         public async Task<AuthenticationToken> LoginAsync(string email, string password, ClientInfo? clientInfo = null)
@@ -37,7 +41,7 @@ namespace Platform.Application.CommandHandler
             if (user == null || !user.IsActive)
                 throw new UnAuthenticatedException("User not found or in active");
 
-            if (!BCrypt.Net.BCrypt.Verify(password, user.PasswordHash))
+            if (!passwordHasher.Verify(password, user.PasswordHash!))
                 throw new UnAuthenticatedException("Invalid credentials");
 
             AuthenticationToken authenticationToken = await sessionService.CreateSessionAsync(user, clientInfo);
@@ -65,7 +69,7 @@ namespace Platform.Application.CommandHandler
             {
                 await unitOfWork.BeginTransactionAsync();
 
-                User user = await userRepository.GetOrCreateAsync(
+                AuthUser user = await userRepository.GetOrCreateAsync(
                         azureUser.Mail ?? azureUser.UserPrincipalName ?? string.Empty,
                         azureUser.GivenName ?? string.Empty,
                         azureUser.Surname ?? string.Empty,

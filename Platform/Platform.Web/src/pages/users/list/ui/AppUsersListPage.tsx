@@ -33,8 +33,16 @@ export function AppUsersListPage() {
       },
       { key: 'email', title: tEntity('fields.email.label'), dataIndex: 'email' },
       { key: 'phoneNumber', title: tEntity('fields.phoneNumber.label'), dataIndex: 'phoneNumber' },
-      { key: 'organizationName', title: tEntity('fields.organization.label'), dataIndex: 'organizationName' },
-      { key: 'managerName', title: tEntity('fields.manager.label'), dataIndex: 'managerName' },
+      {
+        key: 'organization',
+        title: tEntity('fields.organization.label'),
+        render: (_v, r) => r.organization?.name ?? '',
+      },
+      {
+        key: 'manager',
+        title: tEntity('fields.manager.label'),
+        render: (_v, r) => r.manager?.name ?? '',
+      },
       {
         key: 'isActive',
         title: tEntity('fields.isActive.label'),

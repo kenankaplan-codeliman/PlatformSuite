@@ -22,8 +22,9 @@ const emptyAppUser: AppUserFormValues = {
   firstName: '',
   lastName: '',
   phoneNumber: null,
-  organizationId: '',
-  managerId: null,
+  organization: null,
+  manager: null,
+  roles: [],
   isActive: true,
 };
 
@@ -65,6 +66,7 @@ export function AppUserDetailPage() {
     >
       <GeneralSection />
       <HierarchySection />
+      <RolesSection />
     </DetailPageLayout>
   );
 
@@ -112,21 +114,37 @@ export function AppUserDetailPage() {
     return (
       <FormSection title={tEntity('sections.hierarchy')}>
         <EntityLookupField
-          name="organizationId"
+          name="organization"
           control={form.control}
-          servicePath={ServicePath.AppOrganization.List}
           entityType="Organization"
           label={tEntity('fields.organization.label')}
           placeholder={tEntity('fields.organization.placeholder')}
+          required
         />
         <EntityLookupField
-          name="managerId"
+          name="manager"
           control={form.control}
           servicePath={ServicePath.User.Search}
           entityType="User"
           label={tEntity('fields.manager.label')}
           placeholder={tEntity('fields.manager.placeholder')}
           allowClear
+        />
+      </FormSection>
+    );
+  }
+
+  function RolesSection() {
+    const form = useFormContext<AppUserFormValues>();
+    return (
+      <FormSection title={tEntity('sections.roles')}>
+        <EntityLookupField
+          name="roles"
+          control={form.control}
+          entityType="AppRole"
+          label={tEntity('fields.roles.label')}
+          placeholder={tEntity('fields.roles.placeholder')}
+          multiple
         />
       </FormSection>
     );

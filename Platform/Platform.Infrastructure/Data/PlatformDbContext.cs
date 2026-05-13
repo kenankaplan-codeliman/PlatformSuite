@@ -8,7 +8,6 @@ using Platform.Domain.Enums;
 using Platform.Infrastructure.Data.Configurations;
 using Microsoft.EntityFrameworkCore;
 using System.Linq.Expressions;
-using AppRole = Platform.Domain.Entities.Identities.AppRole;
 
 namespace Platform.Infrastructure.Data;
 
@@ -35,13 +34,13 @@ public abstract class PlatformDbContext : DbContext, IApplicationDbContext
     }
 
     // ======= Identity =======
-    public DbSet<Organization> Organization { get; set; }
-    public DbSet<User> User { get; set; }
-    public DbSet<AppRole> AppRole { get; set; }
-    public DbSet<AppPrivilege> AppPrivilege { get; set; }
-    public DbSet<AppUserRole> AppUserRole { get; set; }
-    public DbSet<AppRolePrivilege> AppRolePrivilege { get; set; }
-    public DbSet<AppLogin> AppLogin { get; set; }
+    public DbSet<AuthOrganization> AuthOrganization { get; set; }
+    public DbSet<AuthUser> AuthUser { get; set; }
+    public DbSet<AuthRole> AuthRole { get; set; }
+    public DbSet<AuthPrivilege> AuthPrivilege { get; set; }
+    public DbSet<AuthUserRole> AuthUserRole { get; set; }
+    public DbSet<AuthRolePrivilege> AuthRolePrivilege { get; set; }
+    public DbSet<AuthUserLogin> AuthUserLogin { get; set; }
 
     // ======= Activity =======
     public DbSet<ActivityBase> Activity { get; set; }

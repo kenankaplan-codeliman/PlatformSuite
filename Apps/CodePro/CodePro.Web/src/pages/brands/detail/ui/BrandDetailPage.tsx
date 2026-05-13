@@ -2,11 +2,12 @@ import { useMemo } from 'react';
 import { useFormContext } from 'react-hook-form';
 import { useTranslation } from 'react-i18next';
 import {
-  AttachmentPanel,
+  AttachmentSection,
   DetailPageLayout,
   FormSection,
   TextField,
   useRouteMode,
+  type DetailPageTab,
 } from '@platform/ui';
 import { useBrandQuery } from '../../../../entities/brand/api/useBrandQueries';
 import {
@@ -27,6 +28,7 @@ export function BrandDetailPage() {
   const { mode, id } = useRouteMode();
   const { t: tPage } = useTranslation('page.brands-detail');
   const { t: tEntity } = useTranslation('entity.brand');
+  const { t: tCommon } = useTranslation('common');
 
   const query = useBrandQuery(id);
   const upsert = useUpsertBrand();
@@ -37,6 +39,14 @@ export function BrandDetailPage() {
     if (mode === 'edit') return tPage('editTitle');
     return query.data?.name ?? tPage('viewTitle');
   }, [mode, query.data?.name, tPage]);
+
+  const tabs: DetailPageTab[] = [
+    {
+      key: 'attachments',
+      label: tCommon('tabs.attachments'),
+      content: <AttachmentSection entityType="Brand" entityId={id} />,
+    },
+  ];
 
   return (
     <DetailPageLayout<BrandFormValues>
@@ -58,9 +68,9 @@ export function BrandDetailPage() {
           : undefined
       }
       afterSaveNavigation={(saved) => RoutePaths.BrandView(saved.id)}
+      tabs={tabs}
     >
       <GeneralSection />
-      <AttachmentPanel entityType="Brand" entityId={id} />
     </DetailPageLayout>
   );
 

@@ -2,7 +2,7 @@ import { httpClient } from '../../../shared/api/httpClient';
 import { ServicePath } from '../../../shared/api/servicePaths';
 import type {
   AttachmentMetadataItem,
-  UploadAttachmentInput,
+  UploadAttachmentDraftInput,
 } from '../model/types';
 
 interface ListBody {
@@ -23,17 +23,20 @@ export const attachmentDataSource = {
     return response.data;
   },
 
-  upload: async (input: UploadAttachmentInput): Promise<AttachmentMetadataItem> => {
+  /**
+   * Dosyayı draft olarak yükler — henüz hiçbir entity ile ilişkilendirilmez.
+   * Parent CreateXCommand / UpdateXCommand içinde Attachments listesine
+   * eklenecek metadataId döner.
+   */
+  uploadDraft: async (input: UploadAttachmentDraftInput): Promise<AttachmentMetadataItem> => {
     const formData = new FormData();
     formData.append('file', input.file);
-    formData.append('entityId', input.entityId);
-    formData.append('entityType', input.entityType);
     formData.append('documentType', input.documentType);
     if (input.subject) formData.append('subject', input.subject);
     if (input.description) formData.append('description', input.description);
 
     const response = await httpClient.post<AttachmentMetadataItem>(
-      ServicePath.Attachment.Upload,
+      ServicePath.Attachment.UploadDraft,
       formData,
       { headers: { 'Content-Type': 'multipart/form-data' } },
     );

@@ -19,12 +19,7 @@ public static class HostBuilderExtensions
     public static IServiceCollection AddPlatformApi<TDbContext>(this IServiceCollection services, IConfiguration configuration)
         where TDbContext : PlatformDbContext, IApplicationDbContext
     {
-        var pgHost = configuration["POSTGRES_HOST"] ?? "localhost";
-        var pgPort = configuration["POSTGRES_PORT"] ?? "5432";
-        var pgDatabase = configuration["POSTGRES_DB"] ?? throw new InvalidOperationException("POSTGRES_DB is not set");
-        var pgUser = configuration["POSTGRES_USER"] ?? throw new InvalidOperationException("POSTGRES_USER is not set");
-        var pgPassword = configuration["POSTGRES_PASSWORD"] ?? throw new InvalidOperationException("POSTGRES_PASSWORD is not set");
-        var connectionString = $"Host={pgHost};Port={pgPort};Database={pgDatabase};Username={pgUser};Password={pgPassword}";
+        var connectionString = PlatformConnectionString.Build(configuration);
 
         services.AddDbContext<TDbContext>((sp, options) => options.UseNpgsql(connectionString));
 
@@ -50,7 +45,6 @@ public static class HostBuilderExtensions
             .AddJwtAuthentication(configuration)
             .AddPrivilegeAuthorization();
 
-        services.AddHostedService<DbInitializerHostedService>();
         services.AddHostedService<ElasticIndexTemplateHostedService>();
 
         return services;

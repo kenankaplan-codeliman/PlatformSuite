@@ -8,6 +8,16 @@ import type {
   AppUserFormValues,
 } from '../model/types';
 
+/**
+ * Upsert flow:
+ *   1) Create/Update user (organization/manager flat IDs, roles hariç)
+ *   2) Saved user'ın id'si üzerinden UpdateAppUserRoles ile rolleri senkronla
+ *   3) Detail cache'ini güncelle, list'i invalide et
+ *
+ * Backend command roller dahil değil — ayrı endpoint kullanılıyor. Tek mutation
+ * altında atomic olmaması kabul ediliyor (rollback gerekirse iki çağrı uyuşmaz);
+ * pratikte UI tek POST'tan sonra rolleri yazar.
+ */
 export function useUpsertAppUser() {
   const queryClient = useQueryClient();
 
@@ -15,9 +25,16 @@ export function useUpsertAppUser() {
     mutationFn: async (values) => {
       try {
         const isNew = !values.id || values.id === '';
-        return isNew
+        const saved = isNew
           ? await appUserDataSource.create(values)
           : await appUserDataSource.update(values);
+
+        await appUserDataSource.updateRoles(
+          saved.id,
+          values.roles.map((r) => r.id),
+        );
+
+        return await appUserDataSource.get(saved.id);
       } catch (err) {
         throw mapAxiosError(err);
       }

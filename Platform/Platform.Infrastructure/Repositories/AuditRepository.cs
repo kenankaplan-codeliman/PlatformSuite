@@ -48,7 +48,7 @@ public class AuditRepository : IAuditRepository
             .Distinct()
             .ToList();
 
-        var users = await dbContext.User
+        var users = await dbContext.AuthUser
             .AsNoTracking()
             .Where(u => userIds.Contains(u.Id))
             .Select(u => new { u.Id, u.FullName, u.Email })
@@ -56,7 +56,7 @@ public class AuditRepository : IAuditRepository
 
         EntityReference? ToRef(Guid? id) =>
             id.HasValue && users.TryGetValue(id.Value, out var u)
-                ? new EntityReference(nameof(User)) { Id = id.Value, Name = u.FullName, Email = u.Email }
+                ? new EntityReference(nameof(AuthUser)) { Id = id.Value, Name = u.FullName, Email = u.Email }
                 : null;
 
         return new AuditInfo

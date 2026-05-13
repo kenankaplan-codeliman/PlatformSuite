@@ -1,6 +1,8 @@
 using CodePro.Application.Features.Questionnaires.Dtos;
 using CodePro.Application.Interfaces;
+using CodePro.Domain.Entities.Questionnaires;
 using Platform.Application.Common.Results;
+using Platform.Application.Interfaces;
 using Mapster;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
@@ -10,11 +12,16 @@ namespace CodePro.Application.Features.Questionnaires.Commands.UpdateQuestionnai
 public sealed class UpdateQuestionnaireHandler : IRequestHandler<UpdateQuestionnaireCommand, Result<QuestionnaireDetailItem>>
 {
     private readonly IQuestionnaireRepository _repository;
+    private readonly IAttachmentRepository _attachmentRepository;
     private readonly ICodeProDbContext _db;
 
-    public UpdateQuestionnaireHandler(IQuestionnaireRepository repository, ICodeProDbContext db)
+    public UpdateQuestionnaireHandler(
+        IQuestionnaireRepository repository,
+        IAttachmentRepository attachmentRepository,
+        ICodeProDbContext db)
     {
         _repository = repository;
+        _attachmentRepository = attachmentRepository;
         _db = db;
     }
 
@@ -34,6 +41,12 @@ public sealed class UpdateQuestionnaireHandler : IRequestHandler<UpdateQuestionn
 
         await QuestionnaireSyncHelper.SyncQuestionsAsync(_db, entity.Id, request.Questions, cancellationToken);
         await _db.SaveChangesAsync(cancellationToken);
+
+        if (request.Attachments.Count > 0)
+        {
+            var metadataIds = request.Attachments.Select(a => a.MetadataId).ToList();
+            await _attachmentRepository.AssociateAsync(metadataIds, entity.Id, nameof(Questionnaire), cancellationToken);
+        }
 
         return await BuildDetailAsync(entity.Id, cancellationToken);
     }

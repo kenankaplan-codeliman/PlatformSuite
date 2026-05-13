@@ -2,7 +2,7 @@ import { useMemo } from 'react';
 import { useFieldArray, useFormContext } from 'react-hook-form';
 import { useTranslation } from 'react-i18next';
 import {
-  AttachmentPanel,
+  AttachmentSection,
   Button,
   DetailPageLayout,
   FormSection,
@@ -10,6 +10,7 @@ import {
   TextField,
   useFormMode,
   useRouteMode,
+  type DetailPageTab,
   type SelectOption,
 } from '@platform/ui';
 import { useQuestionnaireQuery } from '../../../../entities/questionnaire/api/useQuestionnaireQueries';
@@ -43,6 +44,7 @@ export function QuestionnaireDetailPage() {
   const { mode, id } = useRouteMode();
   const { t: tPage } = useTranslation('page.questionnaires-detail');
   const { t: tEntity } = useTranslation('entity.questionnaire');
+  const { t: tCommon } = useTranslation('common');
 
   const query = useQuestionnaireQuery(id);
   const upsert = useUpsertQuestionnaire();
@@ -64,6 +66,14 @@ export function QuestionnaireDetailPage() {
     label: tEntity(`status.${value}`),
   }));
 
+  const tabs: DetailPageTab[] = [
+    {
+      key: 'attachments',
+      label: tCommon('tabs.attachments'),
+      content: <AttachmentSection entityType="Questionnaire" entityId={id} />,
+    },
+  ];
+
   return (
     <DetailPageLayout<QuestionnaireFormValues>
       mode={mode}
@@ -84,13 +94,13 @@ export function QuestionnaireDetailPage() {
           : undefined
       }
       afterSaveNavigation={(saved) => RoutePaths.QuestionnaireView(saved.id)}
+      tabs={tabs}
     >
       <GeneralSection
         relatedModuleOptions={relatedModuleOptions}
         statusOptions={statusOptions}
       />
       <QuestionsSection />
-      <AttachmentPanel entityType="Questionnaire" entityId={id} />
     </DetailPageLayout>
   );
 

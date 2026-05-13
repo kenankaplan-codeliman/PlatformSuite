@@ -2,7 +2,7 @@ import { useMemo } from 'react';
 import { useFormContext } from 'react-hook-form';
 import { useTranslation } from 'react-i18next';
 import {
-  AttachmentPanel,
+  AttachmentSection,
   DetailPageLayout,
   FormSection,
   NumberField,
@@ -53,16 +53,22 @@ export function BudgetDetailPage() {
     return query.data?.name ?? tPage('viewTitle');
   }, [mode, query.data?.name, tPage]);
 
-  const tabs: DetailPageTab[] | undefined =
-    mode === 'new' || !id
-      ? undefined
+  const tabs: DetailPageTab[] = [
+    {
+      key: 'attachments',
+      label: tCommon('tabs.attachments'),
+      content: <AttachmentSection entityType="Budget" entityId={id} />,
+    },
+    ...(mode === 'new' || !id
+      ? []
       : [
           {
             key: 'activities',
             label: tCommon('tabs.activities'),
             content: <RelatedActivitiesTab entityType="Budget" entityId={id} />,
           },
-        ];
+        ]),
+  ];
 
   return (
     <DetailPageLayout<BudgetFormValues>
@@ -79,7 +85,6 @@ export function BudgetDetailPage() {
       tabs={tabs}
     >
       <General />
-      <AttachmentPanel entityType="Budget" entityId={id} />
     </DetailPageLayout>
   );
 

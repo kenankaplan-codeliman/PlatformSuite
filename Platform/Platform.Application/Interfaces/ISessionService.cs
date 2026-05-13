@@ -8,7 +8,7 @@ namespace Platform.Application.Interfaces
 {
     public interface ISessionService
     {
-        Task<AuthenticationToken> CreateSessionAsync(User user, ClientInfo? clientInfo = null);
+        Task<AuthenticationToken> CreateSessionAsync(AuthUser user, ClientInfo? clientInfo = null);
         Task<AuthenticationToken> RefreshSessionAsync(string refreshToken, ClientInfo? clientInfo);
         Task RevokeSessionAsync(string accessToken, ClientInfo? clientInfo);
 

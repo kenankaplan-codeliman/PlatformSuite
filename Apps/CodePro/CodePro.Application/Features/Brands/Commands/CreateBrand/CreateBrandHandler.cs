@@ -2,6 +2,7 @@ using CodePro.Application.Features.Brands.Dtos;
 using CodePro.Application.Interfaces;
 using CodePro.Domain.Entities.Products;
 using Platform.Application.Common.Results;
+using Platform.Application.Interfaces;
 using Mapster;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
@@ -11,11 +12,16 @@ namespace CodePro.Application.Features.Brands.Commands.CreateBrand;
 public sealed class CreateBrandHandler : IRequestHandler<CreateBrandCommand, Result<BrandDetailItem>>
 {
     private readonly IBrandRepository _repository;
+    private readonly IAttachmentRepository _attachmentRepository;
     private readonly ICodeProDbContext _db;
 
-    public CreateBrandHandler(IBrandRepository repository, ICodeProDbContext db)
+    public CreateBrandHandler(
+        IBrandRepository repository,
+        IAttachmentRepository attachmentRepository,
+        ICodeProDbContext db)
     {
         _repository = repository;
+        _attachmentRepository = attachmentRepository;
         _db = db;
     }
 
@@ -29,6 +35,13 @@ public sealed class CreateBrandHandler : IRequestHandler<CreateBrandCommand, Res
 
         var entity = request.Adapt<Brand>();
         await _repository.CreateAsync(entity, cancellationToken);
+
+        if (request.Attachments.Count > 0)
+        {
+            var metadataIds = request.Attachments.Select(a => a.MetadataId).ToList();
+            await _attachmentRepository.AssociateAsync(metadataIds, entity.Id, nameof(Brand), cancellationToken);
+        }
+
         return entity.Adapt<BrandDetailItem>();
     }
 }

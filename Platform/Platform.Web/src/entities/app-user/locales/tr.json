@@ -9,7 +9,7 @@
     "organization": { "label": "Organizasyon", "placeholder": "Organizasyon seçiniz" },
     "manager": { "label": "Yönetici", "placeholder": "Yönetici seçiniz" },
     "isActive": { "label": "Aktif" },
-    "roles": { "label": "Roller" }
+    "roles": { "label": "Roller", "placeholder": "Rol seçiniz" }
   },
   "sections": {
     "general": "Genel Bilgiler",

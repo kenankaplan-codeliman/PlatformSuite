@@ -2,13 +2,14 @@ import { useMemo } from 'react';
 import { useFormContext } from 'react-hook-form';
 import { useTranslation } from 'react-i18next';
 import {
-  AttachmentPanel,
+  AttachmentSection,
   DetailPageLayout,
   FormSection,
   SelectField,
   TextAreaField,
   TextField,
   useRouteMode,
+  type DetailPageTab,
 } from '@platform/ui';
 import {
   useBudgetCategoryListQuery,
@@ -35,6 +36,7 @@ export function BudgetCategoryDetailPage() {
   const { mode, id } = useRouteMode();
   const { t: tPage } = useTranslation('page.budget-categories-detail');
   const { t: tEntity } = useTranslation('entity.budget-category');
+  const { t: tCommon } = useTranslation('common');
 
   const query = useBudgetCategoryQuery(id);
   const upsert = useUpsertBudgetCategory();
@@ -45,6 +47,14 @@ export function BudgetCategoryDetailPage() {
     if (mode === 'edit') return tPage('editTitle');
     return query.data?.name ?? tPage('viewTitle');
   }, [mode, query.data?.name, tPage]);
+
+  const tabs: DetailPageTab[] = [
+    {
+      key: 'attachments',
+      label: tCommon('tabs.attachments'),
+      content: <AttachmentSection entityType="BudgetCategory" entityId={id} />,
+    },
+  ];
 
   return (
     <DetailPageLayout<BudgetCategoryFormValues>
@@ -66,9 +76,9 @@ export function BudgetCategoryDetailPage() {
           : undefined
       }
       afterSaveNavigation={(saved) => RoutePaths.BudgetCategoryView(saved.id)}
+      tabs={tabs}
     >
       <GeneralSection currentId={id} />
-      <AttachmentPanel entityType="BudgetCategory" entityId={id} />
     </DetailPageLayout>
   );
 

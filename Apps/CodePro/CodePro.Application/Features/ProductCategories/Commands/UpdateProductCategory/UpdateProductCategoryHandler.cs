@@ -1,6 +1,8 @@
 using CodePro.Application.Features.ProductCategories.Dtos;
 using CodePro.Application.Interfaces;
+using CodePro.Domain.Entities.Products;
 using Platform.Application.Common.Results;
+using Platform.Application.Interfaces;
 using Mapster;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
@@ -10,11 +12,16 @@ namespace CodePro.Application.Features.ProductCategories.Commands.UpdateProductC
 public sealed class UpdateProductCategoryHandler : IRequestHandler<UpdateProductCategoryCommand, Result<ProductCategoryDetailItem>>
 {
     private readonly IProductCategoryRepository _repository;
+    private readonly IAttachmentRepository _attachmentRepository;
     private readonly ICodeProDbContext _db;
 
-    public UpdateProductCategoryHandler(IProductCategoryRepository repository, ICodeProDbContext db)
+    public UpdateProductCategoryHandler(
+        IProductCategoryRepository repository,
+        IAttachmentRepository attachmentRepository,
+        ICodeProDbContext db)
     {
         _repository = repository;
+        _attachmentRepository = attachmentRepository;
         _db = db;
     }
 
@@ -49,6 +56,12 @@ public sealed class UpdateProductCategoryHandler : IRequestHandler<UpdateProduct
         entity.Title = await ComputeHierarchicalTitleAsync(request.Name, request.ParentCategoryId, cancellationToken);
 
         await _repository.UpdateAsync(entity, cancellationToken);
+
+        if (request.Attachments.Count > 0)
+        {
+            var metadataIds = request.Attachments.Select(a => a.MetadataId).ToList();
+            await _attachmentRepository.AssociateAsync(metadataIds, entity.Id, nameof(ProductCategory), cancellationToken);
+        }
 
         var dto = entity.Adapt<ProductCategoryDetailItem>();
         if (request.ParentCategoryId.HasValue)

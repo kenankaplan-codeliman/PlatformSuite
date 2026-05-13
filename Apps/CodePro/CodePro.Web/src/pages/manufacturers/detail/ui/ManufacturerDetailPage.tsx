@@ -2,11 +2,12 @@ import { useMemo } from 'react';
 import { useFormContext } from 'react-hook-form';
 import { useTranslation } from 'react-i18next';
 import {
-  AttachmentPanel,
+  AttachmentSection,
   DetailPageLayout,
   FormSection,
   TextField,
   useRouteMode,
+  type DetailPageTab,
 } from '@platform/ui';
 import { useManufacturerQuery } from '../../../../entities/manufacturer/api/useManufacturerQueries';
 import {
@@ -27,6 +28,7 @@ export function ManufacturerDetailPage() {
   const { mode, id } = useRouteMode();
   const { t: tPage } = useTranslation('page.manufacturers-detail');
   const { t: tEntity } = useTranslation('entity.manufacturer');
+  const { t: tCommon } = useTranslation('common');
 
   const query = useManufacturerQuery(id);
   const upsert = useUpsertManufacturer();
@@ -37,6 +39,14 @@ export function ManufacturerDetailPage() {
     if (mode === 'edit') return tPage('editTitle');
     return query.data?.name ?? tPage('viewTitle');
   }, [mode, query.data?.name, tPage]);
+
+  const tabs: DetailPageTab[] = [
+    {
+      key: 'attachments',
+      label: tCommon('tabs.attachments'),
+      content: <AttachmentSection entityType="Manufacturer" entityId={id} />,
+    },
+  ];
 
   return (
     <DetailPageLayout<ManufacturerFormValues>
@@ -58,9 +68,9 @@ export function ManufacturerDetailPage() {
           : undefined
       }
       afterSaveNavigation={(saved) => RoutePaths.ManufacturerView(saved.id)}
+      tabs={tabs}
     >
       <GeneralSection />
-      <AttachmentPanel entityType="Manufacturer" entityId={id} />
     </DetailPageLayout>
   );
 

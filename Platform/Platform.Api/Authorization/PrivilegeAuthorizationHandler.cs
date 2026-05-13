@@ -13,9 +13,9 @@ namespace Platform.Api.Authorization;
 
 public class PrivilegeAuthorizationHandler : AuthorizationHandler<PrivilegeAuthorizationRequirement>
 {
-    private readonly IUserRepository userRepository;
+    private readonly IAuthUserRepository userRepository;
 
-    public PrivilegeAuthorizationHandler(IUserRepository userRepository)
+    public PrivilegeAuthorizationHandler(IAuthUserRepository userRepository)
     {
         this.userRepository = userRepository;
     }

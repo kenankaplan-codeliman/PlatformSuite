@@ -50,33 +50,104 @@ public class AttachmentRepository : IAttachmentRepository
             .ToListAsync(cancellationToken);
     }
 
-    public async Task<AttachmentFileMetadata> SaveAsync(
-        AttachmentFileData fileData,
-        AttachmentFileMetadata metadata,
-        AttachmentFileRelation relation,
+    public async Task<AttachmentFileMetadata> CreateDraftAsync(
+        byte[] dataBytes,
+        string fileName,
+        string contentType,
+        long fileSize,
+        string documentType,
+        string? subject,
+        string? description,
+        DateTime expiresAt,
         CancellationToken cancellationToken = default)
     {
-        _db.AttachmentFileData.Add(fileData);
-        _db.AttachmentFileMetadata.Add(metadata);
-        _db.AttachmentFileRelation.Add(relation);
-        await _db.SaveChangesAsync(cancellationToken);
+        var fileData = new AttachmentFileData
+        {
+            Id = Guid.NewGuid(),
+            DataBytes = dataBytes,
+        };
+
+        var metadata = new AttachmentFileMetadata
+        {
+            Id = Guid.NewGuid(),
+            FileDataId = fileData.Id,
+            FileName = fileName,
+            ContentType = contentType,
+            FileSize = fileSize,
+            DocumentType = documentType,
+            Subject = subject,
+            Description = description,
+            ExpiresAt = expiresAt,
+        };
+
+        await _db.AttachmentFileData.AddAsync(fileData, cancellationToken);
+        await _db.AttachmentFileMetadata.AddAsync(metadata, cancellationToken);
+
         return metadata;
     }
 
-    public async Task DeleteAsync(Guid metadataId, CancellationToken cancellationToken = default)
+    public async Task AssociateAsync(
+        IReadOnlyCollection<Guid> metadataIds,
+        Guid entityId,
+        string entityType,
+        CancellationToken cancellationToken = default)
+    {
+        if (metadataIds.Count == 0) return;
+
+        var metadataList = await _db.AttachmentFileMetadata
+            .Where(m => metadataIds.Contains(m.Id))
+            .ToListAsync(cancellationToken);
+
+        foreach (var metadata in metadataList)
+        {
+            metadata.ExpiresAt = null;
+
+            _db.AttachmentFileRelation.Add(new AttachmentFileRelation
+            {
+                Id = Guid.NewGuid(),
+                MetadataId = metadata.Id,
+                EntityId = entityId,
+                EntityType = entityType,
+            });
+        }
+    }
+
+    public async Task<bool> DeleteAsync(Guid metadataId, CancellationToken cancellationToken = default)
     {
         var metadata = await _db.AttachmentFileMetadata
             .FirstOrDefaultAsync(m => m.Id == metadataId, cancellationToken);
 
-        if (metadata is null) return;
-
-        // Cascade: relations + file data tek FK üzerinden cascade siler.
-        _db.AttachmentFileMetadata.Remove(metadata);
+        if (metadata is null) return false;
 
         var fileData = await _db.AttachmentFileData
             .FirstOrDefaultAsync(d => d.Id == metadata.FileDataId, cancellationToken);
-        if (fileData is not null) _db.AttachmentFileData.Remove(fileData);
 
+        // file_data → metadata cascade FK olduğu için file_data silmek metadata'yı
+        // da kaskat siler; relation tablosu da metadata cascade ile temizlenir.
+        if (fileData is not null) _db.AttachmentFileData.Remove(fileData);
+        else _db.AttachmentFileMetadata.Remove(metadata);
+
+        return true;
+    }
+
+    public async Task<int> DeleteExpiredDraftsAsync(DateTime threshold, CancellationToken cancellationToken = default)
+    {
+        var expired = await _db.AttachmentFileMetadata
+            .Where(m => m.ExpiresAt != null && m.ExpiresAt < threshold)
+            .Select(m => new { m.Id, m.FileDataId })
+            .ToListAsync(cancellationToken);
+
+        if (expired.Count == 0) return 0;
+
+        var fileDataIds = expired.Select(e => e.FileDataId).ToList();
+        var fileDataEntries = await _db.AttachmentFileData
+            .Where(d => fileDataIds.Contains(d.Id))
+            .ToListAsync(cancellationToken);
+
+        _db.AttachmentFileData.RemoveRange(fileDataEntries);
+
+        // Hosted service MediatR pipeline'ı dışında çalışır — kendi SaveChanges.
         await _db.SaveChangesAsync(cancellationToken);
+        return expired.Count;
     }
 }

@@ -23,7 +23,7 @@ namespace Platform.Application.CommandHandler
         {
             return entityType switch
             {
-                nameof(User) => await auditRepository.GetAsync<User>(id),
+                nameof(AuthUser) => await auditRepository.GetAsync<AuthUser>(id),
 
                 _ => null
             };

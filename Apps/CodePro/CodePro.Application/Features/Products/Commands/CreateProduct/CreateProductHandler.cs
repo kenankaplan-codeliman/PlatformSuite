@@ -2,6 +2,7 @@ using CodePro.Application.Features.Products.Dtos;
 using CodePro.Application.Interfaces;
 using CodePro.Domain.Entities.Products;
 using Platform.Application.Common.Results;
+using Platform.Application.Interfaces;
 using Mapster;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
@@ -11,11 +12,16 @@ namespace CodePro.Application.Features.Products.Commands.CreateProduct;
 public sealed class CreateProductHandler : IRequestHandler<CreateProductCommand, Result<ProductDetailItem>>
 {
     private readonly IProductRepository _repository;
+    private readonly IAttachmentRepository _attachmentRepository;
     private readonly ICodeProDbContext _db;
 
-    public CreateProductHandler(IProductRepository repository, ICodeProDbContext db)
+    public CreateProductHandler(
+        IProductRepository repository,
+        IAttachmentRepository attachmentRepository,
+        ICodeProDbContext db)
     {
         _repository = repository;
+        _attachmentRepository = attachmentRepository;
         _db = db;
     }
 
@@ -38,6 +44,12 @@ public sealed class CreateProductHandler : IRequestHandler<CreateProductCommand,
 
         await SyncRelationsAsync(entity.Id, request, cancellationToken);
         await _db.SaveChangesAsync(cancellationToken);
+
+        if (request.Attachments.Count > 0)
+        {
+            var metadataIds = request.Attachments.Select(a => a.MetadataId).ToList();
+            await _attachmentRepository.AssociateAsync(metadataIds, entity.Id, nameof(Product), cancellationToken);
+        }
 
         var detail = await ProductDetailBuilder.BuildAsync(_db, entity.Id, cancellationToken);
         if (detail is null) return ProductErrors.NotFound;

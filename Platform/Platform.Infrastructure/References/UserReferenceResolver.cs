@@ -19,15 +19,15 @@ public class UserReferenceResolver : IEntityReferenceResolver
         this.configuration = configuration;
     }
 
-    public string EntityType => nameof(User);
+    public string EntityType => nameof(AuthUser);
 
     public EntityReference GetReference(Guid id)
     {
-        var usr = dbContext.User
+        var usr = dbContext.AuthUser
             .Select(x => new { x.Id, x.FirstName, x.LastName, x.Email })
             .FirstOrDefault(x => x.Id == id) ?? throw new NotFoundException();
 
-        return new EntityReference(nameof(User))
+        return new EntityReference(nameof(AuthUser))
         {
             Id = usr.Id,
             Name = $"{usr.FirstName} {usr.LastName}",
@@ -47,7 +47,7 @@ public class UserReferenceResolver : IEntityReferenceResolver
             skipCnt = pageIndex * paginationInfo.PageSize;
         }
 
-        var tempQuery = dbContext.User.AsNoTracking().Where(x => x.IsActive);
+        var tempQuery = dbContext.AuthUser.AsNoTracking().Where(x => x.IsActive);
 
         if (!string.IsNullOrEmpty(searchText))
         {
@@ -68,7 +68,7 @@ public class UserReferenceResolver : IEntityReferenceResolver
         var hasMore = entityList.Count > pageSize;
 
         var modalList = entityList.Take(pageSize)
-            .Select(item => new EntityReference(nameof(User))
+            .Select(item => new EntityReference(nameof(AuthUser))
             {
                 Id = item.Id,
                 Name = $"{item.FirstName} {item.LastName}",

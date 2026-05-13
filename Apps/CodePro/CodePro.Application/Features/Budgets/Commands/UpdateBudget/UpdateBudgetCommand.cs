@@ -1,10 +1,11 @@
 using CodePro.Application.Features.Budgets.Dtos;
 using CodePro.Domain.Enums;
 using Platform.Application.Common.Abstractions;
+using Platform.Application.Common.Attachments;
 
 namespace CodePro.Application.Features.Budgets.Commands.UpdateBudget;
 
-public sealed class UpdateBudgetCommand : ICommand<BudgetDetailItem>
+public sealed class UpdateBudgetCommand : ICommand<BudgetDetailItem>, IAttachmentCarrier
 {
     public Guid Id { get; init; }
     public string Name { get; init; } = string.Empty;
@@ -22,4 +23,5 @@ public sealed class UpdateBudgetCommand : ICommand<BudgetDetailItem>
     public bool CarryOverEnabled { get; init; }
     public Guid ResponsibleUserId { get; init; }
     public BudgetStatus Status { get; init; }
+    public List<AttachmentAssociation> Attachments { get; init; } = new();
 }

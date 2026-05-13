@@ -1,22 +1,25 @@
 {
   "title": "Ek Dosyalar",
-  "empty": "Henüz dosya yok.",
   "actions": {
+    "add": "Yeni Dosya Ekle",
     "download": "İndir",
     "delete": "Sil",
     "deleteConfirm": "Bu dosyayı silmek istediğinizden emin misiniz?",
-    "upload": "Yükle"
+    "cancel": "Vazgeç"
+  },
+  "row": {
+    "pending": "Kaydedilecek"
   },
   "uploader": {
-    "dropzone": "Dosya yüklemek için tıkla veya sürükle",
-    "hint": "Tek dosya — maks 50 MB",
     "documentType": "Belge Türü",
+    "file": "Dosya",
     "subject": "Konu (opsiyonel)",
     "description": "Açıklama (opsiyonel)",
     "submit": "Yükle"
   },
   "errors": {
-    "noFile": "Dosya seçilmedi.",
+    "noFile": "Önce dosya seçin.",
+    "fileTooLarge": "Dosya boyutu izin verilen sınırı aşıyor.",
     "uploadFailed": "Dosya yüklenemedi."
   }
 }

@@ -92,7 +92,8 @@ export const ServicePath = {
   },
   Attachment: {
     List: `${ControllerPaths.Attachment}/list`,
-    Upload: `${ControllerPaths.Attachment}/upload`,
+    /** Draft (relation'sız) upload — entity ile ilişkilendirme parent CreateXCommand içinde yapılır. */
+    UploadDraft: `${ControllerPaths.Attachment}/upload-draft`,
     /** GET stream — id append edilir */
     Download: `${ControllerPaths.Attachment}/download`,
     Delete: `${ControllerPaths.Attachment}/delete`,

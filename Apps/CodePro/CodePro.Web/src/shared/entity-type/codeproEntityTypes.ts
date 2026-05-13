@@ -10,7 +10,6 @@ import {
   FileTextOutlined,
   FormOutlined,
   ReadOutlined,
-  ShopOutlined,
   ShoppingCartOutlined,
   ShoppingOutlined,
   TagOutlined,

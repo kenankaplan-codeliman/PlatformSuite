@@ -19,10 +19,23 @@ export { AppRolesListPage } from './pages/app-roles/list/ui/AppRolesListPage';
 export { AppRoleDetailPage } from './pages/app-roles/detail/ui/AppRoleDetailPage';
 
 // ─── Widget'lar (cross-cutting bileşenler) ──────────────────────────────────
-export { AttachmentPanel } from './widgets/attachment/ui/AttachmentPanel';
-export { AttachmentList } from './widgets/attachment/ui/AttachmentList';
-export { AttachmentUpload } from './widgets/attachment/ui/AttachmentUpload';
-export { AttachmentCard } from './widgets/attachment/ui/AttachmentCard';
+export { AttachmentsField } from './widgets/attachment/ui/AttachmentsField';
+export type { AttachmentsFieldProps } from './widgets/attachment/ui/AttachmentsField';
+export { AttachmentSection } from './widgets/attachment/ui/AttachmentSection';
+export type { AttachmentSectionProps } from './widgets/attachment/ui/AttachmentSection';
+export { AttachmentRow } from './widgets/attachment/ui/AttachmentRow';
+export type { AttachmentRowItem, AttachmentRowProps } from './widgets/attachment/ui/AttachmentRow';
+export { AttachmentAddPanel } from './widgets/attachment/ui/AttachmentAddPanel';
+export type { AttachmentAddPanelProps, DocumentTypeOption } from './widgets/attachment/ui/AttachmentAddPanel';
+export { commonDocumentTypes } from './widgets/attachment/lib/commonDocumentTypes';
+export {
+  AttachmentsProvider,
+  useAttachmentsCollector,
+} from './widgets/attachment/model/AttachmentsContext';
+export type {
+  AttachmentsContextValue,
+  AttachmentsProviderProps,
+} from './widgets/attachment/model/AttachmentsContext';
 export { AppShell } from './widgets/app-shell/ui/AppShell';
 export type { AppShellProps } from './widgets/app-shell/ui/AppShell';
 export { AppMetaProvider, useAppMeta } from './shared/lib/app-meta/AppMetaContext';
@@ -78,7 +91,6 @@ export type {
   AppUserListItem,
   AppUserListFilter,
   AppUserFormValues,
-  AppUserRoleItem,
 } from './entities/app-user/model/types';
 
 export { useAppRoleQuery, useAppRoleListQuery } from './entities/app-role/api/useAppRoleQueries';
@@ -99,14 +111,14 @@ export type {
 // ─── Attachment entity ──────────────────────────────────────────────────────
 export { useAttachmentListByEntity } from './entities/attachment/api/useAttachmentQueries';
 export {
-  useUploadAttachment,
+  useUploadAttachmentDraft,
   useDeleteAttachment,
 } from './entities/attachment/api/useAttachmentMutations';
 export { attachmentDataSource } from './entities/attachment/api/attachmentDataSource';
 export type {
   AttachmentMetadataItem,
-  DocumentType,
-  UploadAttachmentInput,
+  AttachmentAssociation,
+  UploadAttachmentDraftInput,
 } from './entities/attachment/model/types';
 
 // ─── Shared UI primitifleri ──────────────────────────────────────────────────
@@ -116,6 +128,7 @@ export { Dropdown, type DropdownItem } from './shared/ui/Dropdown';
 export { DataTable, type DataTableColumn } from './shared/ui/DataTable';
 export { Alert } from './shared/ui/feedback/Alert';
 export { Spinner } from './shared/ui/feedback/Spinner';
+export { EmptyState, type EmptyStateProps } from './shared/ui/feedback/EmptyState';
 export { DetailPageLayout } from './shared/ui/detail-page/DetailPageLayout';
 export type { DetailPageTab, DetailPageAction } from './shared/ui/detail-page/DetailPageLayout';
 export { RelatedActivitiesTab } from './widgets/related-activities/ui/RelatedActivitiesTab';

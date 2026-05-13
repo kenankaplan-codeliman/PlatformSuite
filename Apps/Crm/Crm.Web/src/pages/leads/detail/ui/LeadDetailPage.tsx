@@ -2,7 +2,7 @@ import { useMemo } from 'react';
 import { useFormContext } from 'react-hook-form';
 import { useTranslation } from 'react-i18next';
 import {
-  AttachmentPanel,
+  AttachmentSection,
   DetailPageLayout,
   FormSection,
   NumberField,
@@ -130,7 +130,7 @@ export function LeadDetailPage() {
       <GeneralSection sourceOptions={sourceOptions} statusOptions={statusOptions} />
       <ContactSection />
       <DetailsSection />
-      <AttachmentPanel entityType="Lead" entityId={id} />
+      <AttachmentSection entityType="Lead" entityId={id} />
     </DetailPageLayout>
   );
 

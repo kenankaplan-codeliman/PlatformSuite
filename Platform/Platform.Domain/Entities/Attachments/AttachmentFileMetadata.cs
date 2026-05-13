@@ -1,5 +1,4 @@
 using Platform.Domain.Entities.Common;
-using Platform.Domain.Enums;
 
 namespace Platform.Domain.Entities.Attachments;
 
@@ -16,9 +15,18 @@ public class AttachmentFileMetadata : IBaseEntity, IOwnedEntity, IAuditableEntit
     public string FileName { get; set; } = null!;
     public string ContentType { get; set; } = null!;
     public long FileSize { get; set; }
-    public DocumentType DocumentType { get; set; } = DocumentType.Other;
+
+    // App-tarafında validate edilen serbest string (örn. "Other",
+    // "TicaretSicilGazetesi", "Sozlesme"). Platform.Domain enum tutmaz.
+    public string DocumentType { get; set; } = "Other";
     public string? Subject { get; set; }
     public string? Description { get; set; }
+
+    /// <summary>
+    /// Draft attachment için TTL. AssociateAsync çağrıldığında NULL olur.
+    /// Süresi geçenler AttachmentCleanupService tarafından silinir.
+    /// </summary>
+    public DateTime? ExpiresAt { get; set; }
 
     // IOwnedEntity
     public Guid OwnerId { get; private set; }

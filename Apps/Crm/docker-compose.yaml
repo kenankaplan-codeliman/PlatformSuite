@@ -92,9 +92,6 @@ services:
       - "${CRM_DB_HOST_PORT:-54321}:5432"
     volumes:
       - crm_postgres_data:/var/lib/postgresql/data
-      - ./docker/db-init:/docker-entrypoint-initdb.d:ro
-      - ../../Platform/Platform.Database:/sql/platform:ro
-      - ./Crm.Database:/sql/crm:ro
     networks:
       - crm_db_net
     healthcheck:

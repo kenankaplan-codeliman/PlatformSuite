@@ -10,10 +10,10 @@ namespace Platform.Application.Features.AppOrganizations.Commands.CreateAppOrgan
 
 public sealed class CreateAppOrganizationHandler : IRequestHandler<CreateAppOrganizationCommand, Result<AppOrganizationDetailItem>>
 {
-    private readonly IOrganizationRepository _repository;
+    private readonly IAuthOrganizationRepository _repository;
     private readonly IApplicationDbContext _db;
 
-    public CreateAppOrganizationHandler(IOrganizationRepository repository, IApplicationDbContext db)
+    public CreateAppOrganizationHandler(IAuthOrganizationRepository repository, IApplicationDbContext db)
     {
         _repository = repository;
         _db = db;
@@ -21,7 +21,7 @@ public sealed class CreateAppOrganizationHandler : IRequestHandler<CreateAppOrga
 
     public async Task<Result<AppOrganizationDetailItem>> Handle(CreateAppOrganizationCommand request, CancellationToken cancellationToken)
     {
-        var entity = request.Adapt<Organization>();
+        var entity = request.Adapt<AuthOrganization>();
         entity.Title = await ComputeHierarchicalTitleAsync(
             request.OrganizationName, request.ParentOrganization?.Id, cancellationToken);
 

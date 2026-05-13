@@ -1,11 +1,10 @@
 using Platform.Api.Authorization;
 using Platform.Api.Extensions;
 using Platform.Application.Features.Attachments.Commands.DeleteAttachment;
-using Platform.Application.Features.Attachments.Commands.UploadAttachment;
+using Platform.Application.Features.Attachments.Commands.UploadAttachmentDraft;
 using Platform.Application.Features.Attachments.Queries.ListAttachmentsByEntity;
 using Platform.Application.Interfaces;
 using Platform.Domain.Authorization;
-using Platform.Domain.Enums;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
 
@@ -30,14 +29,17 @@ public sealed class AttachmentController : ControllerBase
     public async Task<IActionResult> ListAsync([FromBody] ListAttachmentsByEntityQuery query, CancellationToken ct)
         => (await _sender.Send(query, ct)).ToActionResult(HttpContext);
 
-    /// <summary>Dosya yükler ve entity ile ilişkilendirir (multipart/form-data).</summary>
-    [HttpPost("upload")]
+    /// <summary>
+    /// Dosyayı draft olarak yükler — henüz hiçbir entity ile ilişkilendirilmez.
+    /// Dönüş metadataId frontend'in parent CreateXCommand içinde Attachments
+    /// listesine ekleyeceği referanstır. İlişkilendirilmediği sürece 24 saat
+    /// sonra AttachmentCleanupService tarafından silinir.
+    /// </summary>
+    [HttpPost("upload-draft")]
     [PrivilegeAuthorize(PrivilegeCodes.AttachmentPrivilegeCodes.Create)]
-    public async Task<IActionResult> UploadAsync(
+    public async Task<IActionResult> UploadDraftAsync(
         [FromForm] IFormFile file,
-        [FromForm] Guid entityId,
-        [FromForm] string entityType,
-        [FromForm] DocumentType documentType,
+        [FromForm] string documentType,
         [FromForm] string? subject,
         [FromForm] string? description,
         CancellationToken ct)
@@ -48,10 +50,8 @@ public sealed class AttachmentController : ControllerBase
         using var ms = new MemoryStream();
         await file.CopyToAsync(ms, ct);
 
-        var command = new UploadAttachmentCommand
+        var command = new UploadAttachmentDraftCommand
         {
-            EntityId = entityId,
-            EntityType = entityType,
             FileName = file.FileName,
             ContentType = file.ContentType,
             FileSize = file.Length,

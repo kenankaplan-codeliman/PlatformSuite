@@ -12,10 +12,7 @@ public sealed class DeleteAttachmentHandler : IRequestHandler<DeleteAttachmentCo
 
     public async Task<Result> Handle(DeleteAttachmentCommand request, CancellationToken cancellationToken)
     {
-        var metadata = await _repository.GetMetadataAsync(request.Id, cancellationToken);
-        if (metadata is null) return AttachmentErrors.NotFound;
-
-        await _repository.DeleteAsync(request.Id, cancellationToken);
-        return Result.Success();
+        var deleted = await _repository.DeleteAsync(request.Id, cancellationToken);
+        return deleted ? Result.Success() : AttachmentErrors.NotFound;
     }
 }

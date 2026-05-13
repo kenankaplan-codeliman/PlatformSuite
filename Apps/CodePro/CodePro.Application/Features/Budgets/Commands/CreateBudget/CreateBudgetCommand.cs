@@ -1,10 +1,11 @@
 using CodePro.Application.Features.Budgets.Dtos;
 using CodePro.Domain.Enums;
 using Platform.Application.Common.Abstractions;
+using Platform.Application.Common.Attachments;
 
 namespace CodePro.Application.Features.Budgets.Commands.CreateBudget;
 
-public sealed class CreateBudgetCommand : ICommand<BudgetDetailItem>
+public sealed class CreateBudgetCommand : ICommand<BudgetDetailItem>, IAttachmentCarrier
 {
     public string Name { get; init; } = string.Empty;
     public string? Description { get; init; }
@@ -20,4 +21,5 @@ public sealed class CreateBudgetCommand : ICommand<BudgetDetailItem>
     public int AlertThresholdPercentage { get; init; } = 80;
     public bool CarryOverEnabled { get; init; }
     public Guid ResponsibleUserId { get; init; }
+    public List<AttachmentAssociation> Attachments { get; init; } = new();
 }

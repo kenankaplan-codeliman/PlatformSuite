@@ -92,9 +92,6 @@ services:
       - "${CODEPRO_DB_HOST_PORT:-54322}:5432"
     volumes:
       - codepro_postgres_data:/var/lib/postgresql/data
-      - ./docker/db-init:/docker-entrypoint-initdb.d:ro
-      - ../../Platform/Platform.Database:/sql/platform:ro
-      - ./CodePro.Database:/sql/codepro:ro
     networks:
       - codepro_db_net
     healthcheck:
