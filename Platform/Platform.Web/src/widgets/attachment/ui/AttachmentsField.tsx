@@ -1,10 +1,13 @@
+// TODO: shared/ui'ye Popconfirm / Tag wrapper'ları eklenince migrate et.
+// eslint-disable-next-line no-restricted-imports
+import { Popconfirm, Space, Tag } from 'antd';
 import { useCallback, useEffect, useId, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { PlusOutlined } from '@ant-design/icons';
 import { Button } from '../../../shared/ui/Button';
 import { Spinner } from '../../../shared/ui/feedback/Spinner';
 import { Alert } from '../../../shared/ui/feedback/Alert';
-import { EmptyState } from '../../../shared/ui/feedback/EmptyState';
+import { DataTable, type DataTableColumn } from '../../../shared/ui/DataTable';
 import { useFormMode } from '../../../shared/ui/form/useFormMode';
 import { useAttachmentListByEntity } from '../../../entities/attachment/api/useAttachmentQueries';
 import {
@@ -16,12 +19,12 @@ import type {
   AttachmentMetadataItem,
 } from '../../../entities/attachment/model/types';
 import { useAttachmentsCollector } from '../model/AttachmentsContext';
-import { AttachmentRow, type AttachmentRowItem } from './AttachmentRow';
 import {
   AttachmentAddPanel,
   type DocumentTypeOption,
 } from './AttachmentAddPanel';
 import { commonDocumentTypes } from '../lib/commonDocumentTypes';
+import { formatBytes } from '../lib/formatBytes';
 
 export interface AttachmentsFieldProps {
   /** Bu attachment'ların ait olduğu entity'nin tipi. Örn. "Account", "Supplier". */
@@ -38,10 +41,22 @@ export interface AttachmentsFieldProps {
   forceReadOnly?: boolean;
 }
 
+interface AttachmentRowItem {
+  id: string;
+  fileName: string;
+  fileSize: number;
+  documentType: string;
+  subject?: string | null;
+  description?: string | null;
+  createdAt?: string;
+  /** UI hint — backend'e committed mi yoksa henüz pending draft mı. */
+  pending: boolean;
+}
+
 /**
  * AttachmentsField — entity detail sayfalarına eklenen attachment yönetim
- * bileşeni. Üstte mevcut + pending dosyaların listesi, altında "Yeni Dosya Ekle"
- * butonu ve add mode paneli.
+ * bileşeni. Tablo görünümünde mevcut + pending dosyalar listelenir; üstte
+ * "Yeni Dosya Ekle" butonu ve add mode paneli.
  *
  * Form schema'sı kirletmez. Pending listeyi kendi state'inde tutar; mount'ta
  * AttachmentsContext'e register olur, parent DetailPageLayout submit anında
@@ -134,28 +149,104 @@ export function AttachmentsField({
     return [...pendingRows, ...committed];
   }, [listQuery.data, pending]);
 
+  const columns: DataTableColumn<AttachmentRowItem>[] = [
+    {
+      key: 'fileName',
+      title: t('columns.fileName'),
+      render: (_v, row) => (
+        <div style={{ minWidth: 0 }}>
+          <div style={{ fontWeight: 600, overflow: 'hidden', textOverflow: 'ellipsis' }}>
+            {row.fileName}
+          </div>
+          {row.subject && <div style={{ fontSize: 12, color: '#666' }}>{row.subject}</div>}
+          {row.description && (
+            <div style={{ fontSize: 12, color: '#888' }}>{row.description}</div>
+          )}
+        </div>
+      ),
+    },
+    {
+      key: 'documentType',
+      title: t('columns.documentType'),
+      width: 200,
+      render: (_v, row) => (
+        <Space size={[4, 4]} wrap>
+          <Tag color={row.pending ? 'orange' : undefined}>
+            {documentTypeLabel ? documentTypeLabel(row.documentType) : row.documentType}
+          </Tag>
+          {row.pending && <Tag color="orange">{t('row.pending')}</Tag>}
+        </Space>
+      ),
+    },
+    {
+      key: 'size',
+      title: t('columns.size'),
+      width: 110,
+      render: (_v, row) => <span>{formatBytes(row.fileSize)}</span>,
+    },
+    {
+      key: 'date',
+      title: t('columns.date'),
+      width: 130,
+      render: (_v, row) =>
+        row.createdAt && !row.pending ? (
+          <span>{new Date(row.createdAt).toLocaleDateString('tr-TR')}</span>
+        ) : (
+          <span style={{ color: '#bbb' }}>—</span>
+        ),
+    },
+    {
+      key: 'actions',
+      title: t('columns.actions'),
+      width: 180,
+      fixed: 'right',
+      render: (_v, row) => (
+        <Space size={4}>
+          {!row.pending && (
+            <a
+              href={attachmentDataSource.getDownloadUrl(row.id)}
+              target="_blank"
+              rel="noopener noreferrer"
+              style={{ fontSize: 13 }}
+            >
+              {t('actions.download')}
+            </a>
+          )}
+          {!isReadOnly && (
+            <Popconfirm
+              title={t('actions.deleteConfirm')}
+              onConfirm={() =>
+                row.pending ? handleDeletePending(row.id) : handleDeleteCommitted(row.id)
+              }
+            >
+              <Button
+                danger
+                type="link"
+                size="small"
+                loading={
+                  deleteMutation.isPending && deleteMutation.variables?.id === row.id
+                }
+              >
+                {t('actions.delete')}
+              </Button>
+            </Popconfirm>
+          )}
+        </Space>
+      ),
+    },
+  ];
+
   const renderList = () => {
     if (entityId && listQuery.isLoading) return <Spinner tip={tCommon('messages.loading')} />;
     if (entityId && listQuery.isError) return <Alert type="error" message={tCommon('messages.unexpectedError')} />;
 
-    if (rows.length === 0) {
-      return <EmptyState />;
-    }
-
     return (
-      <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-        {rows.map((row) => (
-          <AttachmentRow
-            key={row.id}
-            item={row}
-            downloadUrl={attachmentDataSource.getDownloadUrl(row.id)}
-            canDelete={!isReadOnly}
-            deleting={deleteMutation.isPending && deleteMutation.variables?.id === row.id}
-            documentTypeLabel={documentTypeLabel}
-            onDelete={() => (row.pending ? handleDeletePending(row.id) : handleDeleteCommitted(row.id))}
-          />
-        ))}
-      </div>
+      <DataTable<AttachmentRowItem>
+        columns={columns}
+        data={rows}
+        rowKey="id"
+        size="small"
+      />
     );
   };
 

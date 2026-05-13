@@ -23,8 +23,6 @@ export { AttachmentsField } from './widgets/attachment/ui/AttachmentsField';
 export type { AttachmentsFieldProps } from './widgets/attachment/ui/AttachmentsField';
 export { AttachmentSection } from './widgets/attachment/ui/AttachmentSection';
 export type { AttachmentSectionProps } from './widgets/attachment/ui/AttachmentSection';
-export { AttachmentRow } from './widgets/attachment/ui/AttachmentRow';
-export type { AttachmentRowItem, AttachmentRowProps } from './widgets/attachment/ui/AttachmentRow';
 export { AttachmentAddPanel } from './widgets/attachment/ui/AttachmentAddPanel';
 export type { AttachmentAddPanelProps, DocumentTypeOption } from './widgets/attachment/ui/AttachmentAddPanel';
 export { commonDocumentTypes } from './widgets/attachment/lib/commonDocumentTypes';

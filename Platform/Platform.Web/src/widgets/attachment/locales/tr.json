@@ -1,5 +1,12 @@
 {
   "title": "Ek Dosyalar",
+  "columns": {
+    "fileName": "Dosya Adı",
+    "documentType": "Belge Türü",
+    "size": "Boyut",
+    "date": "Tarih",
+    "actions": "İşlemler"
+  },
   "actions": {
     "add": "Yeni Dosya Ekle",
     "download": "İndir",
