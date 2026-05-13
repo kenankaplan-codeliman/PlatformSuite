@@ -1,20 +1,32 @@
-import { useMemo, useState } from 'react';
+import { useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
-import { ListPageLayout, type DataTableColumn } from '@platform/ui';
+import { ListPageLayout, useEnumTranslation, useUrlFilters } from '@platform/ui';
+import type { DataTableColumn } from '@platform/ui';
 import { useSupplierListQuery } from '../../../../entities/supplier/api/useSupplierQueries';
 import type {
   SupplierListFilter,
   SupplierListItem,
 } from '../../../../entities/supplier/model/types';
+import {
+  supplierListFilterDefaults,
+  supplierListFilterSchema,
+} from '../../../../entities/supplier/model/listFilterSchema';
 import { RoutePaths } from '../../../../app/router/paths';
+import { SuppliersFilterPanel } from './SuppliersFilterPanel';
 
 export function SuppliersListPage() {
   const { t } = useTranslation('page.suppliers-list');
   const { t: tEntity } = useTranslation('entity.supplier');
+  const tType = useEnumTranslation('supplierType');
+  const tStatus = useEnumTranslation('supplierStatus');
+  const tCompany = useEnumTranslation('companyType');
   const navigate = useNavigate();
 
-  const [filters] = useState<SupplierListFilter>({});
+  const { filters, setFilters, clearFilters } = useUrlFilters<SupplierListFilter>({
+    schema: supplierListFilterSchema,
+    defaultValues: supplierListFilterDefaults,
+  });
 
   const query = useSupplierListQuery({ filters });
 
@@ -30,12 +42,17 @@ export function SuppliersListPage() {
       {
         key: 'supplierType',
         title: tEntity('fields.supplierType.label'),
-        dataIndex: 'supplierType',
+        render: (_v, r) => tType(r.supplierType),
       },
       {
         key: 'supplierStatus',
         title: tEntity('fields.supplierStatus.label'),
-        dataIndex: 'supplierStatus',
+        render: (_v, r) => tStatus(r.supplierStatus),
+      },
+      {
+        key: 'companyType',
+        title: tEntity('fields.companyType.label'),
+        render: (_v, r) => tCompany(r.companyType),
       },
       {
         key: 'contactPersonEmail',
@@ -49,7 +66,7 @@ export function SuppliersListPage() {
         render: (_v, r) => (r.isActive ? '✓' : '—'),
       },
     ],
-    [tEntity],
+    [tEntity, tType, tStatus, tCompany],
   );
 
   return (
@@ -58,6 +75,13 @@ export function SuppliersListPage() {
       columns={columns}
       data={data}
       rowKey="id"
+      filterBar={
+        <SuppliersFilterPanel
+          values={filters}
+          onApply={setFilters}
+          onClear={clearFilters}
+        />
+      }
       isLoading={query.isLoading}
       isFetchingMore={query.isFetchingNextPage}
       hasMore={query.hasNextPage}

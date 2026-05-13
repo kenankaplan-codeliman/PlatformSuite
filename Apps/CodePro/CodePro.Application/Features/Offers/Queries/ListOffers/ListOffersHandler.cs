@@ -20,11 +20,11 @@ public sealed class ListOffersHandler : IRequestHandler<ListOffersQuery, Result<
 
         if (!string.IsNullOrWhiteSpace(filters.Search))
         {
-            var pattern = filters.Search.ToLower();
+            var pattern = $"%{filters.Search}%";
             query = query.Where(o =>
-                o.Subject.ToLower().Contains(pattern)
-                || o.OfferNumber.ToLower().Contains(pattern)
-                || o.CounterpartyName.ToLower().Contains(pattern));
+                EF.Functions.ILike(o.Subject, pattern)
+                || EF.Functions.ILike(o.OfferNumber, pattern)
+                || EF.Functions.ILike(o.CounterpartyName, pattern));
         }
 
         if (filters.OfferType.HasValue)

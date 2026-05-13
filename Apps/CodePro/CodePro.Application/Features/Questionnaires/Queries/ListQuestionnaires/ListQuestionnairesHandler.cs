@@ -21,8 +21,8 @@ public sealed class ListQuestionnairesHandler : IRequestHandler<ListQuestionnair
 
         if (!string.IsNullOrWhiteSpace(filters.Name))
         {
-            var pattern = filters.Name.ToLower();
-            query = query.Where(q => q.Name.ToLower().Contains(pattern));
+            var pattern = $"%{filters.Name}%";
+            query = query.Where(q => EF.Functions.ILike(q.Name, pattern));
         }
 
         if (filters.RelatedModule.HasValue)

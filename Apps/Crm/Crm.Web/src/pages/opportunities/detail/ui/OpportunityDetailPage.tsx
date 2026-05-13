@@ -7,11 +7,13 @@ import {
   EntityLookupField,
   FormSection,
   NumberField,
+  RelatedActivitiesTab,
   SelectField,
   ServicePath,
   TextAreaField,
   TextField,
   useRouteMode,
+  type DetailPageTab,
   type SelectOption,
 } from '@platform/ui';
 import { useOpportunityQuery } from '../../../../entities/opportunity/api/useOpportunityQueries';
@@ -55,6 +57,7 @@ export function OpportunityDetailPage() {
   const { t: tPage } = useTranslation('page.opportunities-detail');
   const { t: tEntity } = useTranslation('entity.opportunity');
   const { t: tEnums } = useTranslation('enums');
+  const { t: tCommon } = useTranslation('common');
 
   const query = useOpportunityQuery(id);
   const upsert = useUpsertOpportunity();
@@ -70,6 +73,19 @@ export function OpportunityDetailPage() {
     value,
     label: tEnums(`opportunityStage.${value}`),
   }));
+
+  const tabs: DetailPageTab[] | undefined =
+    mode === 'new' || !id
+      ? undefined
+      : [
+          {
+            key: 'activities',
+            label: tCommon('tabs.activities'),
+            content: (
+              <RelatedActivitiesTab entityType="Opportunity" entityId={id} />
+            ),
+          },
+        ];
 
   return (
     <DetailPageLayout<OpportunityFormValues>
@@ -91,6 +107,7 @@ export function OpportunityDetailPage() {
           : undefined
       }
       afterSaveNavigation={(saved) => RoutePaths.OpportunityView(saved.id)}
+      tabs={tabs}
     >
       <GeneralSection stageOptions={stageOptions} />
       <FinancialSection />

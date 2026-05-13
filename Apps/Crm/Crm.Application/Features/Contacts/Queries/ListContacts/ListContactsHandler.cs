@@ -22,8 +22,8 @@ public sealed class ListContactsHandler : IRequestHandler<ListContactsQuery, Res
 
         if (!string.IsNullOrWhiteSpace(filters.ContactName))
         {
-            var pattern = filters.ContactName.ToLower();
-            query = query.Where(c => (c.FirstName + " " + c.LastName).ToLower().Contains(pattern));
+            var pattern = $"%{filters.ContactName}%";
+            query = query.Where(c => EF.Functions.ILike(c.FirstName + " " + c.LastName, pattern));
         }
 
         if (filters.AccountId.HasValue && filters.AccountId.Value != Guid.Empty)
@@ -33,14 +33,14 @@ public sealed class ListContactsHandler : IRequestHandler<ListContactsQuery, Res
 
         if (!string.IsNullOrWhiteSpace(filters.Title))
         {
-            var pattern = filters.Title.ToLower();
-            query = query.Where(c => c.Title != null && c.Title.ToLower().Contains(pattern));
+            var pattern = $"%{filters.Title}%";
+            query = query.Where(c => c.Title != null && EF.Functions.ILike(c.Title, pattern));
         }
 
         if (!string.IsNullOrWhiteSpace(filters.Department))
         {
-            var pattern = filters.Department.ToLower();
-            query = query.Where(c => c.Department != null && c.Department.ToLower().Contains(pattern));
+            var pattern = $"%{filters.Department}%";
+            query = query.Where(c => c.Department != null && EF.Functions.ILike(c.Department, pattern));
         }
 
         if (filters.IsActive.HasValue)

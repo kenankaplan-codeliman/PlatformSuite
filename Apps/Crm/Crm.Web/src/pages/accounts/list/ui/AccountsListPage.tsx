@@ -1,7 +1,7 @@
-import { useMemo, useState } from "react";
+import { useMemo } from "react";
 import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router-dom";
-import { ListPageLayout } from "@platform/ui";
+import { ListPageLayout, useUrlFilters } from "@platform/ui";
 import type { DataTableColumn } from "@platform/ui";
 import { useEnumTranslation } from "@platform/ui";
 import { useAccountListQuery } from "../../../../entities/account/api/useAccountQueries";
@@ -9,7 +9,12 @@ import type {
   AccountListFilter,
   AccountListItem,
 } from "../../../../entities/account/model/types";
+import {
+  accountListFilterDefaults,
+  accountListFilterSchema,
+} from "../../../../entities/account/model/listFilterSchema";
 import { RoutePaths } from "../../../../app/router/paths";
+import { AccountsFilterPanel } from "./AccountsFilterPanel";
 
 export function AccountsListPage() {
   const { t } = useTranslation("page.accounts-list");
@@ -18,7 +23,10 @@ export function AccountsListPage() {
   const tType = useEnumTranslation("accountType");
   const navigate = useNavigate();
 
-  const [filters] = useState<AccountListFilter>({});
+  const { filters, setFilters, clearFilters } = useUrlFilters<AccountListFilter>({
+    schema: accountListFilterSchema,
+    defaultValues: accountListFilterDefaults,
+  });
 
   const query = useAccountListQuery({ filters });
 
@@ -74,6 +82,13 @@ export function AccountsListPage() {
       columns={columns}
       data={data}
       rowKey="id"
+      filterBar={
+        <AccountsFilterPanel
+          values={filters}
+          onApply={setFilters}
+          onClear={clearFilters}
+        />
+      }
       isLoading={query.isLoading}
       isFetchingMore={query.isFetchingNextPage}
       hasMore={query.hasNextPage}

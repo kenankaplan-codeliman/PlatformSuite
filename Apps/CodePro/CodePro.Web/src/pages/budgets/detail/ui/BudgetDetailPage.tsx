@@ -6,9 +6,11 @@ import {
   DetailPageLayout,
   FormSection,
   NumberField,
+  RelatedActivitiesTab,
   TextAreaField,
   TextField,
   useRouteMode,
+  type DetailPageTab,
 } from '@platform/ui';
 import { useBudgetQuery } from '../../../../entities/budget/api/useBudgetQueries';
 import { useDeleteBudget, useUpsertBudget } from '../../../../entities/budget/api/useBudgetMutations';
@@ -39,6 +41,7 @@ export function BudgetDetailPage() {
   const { mode, id } = useRouteMode();
   const { t: tPage } = useTranslation('page.budgets-detail');
   const { t: tEntity } = useTranslation('entity.budget');
+  const { t: tCommon } = useTranslation('common');
 
   const query = useBudgetQuery(id);
   const upsert = useUpsertBudget();
@@ -49,6 +52,17 @@ export function BudgetDetailPage() {
     if (mode === 'edit') return tPage('editTitle');
     return query.data?.name ?? tPage('viewTitle');
   }, [mode, query.data?.name, tPage]);
+
+  const tabs: DetailPageTab[] | undefined =
+    mode === 'new' || !id
+      ? undefined
+      : [
+          {
+            key: 'activities',
+            label: tCommon('tabs.activities'),
+            content: <RelatedActivitiesTab entityType="Budget" entityId={id} />,
+          },
+        ];
 
   return (
     <DetailPageLayout<BudgetFormValues>
@@ -62,6 +76,7 @@ export function BudgetDetailPage() {
       onSubmit={async (values) => { await upsert.mutateAsync(values); }}
       onDelete={id ? async () => { await del.mutateAsync(id); } : undefined}
       afterSaveNavigation={(saved) => RoutePaths.BudgetView(saved.id)}
+      tabs={tabs}
     >
       <General />
       <AttachmentPanel entityType="Budget" entityId={id} />

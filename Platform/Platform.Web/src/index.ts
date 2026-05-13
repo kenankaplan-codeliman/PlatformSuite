@@ -96,7 +96,11 @@ export { DataTable, type DataTableColumn } from './shared/ui/DataTable';
 export { Alert } from './shared/ui/feedback/Alert';
 export { Spinner } from './shared/ui/feedback/Spinner';
 export { DetailPageLayout } from './shared/ui/detail-page/DetailPageLayout';
+export type { DetailPageTab, DetailPageAction } from './shared/ui/detail-page/DetailPageLayout';
+export { RelatedActivitiesTab } from './widgets/related-activities/ui/RelatedActivitiesTab';
+export type { RelatedActivitiesTabProps } from './widgets/related-activities/ui/RelatedActivitiesTab';
 export { ListPageLayout } from './shared/ui/list-page/ListPageLayout';
+export { FilterPanel, type FilterPanelProps } from './shared/ui/list-page/FilterPanel';
 export { FormSection } from './shared/ui/form/FormSection';
 export { FormRow } from './shared/ui/form/FormRow';
 export { TextField } from './shared/ui/form/fields/TextField';
@@ -117,8 +121,11 @@ export { activityKeys, authKeys, organizationKeys, appUserKeys, appRoleKeys, att
 
 // ─── Hook'lar ────────────────────────────────────────────────────────────────
 export { useRouteMode } from './shared/hooks/useRouteMode';
+export { useUrlFilters } from './shared/hooks/useUrlFilters';
+export type { UseUrlFiltersOptions, UseUrlFiltersReturn } from './shared/hooks/useUrlFilters';
 export { useFormMode } from './shared/ui/form/useFormMode';
 export { useEnumTranslation } from './shared/lib/i18n/enum';
+export { enumToOptions } from './shared/lib/options/enumToOptions';
 
 // ─── Tipler + sabitler ───────────────────────────────────────────────────────
 export type { FormMode } from './shared/types/FormMode';

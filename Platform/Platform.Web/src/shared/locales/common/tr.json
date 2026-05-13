@@ -11,7 +11,16 @@
     "search": "Ara",
     "submit": "Gönder",
     "logout": "Çıkış yap",
-    "ok": "Tamam"
+    "ok": "Tamam",
+    "apply": "Uygula",
+    "clear": "Temizle"
+  },
+  "filters": {
+    "title": "Filtreler",
+    "expand": "Genişlet",
+    "collapse": "Daralt",
+    "activeOnly": "Aktif",
+    "inactiveOnly": "Pasif"
   },
   "messages": {
     "loading": "Yükleniyor...",
@@ -41,5 +50,9 @@
     "role": "Rol",
     "primary": "Birincil",
     "addRow": "Satır ekle"
+  },
+  "tabs": {
+    "details": "Genel",
+    "activities": "İlişkili Aktiviteler"
   }
 }

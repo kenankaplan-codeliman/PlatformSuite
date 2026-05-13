@@ -7,17 +7,17 @@ import {
   PhoneOutlined,
   ScheduleOutlined,
 } from '@ant-design/icons';
-import { ListPageLayout } from '../../../../shared/ui/list-page/ListPageLayout';
-import type { DataTableColumn } from '../../../../shared/ui/DataTable';
-import { useEnumTranslation } from '../../../../shared/lib/i18n/enum';
-import { useActivityListQuery } from '../../../../entities/activity/api/useActivityQueries';
+import { ListPageLayout } from '../../../shared/ui/list-page/ListPageLayout';
+import type { DataTableColumn } from '../../../shared/ui/DataTable';
+import { useEnumTranslation } from '../../../shared/lib/i18n/enum';
+import { useActivityListQuery } from '../../../entities/activity/api/useActivityQueries';
 import {
   ACTIVITY_SLUG_BY_TYPE,
   type ActivityListFilter,
   type ActivityListItem,
   type ActivityType,
-} from '../../../../entities/activity/model/types';
-import { RoutePaths } from '../../../../app/router/paths';
+} from '../../../entities/activity/model/types';
+import { RoutePaths } from '../../../app/router/paths';
 
 const TYPE_ICONS: Record<ActivityType, React.ReactNode> = {
   PhoneCall: <PhoneOutlined />,

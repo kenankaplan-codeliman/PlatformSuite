@@ -20,11 +20,11 @@ public sealed class SearchProductCategoriesHandler : IRequestHandler<SearchProdu
 
         if (!string.IsNullOrWhiteSpace(request.SearchText))
         {
-            var pattern = request.SearchText.ToLower();
+            var pattern = $"%{request.SearchText}%";
             query = query.Where(c =>
-                c.Name.ToLower().Contains(pattern)
-                || c.Title.ToLower().Contains(pattern)
-                || (c.Code != null && c.Code.ToLower().Contains(pattern)));
+                EF.Functions.ILike(c.Name, pattern)
+                || EF.Functions.ILike(c.Title, pattern)
+                || (c.Code != null && EF.Functions.ILike(c.Code, pattern)));
         }
 
         var pageNumber = request.Pagination.PageNumber;

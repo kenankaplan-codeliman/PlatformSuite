@@ -6,9 +6,11 @@ import {
   DetailPageLayout,
   FormSection,
   NumberField,
+  RelatedActivitiesTab,
   TextAreaField,
   TextField,
   useRouteMode,
+  type DetailPageTab,
 } from '@platform/ui';
 import { useOfferQuery } from '../../../../entities/offer/api/useOfferQueries';
 import { useDeleteOffer, useUpsertOffer } from '../../../../entities/offer/api/useOfferMutations';
@@ -37,6 +39,7 @@ export function OfferDetailPage() {
   const { mode, id } = useRouteMode();
   const { t: tPage } = useTranslation('page.offers-detail');
   const { t: tEntity } = useTranslation('entity.offer');
+  const { t: tCommon } = useTranslation('common');
 
   const query = useOfferQuery(id);
   const upsert = useUpsertOffer();
@@ -47,6 +50,17 @@ export function OfferDetailPage() {
     if (mode === 'edit') return tPage('editTitle');
     return query.data?.subject ?? tPage('viewTitle');
   }, [mode, query.data?.subject, tPage]);
+
+  const tabs: DetailPageTab[] | undefined =
+    mode === 'new' || !id
+      ? undefined
+      : [
+          {
+            key: 'activities',
+            label: tCommon('tabs.activities'),
+            content: <RelatedActivitiesTab entityType="Offer" entityId={id} />,
+          },
+        ];
 
   return (
     <DetailPageLayout<OfferFormValues>
@@ -60,6 +74,7 @@ export function OfferDetailPage() {
       onSubmit={async (values) => { await upsert.mutateAsync(values); }}
       onDelete={id ? async () => { await del.mutateAsync(id); } : undefined}
       afterSaveNavigation={(saved) => RoutePaths.OfferView(saved.id)}
+      tabs={tabs}
     >
       <General />
       <AttachmentPanel entityType="Offer" entityId={id} />

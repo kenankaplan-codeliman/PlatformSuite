@@ -6,10 +6,12 @@ import {
   DetailPageLayout,
   FormSection,
   NumberField,
+  RelatedActivitiesTab,
   SelectField,
   TextAreaField,
   TextField,
   useRouteMode,
+  type DetailPageTab,
   type SelectOption,
 } from '@platform/ui';
 import { useLeadQuery } from '../../../../entities/lead/api/useLeadQueries';
@@ -70,6 +72,7 @@ export function LeadDetailPage() {
   const { t: tPage } = useTranslation('page.leads-detail');
   const { t: tEntity } = useTranslation('entity.lead');
   const { t: tEnums } = useTranslation('enums');
+  const { t: tCommon } = useTranslation('common');
 
   const query = useLeadQuery(id);
   const upsert = useUpsertLead();
@@ -91,6 +94,17 @@ export function LeadDetailPage() {
     label: tEnums(`leadStatus.${value}`),
   }));
 
+  const tabs: DetailPageTab[] | undefined =
+    mode === 'new' || !id
+      ? undefined
+      : [
+          {
+            key: 'activities',
+            label: tCommon('tabs.activities'),
+            content: <RelatedActivitiesTab entityType="Lead" entityId={id} />,
+          },
+        ];
+
   return (
     <DetailPageLayout<LeadFormValues>
       mode={mode}
@@ -111,6 +125,7 @@ export function LeadDetailPage() {
           : undefined
       }
       afterSaveNavigation={(saved) => RoutePaths.LeadView(saved.id)}
+      tabs={tabs}
     >
       <GeneralSection sourceOptions={sourceOptions} statusOptions={statusOptions} />
       <ContactSection />

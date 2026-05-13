@@ -20,10 +20,10 @@ public sealed class ListProductCatalogsHandler : IRequestHandler<ListProductCata
 
         if (!string.IsNullOrWhiteSpace(filters.Search))
         {
-            var pattern = filters.Search.ToLower();
+            var pattern = $"%{filters.Search}%";
             query = query.Where(c =>
-                c.Name.ToLower().Contains(pattern)
-                || c.Code.ToLower().Contains(pattern));
+                EF.Functions.ILike(c.Name, pattern)
+                || EF.Functions.ILike(c.Code, pattern));
         }
 
         if (filters.IsActive.HasValue)

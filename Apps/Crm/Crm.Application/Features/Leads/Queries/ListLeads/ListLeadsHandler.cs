@@ -21,13 +21,13 @@ public sealed class ListLeadsHandler : IRequestHandler<ListLeadsQuery, Result<Pa
 
         if (!string.IsNullOrWhiteSpace(filters.Search))
         {
-            var pattern = filters.Search.ToLower();
+            var pattern = $"%{filters.Search}%";
             query = query.Where(l =>
-                l.Subject.ToLower().Contains(pattern)
-                || (l.Company != null && l.Company.ToLower().Contains(pattern))
-                || (l.Email != null && l.Email.ToLower().Contains(pattern))
-                || (l.FirstName != null && l.FirstName.ToLower().Contains(pattern))
-                || (l.LastName != null && l.LastName.ToLower().Contains(pattern)));
+                EF.Functions.ILike(l.Subject, pattern)
+                || (l.Company != null && EF.Functions.ILike(l.Company, pattern))
+                || (l.Email != null && EF.Functions.ILike(l.Email, pattern))
+                || (l.FirstName != null && EF.Functions.ILike(l.FirstName, pattern))
+                || (l.LastName != null && EF.Functions.ILike(l.LastName, pattern)));
         }
 
         if (filters.Status.HasValue)

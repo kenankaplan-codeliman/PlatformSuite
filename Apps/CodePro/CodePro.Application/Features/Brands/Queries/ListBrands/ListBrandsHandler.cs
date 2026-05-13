@@ -21,8 +21,8 @@ public sealed class ListBrandsHandler : IRequestHandler<ListBrandsQuery, Result<
 
         if (!string.IsNullOrWhiteSpace(filters.Search))
         {
-            var pattern = filters.Search.ToLower();
-            query = query.Where(b => b.Name.ToLower().Contains(pattern));
+            var pattern = $"%{filters.Search}%";
+            query = query.Where(b => EF.Functions.ILike(b.Name, pattern));
         }
 
         if (filters.IsActive.HasValue)

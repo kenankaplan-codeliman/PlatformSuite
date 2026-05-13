@@ -52,6 +52,7 @@ import budgetsDetailTr from '../pages/budgets/detail/locales/tr.json';
 import eDocumentEntityTr from '../entities/edocument/locales/tr.json';
 import eDocumentsListTr from '../pages/edocuments/list/locales/tr.json';
 import eDocumentsDetailTr from '../pages/edocuments/detail/locales/tr.json';
+import codeProEnumsTr from '../shared/locales/enums/tr.json';
 import codeProMenuTr from './menu/locales/tr.json';
 import codeProAppTr from './locales/tr.json';
 
@@ -128,6 +129,9 @@ export function registerCodeProTranslations(): void {
   i18n.addResourceBundle('tr', 'entity.edocument', eDocumentEntityTr, true, true);
   i18n.addResourceBundle('tr', 'page.edocuments-list', eDocumentsListTr, true, true);
   i18n.addResourceBundle('tr', 'page.edocuments-detail', eDocumentsDetailTr, true, true);
+
+  // enums namespace Platform tarafından init edildi; üzerine CodePro enum'larını deep-merge et.
+  i18n.addResourceBundle('tr', 'enums', codeProEnumsTr, true, false);
 
   i18n.addResourceBundle('tr', 'app.codepro-menu', codeProMenuTr, true, true);
   i18n.addResourceBundle('tr', 'app.codepro', codeProAppTr, true, true);

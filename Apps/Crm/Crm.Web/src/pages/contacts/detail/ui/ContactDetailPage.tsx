@@ -14,6 +14,7 @@ import { TextAreaField } from "@platform/ui";
 import { EntityRelationTable } from "@platform/ui";
 import { ServicePath } from "@platform/ui";
 import { useRouteMode } from "@platform/ui";
+import { RelatedActivitiesTab, type DetailPageTab } from "@platform/ui";
 import { useContactQuery } from "../../../../entities/contact/api/useContactQueries";
 import {
   useUpsertContact,
@@ -54,6 +55,7 @@ export function ContactDetailPage() {
   const { t: tPage } = useTranslation("page.contacts-detail");
   const { t: tEntity } = useTranslation("entity.contact");
   const { t: tEnumStatus } = useTranslation("enums");
+  const { t: tCommon } = useTranslation("common");
 
   const query = useContactQuery(id);
   const upsert = useUpsertContact();
@@ -73,6 +75,19 @@ export function ContactDetailPage() {
       label: tEnumStatus(`contactStatus.${value}`),
     }),
   );
+
+  const tabs: DetailPageTab[] | undefined =
+    mode === "new" || !id
+      ? undefined
+      : [
+          {
+            key: "activities",
+            label: tCommon("tabs.activities"),
+            content: (
+              <RelatedActivitiesTab entityType="Contact" entityId={id} />
+            ),
+          },
+        ];
 
   return (
     <DetailPageLayout<ContactFormValues>
@@ -94,6 +109,7 @@ export function ContactDetailPage() {
           : undefined
       }
       afterSaveNavigation={(saved) => RoutePaths.ContactView(saved.id)}
+      tabs={tabs}
     >
       <GeneralSection statusOptions={statusOptions} />
       <DetailsSection />

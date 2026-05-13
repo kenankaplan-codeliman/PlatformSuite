@@ -21,8 +21,8 @@ public sealed class ListAppRolesHandler : IRequestHandler<ListAppRolesQuery, Res
 
         if (!string.IsNullOrWhiteSpace(filters.RoleName))
         {
-            var pattern = filters.RoleName.ToLower();
-            query = query.Where(r => r.RoleName.ToLower().Contains(pattern));
+            var pattern = $"%{filters.RoleName}%";
+            query = query.Where(r => EF.Functions.ILike(r.RoleName, pattern));
         }
 
         if (filters.IsActive.HasValue)

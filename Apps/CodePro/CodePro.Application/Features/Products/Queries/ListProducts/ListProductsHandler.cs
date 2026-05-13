@@ -21,11 +21,11 @@ public sealed class ListProductsHandler : IRequestHandler<ListProductsQuery, Res
 
         if (!string.IsNullOrWhiteSpace(filters.Search))
         {
-            var pattern = filters.Search.ToLower();
+            var pattern = $"%{filters.Search}%";
             query = query.Where(p =>
-                p.Name.ToLower().Contains(pattern)
-                || p.Code.ToLower().Contains(pattern)
-                || p.ShortDescription.ToLower().Contains(pattern));
+                EF.Functions.ILike(p.Name, pattern)
+                || EF.Functions.ILike(p.Code, pattern)
+                || EF.Functions.ILike(p.ShortDescription, pattern));
         }
 
         if (filters.ProductCategoryId.HasValue)

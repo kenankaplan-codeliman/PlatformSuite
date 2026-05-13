@@ -6,10 +6,12 @@ import {
   DetailPageLayout,
   EntityLookupField,
   FormSection,
+  RelatedActivitiesTab,
   ServicePath,
   TextAreaField,
   TextField,
   useRouteMode,
+  type DetailPageTab,
 } from '@platform/ui';
 import { usePurchaseOrderQuery } from '../../../../entities/purchase-order/api/usePurchaseOrderQueries';
 import {
@@ -39,6 +41,7 @@ export function PurchaseOrderDetailPage() {
   const { mode, id } = useRouteMode();
   const { t: tPage } = useTranslation('page.purchase-orders-detail');
   const { t: tEntity } = useTranslation('entity.purchase-order');
+  const { t: tCommon } = useTranslation('common');
 
   const query = usePurchaseOrderQuery(id);
   const upsert = useUpsertPurchaseOrder();
@@ -49,6 +52,19 @@ export function PurchaseOrderDetailPage() {
     if (mode === 'edit') return tPage('editTitle');
     return query.data?.title ?? tPage('viewTitle');
   }, [mode, query.data?.title, tPage]);
+
+  const tabs: DetailPageTab[] | undefined =
+    mode === 'new' || !id
+      ? undefined
+      : [
+          {
+            key: 'activities',
+            label: tCommon('tabs.activities'),
+            content: (
+              <RelatedActivitiesTab entityType="PurchaseOrder" entityId={id} />
+            ),
+          },
+        ];
 
   return (
     <DetailPageLayout<PurchaseOrderFormValues>
@@ -62,6 +78,7 @@ export function PurchaseOrderDetailPage() {
       onSubmit={async (values) => { await upsert.mutateAsync(values); }}
       onDelete={id ? async () => { await del.mutateAsync(id); } : undefined}
       afterSaveNavigation={(saved) => RoutePaths.PurchaseOrderView(saved.id)}
+      tabs={tabs}
     >
       <General />
       <AttachmentPanel entityType="PurchaseOrder" entityId={id} />

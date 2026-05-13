@@ -21,12 +21,12 @@ public sealed class ListSuppliersHandler : IRequestHandler<ListSuppliersQuery, R
 
         if (!string.IsNullOrWhiteSpace(filters.Search))
         {
-            var pattern = filters.Search.ToLower();
+            var pattern = $"%{filters.Search}%";
             query = query.Where(s =>
-                s.Name.ToLower().Contains(pattern)
-                || (s.Vkn != null && s.Vkn.ToLower().Contains(pattern))
-                || (s.ContactPersonEmail != null && s.ContactPersonEmail.ToLower().Contains(pattern))
-                || (s.City != null && s.City.ToLower().Contains(pattern)));
+                EF.Functions.ILike(s.Name, pattern)
+                || (s.Vkn != null && EF.Functions.ILike(s.Vkn, pattern))
+                || (s.ContactPersonEmail != null && EF.Functions.ILike(s.ContactPersonEmail, pattern))
+                || (s.City != null && EF.Functions.ILike(s.City, pattern)));
         }
 
         if (filters.SupplierType.HasValue)

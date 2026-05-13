@@ -1,4 +1,7 @@
 {
   "title": "Tedarikçiler",
-  "createButton": "Yeni Tedarikçi"
+  "createButton": "Yeni Tedarikçi",
+  "filters": {
+    "searchPlaceholder": "Ad, VKN, e-posta…"
+  }
 }

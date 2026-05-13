@@ -20,11 +20,11 @@ public sealed class SearchAppOrganizationsHandler : IRequestHandler<SearchAppOrg
 
         if (!string.IsNullOrWhiteSpace(request.SearchText))
         {
-            var pattern = request.SearchText.ToLower();
+            var pattern = $"%{request.SearchText}%";
             query = query.Where(o =>
-                o.OrganizationName.ToLower().Contains(pattern)
-                || o.OrganizationCode.ToLower().Contains(pattern)
-                || (o.Title != null && o.Title.ToLower().Contains(pattern)));
+                EF.Functions.ILike(o.OrganizationName, pattern)
+                || EF.Functions.ILike(o.OrganizationCode, pattern)
+                || (o.Title != null && EF.Functions.ILike(o.Title, pattern)));
         }
 
         var pageNumber = request.Pagination.PageNumber;

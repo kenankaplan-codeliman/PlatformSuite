@@ -20,10 +20,10 @@ public sealed class ListPriceListsHandler : IRequestHandler<ListPriceListsQuery,
 
         if (!string.IsNullOrWhiteSpace(filters.Search))
         {
-            var pattern = filters.Search.ToLower();
+            var pattern = $"%{filters.Search}%";
             query = query.Where(p =>
-                p.Name.ToLower().Contains(pattern)
-                || p.Code.ToLower().Contains(pattern));
+                EF.Functions.ILike(p.Name, pattern)
+                || EF.Functions.ILike(p.Code, pattern));
         }
 
         if (filters.SupplierId.HasValue)

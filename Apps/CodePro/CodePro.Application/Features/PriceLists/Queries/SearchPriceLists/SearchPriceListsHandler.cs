@@ -20,10 +20,10 @@ public sealed class SearchPriceListsHandler : IRequestHandler<SearchPriceListsQu
 
         if (!string.IsNullOrWhiteSpace(request.SearchText))
         {
-            var pattern = request.SearchText.ToLower();
+            var pattern = $"%{request.SearchText}%";
             query = query.Where(p =>
-                p.Name.ToLower().Contains(pattern)
-                || p.Code.ToLower().Contains(pattern));
+                EF.Functions.ILike(p.Name, pattern)
+                || EF.Functions.ILike(p.Code, pattern));
         }
 
         var pageNumber = request.Pagination.PageNumber;

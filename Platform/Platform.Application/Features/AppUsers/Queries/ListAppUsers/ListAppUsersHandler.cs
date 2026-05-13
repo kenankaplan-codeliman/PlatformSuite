@@ -20,16 +20,16 @@ public sealed class ListAppUsersHandler : IRequestHandler<ListAppUsersQuery, Res
 
         if (!string.IsNullOrWhiteSpace(filters.FullName))
         {
-            var pattern = filters.FullName.ToLower();
+            var pattern = $"%{filters.FullName}%";
             query = query.Where(u =>
-                u.FirstName.ToLower().Contains(pattern)
-                || u.LastName.ToLower().Contains(pattern));
+                EF.Functions.ILike(u.FirstName, pattern)
+                || EF.Functions.ILike(u.LastName, pattern));
         }
 
         if (!string.IsNullOrWhiteSpace(filters.Email))
         {
-            var pattern = filters.Email.ToLower();
-            query = query.Where(u => u.Email.ToLower().Contains(pattern));
+            var pattern = $"%{filters.Email}%";
+            query = query.Where(u => EF.Functions.ILike(u.Email, pattern));
         }
 
         if (filters.OrganizationId.HasValue)

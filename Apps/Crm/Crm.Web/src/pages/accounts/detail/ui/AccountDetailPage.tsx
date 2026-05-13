@@ -15,6 +15,7 @@ import { EntityLookupField } from "@platform/ui";
 import { EntityRelationTable } from "@platform/ui";
 import { ServicePath } from "@platform/ui";
 import { useRouteMode } from "@platform/ui";
+import { RelatedActivitiesTab, type DetailPageTab } from "@platform/ui";
 import { useAccountQuery } from "../../../../entities/account/api/useAccountQueries";
 import {
   useUpsertAccount,
@@ -67,6 +68,7 @@ export function AccountDetailPage() {
   const { t: tPage } = useTranslation("page.accounts-detail");
   const { t: tEntity } = useTranslation("entity.account");
   const { t: tEnumStatus } = useTranslation("enums");
+  const { t: tCommon } = useTranslation("common");
 
   const query = useAccountQuery(id);
   const upsert = useUpsertAccount();
@@ -92,6 +94,19 @@ export function AccountDetailPage() {
     }),
   );
 
+  const tabs: DetailPageTab[] | undefined =
+    mode === "new" || !id
+      ? undefined
+      : [
+          {
+            key: "activities",
+            label: tCommon("tabs.activities"),
+            content: (
+              <RelatedActivitiesTab entityType="Account" entityId={id} />
+            ),
+          },
+        ];
+
   return (
     <DetailPageLayout<AccountFormValues>
       mode={mode}
@@ -112,6 +127,7 @@ export function AccountDetailPage() {
           : undefined
       }
       afterSaveNavigation={(saved) => RoutePaths.AccountView(saved.id)}
+      tabs={tabs}
     >
       <GeneralSection
         typeOptions={typeOptions}

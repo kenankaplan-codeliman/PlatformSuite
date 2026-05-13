@@ -7,10 +7,12 @@ import {
   FormRow,
   FormSection,
   NumberField,
+  RelatedActivitiesTab,
   SelectField,
   TextAreaField,
   TextField,
   useRouteMode,
+  type DetailPageTab,
   type SelectOption,
 } from '@platform/ui';
 import { useSupplierQuery } from '../../../../entities/supplier/api/useSupplierQueries';
@@ -84,6 +86,7 @@ export function SupplierDetailPage() {
   const { mode, id } = useRouteMode();
   const { t: tPage } = useTranslation('page.suppliers-detail');
   const { t: tEntity } = useTranslation('entity.supplier');
+  const { t: tCommon } = useTranslation('common');
 
   const query = useSupplierQuery(id);
   const upsert = useUpsertSupplier();
@@ -94,6 +97,19 @@ export function SupplierDetailPage() {
     if (mode === 'edit') return tPage('editTitle');
     return query.data?.name ?? tPage('viewTitle');
   }, [mode, query.data?.name, tPage]);
+
+  const tabs: DetailPageTab[] | undefined =
+    mode === 'new' || !id
+      ? undefined
+      : [
+          {
+            key: 'activities',
+            label: tCommon('tabs.activities'),
+            content: (
+              <RelatedActivitiesTab entityType="Supplier" entityId={id} />
+            ),
+          },
+        ];
 
   return (
     <DetailPageLayout<SupplierFormValues>
@@ -115,6 +131,7 @@ export function SupplierDetailPage() {
           : undefined
       }
       afterSaveNavigation={(saved) => RoutePaths.SupplierView(saved.id)}
+      tabs={tabs}
     >
       <GeneralSection />
       <CompanySection />

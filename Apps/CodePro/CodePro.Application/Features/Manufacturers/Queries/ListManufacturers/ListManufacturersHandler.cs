@@ -21,8 +21,8 @@ public sealed class ListManufacturersHandler : IRequestHandler<ListManufacturers
 
         if (!string.IsNullOrWhiteSpace(filters.Search))
         {
-            var pattern = filters.Search.ToLower();
-            query = query.Where(m => m.Name.ToLower().Contains(pattern));
+            var pattern = $"%{filters.Search}%";
+            query = query.Where(m => EF.Functions.ILike(m.Name, pattern));
         }
 
         if (filters.IsActive.HasValue)

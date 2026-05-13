@@ -5,12 +5,12 @@ import { useFormMode } from '../useFormMode';
 import { useErrorMessage } from '../../../lib/i18n/errorMessage';
 import type { FormRowItemProps } from '../FormRow';
 
-export interface SelectOption<TValue extends string | number = string> {
+export interface SelectOption<TValue extends string | number | boolean = string> {
   value: TValue;
   label: string;
 }
 
-export interface SelectFieldProps<TValues extends FieldValues, TValue extends string | number = string> extends FormRowItemProps {
+export interface SelectFieldProps<TValues extends FieldValues, TValue extends string | number | boolean = string> extends FormRowItemProps {
   name: FieldPath<TValues>;
   control: Control<TValues>;
   options: SelectOption<TValue>[];
@@ -23,7 +23,7 @@ export interface SelectFieldProps<TValues extends FieldValues, TValue extends st
   requiredInMode?: FormMode[];
 }
 
-export function SelectField<TValues extends FieldValues, TValue extends string | number = string>({
+export function SelectField<TValues extends FieldValues, TValue extends string | number | boolean = string>({
   name,
   control,
   options,

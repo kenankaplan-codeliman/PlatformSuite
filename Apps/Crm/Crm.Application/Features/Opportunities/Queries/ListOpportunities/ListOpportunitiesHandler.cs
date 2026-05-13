@@ -21,8 +21,8 @@ public sealed class ListOpportunitiesHandler : IRequestHandler<ListOpportunities
 
         if (!string.IsNullOrWhiteSpace(filters.Search))
         {
-            var pattern = filters.Search.ToLower();
-            query = query.Where(o => o.Name.ToLower().Contains(pattern));
+            var pattern = $"%{filters.Search}%";
+            query = query.Where(o => EF.Functions.ILike(o.Name, pattern));
         }
 
         if (filters.Stage.HasValue)

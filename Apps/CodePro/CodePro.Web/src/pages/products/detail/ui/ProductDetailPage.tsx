@@ -7,11 +7,13 @@ import {
   DetailPageLayout,
   EntityLookupField,
   FormSection,
+  RelatedActivitiesTab,
   ServicePath,
   TextAreaField,
   TextField,
   useFormMode,
   useRouteMode,
+  type DetailPageTab,
 } from '@platform/ui';
 import { CodeProServicePath } from '../../../../shared/api/servicePaths';
 import { useProductQuery } from '../../../../entities/product/api/useProductQueries';
@@ -77,6 +79,7 @@ export function ProductDetailPage() {
   const { mode, id } = useRouteMode();
   const { t: tPage } = useTranslation('page.products-detail');
   const { t: tEntity } = useTranslation('entity.product');
+  const { t: tCommon } = useTranslation('common');
 
   const query = useProductQuery(id);
   const upsert = useUpsertProduct();
@@ -89,6 +92,19 @@ export function ProductDetailPage() {
   }, [mode, query.data?.name, tPage]);
 
   const formData = useMemo(() => mapDataToForm(query.data), [query.data]);
+
+  const tabs: DetailPageTab[] | undefined =
+    mode === 'new' || !id
+      ? undefined
+      : [
+          {
+            key: 'activities',
+            label: tCommon('tabs.activities'),
+            content: (
+              <RelatedActivitiesTab entityType="Product" entityId={id} />
+            ),
+          },
+        ];
 
   return (
     <DetailPageLayout<ProductFormValues>
@@ -110,6 +126,7 @@ export function ProductDetailPage() {
           : undefined
       }
       afterSaveNavigation={(saved) => RoutePaths.ProductView(saved.id)}
+      tabs={tabs}
     >
       <GeneralSection />
       <ValiditySection />

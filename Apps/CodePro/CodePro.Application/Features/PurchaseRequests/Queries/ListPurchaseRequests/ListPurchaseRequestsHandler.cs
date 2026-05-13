@@ -20,10 +20,10 @@ public sealed class ListPurchaseRequestsHandler : IRequestHandler<ListPurchaseRe
 
         if (!string.IsNullOrWhiteSpace(filters.Search))
         {
-            var pattern = filters.Search.ToLower();
+            var pattern = $"%{filters.Search}%";
             query = query.Where(p =>
-                p.Title.ToLower().Contains(pattern)
-                || p.RequestNumber.ToLower().Contains(pattern));
+                EF.Functions.ILike(p.Title, pattern)
+                || EF.Functions.ILike(p.RequestNumber, pattern));
         }
 
         if (filters.Status.HasValue)

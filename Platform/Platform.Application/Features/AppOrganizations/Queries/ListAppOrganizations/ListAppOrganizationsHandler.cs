@@ -21,14 +21,14 @@ public sealed class ListAppOrganizationsHandler : IRequestHandler<ListAppOrganiz
 
         if (!string.IsNullOrWhiteSpace(filters.OrganizationName))
         {
-            var pattern = filters.OrganizationName.ToLower();
-            query = query.Where(o => o.OrganizationName.ToLower().Contains(pattern));
+            var pattern = $"%{filters.OrganizationName}%";
+            query = query.Where(o => EF.Functions.ILike(o.OrganizationName, pattern));
         }
 
         if (!string.IsNullOrWhiteSpace(filters.OrganizationCode))
         {
-            var pattern = filters.OrganizationCode.ToLower();
-            query = query.Where(o => o.OrganizationCode.ToLower().Contains(pattern));
+            var pattern = $"%{filters.OrganizationCode}%";
+            query = query.Where(o => EF.Functions.ILike(o.OrganizationCode, pattern));
         }
 
         if (filters.Type.HasValue)

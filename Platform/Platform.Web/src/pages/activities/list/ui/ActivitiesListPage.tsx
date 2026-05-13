@@ -24,7 +24,7 @@ import {
   type ActivityListFilter,
 } from '../../../../entities/activity/model/types';
 import { RoutePaths } from '../../../../app/router/paths';
-import { ActivityListView } from './ActivityListView';
+import { ActivityListView } from '../../../../widgets/activity-list/ui/ActivityListView';
 import { ActivityCalendarView } from './ActivityCalendarView';
 
 type ViewMode = 'list' | 'calendar';

@@ -21,8 +21,8 @@ public sealed class ListEDocumentsHandler : IRequestHandler<ListEDocumentsQuery,
 
         if (!string.IsNullOrWhiteSpace(filters.Search))
         {
-            var pattern = filters.Search.ToLower();
-            query = query.Where(e => e.Subject.ToLower().Contains(pattern));
+            var pattern = $"%{filters.Search}%";
+            query = query.Where(e => EF.Functions.ILike(e.Subject, pattern));
         }
 
         if (filters.DocumentType.HasValue)

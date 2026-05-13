@@ -6,9 +6,11 @@ import {
   DetailPageLayout,
   FormSection,
   NumberField,
+  RelatedActivitiesTab,
   TextAreaField,
   TextField,
   useRouteMode,
+  type DetailPageTab,
 } from '@platform/ui';
 import { useContractQuery } from '../../../../entities/contract/api/useContractQueries';
 import { useDeleteContract, useUpsertContract } from '../../../../entities/contract/api/useContractMutations';
@@ -41,6 +43,7 @@ export function ContractDetailPage() {
   const { mode, id } = useRouteMode();
   const { t: tPage } = useTranslation('page.contracts-detail');
   const { t: tEntity } = useTranslation('entity.contract');
+  const { t: tCommon } = useTranslation('common');
 
   const query = useContractQuery(id);
   const upsert = useUpsertContract();
@@ -51,6 +54,19 @@ export function ContractDetailPage() {
     if (mode === 'edit') return tPage('editTitle');
     return query.data?.subject ?? tPage('viewTitle');
   }, [mode, query.data?.subject, tPage]);
+
+  const tabs: DetailPageTab[] | undefined =
+    mode === 'new' || !id
+      ? undefined
+      : [
+          {
+            key: 'activities',
+            label: tCommon('tabs.activities'),
+            content: (
+              <RelatedActivitiesTab entityType="Contract" entityId={id} />
+            ),
+          },
+        ];
 
   return (
     <DetailPageLayout<ContractFormValues>
@@ -64,6 +80,7 @@ export function ContractDetailPage() {
       onSubmit={async (values) => { await upsert.mutateAsync(values); }}
       onDelete={id ? async () => { await del.mutateAsync(id); } : undefined}
       afterSaveNavigation={(saved) => RoutePaths.ContractView(saved.id)}
+      tabs={tabs}
     >
       <General />
       <AttachmentPanel entityType="Contract" entityId={id} />

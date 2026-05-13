@@ -21,11 +21,11 @@ public sealed class ListContractsHandler : IRequestHandler<ListContractsQuery, R
 
         if (!string.IsNullOrWhiteSpace(filters.Search))
         {
-            var pattern = filters.Search.ToLower();
+            var pattern = $"%{filters.Search}%";
             query = query.Where(c =>
-                c.Subject.ToLower().Contains(pattern)
-                || c.ContractNumber.ToLower().Contains(pattern)
-                || c.CounterpartyName.ToLower().Contains(pattern));
+                EF.Functions.ILike(c.Subject, pattern)
+                || EF.Functions.ILike(c.ContractNumber, pattern)
+                || EF.Functions.ILike(c.CounterpartyName, pattern));
         }
 
         if (filters.Type.HasValue)

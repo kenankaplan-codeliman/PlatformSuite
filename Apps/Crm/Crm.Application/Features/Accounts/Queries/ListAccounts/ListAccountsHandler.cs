@@ -22,8 +22,8 @@ public sealed class ListAccountsHandler : IRequestHandler<ListAccountsQuery, Res
 
         if (!string.IsNullOrWhiteSpace(filters.accountName))
         {
-            var pattern = filters.accountName.ToLower();
-            query = query.Where(a => a.AccountName.ToLower().Contains(pattern));
+            var pattern = $"%{filters.accountName}%";
+            query = query.Where(a => EF.Functions.ILike(a.AccountName, pattern));
         }
 
         if (filters.accountType.HasValue)
@@ -34,8 +34,8 @@ public sealed class ListAccountsHandler : IRequestHandler<ListAccountsQuery, Res
 
         if (!string.IsNullOrWhiteSpace(filters.Industry))
         {
-            var pattern = filters.Industry.ToLower();
-            query = query.Where(a => a.Industry != null && a.Industry.ToLower().Contains(pattern));
+            var pattern = $"%{filters.Industry}%";
+            query = query.Where(a => a.Industry != null && EF.Functions.ILike(a.Industry, pattern));
         }
 
         if (filters.isActive.HasValue)

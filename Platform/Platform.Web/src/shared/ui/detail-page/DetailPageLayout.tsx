@@ -8,8 +8,8 @@ import {
 } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import type { ZodType } from "zod";
-import { useLocation, useNavigate } from "react-router-dom";
-import { Dropdown, Modal, Space, Typography } from "antd";
+import { useLocation, useNavigate, useSearchParams } from "react-router-dom";
+import { Dropdown, Modal, Space, Tabs, Typography } from "antd";
 import type { MenuProps } from "antd";
 import {
   ArrowLeftOutlined,
@@ -35,6 +35,12 @@ export interface DetailPageAction {
   onClick: () => void | Promise<void>;
 }
 
+export interface DetailPageTab {
+  key: string;
+  label: ReactNode;
+  content: ReactNode;
+}
+
 export interface DetailPageLayoutProps<TValues extends FieldValues> {
   mode: FormMode;
   modeOverride?: FormMode;
@@ -55,8 +61,21 @@ export interface DetailPageLayoutProps<TValues extends FieldValues> {
 
   afterSaveNavigation?: (saved: TValues) => string;
 
+  /**
+   * Form alanlarının yanına ek sekmeler ekler (ör. "İlişkili Aktiviteler").
+   * Verildiğinde ilk sekme her zaman form (children); diğerleri form `<form>`
+   * elementinin dışında render edilir. Aktif sekme `?tab=` query param'ından okunur.
+   */
+  tabs?: DetailPageTab[];
+
+  /** Form sekmesinin etiketi. Varsayılan: common.tabs.details ("Genel"). */
+  detailsTabLabel?: ReactNode;
+
   children: ReactNode;
 }
+
+const DETAILS_TAB_KEY = "details";
+const TAB_QUERY_PARAM = "tab";
 
 export function DetailPageLayout<TValues extends FieldValues>({
   mode: rawMode,
@@ -71,11 +90,14 @@ export function DetailPageLayout<TValues extends FieldValues>({
   onDelete,
   extraActions,
   afterSaveNavigation,
+  tabs,
+  detailsTabLabel,
   children,
 }: DetailPageLayoutProps<TValues>) {
   const { t: tCommon } = useTranslation("common");
   const navigate = useNavigate();
   const { pathname } = useLocation();
+  const [searchParams, setSearchParams] = useSearchParams();
 
   const mode: FormMode = modeOverride ?? rawMode;
 
@@ -226,9 +248,47 @@ export function DetailPageLayout<TValues extends FieldValues>({
 
       <FormModeProvider mode={mode} isDirty={form.formState.isDirty}>
         <FormProvider {...form}>
-          <form id="detail-page-form" onSubmit={form.handleSubmit(handleSubmit)}>
-            {children}
-          </form>
+          {tabs && tabs.length > 0 ? (
+            <Tabs
+              activeKey={
+                tabs.some((t) => t.key === searchParams.get(TAB_QUERY_PARAM))
+                  ? (searchParams.get(TAB_QUERY_PARAM) as string)
+                  : DETAILS_TAB_KEY
+              }
+              onChange={(key) => {
+                const next = new URLSearchParams(searchParams);
+                if (key === DETAILS_TAB_KEY) {
+                  next.delete(TAB_QUERY_PARAM);
+                } else {
+                  next.set(TAB_QUERY_PARAM, key);
+                }
+                setSearchParams(next, { replace: true });
+              }}
+              items={[
+                {
+                  key: DETAILS_TAB_KEY,
+                  label: detailsTabLabel ?? tCommon("tabs.details"),
+                  children: (
+                    <form
+                      id="detail-page-form"
+                      onSubmit={form.handleSubmit(handleSubmit)}
+                    >
+                      {children}
+                    </form>
+                  ),
+                },
+                ...tabs.map((tab) => ({
+                  key: tab.key,
+                  label: tab.label,
+                  children: tab.content,
+                })),
+              ]}
+            />
+          ) : (
+            <form id="detail-page-form" onSubmit={form.handleSubmit(handleSubmit)}>
+              {children}
+            </form>
+          )}
         </FormProvider>
       </FormModeProvider>
     </div>
