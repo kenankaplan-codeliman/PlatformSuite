@@ -1,5 +1,8 @@
 /**
  * Backend DTO'ları ile birebir uyumlu — `Platform.Application/Features/Contacts/Dtos/**`.
+ *
+ * `contactStatus` GeneralParameter'a taşındı — düz string code olarak tutulur.
+ * Geçerli değerler `useGeneralParameters('ContactStatus')` ile çekilir.
  */
 
 import type {
@@ -7,8 +10,6 @@ import type {
   EmailModal,
   PhoneModal,
 } from '../../account/model/types';
-
-export type ContactStatus = 'Active' | 'DoNotContact' | 'Unsubscribed' | 'Inactive';
 
 /** `ContactAccountModal` (Account ↔ Contact köprüsü, Contact tarafından bakış). */
 export interface ContactAccountModal {
@@ -23,7 +24,7 @@ export interface ContactDetailItem {
   id: string;
   firstName: string;
   lastName: string;
-  contactStatus: ContactStatus;
+  contactStatus: string;
   title?: string | null;
   department?: string | null;
   birthDate?: string | null;
@@ -42,7 +43,7 @@ export interface ContactListItem {
   firstName: string;
   lastName: string;
   fullName: string;
-  contactStatus: ContactStatus;
+  contactStatus: string;
   title?: string | null;
   department?: string | null;
   primaryAccount?: ContactAccountModal | null;
@@ -54,7 +55,7 @@ export interface ContactListItem {
 export interface ContactListFilter {
   contactName?: string;
   accountId?: string;
-  contactStatus?: ContactStatus;
+  contactStatus?: string;
   title?: string;
   department?: string;
   isActive?: boolean;

@@ -1,4 +1,3 @@
-using Crm.Domain.Enums;
 using Crm.Domain.Entities.Accounts;
 using Platform.Domain.Entities.Common;
 using Crm.Domain.Entities.Contacts;
@@ -24,8 +23,10 @@ public class Lead :
     public string? Phone { get; set; }
     public string? Website { get; set; }
 
-    public LeadSource Source { get; set; } = LeadSource.Other;
-    public LeadStatus Status { get; set; } = LeadStatus.New;
+    // GeneralParameter'a taşındı — code olarak string tutulur.
+    // parentCode: LeadParameterCodes.Source / LeadParameterCodes.Status
+    public string Source { get; set; } = "Other";
+    public string Status { get; set; } = "New";
     public int? Score { get; set; }
     public decimal? EstimatedValue { get; set; }
     public string? Description { get; set; }

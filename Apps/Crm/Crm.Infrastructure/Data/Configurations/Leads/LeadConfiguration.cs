@@ -32,16 +32,16 @@ public class LeadConfiguration : IEntityTypeConfiguration<Lead>
         builder.Property(l => l.Phone).HasColumnName("phone").HasMaxLength(50);
         builder.Property(l => l.Website).HasColumnName("website").HasMaxLength(250);
 
+        // Source / Status: GeneralParameter'a taşındı — düz string code olarak
+        // tutulur (geçerlilik handler'da IGeneralParameterReader ile doğrulanır).
         builder.Property(l => l.Source)
             .HasColumnName("source")
             .IsRequired()
-            .HasConversion<string>()
             .HasMaxLength(50);
 
         builder.Property(l => l.Status)
             .HasColumnName("status")
             .IsRequired()
-            .HasConversion<string>()
             .HasMaxLength(50);
 
         builder.Property(l => l.Score).HasColumnName("score");

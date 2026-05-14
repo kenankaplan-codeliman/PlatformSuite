@@ -1,6 +1,5 @@
 using Platform.Domain.Entities.Activities;
 using Platform.Domain.Entities.Common;
-using Crm.Domain.Enums;
 
 namespace Crm.Domain.Entities.Accounts;
 
@@ -15,8 +14,11 @@ public class Account :
     public bool IsActive { get; private set; } = true;
 
     public string AccountName { get; set; } = null!;
-    public AccountType AccountType { get; set; }
-    public AccountStatus AccountStatus { get; set; } = AccountStatus.Prospect;
+
+    // GeneralParameter'a taşındı — code olarak string tutulur.
+    // parentCode: AccountParameterCodes.Type / AccountParameterCodes.Status
+    public string AccountType { get; set; } = "Customer";
+    public string AccountStatus { get; set; } = "Prospect";
     public string? Industry { get; set; }
     public decimal? AnnualRevenue { get; set; }
     public int? NumberOfEmployees { get; set; }

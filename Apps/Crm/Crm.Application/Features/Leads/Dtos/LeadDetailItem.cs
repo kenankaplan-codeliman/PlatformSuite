@@ -1,5 +1,3 @@
-using Crm.Domain.Enums;
-
 namespace Crm.Application.Features.Leads.Dtos;
 
 public class LeadDetailItem
@@ -13,8 +11,8 @@ public class LeadDetailItem
     public string? Email { get; set; }
     public string? Phone { get; set; }
     public string? Website { get; set; }
-    public LeadSource Source { get; set; }
-    public LeadStatus Status { get; set; }
+    public string Source { get; set; } = default!;
+    public string Status { get; set; } = default!;
     public int? Score { get; set; }
     public decimal? EstimatedValue { get; set; }
     public string? Description { get; set; }

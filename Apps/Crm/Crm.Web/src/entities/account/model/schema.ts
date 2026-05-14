@@ -43,8 +43,10 @@ const accountContactModalSchema = z.object({
 export const accountSchema = z.object({
   id: z.string(),
   accountName: z.string().min(1, 'common:errors.required').max(200),
-  accountType: z.enum(['Customer', 'Prospect', 'Partner', 'Vendor', 'Competitor', 'Other']),
-  accountStatus: z.enum(['Prospect', 'Active', 'AtRisk', 'Inactive', 'Churned']),
+  // accountType / accountStatus GeneralParameter'a taşındı — statik z.enum yerine z.string().
+  // Geçerli code doğrulaması backend handler'ında (IGeneralParameterReader) yapılır.
+  accountType: z.string().min(1, 'common:errors.required'),
+  accountStatus: z.string().min(1, 'common:errors.required'),
   industry: z.string().max(200).nullish(),
   annualRevenue: z.number().min(0).nullish(),
   numberOfEmployees: z.number().int().min(0).nullish(),

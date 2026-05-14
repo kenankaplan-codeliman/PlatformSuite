@@ -1,25 +1,7 @@
 import { z } from 'zod';
 
-export const leadSourceEnum = [
-  'Other',
-  'Website',
-  'Email',
-  'Phone',
-  'Referral',
-  'Advertisement',
-  'SocialMedia',
-  'Event',
-  'PartnerNetwork',
-] as const;
-
-export const leadStatusEnum = [
-  'New',
-  'Contacted',
-  'Qualified',
-  'Unqualified',
-  'Converted',
-] as const;
-
+// source / status GeneralParameter'a taşındı — statik z.enum yerine z.string().
+// Geçerli code doğrulaması backend handler'ında (IGeneralParameterReader) yapılır.
 export const leadSchema = z.object({
   id: z.string(),
   subject: z.string().min(1, 'common:errors.required').max(250),
@@ -36,8 +18,8 @@ export const leadSchema = z.object({
     }),
   phone: z.string().max(50).nullish(),
   website: z.string().max(250).nullish(),
-  source: z.enum(leadSourceEnum),
-  status: z.enum(leadStatusEnum),
+  source: z.string().min(1, 'common:errors.required'),
+  status: z.string().min(1, 'common:errors.required'),
   score: z.number().int().min(0).max(100).nullish(),
   estimatedValue: z.number().min(0).nullish(),
   description: z.string().nullish(),

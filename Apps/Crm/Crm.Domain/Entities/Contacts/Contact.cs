@@ -1,5 +1,4 @@
 using Crm.Domain.Entities.Accounts;
-using Crm.Domain.Enums;
 using Platform.Domain.Entities.Common;
 using System;
 using System.Collections.Generic;
@@ -22,7 +21,9 @@ public class Contact :
     public string FirstName { get; set; } = default!;
     public string LastName { get; set; } = default!;
     public string DisplayName => $"{FirstName} {LastName}";
-    public ContactStatus ContactStatus { get; set; } = ContactStatus.Active;
+    // GeneralParameter'a taşındı — code olarak string tutulur.
+    // parentCode: ContactParameterCodes.Status
+    public string ContactStatus { get; set; } = "Active";
 
     public string? Title { get; set; }
     public string? Department { get; set; }

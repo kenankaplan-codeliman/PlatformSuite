@@ -1,6 +1,5 @@
 using Platform.Application.Common.Dtos.Communications;
 using Platform.Application.Modals.Common;
-using Crm.Domain.Enums;
 
 namespace Crm.Application.Features.Accounts.Dtos;
 
@@ -8,8 +7,8 @@ public class AccountDetailItem
 {
     public Guid Id { get; set; }
     public string AccountName { get; set; } = default!;
-    public AccountType AccountType { get; set; }
-    public AccountStatus AccountStatus { get; set; }
+    public string AccountType { get; set; } = default!;
+    public string AccountStatus { get; set; } = default!;
     public string? Industry { get; set; }
     public decimal? AnnualRevenue { get; set; }
     public int? NumberOfEmployees { get; set; }

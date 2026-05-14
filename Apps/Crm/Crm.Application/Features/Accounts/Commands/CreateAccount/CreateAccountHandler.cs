@@ -1,8 +1,10 @@
+using Platform.Application.Common.Parameters;
 using Platform.Application.Common.Results;
 using Platform.Application.Interfaces;
 using Crm.Application.Interfaces;
 using Crm.Application.Features.Accounts.Dtos;
 using Crm.Domain.Entities.Accounts;
+using Crm.Domain.Parameters;
 using Mapster;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
@@ -14,19 +16,28 @@ public sealed class CreateAccountHandler : IRequestHandler<CreateAccountCommand,
     private readonly IAccountRepository _repository;
     private readonly IAttachmentRepository _attachmentRepository;
     private readonly ICrmDbContext _db;
+    private readonly IGeneralParameterReader _parameters;
 
     public CreateAccountHandler(
         IAccountRepository repository,
         IAttachmentRepository attachmentRepository,
-        ICrmDbContext db)
+        ICrmDbContext db,
+        IGeneralParameterReader parameters)
     {
         _repository = repository;
         _attachmentRepository = attachmentRepository;
         _db = db;
+        _parameters = parameters;
     }
 
     public async Task<Result<AccountDetailItem>> Handle(CreateAccountCommand request, CancellationToken cancellationToken)
     {
+        if (!await _parameters.ExistsAsync(AccountParameterCodes.Status, request.AccountStatus, cancellationToken))
+            return AccountErrors.InvalidStatus;
+
+        if (!await _parameters.ExistsAsync(AccountParameterCodes.Type, request.AccountType, cancellationToken))
+            return AccountErrors.InvalidType;
+
         var entity = request.Adapt<Account>();
         await _repository.CreateAsync(entity, cancellationToken);
 

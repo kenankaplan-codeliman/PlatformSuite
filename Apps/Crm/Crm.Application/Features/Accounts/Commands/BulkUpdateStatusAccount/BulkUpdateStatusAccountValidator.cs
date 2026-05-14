@@ -7,6 +7,6 @@ public sealed class BulkUpdateStatusAccountValidator : AbstractValidator<BulkUpd
     public BulkUpdateStatusAccountValidator()
     {
         RuleFor(x => x.Ids).NotEmpty();
-        RuleFor(x => x.Status).IsInEnum();
+        RuleFor(x => x.Status).NotEmpty().MaximumLength(50);
     }
 }

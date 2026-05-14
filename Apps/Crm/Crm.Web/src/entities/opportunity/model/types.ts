@@ -1,17 +1,11 @@
 /**
  * Backend DTO'ları ile birebir uyumlu — `Crm.Application/Features/Opportunities/Dtos/**`.
+ *
+ * `stage` GeneralParameter'a taşındı — düz string code olarak tutulur.
+ * Geçerli değerler `useGeneralParameters('OpportunityStage')` ile çekilir.
  */
 
 import type { EntityReference } from '@platform/ui';
-
-export type OpportunityStage =
-  | 'Prospecting'
-  | 'Qualification'
-  | 'NeedsAnalysis'
-  | 'Proposal'
-  | 'Negotiation'
-  | 'ClosedWon'
-  | 'ClosedLost';
 
 export interface OpportunityDetailItem {
   id: string;
@@ -19,7 +13,7 @@ export interface OpportunityDetailItem {
   description?: string | null;
   account?: EntityReference | null;
   primaryContact?: EntityReference | null;
-  stage: OpportunityStage;
+  stage: string;
   amount?: number | null;
   probability: number;
   closeDate?: string | null;
@@ -34,7 +28,7 @@ export interface OpportunityListItem {
   name: string;
   accountId: string;
   accountName?: string | null;
-  stage: OpportunityStage;
+  stage: string;
   amount?: number | null;
   probability: number;
   closeDate?: string | null;
@@ -44,7 +38,7 @@ export interface OpportunityListItem {
 
 export interface OpportunityListFilter {
   search?: string;
-  stage?: OpportunityStage;
+  stage?: string;
   accountId?: string;
   isActive?: boolean;
 }

@@ -14,6 +14,7 @@ import { TextAreaField } from "@platform/ui";
 import { EntityRelationTable } from "@platform/ui";
 import { ServicePath } from "@platform/ui";
 import { useRouteMode } from "@platform/ui";
+import { useGeneralParameters } from "@platform/ui";
 import { RelatedActivitiesTab, type DetailPageTab } from "@platform/ui";
 import { useContactQuery } from "../../../../entities/contact/api/useContactQueries";
 import {
@@ -21,18 +22,8 @@ import {
   useDeleteContact,
 } from "../../../../entities/contact/api/useContactMutations";
 import { contactSchema } from "../../../../entities/contact/model/schema";
-import type {
-  ContactFormValues,
-  ContactStatus,
-} from "../../../../entities/contact/model/types";
+import type { ContactFormValues } from "../../../../entities/contact/model/types";
 import { RoutePaths } from "../../../../app/router/paths";
-
-const CONTACT_STATUSES: ContactStatus[] = [
-  "Active",
-  "DoNotContact",
-  "Unsubscribed",
-  "Inactive",
-];
 
 const emptyContact: ContactFormValues = {
   id: "",
@@ -54,12 +45,14 @@ export function ContactDetailPage() {
   const { mode, id } = useRouteMode();
   const { t: tPage } = useTranslation("page.contacts-detail");
   const { t: tEntity } = useTranslation("entity.contact");
-  const { t: tEnumStatus } = useTranslation("enums");
   const { t: tCommon } = useTranslation("common");
 
   const query = useContactQuery(id);
   const upsert = useUpsertContact();
   const deleteMutation = useDeleteContact();
+
+  // contactStatus GeneralParameter'dan beslenir — statik enum yok.
+  const { options: statusOptions } = useGeneralParameters("ContactStatus");
 
   const title = useMemo(() => {
     if (mode === "new") return tPage("newTitle");
@@ -68,13 +61,6 @@ export function ContactDetailPage() {
     if (data) return `${data.firstName} ${data.lastName}`.trim();
     return tPage("viewTitle");
   }, [mode, query.data, tPage]);
-
-  const statusOptions: SelectOption<ContactStatus>[] = CONTACT_STATUSES.map(
-    (value) => ({
-      value,
-      label: tEnumStatus(`contactStatus.${value}`),
-    }),
-  );
 
   const tabs: DetailPageTab[] | undefined =
     mode === "new" || !id
@@ -120,7 +106,7 @@ export function ContactDetailPage() {
   function GeneralSection({
     statusOptions,
   }: {
-    statusOptions: SelectOption<ContactStatus>[];
+    statusOptions: SelectOption<string>[];
   }) {
     const form = useFormContext<ContactFormValues>();
     return (
@@ -159,7 +145,7 @@ export function ContactDetailPage() {
             maxLength={200}
           />
         </FormRow>
-        <SelectField<ContactFormValues, ContactStatus>
+        <SelectField<ContactFormValues>
           name="contactStatus"
           control={form.control}
           label={tEntity("fields.contactStatus.label")}

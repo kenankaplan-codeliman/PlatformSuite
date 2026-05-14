@@ -1,4 +1,3 @@
-using Crm.Domain.Enums;
 using Crm.Domain.Entities.Accounts;
 using Platform.Domain.Entities.Common;
 using Crm.Domain.Entities.Contacts;
@@ -24,7 +23,7 @@ public class Opportunity :
     public Guid? PrimaryContactId { get; set; }
     public Contact? PrimaryContact { get; set; }
 
-    public OpportunityStage Stage { get; set; } = OpportunityStage.Prospecting;
+    public string Stage { get; set; } = "Prospecting";
     public decimal? Amount { get; set; }
     public int Probability { get; set; }
     public DateTime? CloseDate { get; set; }

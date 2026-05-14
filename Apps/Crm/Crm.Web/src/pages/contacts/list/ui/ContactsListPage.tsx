@@ -3,7 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 import {
   ListPageLayout,
-  useEnumTranslation,
+  useGeneralParameters,
   useUrlFilters,
   type DataTableColumn,
 } from '@platform/ui';
@@ -22,7 +22,7 @@ import { ContactsFilterPanel } from './ContactsFilterPanel';
 export function ContactsListPage() {
   const { t } = useTranslation('page.contacts-list');
   const { t: tEntity } = useTranslation('entity.contact');
-  const tStatus = useEnumTranslation('contactStatus');
+  const { getLabel: getStatusLabel } = useGeneralParameters('ContactStatus');
   const navigate = useNavigate();
 
   const { filters, setFilters, clearFilters } = useUrlFilters<ContactListFilter>({
@@ -72,10 +72,10 @@ export function ContactsListPage() {
       {
         key: 'contactStatus',
         title: tEntity('fields.contactStatus.label'),
-        render: (_v, r) => tStatus(r.contactStatus),
+        render: (_v, r) => getStatusLabel(r.contactStatus),
       },
     ],
-    [tEntity, tStatus],
+    [tEntity, getStatusLabel],
   );
 
   return (

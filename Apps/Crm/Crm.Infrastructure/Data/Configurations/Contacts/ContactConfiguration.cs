@@ -42,12 +42,13 @@ public class ContactConfiguration : IEntityTypeConfiguration<Contact>
         builder.Property(x => x.Description)
             .HasColumnName("description");
 
+        // ContactStatus: GeneralParameter'a taşındı — düz string code olarak
+        // tutulur (geçerlilik handler'da IGeneralParameterReader ile doğrulanır).
         builder.Property(x => x.ContactStatus)
             .HasColumnName("contact_status")
             .IsRequired()
-            .HasConversion<string>()
             .HasMaxLength(50)
-            .HasDefaultValue(Crm.Domain.Enums.ContactStatus.Active);
+            .HasDefaultValue("Active");
 
         // IOwnedEntity
         builder.Property(x => x.OwnerId)

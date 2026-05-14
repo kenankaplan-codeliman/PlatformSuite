@@ -4,6 +4,7 @@ using Platform.Domain.Entities.Activities;
 using Platform.Domain.Entities.Attachments;
 using Platform.Domain.Entities.Common;
 using Platform.Domain.Entities.Identities;
+using Platform.Domain.Entities.Parameters;
 using Platform.Domain.Enums;
 using Platform.Infrastructure.Data.Configurations;
 using Microsoft.EntityFrameworkCore;
@@ -54,6 +55,9 @@ public abstract class PlatformDbContext : DbContext, IApplicationDbContext
     public DbSet<AttachmentFileData> AttachmentFileData { get; set; }
     public DbSet<AttachmentFileMetadata> AttachmentFileMetadata { get; set; }
     public DbSet<AttachmentFileRelation> AttachmentFileRelation { get; set; }
+
+    // ======= GeneralParameter =======
+    public DbSet<GeneralParameter> GeneralParameter { get; set; }
 
     protected override void ConfigureConventions(ModelConfigurationBuilder builder)
     {

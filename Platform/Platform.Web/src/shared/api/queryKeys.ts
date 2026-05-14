@@ -48,3 +48,8 @@ export const attachmentKeys = {
   byEntity: (entityType: string, entityId: string) =>
     [...attachmentKeys.all, 'byEntity', entityType, entityId] as const,
 };
+
+export const parameterKeys = {
+  all: ['general-parameter'] as const,
+  list: (parentCode: string) => [...parameterKeys.all, 'list', parentCode] as const,
+};

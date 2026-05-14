@@ -15,6 +15,7 @@ export const ControllerPaths = {
   AppRole: `${ApiBase}/app-role`,
   Attachment: `${ApiBase}/attachment`,
   Reference: `${ApiBase}/reference`,
+  GeneralParameter: `${ApiBase}/general-parameter`,
 } as const;
 
 export const ServicePath = {
@@ -105,5 +106,12 @@ export const ServicePath = {
    */
   Reference: {
     Lookup: `${ControllerPaths.Reference}/lookup`,
+  },
+  /**
+   * Dinamik enum/parametre verisi. Body: { parentCode?: string }
+   * parentCode verilirse o grubun değer satırları, verilmezse tüm parametreler döner.
+   */
+  GeneralParameter: {
+    List: `${ControllerPaths.GeneralParameter}/list`,
   },
 } as const;

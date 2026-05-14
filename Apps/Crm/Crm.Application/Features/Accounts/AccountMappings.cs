@@ -75,7 +75,7 @@ public static class AccountMappings
 
         config.NewConfig<UpdateAccountCommand, Account>()
             .IgnoreNullValues(true)
-            .Ignore(d => d.ParentAccountId, d => d.ParentAccount!, d => d.ChildAccounts,
+            .Ignore(d => d.ParentAccountId!, d => d.ParentAccount!, d => d.ChildAccounts,
                     d => d.Emails, d => d.Phones, d => d.Addresses, d => d.AccountContacts)
             .IgnoreAuditFields()
             .AfterMapping((src, dst) =>

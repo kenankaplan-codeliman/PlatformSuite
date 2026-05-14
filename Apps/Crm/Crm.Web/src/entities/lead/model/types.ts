@@ -1,24 +1,9 @@
 /**
  * Backend DTO'ları ile birebir uyumlu — `Crm.Application/Features/Leads/Dtos/**`.
+ *
+ * `source` / `status` GeneralParameter'a taşındı — düz string code olarak tutulur.
+ * Geçerli değerler `useGeneralParameters('LeadSource' | 'LeadStatus')` ile çekilir.
  */
-
-export type LeadSource =
-  | 'Other'
-  | 'Website'
-  | 'Email'
-  | 'Phone'
-  | 'Referral'
-  | 'Advertisement'
-  | 'SocialMedia'
-  | 'Event'
-  | 'PartnerNetwork';
-
-export type LeadStatus =
-  | 'New'
-  | 'Contacted'
-  | 'Qualified'
-  | 'Unqualified'
-  | 'Converted';
 
 export interface LeadDetailItem {
   id: string;
@@ -30,8 +15,8 @@ export interface LeadDetailItem {
   email?: string | null;
   phone?: string | null;
   website?: string | null;
-  source: LeadSource;
-  status: LeadStatus;
+  source: string;
+  status: string;
   score?: number | null;
   estimatedValue?: number | null;
   description?: string | null;
@@ -52,8 +37,8 @@ export interface LeadListItem {
   company?: string | null;
   email?: string | null;
   phone?: string | null;
-  source: LeadSource;
-  status: LeadStatus;
+  source: string;
+  status: string;
   score?: number | null;
   estimatedValue?: number | null;
   isActive: boolean;
@@ -62,8 +47,8 @@ export interface LeadListItem {
 
 export interface LeadListFilter {
   search?: string;
-  status?: LeadStatus;
-  source?: LeadSource;
+  status?: string;
+  source?: string;
   isActive?: boolean;
 }
 

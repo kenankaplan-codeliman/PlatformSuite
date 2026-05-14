@@ -9,4 +9,7 @@ public static class OpportunityErrors
 
     public static readonly Error InvalidProbability =
         new("Opportunity.InvalidProbability", "Olasılık 0 ile 100 arasında olmalı.", ErrorType.Validation);
+
+    public static readonly Error InvalidStage =
+        new("Opportunity.InvalidStage", "Geçersiz fırsat aşaması.", ErrorType.Validation);
 }

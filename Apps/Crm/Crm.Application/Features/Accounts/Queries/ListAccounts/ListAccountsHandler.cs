@@ -26,11 +26,11 @@ public sealed class ListAccountsHandler : IRequestHandler<ListAccountsQuery, Res
             query = query.Where(a => EF.Functions.ILike(a.AccountName, pattern));
         }
 
-        if (filters.accountType.HasValue)
-            query = query.Where(a => a.AccountType == filters.accountType.Value);
+        if (!string.IsNullOrWhiteSpace(filters.accountType))
+            query = query.Where(a => a.AccountType == filters.accountType);
 
-        if (filters.accountStatus.HasValue)
-            query = query.Where(a => a.AccountStatus == filters.accountStatus.Value);
+        if (!string.IsNullOrWhiteSpace(filters.accountStatus))
+            query = query.Where(a => a.AccountStatus == filters.accountStatus);
 
         if (!string.IsNullOrWhiteSpace(filters.Industry))
         {

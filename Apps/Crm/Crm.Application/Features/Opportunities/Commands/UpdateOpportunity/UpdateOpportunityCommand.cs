@@ -1,5 +1,4 @@
 using Crm.Application.Features.Opportunities.Dtos;
-using Crm.Domain.Enums;
 using Platform.Application.Common.Abstractions;
 using Platform.Application.Modals.Common;
 
@@ -12,7 +11,7 @@ public sealed class UpdateOpportunityCommand : ICommand<OpportunityDetailItem>
     public string? Description { get; init; }
     public EntityReference? Account { get; init; }
     public EntityReference? PrimaryContact { get; init; }
-    public OpportunityStage Stage { get; init; }
+    public string Stage { get; init; } = "Prospecting";
     public decimal? Amount { get; init; }
     public int Probability { get; init; }
     public DateTime? CloseDate { get; init; }

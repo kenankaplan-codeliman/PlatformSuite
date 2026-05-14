@@ -43,5 +43,10 @@ namespace Platform.Domain.Authorization
             public const string Create = "Attachment.Create";
             public const string Delete = "Attachment.Delete";
         }
+
+        public static class GeneralParameterPrivilegeCodes
+        {
+            public const string Read = "GeneralParameter.Read";
+        }
     }
 }

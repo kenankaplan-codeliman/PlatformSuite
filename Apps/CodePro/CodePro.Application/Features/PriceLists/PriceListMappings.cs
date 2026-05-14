@@ -4,6 +4,7 @@ using CodePro.Application.Features.PriceLists.Dtos;
 using CodePro.Domain.Entities.Products;
 using Platform.Application.Modals.Common;
 using CodePro.Domain.Entities.Suppliers;
+using Platform.Application.Mapping;
 using Mapster;
 
 namespace CodePro.Application.Features.PriceLists;
@@ -25,19 +26,15 @@ public static class PriceListMappings
 
         config.NewConfig<CreatePriceListCommand, PriceList>()
             .Map(d => d.SupplierId, s => s.Supplier != null ? s.Supplier.Id : Guid.Empty)
-            .Ignore(d => d.Id,
-                    d => d.Supplier!,
-                    d => d.Prices,
-                    d => d.CreatedBy, d => d.CreatedAt, d => d.UpdatedBy, d => d.UpdatedAt,
-                    d => d.IsDeleted, d => d.DeletedBy, d => d.DeletedAt);
+            .Ignore(d => d.Supplier!,
+                    d => d.Prices)
+            .IgnoreAuditFields();
 
         config.NewConfig<UpdatePriceListCommand, PriceList>()
             .IgnoreNullValues(true)
             .Map(d => d.SupplierId, s => s.Supplier != null ? s.Supplier.Id : Guid.Empty)
-            .Ignore(d => d.Id,
-                    d => d.Supplier!,
-                    d => d.Prices,
-                    d => d.CreatedBy, d => d.CreatedAt, d => d.UpdatedBy, d => d.UpdatedAt,
-                    d => d.IsDeleted, d => d.DeletedBy, d => d.DeletedAt);
+            .Ignore(d => d.Supplier!,
+                    d => d.Prices)
+            .IgnoreAuditFields();
     }
 }

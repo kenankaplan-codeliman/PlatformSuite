@@ -5,6 +5,7 @@ using Crm.Domain.Entities.Opportunities;
 using Platform.Application.Modals.Common;
 using Crm.Domain.Entities.Accounts;
 using Crm.Domain.Entities.Contacts;
+using Platform.Application.Mapping;
 using Mapster;
 
 namespace Crm.Application.Features.Opportunities;
@@ -35,19 +36,15 @@ public static class OpportunityMappings
         config.NewConfig<CreateOpportunityCommand, Opportunity>()
             .Map(d => d.AccountId, s => s.Account != null ? s.Account.Id : Guid.Empty)
             .Map(d => d.PrimaryContactId, s => s.PrimaryContact != null ? (Guid?)s.PrimaryContact.Id : null)
-            .Ignore(d => d.Id,
-                    d => d.Account, d => d.PrimaryContact,
-                    d => d.CreatedBy, d => d.CreatedAt, d => d.UpdatedBy, d => d.UpdatedAt,
-                    d => d.IsDeleted, d => d.DeletedBy, d => d.DeletedAt);
+            .Ignore(d => d.Account!, d => d.PrimaryContact!)
+            .IgnoreAuditFields();
 
         config.NewConfig<UpdateOpportunityCommand, Opportunity>()
             .IgnoreNullValues(true)
             .Map(d => d.AccountId, s => s.Account != null ? s.Account.Id : Guid.Empty)
-            .Ignore(d => d.PrimaryContactId)
-            .Ignore(d => d.Id,
-                    d => d.Account, d => d.PrimaryContact,
-                    d => d.CreatedBy, d => d.CreatedAt, d => d.UpdatedBy, d => d.UpdatedAt,
-                    d => d.IsDeleted, d => d.DeletedBy, d => d.DeletedAt)
+            .Ignore(d => d.PrimaryContactId!)
+            .Ignore(d => d.Account!, d => d.PrimaryContact!)
+            .IgnoreAuditFields()
             .AfterMapping((src, dst) =>
             {
                 dst.PrimaryContactId = src.PrimaryContact?.Id;

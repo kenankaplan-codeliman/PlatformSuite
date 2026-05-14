@@ -1,4 +1,3 @@
-using Crm.Domain.Enums;
 using Platform.Application.Modals.Common;
 
 namespace Crm.Application.Features.Opportunities.Dtos;
@@ -10,7 +9,7 @@ public class OpportunityDetailItem
     public string? Description { get; set; }
     public EntityReference? Account { get; set; }
     public EntityReference? PrimaryContact { get; set; }
-    public OpportunityStage Stage { get; set; }
+    public string Stage { get; set; } = default!;
     public decimal? Amount { get; set; }
     public int Probability { get; set; }
     public DateTime? CloseDate { get; set; }

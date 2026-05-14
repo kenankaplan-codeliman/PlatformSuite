@@ -149,7 +149,7 @@ export { CheckboxField } from './shared/ui/form/fields/CheckboxField';
 export { httpClient } from './shared/api/httpClient';
 export { ServicePath } from './shared/api/servicePaths';
 export { mapAxiosError } from './shared/api/errorMapper';
-export { activityKeys, authKeys, organizationKeys, appUserKeys, appRoleKeys, attachmentKeys } from './shared/api/queryKeys';
+export { activityKeys, authKeys, organizationKeys, appUserKeys, appRoleKeys, attachmentKeys, parameterKeys } from './shared/api/queryKeys';
 
 // ─── Hook'lar ────────────────────────────────────────────────────────────────
 export { useRouteMode } from './shared/hooks/useRouteMode';
@@ -158,6 +158,11 @@ export type { UseUrlFiltersOptions, UseUrlFiltersReturn } from './shared/hooks/u
 export { useFormMode } from './shared/ui/form/useFormMode';
 export { useEnumTranslation } from './shared/lib/i18n/enum';
 export { enumToOptions } from './shared/lib/options/enumToOptions';
+export { useGeneralParameters } from './shared/hooks/useGeneralParameters';
+export type {
+  GeneralParameterItem,
+  UseGeneralParametersResult,
+} from './shared/hooks/useGeneralParameters';
 
 // ─── Tipler + sabitler ───────────────────────────────────────────────────────
 export type { FormMode } from './shared/types/FormMode';

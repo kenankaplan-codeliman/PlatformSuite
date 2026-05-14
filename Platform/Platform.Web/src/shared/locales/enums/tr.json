@@ -1,25 +1,4 @@
 {
-  "accountStatus": {
-    "Prospect": "Potansiyel",
-    "Active": "Aktif",
-    "AtRisk": "Riskli",
-    "Inactive": "Pasif",
-    "Churned": "Kaybedilmiş"
-  },
-  "accountType": {
-    "Customer": "Müşteri",
-    "Prospect": "Potansiyel",
-    "Partner": "İş Ortağı",
-    "Vendor": "Tedarikçi",
-    "Competitor": "Rakip",
-    "Other": "Diğer"
-  },
-  "contactStatus": {
-    "Active": "Aktif",
-    "DoNotContact": "İletişime Kapalı",
-    "Unsubscribed": "Abonelik İptal",
-    "Inactive": "Pasif"
-  },
   "emailType": {
     "Work": "İş",
     "Personal": "Kişisel",

@@ -4,13 +4,10 @@ import {
   FilterPanel,
   SelectField,
   TextField,
-  enumToOptions,
-  useEnumTranslation,
+  useGeneralParameters,
 } from '@platform/ui';
 import type { AccountListFilter } from '../../../../entities/account/model/types';
 import {
-  ACCOUNT_STATUSES,
-  ACCOUNT_TYPES,
   accountListFilterDefaults,
   accountListFilterSchema,
 } from '../../../../entities/account/model/listFilterSchema';
@@ -45,8 +42,8 @@ export function AccountsFilterPanel({ values, onApply, onClear }: AccountsFilter
 function AccountFilterFields() {
   const { t: tEntity } = useTranslation('entity.account');
   const { t: tCommon } = useTranslation('common');
-  const tType = useEnumTranslation('accountType');
-  const tStatus = useEnumTranslation('accountStatus');
+  const { options: typeOptions } = useGeneralParameters('AccountType');
+  const { options: statusOptions } = useGeneralParameters('AccountStatus');
   const { control } = useFormContext<AccountListFilter>();
 
   return (
@@ -55,14 +52,14 @@ function AccountFilterFields() {
         name="accountType"
         control={control}
         label={tEntity('fields.accountType.label')}
-        options={enumToOptions(ACCOUNT_TYPES, tType)}
+        options={typeOptions}
         allowClear
       />
       <SelectField
         name="accountStatus"
         control={control}
         label={tEntity('fields.accountStatus.label')}
-        options={enumToOptions(ACCOUNT_STATUSES, tStatus)}
+        options={statusOptions}
         allowClear
       />
       <TextField

@@ -15,8 +15,10 @@ public sealed class UpdateLeadValidator : AbstractValidator<UpdateLeadCommand>
         RuleFor(x => x.Email).MaximumLength(250).EmailAddress().When(x => !string.IsNullOrWhiteSpace(x.Email));
         RuleFor(x => x.Phone).MaximumLength(50);
         RuleFor(x => x.Website).MaximumLength(250);
-        RuleFor(x => x.Source).IsInEnum();
-        RuleFor(x => x.Status).IsInEnum();
+        // Source / Status artık GeneralParameter code'u — format kontrolü burada,
+        // geçerli kod doğrulaması business-rule olarak handler'da yapılır.
+        RuleFor(x => x.Source).NotEmpty().MaximumLength(50);
+        RuleFor(x => x.Status).NotEmpty().MaximumLength(50);
         RuleFor(x => x.EstimatedValue).GreaterThanOrEqualTo(0).When(x => x.EstimatedValue.HasValue);
     }
 }

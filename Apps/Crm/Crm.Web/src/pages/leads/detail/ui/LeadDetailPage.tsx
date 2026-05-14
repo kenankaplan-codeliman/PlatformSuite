@@ -10,6 +10,7 @@ import {
   SelectField,
   TextAreaField,
   TextField,
+  useGeneralParameters,
   useRouteMode,
   type DetailPageTab,
   type SelectOption,
@@ -20,32 +21,8 @@ import {
   useUpsertLead,
 } from '../../../../entities/lead/api/useLeadMutations';
 import { leadSchema } from '../../../../entities/lead/model/schema';
-import type {
-  LeadFormValues,
-  LeadSource,
-  LeadStatus,
-} from '../../../../entities/lead/model/types';
+import type { LeadFormValues } from '../../../../entities/lead/model/types';
 import { RoutePaths } from '../../../../app/router/paths';
-
-const LEAD_SOURCES: LeadSource[] = [
-  'Other',
-  'Website',
-  'Email',
-  'Phone',
-  'Referral',
-  'Advertisement',
-  'SocialMedia',
-  'Event',
-  'PartnerNetwork',
-];
-
-const LEAD_STATUSES: LeadStatus[] = [
-  'New',
-  'Contacted',
-  'Qualified',
-  'Unqualified',
-  'Converted',
-];
 
 const emptyLead: LeadFormValues = {
   id: '',
@@ -71,28 +48,21 @@ export function LeadDetailPage() {
   const { mode, id } = useRouteMode();
   const { t: tPage } = useTranslation('page.leads-detail');
   const { t: tEntity } = useTranslation('entity.lead');
-  const { t: tEnums } = useTranslation('enums');
   const { t: tCommon } = useTranslation('common');
 
   const query = useLeadQuery(id);
   const upsert = useUpsertLead();
   const deleteMutation = useDeleteLead();
 
+  // source / status GeneralParameter'dan beslenir — statik enum yok.
+  const { options: statusOptions } = useGeneralParameters('LeadStatus');
+  const { options: sourceOptions } = useGeneralParameters('LeadSource');
+
   const title = useMemo(() => {
     if (mode === 'new') return tPage('newTitle');
     if (mode === 'edit') return tPage('editTitle');
     return query.data?.subject ?? tPage('viewTitle');
   }, [mode, query.data?.subject, tPage]);
-
-  const sourceOptions: SelectOption<LeadSource>[] = LEAD_SOURCES.map((value) => ({
-    value,
-    label: tEnums(`leadSource.${value}`),
-  }));
-
-  const statusOptions: SelectOption<LeadStatus>[] = LEAD_STATUSES.map((value) => ({
-    value,
-    label: tEnums(`leadStatus.${value}`),
-  }));
 
   const tabs: DetailPageTab[] | undefined =
     mode === 'new' || !id
@@ -138,8 +108,8 @@ export function LeadDetailPage() {
     sourceOptions,
     statusOptions,
   }: {
-    sourceOptions: SelectOption<LeadSource>[];
-    statusOptions: SelectOption<LeadStatus>[];
+    sourceOptions: SelectOption<string>[];
+    statusOptions: SelectOption<string>[];
   }) {
     const form = useFormContext<LeadFormValues>();
     return (
@@ -152,14 +122,14 @@ export function LeadDetailPage() {
           required
           maxLength={250}
         />
-        <SelectField<LeadFormValues, LeadStatus>
+        <SelectField<LeadFormValues>
           name="status"
           control={form.control}
           label={tEntity('fields.status.label')}
           options={statusOptions}
           required
         />
-        <SelectField<LeadFormValues, LeadSource>
+        <SelectField<LeadFormValues>
           name="source"
           control={form.control}
           label={tEntity('fields.source.label')}

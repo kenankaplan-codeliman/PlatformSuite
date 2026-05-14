@@ -30,11 +30,11 @@ public sealed class ListLeadsHandler : IRequestHandler<ListLeadsQuery, Result<Pa
                 || (l.LastName != null && EF.Functions.ILike(l.LastName, pattern)));
         }
 
-        if (filters.Status.HasValue)
-            query = query.Where(l => l.Status == filters.Status.Value);
+        if (!string.IsNullOrWhiteSpace(filters.Status))
+            query = query.Where(l => l.Status == filters.Status);
 
-        if (filters.Source.HasValue)
-            query = query.Where(l => l.Source == filters.Source.Value);
+        if (!string.IsNullOrWhiteSpace(filters.Source))
+            query = query.Where(l => l.Source == filters.Source);
 
         if (filters.IsActive.HasValue)
             query = query.Where(l => l.IsActive == filters.IsActive.Value);

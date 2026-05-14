@@ -12,6 +12,7 @@ import {
   ServicePath,
   TextAreaField,
   TextField,
+  useGeneralParameters,
   useRouteMode,
   type DetailPageTab,
   type SelectOption,
@@ -22,21 +23,8 @@ import {
   useUpsertOpportunity,
 } from '../../../../entities/opportunity/api/useOpportunityMutations';
 import { opportunitySchema } from '../../../../entities/opportunity/model/schema';
-import type {
-  OpportunityFormValues,
-  OpportunityStage,
-} from '../../../../entities/opportunity/model/types';
+import type { OpportunityFormValues } from '../../../../entities/opportunity/model/types';
 import { RoutePaths } from '../../../../app/router/paths';
-
-const OPPORTUNITY_STAGES: OpportunityStage[] = [
-  'Prospecting',
-  'Qualification',
-  'NeedsAnalysis',
-  'Proposal',
-  'Negotiation',
-  'ClosedWon',
-  'ClosedLost',
-];
 
 const emptyOpportunity: OpportunityFormValues = {
   id: '',
@@ -56,23 +44,20 @@ export function OpportunityDetailPage() {
   const { mode, id } = useRouteMode();
   const { t: tPage } = useTranslation('page.opportunities-detail');
   const { t: tEntity } = useTranslation('entity.opportunity');
-  const { t: tEnums } = useTranslation('enums');
   const { t: tCommon } = useTranslation('common');
 
   const query = useOpportunityQuery(id);
   const upsert = useUpsertOpportunity();
   const deleteMutation = useDeleteOpportunity();
 
+  // stage GeneralParameter'dan beslenir — statik enum yok.
+  const { options: stageOptions } = useGeneralParameters('OpportunityStage');
+
   const title = useMemo(() => {
     if (mode === 'new') return tPage('newTitle');
     if (mode === 'edit') return tPage('editTitle');
     return query.data?.name ?? tPage('viewTitle');
   }, [mode, query.data?.name, tPage]);
-
-  const stageOptions: SelectOption<OpportunityStage>[] = OPPORTUNITY_STAGES.map((value) => ({
-    value,
-    label: tEnums(`opportunityStage.${value}`),
-  }));
 
   const tabs: DetailPageTab[] | undefined =
     mode === 'new' || !id
@@ -118,7 +103,7 @@ export function OpportunityDetailPage() {
   function GeneralSection({
     stageOptions,
   }: {
-    stageOptions: SelectOption<OpportunityStage>[];
+    stageOptions: SelectOption<string>[];
   }) {
     const form = useFormContext<OpportunityFormValues>();
     return (
@@ -144,7 +129,7 @@ export function OpportunityDetailPage() {
           label={tEntity('fields.primaryContact.label')}
           allowClear
         />
-        <SelectField<OpportunityFormValues, OpportunityStage>
+        <SelectField<OpportunityFormValues>
           name="stage"
           control={form.control}
           label={tEntity('fields.stage.label')}

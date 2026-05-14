@@ -43,7 +43,7 @@ export const contactSchema = z.object({
   id: z.string(),
   firstName: z.string().min(1, 'common:errors.required').max(100),
   lastName: z.string().min(1, 'common:errors.required').max(100),
-  contactStatus: z.enum(['Active', 'DoNotContact', 'Unsubscribed', 'Inactive']),
+  contactStatus: z.string().min(1, 'common:errors.required'),
   title: z.string().max(200).nullish(),
   department: z.string().max(200).nullish(),
   birthDate: z.string().nullish(),

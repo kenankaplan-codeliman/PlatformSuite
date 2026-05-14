@@ -26,18 +26,18 @@ public class AccountConfiguration : IEntityTypeConfiguration<Account>
             .IsRequired()
             .HasMaxLength(250);
 
+        // AccountType / AccountStatus: GeneralParameter'a taşındı — düz string code
+        // olarak tutulur (geçerlilik handler'da IGeneralParameterReader ile doğrulanır).
         builder.Property(a => a.AccountType)
             .HasColumnName("account_type")
             .IsRequired()
-            .HasConversion<string>()
             .HasMaxLength(50);
 
         builder.Property(a => a.AccountStatus)
             .HasColumnName("account_status")
             .IsRequired()
-            .HasConversion<string>()
             .HasMaxLength(50)
-            .HasDefaultValue(Crm.Domain.Enums.AccountStatus.Prospect);
+            .HasDefaultValue("Prospect");
 
         builder.Property(a => a.Industry)
             .HasColumnName("industry")

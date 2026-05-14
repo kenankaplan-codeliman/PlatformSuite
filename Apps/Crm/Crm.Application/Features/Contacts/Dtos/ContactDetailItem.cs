@@ -1,5 +1,4 @@
 using Platform.Application.Common.Dtos.Communications;
-using Crm.Domain.Enums;
 
 namespace Crm.Application.Features.Contacts.Dtos;
 
@@ -8,7 +7,7 @@ public class ContactDetailItem
     public Guid Id { get; set; }
     public string FirstName { get; set; } = default!;
     public string LastName { get; set; } = default!;
-    public ContactStatus ContactStatus { get; set; }
+    public string ContactStatus { get; set; } = default!;
     public string? Title { get; set; }
     public string? Department { get; set; }
     public DateTime? BirthDate { get; set; }

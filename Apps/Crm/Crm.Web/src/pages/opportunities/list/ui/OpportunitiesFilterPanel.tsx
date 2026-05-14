@@ -1,14 +1,8 @@
 import { useTranslation } from 'react-i18next';
 import { useFormContext } from 'react-hook-form';
-import {
-  FilterPanel,
-  SelectField,
-  enumToOptions,
-  useEnumTranslation,
-} from '@platform/ui';
+import { FilterPanel, SelectField, useGeneralParameters } from '@platform/ui';
 import type { OpportunityListFilter } from '../../../../entities/opportunity/model/types';
 import {
-  OPPORTUNITY_STAGES,
   opportunityListFilterDefaults,
   opportunityListFilterSchema,
 } from '../../../../entities/opportunity/model/listFilterSchema';
@@ -46,7 +40,7 @@ export function OpportunitiesFilterPanel({
 function OpportunityFilterFields() {
   const { t: tEntity } = useTranslation('entity.opportunity');
   const { t: tCommon } = useTranslation('common');
-  const tStage = useEnumTranslation('opportunityStage');
+  const { options: stageOptions } = useGeneralParameters('OpportunityStage');
   const { control } = useFormContext<OpportunityListFilter>();
 
   return (
@@ -55,7 +49,7 @@ function OpportunityFilterFields() {
         name="stage"
         control={control}
         label={tEntity('fields.stage.label')}
-        options={enumToOptions(OPPORTUNITY_STAGES, tStage)}
+        options={stageOptions}
         allowClear
       />
       <SelectField<OpportunityListFilter, boolean>

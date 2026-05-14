@@ -382,7 +382,7 @@ type FormModeContextValue = {
 
 `shared/ui/form/fields/` altında mode-aware primitifler:
 
-- `TextField`, `NumberField`, `SelectField`, `DateField`, `TextAreaField`, `CheckboxField`, `CurrencyField`, `LookupField`
+- `TextField`, `NumberField`, `SelectField`, `DateField`, `TextAreaField`, `CheckboxField`, `CurrencyField`, `EntityLookupField`, `EntityRelationTable`
 
 Hepsi aynı kararları verir:
 1. Görünürlük (permission + `hideInMode`)
@@ -394,6 +394,33 @@ Bir field **asla** sayfada `{mode === 'view' ? <span>{value}</span> : <input />}
 ### 8.3 Prop Drilling Yasak
 
 Mode prop olarak geçirilmez. `<TextField mode={mode} />` yanlıştır. Her field `useFormMode()` ile context'ten kendi okur.
+
+### 8.4 İlişki Alanları — EntityLookupField (Varsayılan)
+
+Bir entity'nin başka bir entity'ye ilişkisi forma girerken **varsayılan olarak `EntityLookupField`** kullanılır. Ham `SelectField` + id listesi veya elle yazılmış arama kutusu **kullanılmaz**.
+
+- Form değeri API'nin `EntityReference` sözleşmesiyle birebir aynıdır: `{ id, entityType, name }` (`shared/types/EntityReference.ts`). DTO'dan gelen `EntityReference` doğrudan form değeridir; mapper'da ayrıca ham id'ye indirgemek gerekmez. API tarafı da ilişkileri `EntityReference` ile taşır (bkz. `Api_Architecture.md` §12.1) — iki uç aynı şekli görür.
+- `EntityLookupField` mode-aware'dir (view modda etiket/Tag, edit modda arama modal'ı) ve §9 override hiyerarşisini (`force`, `hideInMode`, `requiredInMode`) destekler.
+- Tek tip ilişki, çoklu tip (polimorfik) ve çoklu seçim aynı bileşenle ifade edilir. Entity-spesifik `servicePath` verilmezse referans registry üzerinden çözülür — yeni entity için ekstra endpoint gerekmez.
+
+```tsx
+// Tek tip — registry üzerinden (önerilen; yeni entity için endpoint yazmaya gerek yok)
+<EntityLookupField name="account" control={form.control} entityType="Account" label="Firma" required />
+
+// Tek tip — entity-spesifik search endpoint ile
+<EntityLookupField name="primaryContact" control={form.control}
+  servicePath={CrmServicePath.Contact.Search} entityType="Contact" label="Birincil Kişi" />
+
+// Polimorfik (Activity regarding gibi) — birden çok tip
+<EntityLookupField name="regarding" control={form.control} entityTypes={[
+  { entityType: 'Account', label: 'Firma' },
+  { entityType: 'Lead', label: 'Aday' },
+]} label="İlgili Kayıt" />
+```
+
+**Çok kayıtlı ilişki** (bir entity'nin koleksiyon ilişkisi) için `EntityRelationTable` kullanılır — aynı `EntityReference` sözleşmesi, tablo sunumu.
+
+**İstisna:** Sabit, küçük ve *entity olmayan* kümeler (enum, statü) `SelectField`'dir. `EntityLookupField` yalnız entity ilişkileri içindir.
 
 ---
 
@@ -874,6 +901,7 @@ Mode ve override kombinasyonları için snapshot test'ten ziyade behavior test y
 - **Field içinde `mode === 'view'` kontrolü:** Sadece field primitiflerinin içinde olur, sayfa kodunda asla.
 - **Mode'u state'te tutma:** URL tek gerçek kaynak.
 - **Mode'u prop olarak geçme:** Context üzerinden yayılır.
+- **İlişki için ham `SelectField` / id listesi:** Entity ilişkisi varsayılan olarak `EntityLookupField` ile bağlanır (§8.4); `SelectField` yalnız enum/statü gibi entity olmayan kümeler için.
 
 ---
 
@@ -1076,6 +1104,7 @@ const tStatus = useEnumTranslation('accountStatus');
 - **ADR-014:** Frontend paylaşılan kod `@platform/ui` paketinde (`Platform.Web`); app'ler kendi entity/feature/page'lerini kendi `Apps/<App>/<App>.Web` projesinde tutar. Cross-app entity/page importu yasak.
 - **ADR-015:** Account/Contact CRM domain entity'leri (`Crm.Web/src/entities/{account,contact}`); Supplier CodePro domain entity'si (`CodePro.Web/src/entities/supplier`); CRM Account ile CodePro Supplier ayrı entity'lerdir, ortak DB tablosunu paylaşmazlar.
 - **ADR-016:** Polimorfik referans backend tarafında `IEntityReferenceResolver` registry pattern'ı ile çözülür; her app kendi entity'leri için resolver kaydeder. Frontend tarafında `EntityLookupField` polimorfik servicePath ile çağırır.
+- **ADR-017:** Entity ilişkileri formda varsayılan olarak `EntityLookupField` (çok kayıtlı ilişkide `EntityRelationTable`) ile bağlanır; form değeri API'nin `EntityReference` sözleşmesiyle birebir aynıdır. Ham `SelectField` + id listesi yalnız enum/statü gibi entity olmayan kümeler içindir.
 
 Yeni mimari kararlar `docs/adr/` altında numaralı dosyalar olarak saklanır.
 

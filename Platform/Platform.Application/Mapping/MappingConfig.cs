@@ -2,6 +2,7 @@ using Platform.Application.Features.AppOrganizations;
 using Platform.Application.Features.AppRoles;
 using Platform.Application.Features.AppUsers;
 using Platform.Application.Features.Attachments;
+using Platform.Application.Features.GeneralParameters;
 using Mapster;
 
 namespace Platform.Application.Mapping;
@@ -23,5 +24,6 @@ public static class MappingConfig
         AppUserMappings.Register(config);
         AppRoleMappings.Register(config);
         AttachmentMappings.Register(config);
+        GeneralParameterMappings.Register(config);
     }
 }

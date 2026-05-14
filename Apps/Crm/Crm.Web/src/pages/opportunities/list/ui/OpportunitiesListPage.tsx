@@ -3,7 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 import {
   ListPageLayout,
-  useEnumTranslation,
+  useGeneralParameters,
   useUrlFilters,
   type DataTableColumn,
 } from '@platform/ui';
@@ -22,7 +22,7 @@ import { OpportunitiesFilterPanel } from './OpportunitiesFilterPanel';
 export function OpportunitiesListPage() {
   const { t } = useTranslation('page.opportunities-list');
   const { t: tEntity } = useTranslation('entity.opportunity');
-  const tStage = useEnumTranslation('opportunityStage');
+  const { getLabel: getStageLabel } = useGeneralParameters('OpportunityStage');
   const navigate = useNavigate();
 
   const { filters, setFilters, clearFilters } = useUrlFilters<OpportunityListFilter>({
@@ -45,7 +45,7 @@ export function OpportunitiesListPage() {
         title: tEntity('fields.account.label'),
         dataIndex: 'accountName',
       },
-      { key: 'stage', title: tEntity('fields.stage.label'), render: (_v, r) => tStage(r.stage) },
+      { key: 'stage', title: tEntity('fields.stage.label'), render: (_v, r) => getStageLabel(r.stage) },
       { key: 'amount', title: tEntity('fields.amount.label'), dataIndex: 'amount' },
       {
         key: 'probability',
@@ -59,7 +59,7 @@ export function OpportunitiesListPage() {
           r.closeDate ? new Date(r.closeDate).toLocaleDateString('tr-TR') : '',
       },
     ],
-    [tEntity, tStage],
+    [tEntity, getStageLabel],
   );
 
   return (

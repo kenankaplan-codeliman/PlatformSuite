@@ -25,8 +25,8 @@ public sealed class ListOpportunitiesHandler : IRequestHandler<ListOpportunities
             query = query.Where(o => EF.Functions.ILike(o.Name, pattern));
         }
 
-        if (filters.Stage.HasValue)
-            query = query.Where(o => o.Stage == filters.Stage.Value);
+        if (!string.IsNullOrWhiteSpace(filters.Stage))
+            query = query.Where(o => o.Stage == filters.Stage);
 
         if (filters.AccountId.HasValue)
             query = query.Where(o => o.AccountId == filters.AccountId.Value);

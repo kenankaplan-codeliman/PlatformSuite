@@ -3,7 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 import {
   ListPageLayout,
-  useEnumTranslation,
+  useGeneralParameters,
   useUrlFilters,
   type DataTableColumn,
 } from '@platform/ui';
@@ -19,8 +19,8 @@ import { LeadsFilterPanel } from './LeadsFilterPanel';
 export function LeadsListPage() {
   const { t } = useTranslation('page.leads-list');
   const { t: tEntity } = useTranslation('entity.lead');
-  const tStatus = useEnumTranslation('leadStatus');
-  const tSource = useEnumTranslation('leadSource');
+  const { getLabel: getStatusLabel } = useGeneralParameters('LeadStatus');
+  const { getLabel: getSourceLabel } = useGeneralParameters('LeadSource');
   const navigate = useNavigate();
 
   const { filters, setFilters, clearFilters } = useUrlFilters<LeadListFilter>({
@@ -42,11 +42,11 @@ export function LeadsListPage() {
       { key: 'company', title: tEntity('fields.company.label'), dataIndex: 'company' },
       { key: 'email', title: tEntity('fields.email.label'), dataIndex: 'email' },
       { key: 'phone', title: tEntity('fields.phone.label'), dataIndex: 'phone' },
-      { key: 'status', title: tEntity('fields.status.label'), render: (_v, r) => tStatus(r.status) },
-      { key: 'source', title: tEntity('fields.source.label'), render: (_v, r) => tSource(r.source) },
+      { key: 'status', title: tEntity('fields.status.label'), render: (_v, r) => getStatusLabel(r.status) },
+      { key: 'source', title: tEntity('fields.source.label'), render: (_v, r) => getSourceLabel(r.source) },
       { key: 'score', title: tEntity('fields.score.label'), dataIndex: 'score' },
     ],
-    [tEntity, tStatus, tSource],
+    [tEntity, getStatusLabel, getSourceLabel],
   );
 
   return (

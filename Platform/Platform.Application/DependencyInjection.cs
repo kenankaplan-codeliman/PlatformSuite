@@ -1,5 +1,6 @@
 using System.Reflection;
 using Platform.Application.Common.Behaviors;
+using Platform.Application.Common.Parameters;
 using Platform.Application.Mapping;
 using FluentValidation;
 using Mapster;
@@ -32,6 +33,10 @@ public static class DependencyInjection
         MappingConfig.Register(typeAdapterConfig);
         services.AddSingleton(typeAdapterConfig);
         services.AddScoped<IMapper, ServiceMapper>();
+
+        // GeneralParameter: enum yerine string tutan alanların handler-seviyesi
+        // business-rule doğrulaması için paylaşılan reader.
+        services.AddScoped<IGeneralParameterReader, GeneralParameterReader>();
 
         return services;
     }

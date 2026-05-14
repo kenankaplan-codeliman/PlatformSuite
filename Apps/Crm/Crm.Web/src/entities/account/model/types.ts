@@ -1,11 +1,12 @@
 /**
  * Backend DTO'ları ile birebir uyumlu — `Platform.Application/Features/Accounts/Dtos/**`.
+ *
+ * `accountType` / `accountStatus` GeneralParameter'a taşındı — düz string code olarak tutulur.
+ * Geçerli değerler `useGeneralParameters('AccountType' | 'AccountStatus')` ile çekilir.
  */
 
 import type { AttachmentAssociation, EntityReference } from '@platform/ui';
 
-export type AccountStatus = 'Prospect' | 'Active' | 'AtRisk' | 'Inactive' | 'Churned';
-export type AccountType = 'Customer' | 'Prospect' | 'Partner' | 'Vendor' | 'Competitor' | 'Other';
 export type EmailType = 'Work' | 'Personal' | 'Billing' | 'Support' | 'Other';
 export type PhoneType = 'Mobile' | 'Work' | 'Home' | 'Fax' | 'Other';
 export type AddressType = 'Billing' | 'Shipping' | 'Office' | 'Other';
@@ -47,8 +48,8 @@ export interface AccountContactModal {
 export interface AccountDetailItem {
   id: string;
   accountName: string;
-  accountType: AccountType;
-  accountStatus: AccountStatus;
+  accountType: string;
+  accountStatus: string;
   industry?: string | null;
   annualRevenue?: number | null;
   numberOfEmployees?: number | null;
@@ -67,8 +68,8 @@ export interface AccountDetailItem {
 export interface AccountListItem {
   id: string;
   accountName: string;
-  accountType: AccountType;
-  accountStatus: AccountStatus;
+  accountType: string;
+  accountStatus: string;
   industry?: string | null;
   annualRevenue?: number | null;
   numberOfEmployees?: number | null;
@@ -81,8 +82,8 @@ export interface AccountListItem {
 
 export interface AccountListFilter {
   accountName?: string;
-  accountType?: AccountType;
-  accountStatus?: AccountStatus;
+  accountType?: string;
+  accountStatus?: string;
   industry?: string;
   isActive?: boolean;
 }

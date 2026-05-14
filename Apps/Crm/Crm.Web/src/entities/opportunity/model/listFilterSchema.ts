@@ -1,19 +1,10 @@
 import { z } from 'zod';
 import type { OpportunityListFilter } from './types';
 
-export const OPPORTUNITY_STAGES = [
-  'Prospecting',
-  'Qualification',
-  'NeedsAnalysis',
-  'Proposal',
-  'Negotiation',
-  'ClosedWon',
-  'ClosedLost',
-] as const;
-
+// stage GeneralParameter'a taşındı — statik const dizi yerine z.string().
 export const opportunityListFilterSchema: z.ZodType<OpportunityListFilter> = z.object({
   search: z.string().optional(),
-  stage: z.enum(OPPORTUNITY_STAGES).optional(),
+  stage: z.string().optional(),
   accountId: z.string().uuid().optional(),
   isActive: z
     .union([z.boolean(), z.literal('true'), z.literal('false')])

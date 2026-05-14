@@ -1,15 +1,8 @@
 import { useTranslation } from 'react-i18next';
 import { useFormContext } from 'react-hook-form';
-import {
-  FilterPanel,
-  SelectField,
-  enumToOptions,
-  useEnumTranslation,
-} from '@platform/ui';
+import { FilterPanel, SelectField, useGeneralParameters } from '@platform/ui';
 import type { LeadListFilter } from '../../../../entities/lead/model/types';
 import {
-  LEAD_SOURCES,
-  LEAD_STATUSES,
   leadListFilterDefaults,
   leadListFilterSchema,
 } from '../../../../entities/lead/model/listFilterSchema';
@@ -43,8 +36,8 @@ export function LeadsFilterPanel({ values, onApply, onClear }: LeadsFilterPanelP
 function LeadFilterFields() {
   const { t: tEntity } = useTranslation('entity.lead');
   const { t: tCommon } = useTranslation('common');
-  const tStatus = useEnumTranslation('leadStatus');
-  const tSource = useEnumTranslation('leadSource');
+  const { options: statusOptions } = useGeneralParameters('LeadStatus');
+  const { options: sourceOptions } = useGeneralParameters('LeadSource');
   const { control } = useFormContext<LeadListFilter>();
 
   return (
@@ -53,14 +46,14 @@ function LeadFilterFields() {
         name="status"
         control={control}
         label={tEntity('fields.status.label')}
-        options={enumToOptions(LEAD_STATUSES, tStatus)}
+        options={statusOptions}
         allowClear
       />
       <SelectField
         name="source"
         control={control}
         label={tEntity('fields.source.label')}
-        options={enumToOptions(LEAD_SOURCES, tSource)}
+        options={sourceOptions}
         allowClear
       />
       <SelectField<LeadListFilter, boolean>

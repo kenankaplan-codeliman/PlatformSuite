@@ -29,7 +29,7 @@ public static class AppOrganizationMappings
         // IgnoreNullValues clear (null) durumunu engellememeli.
         config.NewConfig<UpdateAppOrganizationCommand, AuthOrganization>()
             .IgnoreNullValues(true)
-            .Ignore(d => d.ParentOrganizationId, d => d.ReportsTo,
+            .Ignore(d => d.ParentOrganizationId!, d => d.ReportsTo!,
                     d => d.Title!, d => d.IsDefault)
             .IgnoreAuditFields()
             .AfterMapping((src, dst) =>

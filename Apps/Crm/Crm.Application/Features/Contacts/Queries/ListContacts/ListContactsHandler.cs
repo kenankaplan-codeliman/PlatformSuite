@@ -46,8 +46,8 @@ public sealed class ListContactsHandler : IRequestHandler<ListContactsQuery, Res
         if (filters.IsActive.HasValue)
             query = query.Where(c => c.IsActive == filters.IsActive.Value);
 
-        if (filters.ContactStatus.HasValue)
-            query = query.Where(c => c.ContactStatus == filters.ContactStatus.Value);
+        if (!string.IsNullOrWhiteSpace(filters.ContactStatus))
+            query = query.Where(c => c.ContactStatus == filters.ContactStatus);
 
         var pageNumber = request.Pagination.PageNumber;
         var pageSize = request.Pagination.PageSize;

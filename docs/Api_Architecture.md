@@ -595,11 +595,59 @@ public async Task<IActionResult> DeleteAsync([FromBody] DeleteAccountCommand cmd
 
 ---
 
-## 12. Polimorfik Referans — IEntityReferenceResolver Registry
+## 12. EntityReference — İlişki Sözleşmesi
 
-Activity'nin `RegardingEntityType` (string) + `RegardingEntityId` (Guid?) polimorfik referansı, EntityLookupField'in cross-app araması — her ikisi de `IEntityReferenceResolver` registry pattern'ı üzerinden çözülür.
+`EntityReference` bu projede iki işi birden görür: (1) DTO ve Command'larda bir entity'nin başka bir entity'ye verdiği ilişkiyi taşımanın **varsayılan biçimi**, (2) polimorfik (cross-app) referansların temel tipi. Böylece client ilişkileri tek bir sözleşmeyle görür ve `EntityLookupField` doğrudan bu tipe bağlanır.
 
-### 12.1 Sözleşme
+```csharp
+// Platform.Application/Modals/Common/EntityReference.cs
+public class EntityReference
+{
+    public Guid Id { get; set; }
+    public string Name { get; set; } = string.Empty;
+    public string EntityType { get; set; } = string.Empty;   // "Account", "Supplier", "Lead", ...
+    public string? Email { get; set; }
+    public string? Phone { get; set; }
+}
+```
+
+### 12.1 Varsayılan Kural — İlişkiler EntityReference ile Taşınır
+
+Bir entity'nin başka bir entity'ye ilişkisi DTO/Command sözleşmesine girerken **varsayılan olarak `EntityReference`** kullanılır; ham `Guid <Entity>Id` alanı sözleşmeye konmaz.
+
+| Katman | İlişki nasıl temsil edilir |
+|---|---|
+| **Domain entity** | FK olarak `Guid <Entity>Id` (+ opsiyonel nav property) — değişmez |
+| **DetailItem DTO** | `EntityReference <Entity>` — id + görünen ad birlikte gelir |
+| **Create/Update Command** | `EntityReference <Entity>` — client lookup'tan ne seçtiyse onu gönderir |
+| **ListItem DTO** | Performans için düz `string <Entity>Name` projection kabul edilir (liste satırında lookup yok) |
+
+Domain entity FK olarak `Guid` tutmaya devam eder; `EntityReference ↔ Guid` dönüşümünü Mapster mapping katmanı üstlenir, handler ham id ile çalışır:
+
+```csharp
+// Command (EntityReference) → Entity (Guid FK)
+config.NewConfig<CreateOpportunityCommand, Opportunity>()
+    .Map(d => d.AccountId, s => s.Account != null ? s.Account.Id : Guid.Empty)
+    .Map(d => d.PrimaryContactId, s => s.PrimaryContact != null ? (Guid?)s.PrimaryContact.Id : null)
+    .Ignore(d => d.Account!, d => d.PrimaryContact!)
+    .IgnoreAuditFields();
+
+// Entity (nav property) → DetailItem (EntityReference)
+config.NewConfig<Opportunity, OpportunityDetailItem>()
+    .Map(d => d.Account, s => s.Account != null
+        ? new EntityReference(nameof(Account)) { Id = s.Account.Id, Name = s.Account.AccountName }
+        : null);
+```
+
+**Neden:** Client her ilişkide aynı şekli (`{ entityType, id, name }`) görür; `EntityLookupField` ekstra map'leme olmadan bağlanır; normal ve polimorfik referanslar aynı tiple ifade edilir; ilişkinin görünen adını ayrı sorgulamak için ek endpoint gerekmez.
+
+**Tek istisna:** Performans-kritik `ListItem` projection'larında düz `<Entity>Name` string'i. Bunun dışında DetailItem ve Command'da ilişki = `EntityReference`.
+
+### 12.2 Polimorfik Referans — IEntityReferenceResolver Registry
+
+Activity'nin `RegardingEntityType` (string) + `RegardingEntityId` (Guid?) polimorfik referansı ve `EntityLookupField`'in cross-app araması — her ikisi de `IEntityReferenceResolver` registry pattern'ı üzerinden çözülür.
+
+### 12.3 Sözleşme
 
 ```csharp
 // Platform.Application/Common/References/IEntityReferenceResolver.cs
@@ -618,7 +666,7 @@ public interface IEntityReferenceResolverRegistry
 }
 ```
 
-### 12.2 Implementation
+### 12.4 Implementation
 
 ```csharp
 // Platform.Infrastructure/References/EntityReferenceResolverRegistry.cs
@@ -640,7 +688,7 @@ public class EntityReferenceResolverRegistry : IEntityReferenceResolverRegistry
 
 `ReferenceRepository` (Platform.Infrastructure) registry üzerinden dispatch eder; bilinmeyen tip için `EntityReference { Id, Name=entityType }` placeholder döner.
 
-### 12.3 App'in resolver kayıtları
+### 12.5 App'in resolver kayıtları
 
 ```csharp
 // Apps/Crm/Crm.Infrastructure/References/AccountReferenceResolver.cs
@@ -663,7 +711,7 @@ services.AddScoped<IEntityReferenceResolver, SupplierReferenceResolver>();
 
 Platform yalnız `UserReferenceResolver`'ı kayıt eder. ASP.NET Core `IEnumerable<IEntityReferenceResolver>` enjekte ederken DI'a kayıtlı tüm implementasyonları toplar; registry constructor'ı dictionary'ye dönüştürür.
 
-### 12.4 Yeni entity'i regarding zincirine sokmak
+### 12.6 Yeni entity'i regarding zincirine sokmak
 
 1. `<App>.Infrastructure/References/<Entity>ReferenceResolver.cs` oluştur, `IEntityReferenceResolver` implement et.
 2. `EntityType` => `nameof(<Entity>)` döndür.
@@ -763,6 +811,7 @@ Query handler `_db.Account.Where(...)` çağırdığında bu filter'lar otomatik
 ## 17. Kaçınılması Gerekenler
 
 - **Cross-app domain importu:** `CodePro.Domain` `Crm.Domain.Entities.Accounts.Account` import edemez. Polimorfik `EntityReference` + resolver registry kullan.
+- **DTO/Command'da ham ilişki id'si:** DetailItem ve Create/Update Command'da bir ilişki `Guid <Entity>Id` olarak değil, varsayılan olarak `EntityReference` ile taşınır (bkz. §12.1). Düz id yalnız domain entity FK'sinde ve ListItem projection'ında kalır.
 - **Handler içinde exception throw** — `Result.Failure(...)` kullan. Exception sadece beklenmedik hatalar için.
 - **Query handler'da repository kullanmak** — Uygun DbContext interface'i + projection kullan. Repository write path için.
 - **Command handler'da `SaveChangesAsync` çağırmak** — TransactionBehavior yapar.
@@ -791,15 +840,17 @@ Yeni bir endpoint / feature eklerken sırayla:
    - App-spesifik query → `I<App>DbContext` (örn. `ICrmDbContext.Account`)
    - Platform-wide query → `IApplicationDbContext`
 6. **Business rule'ları `Result.Failure(<Entity>Errors.<Reason>)` ile ifade et.**
-7. **Mapping için Mapster.** App'in `<App>MappingConfig`'ine kural ekle.
-8. **Controller method'unu ekle.** `[PrivilegeAuthorize(...)]` + tek satır `(await _sender.Send(...)).ToActionResult()`.
-9. **Privilege kodu kontrol et.** Yoksa app'in `<App>PrivilegeCodes`'una ekle.
-10. **Activity regarding zincirine girecekse:** `<App>.Infrastructure/References/<Entity>ReferenceResolver.cs` ekle, `IEntityReferenceResolver` implement et, DI'da kayıt et.
-11. **Test et.** Success path, validation failure (400), business rule failure (409/404), authorization failure (403).
+7. **İlişki alanlarını `EntityReference` olarak tanımla.** DetailItem ve Create/Update Command'da başka bir entity'ye referans = `EntityReference` (varsayılan, §12.1); ham `Guid <Entity>Id` yalnız domain entity FK'sinde ve performans-kritik ListItem projection'larında.
+8. **Mapping için Mapster.** App'in `<App>MappingConfig`'ine kural ekle; `EntityReference ↔ Guid` dönüşümünü `.Map(...)` ile burada yap.
+9. **Controller method'unu ekle.** `[PrivilegeAuthorize(...)]` + tek satır `(await _sender.Send(...)).ToActionResult()`.
+10. **Privilege kodu kontrol et.** Yoksa app'in `<App>PrivilegeCodes`'una ekle.
+11. **Activity regarding zincirine girecekse:** `<App>.Infrastructure/References/<Entity>ReferenceResolver.cs` ekle, `IEntityReferenceResolver` implement et, DI'da kayıt et.
+12. **Test et.** Success path, validation failure (400), business rule failure (409/404), authorization failure (403).
 
 Belirsizlikte sor:
 - Bu entity hangi app'e ait? Birden fazla app tüketecekse Platform; tek app'e özelse o app.
 - Bu bir input validation mı yoksa business rule mi?
 - Bu command yeni aggregate mi yazıyor, yoksa mevcutunu mu güncelliyor?
+- Bu entity'nin başka bir entity'ye ilişkisi var mı? Varsa DTO/Command'da `EntityReference` ile taşınmalı (varsayılan, §12.1).
 - Hata `ErrorType` olarak Validation/NotFound/Conflict/Unauthorized/Failure hangisi?
 - Yeni entity Activity regarding olarak gösterilecek mi? Çağrılacaksa resolver gerekli.

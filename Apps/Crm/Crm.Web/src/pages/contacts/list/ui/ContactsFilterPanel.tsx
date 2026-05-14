@@ -4,12 +4,10 @@ import {
   FilterPanel,
   SelectField,
   TextField,
-  enumToOptions,
-  useEnumTranslation,
+  useGeneralParameters,
 } from '@platform/ui';
 import type { ContactListFilter } from '../../../../entities/contact/model/types';
 import {
-  CONTACT_STATUSES,
   contactListFilterDefaults,
   contactListFilterSchema,
 } from '../../../../entities/contact/model/listFilterSchema';
@@ -43,7 +41,7 @@ export function ContactsFilterPanel({ values, onApply, onClear }: ContactsFilter
 function ContactFilterFields() {
   const { t: tEntity } = useTranslation('entity.contact');
   const { t: tCommon } = useTranslation('common');
-  const tStatus = useEnumTranslation('contactStatus');
+  const { options: statusOptions } = useGeneralParameters('ContactStatus');
   const { control } = useFormContext<ContactListFilter>();
 
   return (
@@ -52,7 +50,7 @@ function ContactFilterFields() {
         name="contactStatus"
         control={control}
         label={tEntity('fields.contactStatus.label')}
-        options={enumToOptions(CONTACT_STATUSES, tStatus)}
+        options={statusOptions}
         allowClear
       />
       <TextField

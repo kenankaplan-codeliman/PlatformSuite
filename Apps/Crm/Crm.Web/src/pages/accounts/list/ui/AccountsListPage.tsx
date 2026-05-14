@@ -3,7 +3,7 @@ import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router-dom";
 import { ListPageLayout, useUrlFilters } from "@platform/ui";
 import type { DataTableColumn } from "@platform/ui";
-import { useEnumTranslation } from "@platform/ui";
+import { useGeneralParameters } from "@platform/ui";
 import { useAccountListQuery } from "../../../../entities/account/api/useAccountQueries";
 import type {
   AccountListFilter,
@@ -19,8 +19,8 @@ import { AccountsFilterPanel } from "./AccountsFilterPanel";
 export function AccountsListPage() {
   const { t } = useTranslation("page.accounts-list");
   const { t: tEntity } = useTranslation("entity.account");
-  const tStatus = useEnumTranslation("accountStatus");
-  const tType = useEnumTranslation("accountType");
+  const { getLabel: getStatusLabel } = useGeneralParameters("AccountStatus");
+  const { getLabel: getTypeLabel } = useGeneralParameters("AccountType");
   const navigate = useNavigate();
 
   const { filters, setFilters, clearFilters } = useUrlFilters<AccountListFilter>({
@@ -45,12 +45,12 @@ export function AccountsListPage() {
       {
         key: "accountType",
         title: tEntity("fields.accountType.label"),
-        render: (_v, r) => tType(r.accountType),
+        render: (_v, r) => getTypeLabel(r.accountType),
       },
       {
         key: "accountStatus",
         title: tEntity("fields.accountStatus.label"),
-        render: (_v, r) => tStatus(r.accountStatus),
+        render: (_v, r) => getStatusLabel(r.accountStatus),
       },
       {
         key: "industry",
@@ -73,7 +73,7 @@ export function AccountsListPage() {
         dataIndex: "primaryCity",
       },
     ],
-    [tEntity, tStatus, tType],
+    [tEntity, getStatusLabel, getTypeLabel],
   );
 
   return (

@@ -45,7 +45,6 @@ public class OpportunityConfiguration : IEntityTypeConfiguration<Opportunity>
         builder.Property(o => o.Stage)
             .HasColumnName("stage")
             .IsRequired()
-            .HasConversion<string>()
             .HasMaxLength(50);
 
         builder.Property(o => o.Amount).HasColumnName("amount").HasPrecision(18, 2);

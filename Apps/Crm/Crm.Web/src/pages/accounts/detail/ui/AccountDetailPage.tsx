@@ -15,6 +15,7 @@ import { EntityLookupField } from "@platform/ui";
 import { EntityRelationTable } from "@platform/ui";
 import { ServicePath } from "@platform/ui";
 import { useRouteMode } from "@platform/ui";
+import { useGeneralParameters } from "@platform/ui";
 import { RelatedActivitiesTab, type DetailPageTab } from "@platform/ui";
 import { AttachmentsField } from "@platform/ui";
 import { useAccountQuery } from "../../../../entities/account/api/useAccountQueries";
@@ -23,11 +24,7 @@ import {
   useDeleteAccount,
 } from "../../../../entities/account/api/useAccountMutations";
 import { accountSchema } from "../../../../entities/account/model/schema";
-import type {
-  AccountFormValues,
-  AccountStatus,
-  AccountType,
-} from "../../../../entities/account/model/types";
+import type { AccountFormValues } from "../../../../entities/account/model/types";
 import {
   accountDocumentTypes,
   getAccountDocumentTypeLabel,
@@ -36,22 +33,6 @@ import { RoutePaths } from "../../../../app/router/paths";
 
 const ACCOUNT_ATTACHMENT_ACCEPT =
   ".pdf,.doc,.docx,.xls,.xlsx,.jpg,.jpeg,.png";
-
-const ACCOUNT_TYPES: AccountType[] = [
-  "Customer",
-  "Prospect",
-  "Partner",
-  "Vendor",
-  "Competitor",
-  "Other",
-];
-const ACCOUNT_STATUSES: AccountStatus[] = [
-  "Prospect",
-  "Active",
-  "AtRisk",
-  "Inactive",
-  "Churned",
-];
 
 const emptyAccount: AccountFormValues = {
   id: "",
@@ -75,32 +56,21 @@ export function AccountDetailPage() {
   const { mode, id } = useRouteMode();
   const { t: tPage } = useTranslation("page.accounts-detail");
   const { t: tEntity } = useTranslation("entity.account");
-  const { t: tEnumStatus } = useTranslation("enums");
   const { t: tCommon } = useTranslation("common");
 
   const query = useAccountQuery(id);
   const upsert = useUpsertAccount();
   const deleteMutation = useDeleteAccount();
 
+  // accountType / accountStatus GeneralParameter'dan beslenir — statik enum yok.
+  const { options: typeOptions } = useGeneralParameters("AccountType");
+  const { options: statusOptions } = useGeneralParameters("AccountStatus");
+
   const title = useMemo(() => {
     if (mode === "new") return tPage("newTitle");
     if (mode === "edit") return tPage("editTitle");
     return query.data?.accountName ?? tPage("viewTitle");
   }, [mode, query.data?.accountName, tPage]);
-
-  const typeOptions: SelectOption<AccountType>[] = ACCOUNT_TYPES.map(
-    (value) => ({
-      value,
-      label: tEnumStatus(`accountType.${value}`),
-    }),
-  );
-
-  const statusOptions: SelectOption<AccountStatus>[] = ACCOUNT_STATUSES.map(
-    (value) => ({
-      value,
-      label: tEnumStatus(`accountStatus.${value}`),
-    }),
-  );
 
   const tabs: DetailPageTab[] | undefined =
     mode === "new" || !id
@@ -159,8 +129,8 @@ export function AccountDetailPage() {
     typeOptions,
     statusOptions,
   }: {
-    typeOptions: SelectOption<AccountType>[];
-    statusOptions: SelectOption<AccountStatus>[];
+    typeOptions: SelectOption<string>[];
+    statusOptions: SelectOption<string>[];
   }) {
     const form = useFormContext<AccountFormValues>();
     return (
@@ -174,14 +144,14 @@ export function AccountDetailPage() {
           maxLength={200}
         />
         <FormRow>
-          <SelectField<AccountFormValues, AccountType>
+          <SelectField<AccountFormValues>
             name="accountType"
             control={form.control}
             label={tEntity("fields.accountType.label")}
             options={typeOptions}
             required
           />
-          <SelectField<AccountFormValues, AccountStatus>
+          <SelectField<AccountFormValues>
             name="accountStatus"
             control={form.control}
             label={tEntity("fields.accountStatus.label")}

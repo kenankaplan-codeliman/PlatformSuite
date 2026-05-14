@@ -1,6 +1,7 @@
 using Platform.Domain.Entities.Activities;
 using Platform.Domain.Entities.Attachments;
 using Platform.Domain.Entities.Identities;
+using Platform.Domain.Entities.Parameters;
 using Microsoft.EntityFrameworkCore;
 
 namespace Platform.Application.Common.Abstractions;
@@ -35,6 +36,9 @@ public interface IApplicationDbContext
     DbSet<AttachmentFileData> AttachmentFileData { get; }
     DbSet<AttachmentFileMetadata> AttachmentFileMetadata { get; }
     DbSet<AttachmentFileRelation> AttachmentFileRelation { get; }
+
+    // GeneralParameter (Platform-seviye, dinamik enum/parametre verisi)
+    DbSet<GeneralParameter> GeneralParameter { get; }
 
     Task<int> SaveChangesAsync(CancellationToken cancellationToken = default);
 }

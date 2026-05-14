@@ -1,5 +1,4 @@
 using Crm.Application.Features.Leads.Dtos;
-using Crm.Domain.Enums;
 using Platform.Application.Common.Abstractions;
 
 namespace Crm.Application.Features.Leads.Commands.CreateLead;
@@ -14,8 +13,8 @@ public sealed class CreateLeadCommand : ICommand<LeadDetailItem>
     public string? Email { get; init; }
     public string? Phone { get; init; }
     public string? Website { get; init; }
-    public LeadSource Source { get; init; } = LeadSource.Other;
-    public LeadStatus Status { get; init; } = LeadStatus.New;
+    public string Source { get; init; } = "Other";
+    public string Status { get; init; } = "New";
     public int? Score { get; init; }
     public decimal? EstimatedValue { get; init; }
     public string? Description { get; init; }

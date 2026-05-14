@@ -1,12 +1,11 @@
 import { z } from 'zod';
 import type { ContactListFilter } from './types';
 
-export const CONTACT_STATUSES = ['Active', 'DoNotContact', 'Unsubscribed', 'Inactive'] as const;
-
+// contactStatus GeneralParameter'a taşındı — statik const dizi yerine z.string().
 export const contactListFilterSchema: z.ZodType<ContactListFilter> = z.object({
   contactName: z.string().optional(),
   accountId: z.string().uuid().optional(),
-  contactStatus: z.enum(CONTACT_STATUSES).optional(),
+  contactStatus: z.string().optional(),
   title: z.string().optional(),
   department: z.string().optional(),
   isActive: z

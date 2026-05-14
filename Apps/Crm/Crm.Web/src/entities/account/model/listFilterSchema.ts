@@ -2,34 +2,15 @@ import { z } from 'zod';
 import type { AccountListFilter } from './types';
 
 /**
- * Account listesi filtre alanlarının sabit array'leri — `enumToOptions` için.
- * Detail form schema'sındaki `accountType` / `accountStatus` enum'larıyla aynı tutulmalı.
- */
-export const ACCOUNT_TYPES = [
-  'Customer',
-  'Prospect',
-  'Partner',
-  'Vendor',
-  'Competitor',
-  'Other',
-] as const;
-
-export const ACCOUNT_STATUSES = [
-  'Prospect',
-  'Active',
-  'AtRisk',
-  'Inactive',
-  'Churned',
-] as const;
-
-/**
  * URL query param'larından gelen string'leri `AccountListFilter`'a koerce eder.
  * Boş/eksik alanlar `undefined` döner — backend handler null-safe.
+ *
+ * accountType / accountStatus GeneralParameter'a taşındı — statik const dizi yerine z.string().
  */
 export const accountListFilterSchema: z.ZodType<AccountListFilter> = z.object({
   accountName: z.string().optional(),
-  accountType: z.enum(ACCOUNT_TYPES).optional(),
-  accountStatus: z.enum(ACCOUNT_STATUSES).optional(),
+  accountType: z.string().optional(),
+  accountStatus: z.string().optional(),
   industry: z.string().optional(),
   isActive: z
     .union([z.boolean(), z.literal('true'), z.literal('false')])
