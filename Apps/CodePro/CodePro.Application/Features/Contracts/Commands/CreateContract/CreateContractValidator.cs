@@ -6,7 +6,8 @@ public sealed class CreateContractValidator : AbstractValidator<CreateContractCo
 {
     public CreateContractValidator()
     {
-        RuleFor(x => x.ContractNumber).NotEmpty().MaximumLength(50);
+        // ContractNumber opsiyonel — boş bırakılırsa numarator otomatik üretir.
+        RuleFor(x => x.ContractNumber).MaximumLength(50);
         RuleFor(x => x.Subject).NotEmpty().MaximumLength(500);
         RuleFor(x => x.CounterpartyName).NotEmpty().MaximumLength(300);
         RuleFor(x => x.ResponsibleUserId).NotEmpty();

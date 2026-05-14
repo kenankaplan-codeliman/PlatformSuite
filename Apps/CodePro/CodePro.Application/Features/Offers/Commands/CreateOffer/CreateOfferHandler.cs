@@ -1,7 +1,9 @@
 using CodePro.Application.Features.Offers.Dtos;
 using CodePro.Application.Interfaces;
+using CodePro.Domain.Constants;
 using CodePro.Domain.Entities.Offers;
 using CodePro.Domain.Enums;
+using Platform.Application.Common.Numbering;
 using Platform.Application.Common.Results;
 using Platform.Application.Interfaces;
 using MediatR;
@@ -14,28 +16,35 @@ public sealed class CreateOfferHandler : IRequestHandler<CreateOfferCommand, Res
     private readonly IOfferRepository _repository;
     private readonly IAttachmentRepository _attachmentRepository;
     private readonly ICodeProDbContext _db;
+    private readonly INumberGeneratorService _numberGenerator;
 
     public CreateOfferHandler(
         IOfferRepository repository,
         IAttachmentRepository attachmentRepository,
-        ICodeProDbContext db)
+        ICodeProDbContext db,
+        INumberGeneratorService numberGenerator)
     {
         _repository = repository;
         _attachmentRepository = attachmentRepository;
         _db = db;
+        _numberGenerator = numberGenerator;
     }
 
     public async Task<Result<OfferDetailItem>> Handle(CreateOfferCommand request, CancellationToken cancellationToken)
     {
+        var offerNumber = string.IsNullOrWhiteSpace(request.OfferNumber)
+            ? await _numberGenerator.GenerateAsync(CodeProDocumentTypes.Offer, ct: cancellationToken)
+            : request.OfferNumber.Trim();
+
         var numberExists = await _db.Offer.AsNoTracking()
-            .AnyAsync(o => o.OfferNumber.ToLower() == request.OfferNumber.ToLower(), cancellationToken);
+            .AnyAsync(o => o.OfferNumber.ToLower() == offerNumber.ToLower(), cancellationToken);
         if (numberExists) return OfferErrors.DuplicateOfferNumber;
 
         var totals = OfferSyncHelper.CalculateTotals(request.Items, request.DiscountPercentage);
 
         var entity = new Offer
         {
-            OfferNumber = request.OfferNumber,
+            OfferNumber = offerNumber,
             OfferType = request.OfferType,
             Subject = request.Subject,
             CounterpartyName = request.CounterpartyName,

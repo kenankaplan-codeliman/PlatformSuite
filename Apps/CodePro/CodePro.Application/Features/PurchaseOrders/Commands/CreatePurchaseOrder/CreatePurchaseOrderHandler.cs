@@ -1,7 +1,9 @@
 using CodePro.Application.Features.PurchaseOrders.Dtos;
 using CodePro.Application.Interfaces;
+using CodePro.Domain.Constants;
 using CodePro.Domain.Entities.PurchaseOrders;
 using CodePro.Domain.Enums;
+using Platform.Application.Common.Numbering;
 using Platform.Application.Common.Results;
 using Platform.Application.Interfaces;
 using MediatR;
@@ -14,15 +16,18 @@ public sealed class CreatePurchaseOrderHandler : IRequestHandler<CreatePurchaseO
     private readonly IPurchaseOrderRepository _repository;
     private readonly IAttachmentRepository _attachmentRepository;
     private readonly ICodeProDbContext _db;
+    private readonly INumberGeneratorService _numberGenerator;
 
     public CreatePurchaseOrderHandler(
         IPurchaseOrderRepository repository,
         IAttachmentRepository attachmentRepository,
-        ICodeProDbContext db)
+        ICodeProDbContext db,
+        INumberGeneratorService numberGenerator)
     {
         _repository = repository;
         _attachmentRepository = attachmentRepository;
         _db = db;
+        _numberGenerator = numberGenerator;
     }
 
     public async Task<Result<PurchaseOrderDetailItem>> Handle(CreatePurchaseOrderCommand request, CancellationToken cancellationToken)
@@ -32,7 +37,7 @@ public sealed class CreatePurchaseOrderHandler : IRequestHandler<CreatePurchaseO
         if (!supplierExists) return PurchaseOrderErrors.SupplierNotFound;
 
         var orderNumber = string.IsNullOrWhiteSpace(request.OrderNumber)
-            ? await GenerateOrderNumberAsync(cancellationToken)
+            ? await _numberGenerator.GenerateAsync(CodeProDocumentTypes.PurchaseOrder, ct: cancellationToken)
             : request.OrderNumber.Trim();
 
         var numberExists = await _db.PurchaseOrder.AsNoTracking()
@@ -70,24 +75,5 @@ public sealed class CreatePurchaseOrderHandler : IRequestHandler<CreatePurchaseO
         var detail = await PurchaseOrderDetailBuilder.BuildAsync(_db, entity.Id, cancellationToken);
         if (detail is null) return PurchaseOrderErrors.NotFound;
         return detail;
-    }
-
-    private async Task<string> GenerateOrderNumberAsync(CancellationToken cancellationToken)
-    {
-        var year = DateTime.UtcNow.Year;
-        var prefix = $"PO-{year}-";
-        var lastNumber = await _db.PurchaseOrder.AsNoTracking()
-            .Where(p => p.OrderNumber.StartsWith(prefix))
-            .OrderByDescending(p => p.OrderNumber)
-            .Select(p => p.OrderNumber)
-            .FirstOrDefaultAsync(cancellationToken);
-
-        var nextNumber = 1;
-        if (!string.IsNullOrEmpty(lastNumber))
-        {
-            var suffix = lastNumber.Substring(prefix.Length);
-            if (int.TryParse(suffix, out var n)) nextNumber = n + 1;
-        }
-        return $"{prefix}{nextNumber:D4}";
     }
 }

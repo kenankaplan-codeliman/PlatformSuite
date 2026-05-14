@@ -1,5 +1,6 @@
 ﻿using Platform.Application.CommandHandler;
 using Platform.Application.Common.Abstractions;
+using Platform.Application.Common.Numbering;
 using Platform.Application.Common.References;
 using Platform.Application.Common.Security;
 using Platform.Application.Interfaces;
@@ -7,6 +8,7 @@ using Platform.Application.Modals;
 using Platform.Application.Modals.Authentication;
 using Platform.Infrastructure.Data;
 using Platform.Infrastructure.HostedServices;
+using Platform.Infrastructure.Numbering;
 using Platform.Infrastructure.References;
 using Platform.Infrastructure.Repositories;
 using Platform.Infrastructure.Security;
@@ -57,6 +59,13 @@ public static class DependencyInjection
         services.AddScoped<IEntityReferenceResolver, AppOrganizationReferenceResolver>();
         services.AddScoped<IEntityReferenceResolver, AppRoleReferenceResolver>();
         services.AddScoped<IReferenceRepository, ReferenceRepository>();
+
+        // Numbering — gapless doküman numarası üretimi. Resolver DI'a kayıtlı tüm
+        // INumberFormatStrategy'leri toplar; her uygulama AddXxxApplication içinde
+        // kendi doküman tipleri için strategy kayıtları ekler.
+        services.AddSingleton<INumberFormatStrategyResolver, NumberFormatStrategyResolver>();
+        services.AddScoped<INumberGeneratorService, NumberGeneratorService>();
+
         services.AddScoped<IAuthUserRepository, AuthUserRepository>();
         services.AddScoped<IAuthOrganizationRepository, AuthOrganizationRepository>();
         services.AddScoped<IAuthRoleRepository, AuthRoleRepository>();

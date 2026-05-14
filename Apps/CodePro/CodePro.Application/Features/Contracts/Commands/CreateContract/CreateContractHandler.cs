@@ -1,7 +1,9 @@
 using CodePro.Application.Features.Contracts.Dtos;
 using CodePro.Application.Interfaces;
+using CodePro.Domain.Constants;
 using CodePro.Domain.Entities.Contracts;
 using CodePro.Domain.Enums;
+using Platform.Application.Common.Numbering;
 using Platform.Application.Common.Results;
 using Platform.Application.Interfaces;
 using Mapster;
@@ -15,26 +17,33 @@ public sealed class CreateContractHandler : IRequestHandler<CreateContractComman
     private readonly IContractRepository _repository;
     private readonly IAttachmentRepository _attachmentRepository;
     private readonly ICodeProDbContext _db;
+    private readonly INumberGeneratorService _numberGenerator;
 
     public CreateContractHandler(
         IContractRepository repository,
         IAttachmentRepository attachmentRepository,
-        ICodeProDbContext db)
+        ICodeProDbContext db,
+        INumberGeneratorService numberGenerator)
     {
         _repository = repository;
         _attachmentRepository = attachmentRepository;
         _db = db;
+        _numberGenerator = numberGenerator;
     }
 
     public async Task<Result<ContractDetailItem>> Handle(CreateContractCommand request, CancellationToken cancellationToken)
     {
+        var contractNumber = string.IsNullOrWhiteSpace(request.ContractNumber)
+            ? await _numberGenerator.GenerateAsync(CodeProDocumentTypes.Contract, ct: cancellationToken)
+            : request.ContractNumber.Trim();
+
         var numberExists = await _db.Contract.AsNoTracking()
-            .AnyAsync(c => c.ContractNumber.ToLower() == request.ContractNumber.ToLower(), cancellationToken);
+            .AnyAsync(c => c.ContractNumber.ToLower() == contractNumber.ToLower(), cancellationToken);
         if (numberExists) return ContractErrors.DuplicateContractNumber;
 
         var entity = new Contract
         {
-            ContractNumber = request.ContractNumber,
+            ContractNumber = contractNumber,
             Subject = request.Subject,
             Type = request.Type,
             CounterpartyName = request.CounterpartyName,

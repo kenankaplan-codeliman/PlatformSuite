@@ -4,6 +4,7 @@ using Platform.Domain.Entities.Activities;
 using Platform.Domain.Entities.Attachments;
 using Platform.Domain.Entities.Common;
 using Platform.Domain.Entities.Identities;
+using Platform.Domain.Entities.Numbering;
 using Platform.Domain.Entities.Parameters;
 using Platform.Domain.Enums;
 using Platform.Infrastructure.Data.Configurations;
@@ -58,6 +59,9 @@ public abstract class PlatformDbContext : DbContext, IApplicationDbContext
 
     // ======= GeneralParameter =======
     public DbSet<GeneralParameter> GeneralParameter { get; set; }
+
+    // ======= Numbering =======
+    public DbSet<NumberCounter> NumberCounter { get; set; }
 
     protected override void ConfigureConventions(ModelConfigurationBuilder builder)
     {
