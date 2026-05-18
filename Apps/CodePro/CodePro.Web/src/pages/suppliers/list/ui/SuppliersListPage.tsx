@@ -1,7 +1,7 @@
 import { useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
-import { ListPageLayout, useEnumTranslation, useUrlFilters } from '@platform/ui';
+import { ListPageLayout, useGeneralParameters, useUrlFilters } from '@platform/ui';
 import type { DataTableColumn } from '@platform/ui';
 import { useSupplierListQuery } from '../../../../entities/supplier/api/useSupplierQueries';
 import type {
@@ -18,9 +18,10 @@ import { SuppliersFilterPanel } from './SuppliersFilterPanel';
 export function SuppliersListPage() {
   const { t } = useTranslation('page.suppliers-list');
   const { t: tEntity } = useTranslation('entity.supplier');
-  const tType = useEnumTranslation('supplierType');
-  const tStatus = useEnumTranslation('supplierStatus');
-  const tCompany = useEnumTranslation('companyType');
+  // supplierType / supplierStatus / companyType GeneralParameter'dan beslenir.
+  const { getLabel: getTypeLabel } = useGeneralParameters('SupplierType');
+  const { getLabel: getStatusLabel } = useGeneralParameters('SupplierStatus');
+  const { getLabel: getCompanyLabel } = useGeneralParameters('CompanyType');
   const navigate = useNavigate();
 
   const { filters, setFilters, clearFilters } = useUrlFilters<SupplierListFilter>({
@@ -42,17 +43,17 @@ export function SuppliersListPage() {
       {
         key: 'supplierType',
         title: tEntity('fields.supplierType.label'),
-        render: (_v, r) => tType(r.supplierType),
+        render: (_v, r) => getTypeLabel(r.supplierType),
       },
       {
         key: 'supplierStatus',
         title: tEntity('fields.supplierStatus.label'),
-        render: (_v, r) => tStatus(r.supplierStatus),
+        render: (_v, r) => getStatusLabel(r.supplierStatus),
       },
       {
         key: 'companyType',
         title: tEntity('fields.companyType.label'),
-        render: (_v, r) => tCompany(r.companyType),
+        render: (_v, r) => getCompanyLabel(r.companyType),
       },
       {
         key: 'contactPersonEmail',
@@ -66,7 +67,7 @@ export function SuppliersListPage() {
         render: (_v, r) => (r.isActive ? '✓' : '—'),
       },
     ],
-    [tEntity, tType, tStatus, tCompany],
+    [tEntity, getTypeLabel, getStatusLabel, getCompanyLabel],
   );
 
   return (

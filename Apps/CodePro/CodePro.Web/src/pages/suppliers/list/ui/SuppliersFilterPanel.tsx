@@ -1,16 +1,8 @@
 import { useTranslation } from 'react-i18next';
 import { useFormContext } from 'react-hook-form';
-import {
-  FilterPanel,
-  SelectField,
-  enumToOptions,
-  useEnumTranslation,
-} from '@platform/ui';
+import { FilterPanel, SelectField, useGeneralParameters } from '@platform/ui';
 import type { SupplierListFilter } from '../../../../entities/supplier/model/types';
 import {
-  COMPANY_TYPES,
-  SUPPLIER_STATUSES,
-  SUPPLIER_TYPES,
   supplierListFilterDefaults,
   supplierListFilterSchema,
 } from '../../../../entities/supplier/model/listFilterSchema';
@@ -45,9 +37,10 @@ export function SuppliersFilterPanel({ values, onApply, onClear }: SuppliersFilt
 function SupplierFilterFields() {
   const { t: tEntity } = useTranslation('entity.supplier');
   const { t: tCommon } = useTranslation('common');
-  const tType = useEnumTranslation('supplierType');
-  const tStatus = useEnumTranslation('supplierStatus');
-  const tCompany = useEnumTranslation('companyType');
+  // supplierType / supplierStatus / companyType GeneralParameter'dan beslenir.
+  const { options: supplierTypeOptions } = useGeneralParameters('SupplierType');
+  const { options: supplierStatusOptions } = useGeneralParameters('SupplierStatus');
+  const { options: companyTypeOptions } = useGeneralParameters('CompanyType');
   const { control } = useFormContext<SupplierListFilter>();
 
   return (
@@ -56,21 +49,21 @@ function SupplierFilterFields() {
         name="supplierType"
         control={control}
         label={tEntity('fields.supplierType.label')}
-        options={enumToOptions(SUPPLIER_TYPES, tType)}
+        options={supplierTypeOptions}
         allowClear
       />
       <SelectField
         name="supplierStatus"
         control={control}
         label={tEntity('fields.supplierStatus.label')}
-        options={enumToOptions(SUPPLIER_STATUSES, tStatus)}
+        options={supplierStatusOptions}
         allowClear
       />
       <SelectField
         name="companyType"
         control={control}
         label={tEntity('fields.companyType.label')}
-        options={enumToOptions(COMPANY_TYPES, tCompany)}
+        options={companyTypeOptions}
         allowClear
       />
       <SelectField<SupplierListFilter, boolean>

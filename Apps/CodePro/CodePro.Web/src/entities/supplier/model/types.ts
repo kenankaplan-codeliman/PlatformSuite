@@ -1,23 +1,11 @@
 /**
  * Backend DTO'ları ile birebir uyumlu — CodePro.Application/Features/Suppliers/Dtos/**
+ *
+ * supplierType / supplierStatus / companyType / companyLegalType GeneralParameter'a
+ * taşındı — düz string code olarak tutulur. Geçerli değerler
+ * `useGeneralParameters('SupplierType' | 'SupplierStatus' | 'CompanyType' | 'CompanyLegalType')`
+ * ile çekilir.
  */
-
-export type SupplierType =
-  | 'Manufacturer'
-  | 'Distributor'
-  | 'ServiceProvider'
-  | 'Retailer'
-  | 'Other';
-
-export type SupplierStatus = 'Pending' | 'Active' | 'Passive' | 'Blacklisted';
-
-export type CompanyType = 'Gercek' | 'Tuzel';
-
-export type CompanyLegalType =
-  | 'AnonimSirketi'
-  | 'LimitedSirket'
-  | 'KomanditSirket'
-  | 'KolektifSirket';
 
 export interface SupplierDetailItem {
   id: string;
@@ -28,10 +16,10 @@ export interface SupplierDetailItem {
   annualRevenue?: number | null;
   numberOfEmployees?: number | null;
 
-  supplierType: SupplierType;
-  supplierStatus: SupplierStatus;
-  companyType: CompanyType;
-  companyLegalType?: CompanyLegalType | null;
+  supplierType: string;
+  supplierStatus: string;
+  companyType: string;
+  companyLegalType?: string | null;
   taxOffice?: string | null;
   vkn?: string | null;
   mersisNo?: string | null;
@@ -54,9 +42,9 @@ export interface SupplierListItem {
   id: string;
   name: string;
   industry?: string | null;
-  supplierType: SupplierType;
-  supplierStatus: SupplierStatus;
-  companyType: CompanyType;
+  supplierType: string;
+  supplierStatus: string;
+  companyType: string;
   vkn?: string | null;
   contactPersonEmail?: string | null;
   contactPersonPhone?: string | null;
@@ -67,9 +55,9 @@ export interface SupplierListItem {
 
 export interface SupplierListFilter {
   search?: string;
-  supplierType?: SupplierType;
-  supplierStatus?: SupplierStatus;
-  companyType?: CompanyType;
+  supplierType?: string;
+  supplierStatus?: string;
+  companyType?: string;
   isActive?: boolean;
 }
 

@@ -1,27 +1,4 @@
 {
-  "supplierType": {
-    "Manufacturer": "Üretici",
-    "Distributor": "Dağıtıcı",
-    "ServiceProvider": "Hizmet Sağlayıcı",
-    "Retailer": "Perakendeci",
-    "Other": "Diğer"
-  },
-  "supplierStatus": {
-    "Pending": "Beklemede",
-    "Active": "Aktif",
-    "Passive": "Pasif",
-    "Blacklisted": "Kara Liste"
-  },
-  "companyType": {
-    "Gercek": "Gerçek Kişi",
-    "Tuzel": "Tüzel Kişi"
-  },
-  "companyLegalType": {
-    "AnonimSirketi": "Anonim Şirketi",
-    "LimitedSirket": "Limited Şirket",
-    "KomanditSirket": "Komandit Şirket",
-    "KolektifSirket": "Kolektif Şirket"
-  },
   "purchaseBasketStatus": {
     "Preparing": "Hazırlanıyor",
     "Submitted": "Gönderildi",

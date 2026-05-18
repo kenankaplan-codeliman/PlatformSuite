@@ -29,14 +29,14 @@ public sealed class ListSuppliersHandler : IRequestHandler<ListSuppliersQuery, R
                 || (s.City != null && EF.Functions.ILike(s.City, pattern)));
         }
 
-        if (filters.SupplierType.HasValue)
-            query = query.Where(s => s.SupplierType == filters.SupplierType.Value);
+        if (!string.IsNullOrWhiteSpace(filters.SupplierType))
+            query = query.Where(s => s.SupplierType == filters.SupplierType);
 
-        if (filters.SupplierStatus.HasValue)
-            query = query.Where(s => s.SupplierStatus == filters.SupplierStatus.Value);
+        if (!string.IsNullOrWhiteSpace(filters.SupplierStatus))
+            query = query.Where(s => s.SupplierStatus == filters.SupplierStatus);
 
-        if (filters.CompanyType.HasValue)
-            query = query.Where(s => s.CompanyType == filters.CompanyType.Value);
+        if (!string.IsNullOrWhiteSpace(filters.CompanyType))
+            query = query.Where(s => s.CompanyType == filters.CompanyType);
 
         if (filters.IsActive.HasValue)
             query = query.Where(s => s.IsActive == filters.IsActive.Value);

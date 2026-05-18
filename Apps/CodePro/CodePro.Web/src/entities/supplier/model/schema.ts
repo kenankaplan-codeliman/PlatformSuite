@@ -9,13 +9,13 @@ export const supplierSchema = z.object({
   annualRevenue: z.number().min(0).nullable().optional(),
   numberOfEmployees: z.number().int().min(0).nullable().optional(),
 
-  supplierType: z.enum(['Manufacturer', 'Distributor', 'ServiceProvider', 'Retailer', 'Other']),
-  supplierStatus: z.enum(['Pending', 'Active', 'Passive', 'Blacklisted']),
-  companyType: z.enum(['Gercek', 'Tuzel']),
-  companyLegalType: z
-    .enum(['AnonimSirketi', 'LimitedSirket', 'KomanditSirket', 'KolektifSirket'])
-    .nullable()
-    .optional(),
+  // supplierType / supplierStatus / companyType / companyLegalType GeneralParameter'a
+  // taşındı — statik z.enum yerine z.string(). Geçerli code doğrulaması backend
+  // handler'ında (IGeneralParameterReader) yapılır.
+  supplierType: z.string().min(1, 'common:errors.required'),
+  supplierStatus: z.string().min(1, 'common:errors.required'),
+  companyType: z.string().min(1, 'common:errors.required'),
+  companyLegalType: z.string().nullable().optional(),
   taxOffice: z.string().max(150).nullable().optional(),
   vkn: z.string().max(20).nullable().optional(),
   mersisNo: z.string().max(20).nullable().optional(),

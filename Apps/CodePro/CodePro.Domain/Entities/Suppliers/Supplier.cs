@@ -1,4 +1,3 @@
-using CodePro.Domain.Enums;
 using Platform.Domain.Entities.Common;
 
 namespace CodePro.Domain.Entities.Suppliers;
@@ -27,11 +26,12 @@ public class Supplier :
     public decimal? AnnualRevenue { get; set; }
     public int? NumberOfEmployees { get; set; }
 
-    // Tedarikçi profili
-    public SupplierType SupplierType { get; set; }
-    public SupplierStatus SupplierStatus { get; set; } = SupplierStatus.Pending;
-    public CompanyType CompanyType { get; set; }
-    public CompanyLegalType? CompanyLegalType { get; set; }
+    // Tedarikçi profili — GeneralParameter'a taşındı, code olarak string tutulur.
+    // parentCode: SupplierParameterCodes.Type / Status / CompanyType / CompanyLegalType
+    public string SupplierType { get; set; } = "Manufacturer";
+    public string SupplierStatus { get; set; } = "Pending";
+    public string CompanyType { get; set; } = "Gercek";
+    public string? CompanyLegalType { get; set; }
     public string? TaxOffice { get; set; }
     public string? Vkn { get; set; }
     public string? MersisNo { get; set; }

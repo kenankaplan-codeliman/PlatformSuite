@@ -11,9 +11,9 @@ import {
   SelectField,
   TextAreaField,
   TextField,
+  useGeneralParameters,
   useRouteMode,
   type DetailPageTab,
-  type SelectOption,
 } from '@platform/ui';
 import { useSupplierQuery } from '../../../../entities/supplier/api/useSupplierQueries';
 import {
@@ -21,13 +21,7 @@ import {
   useUpsertSupplier,
 } from '../../../../entities/supplier/api/useSupplierMutations';
 import { supplierSchema } from '../../../../entities/supplier/model/schema';
-import type {
-  CompanyLegalType,
-  CompanyType,
-  SupplierFormValues,
-  SupplierStatus,
-  SupplierType,
-} from '../../../../entities/supplier/model/types';
+import type { SupplierFormValues } from '../../../../entities/supplier/model/types';
 import { RoutePaths } from '../../../../app/router/paths';
 
 const emptySupplier: SupplierFormValues = {
@@ -54,33 +48,6 @@ const emptySupplier: SupplierFormValues = {
   postalCode: null,
   isActive: true,
 };
-
-const supplierTypeOptions: SelectOption<SupplierType>[] = [
-  { value: 'Manufacturer', label: 'Üretici' },
-  { value: 'Distributor', label: 'Dağıtıcı' },
-  { value: 'ServiceProvider', label: 'Hizmet Sağlayıcı' },
-  { value: 'Retailer', label: 'Perakendeci' },
-  { value: 'Other', label: 'Diğer' },
-];
-
-const supplierStatusOptions: SelectOption<SupplierStatus>[] = [
-  { value: 'Pending', label: 'Beklemede' },
-  { value: 'Active', label: 'Aktif' },
-  { value: 'Passive', label: 'Pasif' },
-  { value: 'Blacklisted', label: 'Kara Liste' },
-];
-
-const companyTypeOptions: SelectOption<CompanyType>[] = [
-  { value: 'Gercek', label: 'Gerçek Kişi' },
-  { value: 'Tuzel', label: 'Tüzel Kişi' },
-];
-
-const companyLegalTypeOptions: SelectOption<CompanyLegalType>[] = [
-  { value: 'AnonimSirketi', label: 'Anonim Şirketi' },
-  { value: 'LimitedSirket', label: 'Limited Şirket' },
-  { value: 'KomanditSirket', label: 'Komandit Şirket' },
-  { value: 'KolektifSirket', label: 'Kolektif Şirket' },
-];
 
 export function SupplierDetailPage() {
   const { mode, id } = useRouteMode();
@@ -200,6 +167,11 @@ export function SupplierDetailPage() {
 
   function CompanySection() {
     const form = useFormContext<SupplierFormValues>();
+    // supplierType / supplierStatus / companyType / companyLegalType GeneralParameter'dan beslenir.
+    const { options: supplierTypeOptions } = useGeneralParameters('SupplierType');
+    const { options: supplierStatusOptions } = useGeneralParameters('SupplierStatus');
+    const { options: companyTypeOptions } = useGeneralParameters('CompanyType');
+    const { options: companyLegalTypeOptions } = useGeneralParameters('CompanyLegalType');
     return (
       <FormSection title={tEntity('sections.company')} collapsible>
         <FormRow>

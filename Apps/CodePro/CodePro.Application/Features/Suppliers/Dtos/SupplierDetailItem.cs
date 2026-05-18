@@ -1,5 +1,3 @@
-using CodePro.Domain.Enums;
-
 namespace CodePro.Application.Features.Suppliers.Dtos;
 
 public class SupplierDetailItem
@@ -12,10 +10,10 @@ public class SupplierDetailItem
     public decimal? AnnualRevenue { get; set; }
     public int? NumberOfEmployees { get; set; }
 
-    public SupplierType SupplierType { get; set; }
-    public SupplierStatus SupplierStatus { get; set; }
-    public CompanyType CompanyType { get; set; }
-    public CompanyLegalType? CompanyLegalType { get; set; }
+    public string SupplierType { get; set; } = default!;
+    public string SupplierStatus { get; set; } = default!;
+    public string CompanyType { get; set; } = default!;
+    public string? CompanyLegalType { get; set; }
     public string? TaxOffice { get; set; }
     public string? Vkn { get; set; }
     public string? MersisNo { get; set; }

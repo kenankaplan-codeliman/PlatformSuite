@@ -1,6 +1,8 @@
 using CodePro.Application.Features.Suppliers.Dtos;
 using CodePro.Application.Interfaces;
 using CodePro.Domain.Entities.Suppliers;
+using CodePro.Domain.Parameters;
+using Platform.Application.Common.Parameters;
 using Platform.Application.Common.Results;
 using Platform.Application.Interfaces;
 using Mapster;
@@ -14,19 +16,35 @@ public sealed class UpdateSupplierHandler : IRequestHandler<UpdateSupplierComman
     private readonly ISupplierRepository _repository;
     private readonly IAttachmentRepository _attachmentRepository;
     private readonly ICodeProDbContext _db;
+    private readonly IGeneralParameterReader _parameters;
 
     public UpdateSupplierHandler(
         ISupplierRepository repository,
         IAttachmentRepository attachmentRepository,
-        ICodeProDbContext db)
+        ICodeProDbContext db,
+        IGeneralParameterReader parameters)
     {
         _repository = repository;
         _attachmentRepository = attachmentRepository;
         _db = db;
+        _parameters = parameters;
     }
 
     public async Task<Result<SupplierDetailItem>> Handle(UpdateSupplierCommand request, CancellationToken cancellationToken)
     {
+        if (!await _parameters.ExistsAsync(SupplierParameterCodes.Type, request.SupplierType, cancellationToken))
+            return SupplierErrors.InvalidType;
+
+        if (!await _parameters.ExistsAsync(SupplierParameterCodes.Status, request.SupplierStatus, cancellationToken))
+            return SupplierErrors.InvalidStatus;
+
+        if (!await _parameters.ExistsAsync(SupplierParameterCodes.CompanyType, request.CompanyType, cancellationToken))
+            return SupplierErrors.InvalidCompanyType;
+
+        if (!string.IsNullOrWhiteSpace(request.CompanyLegalType)
+            && !await _parameters.ExistsAsync(SupplierParameterCodes.CompanyLegalType, request.CompanyLegalType, cancellationToken))
+            return SupplierErrors.InvalidCompanyLegalType;
+
         var entity = await _repository.GetAsync(request.Id, cancellationToken);
         if (entity is null) return SupplierErrors.NotFound;
 

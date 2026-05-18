@@ -24,25 +24,27 @@ public class SupplierConfiguration : IEntityTypeConfiguration<Supplier>
         builder.Property(s => s.AnnualRevenue).HasColumnName("annual_revenue").HasColumnType("numeric(18,2)");
         builder.Property(s => s.NumberOfEmployees).HasColumnName("number_of_employees");
 
+        // SupplierType / SupplierStatus / CompanyType / CompanyLegalType:
+        // GeneralParameter'a taşındı — düz string code olarak tutulur (geçerlilik
+        // handler'da IGeneralParameterReader ile doğrulanır).
         builder.Property(s => s.SupplierType)
             .HasColumnName("supplier_type")
-            .HasConversion<string>()
+            .IsRequired()
             .HasMaxLength(20);
 
         builder.Property(s => s.SupplierStatus)
             .HasColumnName("supplier_status")
-            .HasConversion<string>()
+            .IsRequired()
             .HasMaxLength(20)
-            .HasDefaultValue(CodePro.Domain.Enums.SupplierStatus.Pending);
+            .HasDefaultValue("Pending");
 
         builder.Property(s => s.CompanyType)
             .HasColumnName("company_type")
-            .HasConversion<string>()
+            .IsRequired()
             .HasMaxLength(20);
 
         builder.Property(s => s.CompanyLegalType)
             .HasColumnName("company_legal_type")
-            .HasConversion<string?>()
             .HasMaxLength(50);
 
         builder.Property(s => s.TaxOffice).HasColumnName("tax_office").HasMaxLength(150);
