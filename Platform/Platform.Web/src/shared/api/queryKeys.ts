@@ -19,6 +19,12 @@ export const activityKeys = {
   calendar: (params: unknown) => [...activityKeys.calendars(), params] as const,
 };
 
+export const entityMetadataKeys = {
+  all: ['entity-metadata'] as const,
+  detail: (entityType: string, id: string) =>
+    [...entityMetadataKeys.all, entityType, id] as const,
+};
+
 export const organizationKeys = {
   all: ['organization'] as const,
   lists: () => [...organizationKeys.all, 'list'] as const,

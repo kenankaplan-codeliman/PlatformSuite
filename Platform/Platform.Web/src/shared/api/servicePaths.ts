@@ -16,6 +16,7 @@ export const ControllerPaths = {
   Attachment: `${ApiBase}/attachment`,
   Reference: `${ApiBase}/reference`,
   GeneralParameter: `${ApiBase}/general-parameter`,
+  EntityMetadata: `${ApiBase}/entity-metadata`,
 } as const;
 
 export const ServicePath = {
@@ -113,5 +114,12 @@ export const ServicePath = {
    */
   GeneralParameter: {
     List: `${ControllerPaths.GeneralParameter}/list`,
+  },
+  /**
+   * Tipten bağımsız ortak entity metadata'sı (audit / owner / state).
+   * Body: { entityType: string, id: string }. Detail sayfası footer'ı tüketir.
+   */
+  EntityMetadata: {
+    Get: `${ControllerPaths.EntityMetadata}/get`,
   },
 } as const;

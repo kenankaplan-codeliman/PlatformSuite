@@ -7,6 +7,7 @@ import {
   type SubmitHandler,
 } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { useQueryClient } from "@tanstack/react-query";
 import type { ZodType } from "zod";
 import { useLocation, useNavigate, useSearchParams } from "react-router-dom";
 import { Dropdown, Modal, Space, Tabs, Typography } from "antd";
@@ -27,6 +28,8 @@ import {
   AttachmentsProvider,
   useAttachmentsCollector,
 } from "../../../widgets/attachment/model/AttachmentsContext";
+import { EntityMetadataFooter } from "./EntityMetadataFooter";
+import { entityMetadataKeys } from "../../api/queryKeys";
 
 const { Title } = Typography;
 
@@ -75,6 +78,15 @@ export interface DetailPageLayoutProps<TValues extends FieldValues> {
   /** Form sekmesinin etiketi. Varsayılan: common.tabs.details ("Genel"). */
   detailsTabLabel?: ReactNode;
 
+  /**
+   * Verildiğinde sayfanın altında ortak metadata footer'ı (audit/owner/state)
+   * gösterilir. `entityType` backend CLR tip adıdır ("Account", "Supplier", …).
+   * `new` modda veya id yokken render edilmez. Tüm entity'lerde aynı çalışır;
+   * sayfa başına ek kod gerektirmez.
+   */
+  entityType?: string;
+  entityId?: string;
+
   children: ReactNode;
 }
 
@@ -106,6 +118,8 @@ function DetailPageLayoutInner<TValues extends FieldValues>({
   afterSaveNavigation,
   tabs,
   detailsTabLabel,
+  entityType,
+  entityId,
   children,
 }: DetailPageLayoutProps<TValues>) {
   const { t: tCommon } = useTranslation("common");
@@ -113,6 +127,7 @@ function DetailPageLayoutInner<TValues extends FieldValues>({
   const { pathname } = useLocation();
   const [searchParams, setSearchParams] = useSearchParams();
   const attachmentsCollector = useAttachmentsCollector();
+  const queryClient = useQueryClient();
 
   const mode: FormMode = modeOverride ?? rawMode;
 
@@ -138,6 +153,14 @@ function DetailPageLayoutInner<TValues extends FieldValues>({
         : values;
     await onSubmit(payload);
     attachmentsCollector?.reset();
+    // Kayıt güncellendi → footer'daki ortak metadata (UpdatedAt/By, durum vb.)
+    // bayatladı; entity-metadata sorgusunu invalidate ederek tazele. Generic —
+    // entityType/entityId veren her Detail sayfası için otomatik çalışır.
+    if (entityType && entityId) {
+      queryClient.invalidateQueries({
+        queryKey: entityMetadataKeys.detail(entityType, entityId),
+      });
+    }
     if (afterSaveNavigation) {
       navigate(afterSaveNavigation(payload));
     }
@@ -317,6 +340,10 @@ function DetailPageLayoutInner<TValues extends FieldValues>({
           )}
         </FormProvider>
       </FormModeProvider>
+
+      {mode !== "new" && entityType && entityId && (
+        <EntityMetadataFooter entityType={entityType} entityId={entityId} />
+      )}
     </div>
   );
 }

@@ -1,12 +1,14 @@
 using CodePro.Application.Interfaces;
 using CodePro.Infrastructure.Data;
 using CodePro.Infrastructure.Data.Migrations;
+using CodePro.Infrastructure.Metadata;
 using CodePro.Infrastructure.References;
 using CodePro.Infrastructure.Repositories;
 using CodePro.Infrastructure.Services;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Platform.Application.Common.Database;
+using Platform.Application.Common.Metadata;
 using Platform.Application.Common.References;
 
 namespace CodePro.Infrastructure;
@@ -53,6 +55,9 @@ public static class DependencyInjection
         services.AddScoped<IEntityReferenceResolver, OfferReferenceResolver>();
         services.AddScoped<IEntityReferenceResolver, ContractReferenceResolver>();
         services.AddScoped<IEntityReferenceResolver, ProductReferenceResolver>();
+
+        // Generic ortak metadata (audit/owner/state) resolver'ı — CodePro entity'lerinin tamamını kapsar.
+        services.AddScoped<IEntityMetadataResolver, CodeProEntityMetadataResolver>();
 
         return services;
     }

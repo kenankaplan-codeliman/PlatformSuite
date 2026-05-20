@@ -106,6 +106,8 @@ export function AccountDetailPage() {
       }
       afterSaveNavigation={(saved) => RoutePaths.AccountView(saved.id)}
       tabs={tabs}
+      entityType="Account"
+      entityId={id}
     >
       <GeneralSection
         typeOptions={typeOptions}

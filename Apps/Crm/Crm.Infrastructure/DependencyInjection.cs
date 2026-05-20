@@ -1,11 +1,13 @@
 using Crm.Application.Interfaces;
 using Crm.Infrastructure.Data;
 using Crm.Infrastructure.Data.Migrations;
+using Crm.Infrastructure.Metadata;
 using Crm.Infrastructure.References;
 using Crm.Infrastructure.Repositories;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Platform.Application.Common.Database;
+using Platform.Application.Common.Metadata;
 using Platform.Application.Common.References;
 using Platform.Application.Interfaces;
 
@@ -34,6 +36,9 @@ public static class DependencyInjection
         services.AddScoped<IEntityReferenceResolver, ContactReferenceResolver>();
         services.AddScoped<IEntityReferenceResolver, LeadReferenceResolver>();
         services.AddScoped<IEntityReferenceResolver, OpportunityReferenceResolver>();
+
+        // Generic ortak metadata (audit/owner/state) resolver'ı — CRM entity'lerinin tamamını kapsar.
+        services.AddScoped<IEntityMetadataResolver, CrmEntityMetadataResolver>();
 
         return services;
     }

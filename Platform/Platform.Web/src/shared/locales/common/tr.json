@@ -56,6 +56,16 @@
     "activities": "İlişkili Aktiviteler",
     "attachments": "Belgeler"
   },
+  "metadata": {
+    "title": "Kayıt Bilgileri",
+    "owner": "Sahibi",
+    "organization": "Organizasyon",
+    "isActive": "Aktif",
+    "createdBy": "Oluşturan",
+    "createdAt": "Oluşturulma",
+    "updatedBy": "Güncelleyen",
+    "updatedAt": "Güncellenme"
+  },
   "entities": {
     "user": "Kullanıcı",
     "users": "Kullanıcılar",
