@@ -14,17 +14,20 @@ namespace Crm.Application.Features.Contacts.Commands.CreateContact;
 public sealed class CreateContactHandler : IRequestHandler<CreateContactCommand, Result<ContactDetailItem>>
 {
     private readonly IContactRepository _repository;
+    private readonly IAttachmentRepository _attachmentRepository;
     private readonly ICommunicationRepository _communications;
     private readonly ICrmDbContext _db;
     private readonly IGeneralParameterReader _parameters;
 
     public CreateContactHandler(
         IContactRepository repository,
+        IAttachmentRepository attachmentRepository,
         ICommunicationRepository communications,
         ICrmDbContext db,
         IGeneralParameterReader parameters)
     {
         _repository = repository;
+        _attachmentRepository = attachmentRepository;
         _communications = communications;
         _db = db;
         _parameters = parameters;
@@ -40,6 +43,12 @@ public sealed class CreateContactHandler : IRequestHandler<CreateContactCommand,
 
         await _communications.SyncAsync(
             nameof(Contact), entity.Id, request.Emails, request.Phones, request.Addresses, cancellationToken);
+
+        if (request.Attachments.Count > 0)
+        {
+            var metadataIds = request.Attachments.Select(a => a.MetadataId).ToList();
+            await _attachmentRepository.AssociateAsync(metadataIds, entity.Id, nameof(Contact), cancellationToken);
+        }
 
         return await BuildDetailAsync(entity.Id, cancellationToken);
     }

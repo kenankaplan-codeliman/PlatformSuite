@@ -19,6 +19,7 @@ import { useSetStateAction } from "@platform/ui";
 import type { DetailPageAction } from "@platform/ui";
 import { useGeneralParameters } from "@platform/ui";
 import { RelatedActivitiesTab, type DetailPageTab } from "@platform/ui";
+import { AttachmentsField } from "@platform/ui";
 import { AddressField } from "../../../../widgets/address-field";
 import { EmailField } from "../../../../widgets/email-field";
 import { PhoneField } from "../../../../widgets/phone-field";
@@ -29,7 +30,14 @@ import {
 } from "../../../../entities/contact/api/useContactMutations";
 import { contactSchema } from "../../../../entities/contact/model/schema";
 import type { ContactFormValues } from "../../../../entities/contact/model/types";
+import {
+  contactDocumentTypes,
+  getContactDocumentTypeLabel,
+} from "../../../../entities/contact/model/documentTypes";
 import { RoutePaths } from "../../../../app/router/paths";
+
+const CONTACT_ATTACHMENT_ACCEPT =
+  ".pdf,.doc,.docx,.xls,.xlsx,.jpg,.jpeg,.png";
 
 const emptyContact: ContactFormValues = {
   id: "",
@@ -89,6 +97,7 @@ export function ContactDetailPage() {
   }, [query.data, tPage]);
 
   // İletişim Bilgileri her modda var (form-bound, entity ile kaydedilir).
+  // Activities/Attachments yalnız kayıtlı entity'de (kendi servisleri, entityId gerekir).
   const tabs: DetailPageTab[] = [
     {
       key: "communication-info",
@@ -102,6 +111,21 @@ export function ContactDetailPage() {
             label: tCommon("tabs.activities"),
             content: (
               <RelatedActivitiesTab entityType="Contact" entityId={id} />
+            ),
+          },
+          {
+            key: "attachments",
+            label: tCommon("tabs.attachments"),
+            content: (
+              <div style={{ marginBottom: 16 }}>
+                <AttachmentsField
+                  entityType="Contact"
+                  entityId={id}
+                  accept={CONTACT_ATTACHMENT_ACCEPT}
+                  documentTypes={contactDocumentTypes}
+                  documentTypeLabel={getContactDocumentTypeLabel}
+                />
+              </div>
             ),
           },
         ]

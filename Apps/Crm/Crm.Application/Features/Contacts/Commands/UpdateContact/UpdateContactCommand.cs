@@ -1,10 +1,11 @@
 using Platform.Application.Common.Abstractions;
+using Platform.Application.Common.Attachments;
 using Crm.Application.Common.Dtos.Communications;
 using Crm.Application.Features.Contacts.Dtos;
 
 namespace Crm.Application.Features.Contacts.Commands.UpdateContact;
 
-public sealed class UpdateContactCommand : ICommand<ContactDetailItem>
+public sealed class UpdateContactCommand : ICommand<ContactDetailItem>, IAttachmentCarrier
 {
     public Guid Id { get; init; }
     public string FirstName { get; init; } = string.Empty;
@@ -18,4 +19,5 @@ public sealed class UpdateContactCommand : ICommand<ContactDetailItem>
     public List<EmailModal> Emails { get; init; } = new();
     public List<PhoneModal> Phones { get; init; } = new();
     public List<AddressModal> Addresses { get; init; } = new();
+    public List<AttachmentAssociation> Attachments { get; init; } = new();
 }

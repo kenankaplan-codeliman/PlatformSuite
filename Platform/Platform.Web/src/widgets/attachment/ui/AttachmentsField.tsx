@@ -252,16 +252,10 @@ export function AttachmentsField({
 
   return (
     <div>
-      {!isReadOnly && !addMode && (
-        <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: 8 }}>
-          <Button type="primary" icon={<PlusOutlined />} onClick={() => setAddMode(true)}>
-            {t('actions.add')}
-          </Button>
-        </div>
-      )}
+      {renderList()}
 
       {addMode && !isReadOnly && (
-        <div style={{ marginBottom: 12 }}>
+        <div style={{ marginTop: 12, marginBottom: 12 }}>
           <AttachmentAddPanel
             documentTypes={documentTypes ?? commonDocumentTypes}
             accept={accept}
@@ -271,7 +265,17 @@ export function AttachmentsField({
         </div>
       )}
 
-      {renderList()}
+      {!isReadOnly && !addMode && (
+        <Button
+          type="dashed"
+          block
+          icon={<PlusOutlined />}
+          onClick={() => setAddMode(true)}
+          style={{ marginTop: 12, marginBottom: 16 }}
+        >
+          {t('actions.add')}
+        </Button>
+      )}
     </div>
   );
 }

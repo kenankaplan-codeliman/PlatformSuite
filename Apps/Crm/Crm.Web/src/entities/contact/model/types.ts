@@ -5,6 +5,7 @@
  * Geçerli değerler `useGeneralParameters('ContactStatus')` ile çekilir.
  */
 
+import type { AttachmentAssociation } from '@platform/ui';
 import type {
   AddressModal,
   EmailModal,
@@ -61,5 +62,13 @@ export interface ContactListFilter {
   isActive?: boolean;
 }
 
-/** Form için kullanılan, API'ye gönderilen shape. */
-export type ContactFormValues = Omit<ContactDetailItem, 'createdAt' | 'updatedAt'>;
+/**
+ * Form için kullanılan, API'ye gönderilen shape.
+ *
+ * attachments: schema'da tutulmaz; DetailPageLayout submit anında
+ * AttachmentsField'ların pending listelerini collector'dan toplayıp
+ * payload'a enjekte eder. Backend CreateContactCommand.Attachments'a binding.
+ */
+export type ContactFormValues = Omit<ContactDetailItem, 'createdAt' | 'updatedAt'> & {
+  attachments?: AttachmentAssociation[];
+};

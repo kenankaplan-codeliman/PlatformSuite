@@ -102,27 +102,32 @@ export function AttachmentAddPanel({
           <Select options={documentTypes} />
         </Form.Item>
 
-        <Form.Item label={t('uploader.file')} required>
-          <input
-            ref={fileInputRef}
-            type="file"
-            accept={accept}
-            onChange={handleFileChange}
-            style={{ display: 'block' }}
-          />
-          {selectedFile && (
-            <div style={{ marginTop: 6, fontSize: 12, color: '#666' }}>
-              {selectedFile.name} ({Math.round(selectedFile.size / 1024)} KB)
-            </div>
-          )}
-        </Form.Item>
-
         <Form.Item name="subject" label={t('uploader.subject')}>
           <Input maxLength={500} />
         </Form.Item>
 
         <Form.Item name="description" label={t('uploader.description')}>
           <Input.TextArea rows={2} />
+        </Form.Item>
+
+        <Form.Item label={t('uploader.file')} required>
+          <input
+            ref={fileInputRef}
+            type="file"
+            accept={accept}
+            onChange={handleFileChange}
+            style={{ display: 'none' }}
+          />
+          <Space>
+            <Button onClick={() => fileInputRef.current?.click()}>
+              {t('uploader.choose')}
+            </Button>
+            <span style={{ fontSize: 12, color: selectedFile ? '#666' : '#bbb' }}>
+              {selectedFile
+                ? `${selectedFile.name} (${Math.round(selectedFile.size / 1024)} KB)`
+                : t('uploader.noFileSelected')}
+            </span>
+          </Space>
         </Form.Item>
 
         <Space>

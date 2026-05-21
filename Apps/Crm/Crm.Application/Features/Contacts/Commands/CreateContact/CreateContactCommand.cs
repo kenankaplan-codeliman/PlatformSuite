@@ -1,10 +1,11 @@
 using Platform.Application.Common.Abstractions;
+using Platform.Application.Common.Attachments;
 using Crm.Application.Common.Dtos.Communications;
 using Crm.Application.Features.Contacts.Dtos;
 
 namespace Crm.Application.Features.Contacts.Commands.CreateContact;
 
-public sealed class CreateContactCommand : ICommand<ContactDetailItem>
+public sealed class CreateContactCommand : ICommand<ContactDetailItem>, IAttachmentCarrier
 {
     public string FirstName { get; init; } = string.Empty;
     public string LastName { get; init; } = string.Empty;
@@ -17,4 +18,5 @@ public sealed class CreateContactCommand : ICommand<ContactDetailItem>
     public List<EmailModal> Emails { get; init; } = new();
     public List<PhoneModal> Phones { get; init; } = new();
     public List<AddressModal> Addresses { get; init; } = new();
+    public List<AttachmentAssociation> Attachments { get; init; } = new();
 }

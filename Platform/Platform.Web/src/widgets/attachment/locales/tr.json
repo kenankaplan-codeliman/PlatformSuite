@@ -20,6 +20,8 @@
   "uploader": {
     "documentType": "Belge Türü",
     "file": "Dosya",
+    "choose": "Dosya Seç",
+    "noFileSelected": "Dosya seçilmedi",
     "subject": "Konu (opsiyonel)",
     "description": "Açıklama (opsiyonel)",
     "submit": "Yükle"
