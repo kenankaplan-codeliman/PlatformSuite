@@ -3,6 +3,7 @@ import { useRef, useState } from 'react';
 // message için shared notification helper'ı eklenmeli.
 // eslint-disable-next-line no-restricted-imports
 import { Form, Input, Select, Space, message } from 'antd';
+import { UploadOutlined } from '@ant-design/icons';
 import { useTranslation } from 'react-i18next';
 import { Button } from '../../../shared/ui/Button';
 import { useUploadAttachmentDraft } from '../../../entities/attachment/api/useAttachmentMutations';
@@ -50,16 +51,26 @@ export function AttachmentAddPanel({
   const [form] = Form.useForm<FormValues>();
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [isDragging, setIsDragging] = useState(false);
   const upload = useUploadAttachmentDraft();
 
-  const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0] ?? null;
+  const selectFile = (file: File | null): boolean => {
     if (file && file.size > maxFileSize) {
       message.error(t('errors.fileTooLarge'));
-      event.target.value = '';
-      return;
+      return false;
     }
     setSelectedFile(file);
+    return true;
+  };
+
+  const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    if (!selectFile(event.target.files?.[0] ?? null)) event.target.value = '';
+  };
+
+  const handleDrop = (event: React.DragEvent<HTMLDivElement>) => {
+    event.preventDefault();
+    setIsDragging(false);
+    selectFile(event.dataTransfer.files?.[0] ?? null);
   };
 
   const handleSubmit = async (values: FormValues) => {
@@ -118,16 +129,46 @@ export function AttachmentAddPanel({
             onChange={handleFileChange}
             style={{ display: 'none' }}
           />
-          <Space>
-            <Button onClick={() => fileInputRef.current?.click()}>
+          <div
+            onClick={() => fileInputRef.current?.click()}
+            onDragOver={(e) => {
+              e.preventDefault();
+              setIsDragging(true);
+            }}
+            onDragLeave={() => setIsDragging(false)}
+            onDrop={handleDrop}
+            style={{
+              border: `1px dashed ${isDragging ? '#1677ff' : '#d9d9d9'}`,
+              borderRadius: 8,
+              background: isDragging ? '#f0f7ff' : '#fff',
+              width: '100%',
+              minHeight: 96,
+              display: 'flex',
+              flexDirection: 'column',
+              alignItems: 'center',
+              justifyContent: 'center',
+              gap: 8,
+              padding: 12,
+              cursor: 'pointer',
+              textAlign: 'center',
+              transition: 'border-color 0.2s, background 0.2s',
+            }}
+          >
+            <Button
+              icon={<UploadOutlined />}
+              onClick={(e) => {
+                e.stopPropagation();
+                fileInputRef.current?.click();
+              }}
+            >
               {t('uploader.choose')}
             </Button>
-            <span style={{ fontSize: 12, color: selectedFile ? '#666' : '#bbb' }}>
+            <span style={{ fontSize: 12, color: selectedFile ? '#666' : '#999' }}>
               {selectedFile
                 ? `${selectedFile.name} (${Math.round(selectedFile.size / 1024)} KB)`
-                : t('uploader.noFileSelected')}
+                : t('uploader.dropHint')}
             </span>
-          </Space>
+          </div>
         </Form.Item>
 
         <Space>

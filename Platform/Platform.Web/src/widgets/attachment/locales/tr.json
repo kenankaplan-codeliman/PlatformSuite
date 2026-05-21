@@ -22,6 +22,7 @@
     "file": "Dosya",
     "choose": "Dosya Seç",
     "noFileSelected": "Dosya seçilmedi",
+    "dropHint": "Dosyayı buraya sürükleyip bırakın ya da seçin",
     "subject": "Konu (opsiyonel)",
     "description": "Açıklama (opsiyonel)",
     "submit": "Yükle"
