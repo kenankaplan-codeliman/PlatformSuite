@@ -8,7 +8,7 @@ namespace Platform.Application.Modals.ActivityModal
 {
     public class TaskModal : ActivityBaseModal
     {
-        public TaskModal() : base(ActivityType.PhoneCall)
+        public TaskModal() : base(ActivityType.Task)
         {
         }
 

@@ -53,6 +53,13 @@
   "validation": {
     "title": "Lütfen formdaki hataları düzeltin."
   },
+  "richText": {
+    "image": {
+      "invalidType": "Yalnızca PNG, JPEG, GIF veya WebP görseli ekleyebilirsiniz.",
+      "tooLarge": "Görsel en fazla {{size}} MB olabilir.",
+      "failed": "Görsel eklenemedi."
+    }
+  },
   "relation": {
     "name": "Ad",
     "role": "Rol",

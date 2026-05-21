@@ -3,6 +3,7 @@ import {
   FormProvider,
   useForm,
   type DefaultValues,
+  type FieldErrors,
   type FieldValues,
   type SubmitHandler,
 } from "react-hook-form";
@@ -10,7 +11,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useQueryClient } from "@tanstack/react-query";
 import type { ZodType } from "zod";
 import { useLocation, useNavigate, useSearchParams } from "react-router-dom";
-import { Dropdown, Modal, Space, Tabs, Typography } from "antd";
+import { Dropdown, Modal, Space, Tabs, Typography, message } from "antd";
 import type { MenuProps } from "antd";
 import {
   ArrowLeftOutlined,
@@ -171,6 +172,17 @@ function DetailPageLayoutInner<TValues extends FieldValues>({
     }
   };
 
+  // Validation başarısızsa handleSubmit'in onValid dalı hiç çalışmaz: servis çağrısı
+  // yapılmaz. Geri bildirim olmadan kullanıcı "Kaydet çalışmıyor" sanır. onInvalid ile
+  // hatayı görünür kıl (react-hook-form ilk hatalı alana zaten odaklanır). Konsola da
+  // alan kırılımını yaz; gizli/sekme-altı zorunlu alan hatalarının teşhisini kolaylaştırır.
+  const handleInvalid = (errors: FieldErrors<TValues>) => {
+    message.error(tCommon("validation.title"));
+    if (import.meta.env.DEV) {
+      console.warn("[DetailPageLayout] validation failed:", errors);
+    }
+  };
+
   const confirmDelete = () => {
     if (!onDelete) return;
     Modal.confirm({
@@ -253,7 +265,7 @@ function DetailPageLayoutInner<TValues extends FieldValues>({
         <Button
           type="primary"
           loading={form.formState.isSubmitting}
-          onClick={() => form.handleSubmit(handleSubmit)()}
+          onClick={() => form.handleSubmit(handleSubmit, handleInvalid)()}
         >
           {tCommon("actions.save")}
         </Button>

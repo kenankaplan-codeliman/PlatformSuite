@@ -8,7 +8,7 @@ namespace Platform.Application.Modals.ActivityModal
 {
     public class EmailModal : ActivityBaseModal
     {
-        public EmailModal() : base(ActivityType.PhoneCall)
+        public EmailModal() : base(ActivityType.Email)
         {
         }
 
