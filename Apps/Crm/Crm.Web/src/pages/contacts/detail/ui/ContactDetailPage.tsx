@@ -14,6 +14,9 @@ import { TextAreaField } from "@platform/ui";
 import { EntityRelationTable } from "@platform/ui";
 import { ServicePath } from "@platform/ui";
 import { useRouteMode } from "@platform/ui";
+import { useOwnerAssignAction } from "@platform/ui";
+import { useSetStateAction } from "@platform/ui";
+import type { DetailPageAction } from "@platform/ui";
 import { useGeneralParameters } from "@platform/ui";
 import { RelatedActivitiesTab, type DetailPageTab } from "@platform/ui";
 import { useContactQuery } from "../../../../entities/contact/api/useContactQueries";
@@ -53,6 +56,26 @@ export function ContactDetailPage() {
 
   // contactStatus GeneralParameter'dan beslenir — statik enum yok.
   const { options: statusOptions } = useGeneralParameters("ContactStatus");
+
+  // Sahip atama + Aktif/Pasif: ayrı action endpoint'leri (save'e dahil değil),
+  // kendi privilege'larıyla; başarıda footer + detail query tazelenir.
+  const ownerAssign = useOwnerAssignAction({
+    entityId: id,
+    entityType: "Contact",
+    servicePath: ServicePath.Contact.Assign,
+  });
+  const stateToggle = useSetStateAction({
+    entityId: id,
+    entityType: "Contact",
+    servicePath: ServicePath.Contact.SetState,
+    isActive: query.data?.isActive ?? true,
+    onSuccess: () => {
+      void query.refetch();
+    },
+  });
+  const extraActions = [ownerAssign.action, stateToggle.action].filter(
+    (a): a is DetailPageAction => a !== null,
+  );
 
   const title = useMemo(() => {
     if (mode === "new") return tPage("newTitle");
@@ -96,7 +119,11 @@ export function ContactDetailPage() {
       }
       afterSaveNavigation={(saved) => RoutePaths.ContactView(saved.id)}
       tabs={tabs}
+      entityType="Contact"
+      entityId={id}
+      extraActions={extraActions}
     >
+      {ownerAssign.modal}
       <GeneralSection statusOptions={statusOptions} />
       <DetailsSection />
       <AccountsSection />

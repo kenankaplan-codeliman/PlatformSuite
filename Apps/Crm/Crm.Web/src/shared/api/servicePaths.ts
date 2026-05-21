@@ -16,6 +16,8 @@ export const CrmServicePath = {
     Create: `${ControllerPaths.Lead}/create`,
     Update: `${ControllerPaths.Lead}/update`,
     Delete: `${ControllerPaths.Lead}/delete`,
+    Assign: `${ControllerPaths.Lead}/assign`,
+    SetState: `${ControllerPaths.Lead}/set-state`,
   },
   Opportunity: {
     List: `${ControllerPaths.Opportunity}/list`,
@@ -23,5 +25,7 @@ export const CrmServicePath = {
     Create: `${ControllerPaths.Opportunity}/create`,
     Update: `${ControllerPaths.Opportunity}/update`,
     Delete: `${ControllerPaths.Opportunity}/delete`,
+    Assign: `${ControllerPaths.Opportunity}/assign`,
+    SetState: `${ControllerPaths.Opportunity}/set-state`,
   },
 } as const;

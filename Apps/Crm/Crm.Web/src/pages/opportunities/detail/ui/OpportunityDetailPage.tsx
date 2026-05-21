@@ -13,10 +13,14 @@ import {
   TextAreaField,
   TextField,
   useGeneralParameters,
+  useOwnerAssignAction,
   useRouteMode,
+  useSetStateAction,
+  type DetailPageAction,
   type DetailPageTab,
   type SelectOption,
 } from '@platform/ui';
+import { CrmServicePath } from '../../../../shared/api/servicePaths';
 import { useOpportunityQuery } from '../../../../entities/opportunity/api/useOpportunityQueries';
 import {
   useDeleteOpportunity,
@@ -52,6 +56,26 @@ export function OpportunityDetailPage() {
 
   // stage GeneralParameter'dan beslenir — statik enum yok.
   const { options: stageOptions } = useGeneralParameters('OpportunityStage');
+
+  // Sahip atama + Aktif/Pasif: ayrı action endpoint'leri (save'e dahil değil),
+  // kendi privilege'larıyla; başarıda footer + detail query tazelenir.
+  const ownerAssign = useOwnerAssignAction({
+    entityId: id,
+    entityType: 'Opportunity',
+    servicePath: CrmServicePath.Opportunity.Assign,
+  });
+  const stateToggle = useSetStateAction({
+    entityId: id,
+    entityType: 'Opportunity',
+    servicePath: CrmServicePath.Opportunity.SetState,
+    isActive: query.data?.isActive ?? true,
+    onSuccess: () => {
+      void query.refetch();
+    },
+  });
+  const extraActions = [ownerAssign.action, stateToggle.action].filter(
+    (a): a is DetailPageAction => a !== null,
+  );
 
   const title = useMemo(() => {
     if (mode === 'new') return tPage('newTitle');
@@ -93,7 +117,11 @@ export function OpportunityDetailPage() {
       }
       afterSaveNavigation={(saved) => RoutePaths.OpportunityView(saved.id)}
       tabs={tabs}
+      entityType="Opportunity"
+      entityId={id}
+      extraActions={extraActions}
     >
+      {ownerAssign.modal}
       <GeneralSection stageOptions={stageOptions} />
       <FinancialSection />
       <DetailsSection />

@@ -1,5 +1,7 @@
+using Crm.Application.Features.Opportunities.Commands.AssignOpportunity;
 using Crm.Application.Features.Opportunities.Commands.CreateOpportunity;
 using Crm.Application.Features.Opportunities.Commands.DeleteOpportunity;
+using Crm.Application.Features.Opportunities.Commands.SetStateOpportunity;
 using Crm.Application.Features.Opportunities.Commands.UpdateOpportunity;
 using Crm.Application.Features.Opportunities.Queries.GetOpportunity;
 using Crm.Application.Features.Opportunities.Queries.ListOpportunities;
@@ -42,5 +44,15 @@ public sealed class OpportunityController : ControllerBase
     [HttpPost("delete")]
     [PrivilegeAuthorize(CrmPrivilegeCodes.OpportunityPrivilegeCodes.Delete)]
     public async Task<IActionResult> DeleteAsync([FromBody] DeleteOpportunityCommand command, CancellationToken ct)
+        => (await _sender.Send(command, ct)).ToActionResult(HttpContext);
+
+    [HttpPost("assign")]
+    [PrivilegeAuthorize(CrmPrivilegeCodes.OpportunityPrivilegeCodes.Assign)]
+    public async Task<IActionResult> AssignAsync([FromBody] AssignOpportunityCommand command, CancellationToken ct)
+        => (await _sender.Send(command, ct)).ToActionResult(HttpContext);
+
+    [HttpPost("set-state")]
+    [PrivilegeAuthorize(CrmPrivilegeCodes.OpportunityPrivilegeCodes.State)]
+    public async Task<IActionResult> SetStateAsync([FromBody] SetStateOpportunityCommand command, CancellationToken ct)
         => (await _sender.Send(command, ct)).ToActionResult(HttpContext);
 }

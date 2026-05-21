@@ -11,10 +11,14 @@ import {
   TextAreaField,
   TextField,
   useGeneralParameters,
+  useOwnerAssignAction,
   useRouteMode,
+  useSetStateAction,
+  type DetailPageAction,
   type DetailPageTab,
   type SelectOption,
 } from '@platform/ui';
+import { CrmServicePath } from '../../../../shared/api/servicePaths';
 import { useLeadQuery } from '../../../../entities/lead/api/useLeadQueries';
 import {
   useDeleteLead,
@@ -58,6 +62,26 @@ export function LeadDetailPage() {
   const { options: statusOptions } = useGeneralParameters('LeadStatus');
   const { options: sourceOptions } = useGeneralParameters('LeadSource');
 
+  // Sahip atama + Aktif/Pasif: ayrı action endpoint'leri (save'e dahil değil),
+  // kendi privilege'larıyla; başarıda footer + detail query tazelenir.
+  const ownerAssign = useOwnerAssignAction({
+    entityId: id,
+    entityType: 'Lead',
+    servicePath: CrmServicePath.Lead.Assign,
+  });
+  const stateToggle = useSetStateAction({
+    entityId: id,
+    entityType: 'Lead',
+    servicePath: CrmServicePath.Lead.SetState,
+    isActive: query.data?.isActive ?? true,
+    onSuccess: () => {
+      void query.refetch();
+    },
+  });
+  const extraActions = [ownerAssign.action, stateToggle.action].filter(
+    (a): a is DetailPageAction => a !== null,
+  );
+
   const title = useMemo(() => {
     if (mode === 'new') return tPage('newTitle');
     if (mode === 'edit') return tPage('editTitle');
@@ -96,7 +120,11 @@ export function LeadDetailPage() {
       }
       afterSaveNavigation={(saved) => RoutePaths.LeadView(saved.id)}
       tabs={tabs}
+      entityType="Lead"
+      entityId={id}
+      extraActions={extraActions}
     >
+      {ownerAssign.modal}
       <GeneralSection sourceOptions={sourceOptions} statusOptions={statusOptions} />
       <ContactSection />
       <DetailsSection />

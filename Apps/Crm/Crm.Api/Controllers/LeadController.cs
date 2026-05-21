@@ -1,5 +1,7 @@
+using Crm.Application.Features.Leads.Commands.AssignLead;
 using Crm.Application.Features.Leads.Commands.CreateLead;
 using Crm.Application.Features.Leads.Commands.DeleteLead;
+using Crm.Application.Features.Leads.Commands.SetStateLead;
 using Crm.Application.Features.Leads.Commands.UpdateLead;
 using Crm.Application.Features.Leads.Queries.GetLead;
 using Crm.Application.Features.Leads.Queries.ListLeads;
@@ -42,5 +44,15 @@ public sealed class LeadController : ControllerBase
     [HttpPost("delete")]
     [PrivilegeAuthorize(CrmPrivilegeCodes.LeadPrivilegeCodes.Delete)]
     public async Task<IActionResult> DeleteAsync([FromBody] DeleteLeadCommand command, CancellationToken ct)
+        => (await _sender.Send(command, ct)).ToActionResult(HttpContext);
+
+    [HttpPost("assign")]
+    [PrivilegeAuthorize(CrmPrivilegeCodes.LeadPrivilegeCodes.Assign)]
+    public async Task<IActionResult> AssignAsync([FromBody] AssignLeadCommand command, CancellationToken ct)
+        => (await _sender.Send(command, ct)).ToActionResult(HttpContext);
+
+    [HttpPost("set-state")]
+    [PrivilegeAuthorize(CrmPrivilegeCodes.LeadPrivilegeCodes.State)]
+    public async Task<IActionResult> SetStateAsync([FromBody] SetStateLeadCommand command, CancellationToken ct)
         => (await _sender.Send(command, ct)).ToActionResult(HttpContext);
 }

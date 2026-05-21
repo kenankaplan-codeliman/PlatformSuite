@@ -75,10 +75,22 @@ public abstract class BaseEntityRepository<T> : IEntityRepository<T>
         // IOwnedEntity ise ownership koşulu eklenir
         query = WithOwnerFilter(query);
 
-        var updated = await query.ExecuteUpdateAsync(
-            s => s.SetProperty(
-                e => EF.Property<bool>(e, nameof(IBaseEntity.IsActive)), isActive),
-            cancellationToken);
+        // ExecuteUpdateAsync SaveChanges'i bypass eder → ApplySaveRules çalışmaz.
+        // Audit (UpdatedAt/By) alanlarını burada elle, ApplySaveRules ile aynı
+        // konvansiyonda (UtcNow + CurrentUserId) set ediyoruz.
+        var now = DateTime.UtcNow;
+        var currentUserId = dbContext.CurrentUserId;
+
+        var updated = typeof(IAuditableEntity).IsAssignableFrom(typeof(T))
+            ? await query.ExecuteUpdateAsync(
+                s => s
+                    .SetProperty(e => EF.Property<bool>(e, nameof(IBaseEntity.IsActive)), isActive)
+                    .SetProperty(e => EF.Property<DateTime?>(e, nameof(IAuditableEntity.UpdatedAt)), now)
+                    .SetProperty(e => EF.Property<Guid?>(e, nameof(IAuditableEntity.UpdatedBy)), currentUserId),
+                cancellationToken)
+            : await query.ExecuteUpdateAsync(
+                s => s.SetProperty(e => EF.Property<bool>(e, nameof(IBaseEntity.IsActive)), isActive),
+                cancellationToken);
 
         if (updated == 0)
             throw new KeyNotFoundException(
@@ -105,11 +117,25 @@ public abstract class BaseEntityRepository<T> : IEntityRepository<T>
         // Assign'dan önce mevcut kaydın sahibi olup olmadığı kontrol edilir
         query = WithOwnerFilter(query);
 
-        var updated = await query.ExecuteUpdateAsync(
-            s => s
-                .SetProperty(e => EF.Property<Guid>(e, nameof(IOwnedEntity.OwnerId)), newOwnerId)
-                .SetProperty(e => EF.Property<Guid>(e, nameof(IOwnedEntity.OrganizationId)), user.OrganizationId),
-            cancellationToken);
+        // ExecuteUpdateAsync SaveChanges'i bypass eder → ApplySaveRules çalışmaz.
+        // Audit (UpdatedAt/By) alanlarını burada elle, ApplySaveRules ile aynı
+        // konvansiyonda (UtcNow + CurrentUserId) set ediyoruz.
+        var now = DateTime.UtcNow;
+        var currentUserId = dbContext.CurrentUserId;
+
+        var updated = typeof(IAuditableEntity).IsAssignableFrom(typeof(T))
+            ? await query.ExecuteUpdateAsync(
+                s => s
+                    .SetProperty(e => EF.Property<Guid>(e, nameof(IOwnedEntity.OwnerId)), newOwnerId)
+                    .SetProperty(e => EF.Property<Guid>(e, nameof(IOwnedEntity.OrganizationId)), user.OrganizationId)
+                    .SetProperty(e => EF.Property<DateTime?>(e, nameof(IAuditableEntity.UpdatedAt)), now)
+                    .SetProperty(e => EF.Property<Guid?>(e, nameof(IAuditableEntity.UpdatedBy)), currentUserId),
+                cancellationToken)
+            : await query.ExecuteUpdateAsync(
+                s => s
+                    .SetProperty(e => EF.Property<Guid>(e, nameof(IOwnedEntity.OwnerId)), newOwnerId)
+                    .SetProperty(e => EF.Property<Guid>(e, nameof(IOwnedEntity.OrganizationId)), user.OrganizationId),
+                cancellationToken);
 
         if (updated == 0)
             throw new KeyNotFoundException(
