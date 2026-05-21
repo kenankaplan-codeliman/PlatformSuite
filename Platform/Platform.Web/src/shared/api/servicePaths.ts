@@ -52,6 +52,7 @@ export const ServicePath = {
     Update: `${ControllerPaths.Account}/update`,
     Delete: `${ControllerPaths.Account}/delete`,
     SetState: `${ControllerPaths.Account}/set-state`,
+    Assign: `${ControllerPaths.Account}/assign`,
   },
   Contact: {
     List: `${ControllerPaths.Contact}/list`,

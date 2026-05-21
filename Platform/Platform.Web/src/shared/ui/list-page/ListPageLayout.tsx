@@ -133,7 +133,8 @@ export function ListPageLayout<T extends object>({
             onRowClick={onRowClick}
           />
 
-          {/* Sentinel — viewport'a girince onLoadMore tetiklenir. */}
+          {/* Sentinel — viewport'a girince onLoadMore tetiklenir. Liste sonunda
+              işaret gösterilmez; yalnızca sonraki sayfa çekilirken spinner. */}
           <div
             ref={sentinelRef}
             style={{
@@ -144,11 +145,7 @@ export function ListPageLayout<T extends object>({
               color: 'rgba(0,0,0,0.45)',
             }}
           >
-            {isFetchingMore ? (
-              <Spin size="small" />
-            ) : !hasMore && data.length > 0 ? (
-              <span style={{ fontSize: 12 }}>—</span>
-            ) : null}
+            {isFetchingMore ? <Spin size="small" /> : null}
           </div>
         </>
       )}

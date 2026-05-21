@@ -13,7 +13,8 @@
     "logout": "Çıkış yap",
     "ok": "Tamam",
     "apply": "Uygula",
-    "clear": "Temizle"
+    "clear": "Temizle",
+    "assignOwner": "Sahip Ata"
   },
   "filters": {
     "title": "Filtreler",
@@ -26,6 +27,8 @@
     "loading": "Yükleniyor...",
     "saveSuccess": "Başarıyla kaydedildi.",
     "deleteSuccess": "Başarıyla silindi.",
+    "assignOwnerSuccess": "Sahip güncellendi.",
+    "assignOwnerConfirm": "\"{{name}}\" bu kaydın sahibi olarak atansın mı?",
     "unexpectedError": "Beklenmeyen bir hata oluştu.",
     "sessionExpired": "Oturum süresi doldu, lütfen tekrar giriş yapın.",
     "noData": "Kayıt bulunamadı.",

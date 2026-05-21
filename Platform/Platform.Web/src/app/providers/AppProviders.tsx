@@ -16,6 +16,11 @@ export function AppProviders({ children }: { children: ReactNode }) {
           Form: {
             labelColor: "rgba(0, 0, 0, 0.50)",
           },
+          Table: {
+            // Liste satırı hover'ı — lookup popup satırlarıyla (#f5f5f5) tutarlı,
+            // hangi satırın üzerinde olunduğu belirgin.
+            rowHoverBg: "#f5f5f5",
+          },
         },
       }}
     >

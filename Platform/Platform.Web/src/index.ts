@@ -127,10 +127,24 @@ export { DataTable, type DataTableColumn } from './shared/ui/DataTable';
 export { Alert } from './shared/ui/feedback/Alert';
 export { Spinner } from './shared/ui/feedback/Spinner';
 export { EmptyState, type EmptyStateProps } from './shared/ui/feedback/EmptyState';
+export { confirm, type ConfirmOptions } from './shared/ui/feedback/confirm';
+export { messageBox } from './shared/ui/feedback/messageBox';
 export { DetailPageLayout } from './shared/ui/detail-page/DetailPageLayout';
 export type { DetailPageTab, DetailPageAction } from './shared/ui/detail-page/DetailPageLayout';
 export { EntityMetadataFooter } from './shared/ui/detail-page/EntityMetadataFooter';
 export type { EntityMetadataFooterProps } from './shared/ui/detail-page/EntityMetadataFooter';
+export {
+  useOwnerAssignAction,
+  SetOwnerModal,
+  useSetOwner,
+} from './shared/ui/detail-page/owner-assign';
+export type {
+  UseOwnerAssignActionArgs,
+  OwnerAssignAction,
+  SetOwnerModalProps,
+  UseSetOwnerArgs,
+  SetOwnerVariables,
+} from './shared/ui/detail-page/owner-assign';
 export { useEntityMetadata, entityMetadataDataSource } from './shared/api/entityMetadata';
 export type { EntityMetadata } from './shared/api/entityMetadata';
 export { RelatedActivitiesTab } from './widgets/related-activities/ui/RelatedActivitiesTab';

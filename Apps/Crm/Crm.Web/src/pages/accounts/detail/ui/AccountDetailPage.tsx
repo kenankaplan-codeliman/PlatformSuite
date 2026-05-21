@@ -15,6 +15,7 @@ import { EntityLookupField } from "@platform/ui";
 import { EntityRelationTable } from "@platform/ui";
 import { ServicePath } from "@platform/ui";
 import { useRouteMode } from "@platform/ui";
+import { useOwnerAssignAction } from "@platform/ui";
 import { useGeneralParameters } from "@platform/ui";
 import { RelatedActivitiesTab, type DetailPageTab } from "@platform/ui";
 import { AttachmentsField } from "@platform/ui";
@@ -66,6 +67,14 @@ export function AccountDetailPage() {
   const { options: typeOptions } = useGeneralParameters("AccountType");
   const { options: statusOptions } = useGeneralParameters("AccountStatus");
 
+  // Sahip atama: ayrı action endpoint'i (save mutation'a dahil değil) — view modunda
+  // "..." menüsünde "Sahip Ata" + popup; başarıda footer'daki Sahibi alanı tazelenir.
+  const ownerAssign = useOwnerAssignAction({
+    entityId: id,
+    entityType: "Account",
+    servicePath: ServicePath.Account.Assign,
+  });
+
   const title = useMemo(() => {
     if (mode === "new") return tPage("newTitle");
     if (mode === "edit") return tPage("editTitle");
@@ -108,7 +117,9 @@ export function AccountDetailPage() {
       tabs={tabs}
       entityType="Account"
       entityId={id}
+      extraActions={ownerAssign.action ? [ownerAssign.action] : undefined}
     >
+      {ownerAssign.modal}
       <GeneralSection
         typeOptions={typeOptions}
         statusOptions={statusOptions}
