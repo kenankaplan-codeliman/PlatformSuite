@@ -20,7 +20,7 @@ export function AppShell({ menu, headerExtra }: AppShellProps) {
       <AppHeader extra={headerExtra} />
       <Layout style={{ flex: 1, minHeight: 0 }}>
         <AppSidebar items={menu} collapsed={collapsed} onCollapse={setCollapsed} />
-        <Content style={{ overflow: 'auto', background: '#f5f5f5', padding: 16 }}>
+        <Content style={{ overflow: 'auto', background: '#f0f2f5', padding: 16 }}>
           <Outlet />
         </Content>
       </Layout>

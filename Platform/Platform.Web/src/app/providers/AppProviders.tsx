@@ -17,9 +17,10 @@ export function AppProviders({ children }: { children: ReactNode }) {
             labelColor: "rgba(0, 0, 0, 0.50)",
           },
           Table: {
-            // Liste satırı hover'ı — lookup popup satırlarıyla (#f5f5f5) tutarlı,
-            // hangi satırın üzerinde olunduğu belirgin.
-            rowHoverBg: "#f5f5f5",
+            // Liste satırı hover'ı — sayfa arka planı (#f5f5f5 gri) ile kaynaşmaması
+            // için nötr gri yerine hafif mavi tint; "tıklanabilir" hissi verir ve
+            // lookup popup satır hover'ıyla aynı tondur.
+            rowHoverBg: "#e6f4ff",
           },
         },
       }}
