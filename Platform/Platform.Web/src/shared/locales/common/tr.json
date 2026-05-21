@@ -14,7 +14,9 @@
     "ok": "Tamam",
     "apply": "Uygula",
     "clear": "Temizle",
-    "assignOwner": "Sahip Ata"
+    "assignOwner": "Sahip Ata",
+    "activate": "Aktifleştir",
+    "deactivate": "Pasifleştir"
   },
   "filters": {
     "title": "Filtreler",
@@ -29,6 +31,9 @@
     "deleteSuccess": "Başarıyla silindi.",
     "assignOwnerSuccess": "Sahip güncellendi.",
     "assignOwnerConfirm": "\"{{name}}\" bu kaydın sahibi olarak atansın mı?",
+    "setStateSuccess": "Durum güncellendi.",
+    "activateConfirm": "Bu kayıt aktifleştirilsin mi?",
+    "deactivateConfirm": "Bu kayıt pasifleştirilsin mi?",
     "unexpectedError": "Beklenmeyen bir hata oluştu.",
     "sessionExpired": "Oturum süresi doldu, lütfen tekrar giriş yapın.",
     "noData": "Kayıt bulunamadı.",

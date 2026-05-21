@@ -16,6 +16,8 @@ import { EntityRelationTable } from "@platform/ui";
 import { ServicePath } from "@platform/ui";
 import { useRouteMode } from "@platform/ui";
 import { useOwnerAssignAction } from "@platform/ui";
+import { useSetStateAction } from "@platform/ui";
+import type { DetailPageAction } from "@platform/ui";
 import { useGeneralParameters } from "@platform/ui";
 import { RelatedActivitiesTab, type DetailPageTab } from "@platform/ui";
 import { AttachmentsField } from "@platform/ui";
@@ -75,6 +77,22 @@ export function AccountDetailPage() {
     servicePath: ServicePath.Account.Assign,
   });
 
+  // Aktif/Pasif: ayrı set-state endpoint'i (kendi privilege'ı). Mevcut duruma göre
+  // etiket + onay mesajı; başarıda footer "Aktif" alanı + detail query tazelenir.
+  const stateToggle = useSetStateAction({
+    entityId: id,
+    entityType: "Account",
+    servicePath: ServicePath.Account.SetState,
+    isActive: query.data?.isActive ?? true,
+    onSuccess: () => {
+      void query.refetch();
+    },
+  });
+
+  const extraActions = [ownerAssign.action, stateToggle.action].filter(
+    (a): a is DetailPageAction => a !== null,
+  );
+
   const title = useMemo(() => {
     if (mode === "new") return tPage("newTitle");
     if (mode === "edit") return tPage("editTitle");
@@ -117,7 +135,7 @@ export function AccountDetailPage() {
       tabs={tabs}
       entityType="Account"
       entityId={id}
-      extraActions={ownerAssign.action ? [ownerAssign.action] : undefined}
+      extraActions={extraActions}
     >
       {ownerAssign.modal}
       <GeneralSection

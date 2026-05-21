@@ -145,6 +145,16 @@ export type {
   UseSetOwnerArgs,
   SetOwnerVariables,
 } from './shared/ui/detail-page/owner-assign';
+export {
+  useSetStateAction,
+  useSetState,
+} from './shared/ui/detail-page/state-toggle';
+export type {
+  UseSetStateActionArgs,
+  SetStateAction,
+  UseSetStateArgs,
+  SetStateVariables,
+} from './shared/ui/detail-page/state-toggle';
 export { useEntityMetadata, entityMetadataDataSource } from './shared/api/entityMetadata';
 export type { EntityMetadata } from './shared/api/entityMetadata';
 export { RelatedActivitiesTab } from './widgets/related-activities/ui/RelatedActivitiesTab';
