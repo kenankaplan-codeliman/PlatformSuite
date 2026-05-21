@@ -2,15 +2,21 @@ import { useState, type ReactNode } from 'react';
 import { Button } from 'antd';
 import { DownOutlined, UpOutlined } from '@ant-design/icons';
 
+/**
+ * Collapsible davranışı:
+ * - `none`: aç/kapa yok (default).
+ * - `expanded`: collapsible, başlangıçta açık.
+ * - `collapsed`: collapsible, başlangıçta kapalı.
+ */
+export type FormSectionCollapsible = 'none' | 'expanded' | 'collapsed';
+
 export interface FormSectionProps {
   title?: ReactNode;
   description?: ReactNode;
   extra?: ReactNode;
   children: ReactNode;
-  /** Header tıklanınca içerik aç/kapanır. Default false — geriye dönük uyumlu. */
-  collapsible?: boolean;
-  /** `collapsible` true iken başlangıç durumu — default açık. */
-  defaultCollapsed?: boolean;
+  /** Aç/kapa davranışı. Default `none`. */
+  collapsible?: FormSectionCollapsible;
 }
 
 /**
@@ -22,14 +28,14 @@ export function FormSection({
   description,
   extra,
   children,
-  collapsible = false,
-  defaultCollapsed = false,
+  collapsible = 'none',
 }: FormSectionProps) {
-  const [collapsed, setCollapsed] = useState(defaultCollapsed);
-  const isCollapsed = collapsible && collapsed;
+  const canCollapse = collapsible !== 'none';
+  const [collapsed, setCollapsed] = useState(collapsible === 'collapsed');
+  const isCollapsed = canCollapse && collapsed;
 
   const handleToggle = () => {
-    if (collapsible) setCollapsed((c) => !c);
+    if (canCollapse) setCollapsed((c) => !c);
   };
 
   return (
@@ -43,7 +49,7 @@ export function FormSection({
         overflow: 'hidden',
       }}
     >
-      {(title || extra || collapsible) && (
+      {(title || extra || canCollapse) && (
         <header
           onClick={handleToggle}
           style={{
@@ -54,8 +60,8 @@ export function FormSection({
             padding: '14px 20px',
             borderBottom: isCollapsed ? 'none' : '1px solid #f0f0f0',
             background: '#fafafa',
-            cursor: collapsible ? 'pointer' : 'default',
-            userSelect: collapsible ? 'none' : 'auto',
+            cursor: canCollapse ? 'pointer' : 'default',
+            userSelect: canCollapse ? 'none' : 'auto',
           }}
         >
           <div style={{ minWidth: 0 }}>
@@ -90,7 +96,7 @@ export function FormSection({
             onClick={(e) => e.stopPropagation()}
           >
             {extra}
-            {collapsible && (
+            {canCollapse && (
               <Button
                 size="small"
                 icon={isCollapsed ? <DownOutlined /> : <UpOutlined />}

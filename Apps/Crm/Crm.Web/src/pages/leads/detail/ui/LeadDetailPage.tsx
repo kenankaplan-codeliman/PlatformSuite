@@ -2,7 +2,8 @@ import { useMemo } from 'react';
 import { useFormContext } from 'react-hook-form';
 import { useTranslation } from 'react-i18next';
 import {
-  AttachmentSection,
+  AttachmentsField,
+  commonDocumentTypes,
   DetailPageLayout,
   FormSection,
   NumberField,
@@ -97,6 +98,19 @@ export function LeadDetailPage() {
             label: tCommon('tabs.activities'),
             content: <RelatedActivitiesTab entityType="Lead" entityId={id} />,
           },
+          {
+            key: 'attachments',
+            label: tCommon('tabs.attachments'),
+            content: (
+              <div style={{ marginBottom: 16 }}>
+                <AttachmentsField
+                  entityType="Lead"
+                  entityId={id}
+                  documentTypes={commonDocumentTypes}
+                />
+              </div>
+            ),
+          },
         ];
 
   return (
@@ -128,7 +142,6 @@ export function LeadDetailPage() {
       <GeneralSection sourceOptions={sourceOptions} statusOptions={statusOptions} />
       <ContactSection />
       <DetailsSection />
-      <AttachmentSection entityType="Lead" entityId={id} />
     </DetailPageLayout>
   );
 

@@ -162,6 +162,7 @@ export type { RelatedActivitiesTabProps } from './widgets/related-activities/ui/
 export { ListPageLayout } from './shared/ui/list-page/ListPageLayout';
 export { FilterPanel, type FilterPanelProps } from './shared/ui/list-page/FilterPanel';
 export { FormSection } from './shared/ui/form/FormSection';
+export type { FormSectionProps, FormSectionCollapsible } from './shared/ui/form/FormSection';
 export { FormRow } from './shared/ui/form/FormRow';
 export { TextField } from './shared/ui/form/fields/TextField';
 export { NumberField } from './shared/ui/form/fields/NumberField';

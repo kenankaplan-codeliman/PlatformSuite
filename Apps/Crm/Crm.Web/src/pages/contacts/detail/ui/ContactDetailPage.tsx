@@ -137,7 +137,7 @@ export function ContactDetailPage() {
   }) {
     const form = useFormContext<ContactFormValues>();
     return (
-      <FormSection title={tEntity("sections.general")} collapsible>
+      <FormSection title={tEntity("sections.general")} collapsible="expanded">
         <FormRow>
           <TextField
             name="firstName"
@@ -186,7 +186,7 @@ export function ContactDetailPage() {
   function AccountsSection() {
     const form = useFormContext<ContactFormValues>();
     return (
-      <FormSection title={tEntity("sections.accounts")} collapsible>
+      <FormSection title={tEntity("sections.accounts")} collapsible="expanded">
         <EntityRelationTable<ContactFormValues>
           name="accountContacts"
           control={form.control}
@@ -204,7 +204,7 @@ export function ContactDetailPage() {
   function DetailsSection() {
     const form = useFormContext<ContactFormValues>();
     return (
-      <FormSection title={tEntity("sections.details")} collapsible>
+      <FormSection title={tEntity("sections.details")} collapsible="expanded">
         <DateTimeField
           name="birthDate"
           control={form.control}

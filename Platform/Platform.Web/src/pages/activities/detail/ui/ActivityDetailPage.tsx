@@ -276,7 +276,7 @@ export function ActivityDetailPage() {
     const control = form.control as unknown as Control<ActivityFormValues>;
     const { regardingEntityTypes } = useActivityEntityTypes();
     return (
-      <FormSection title={tEntity('sections.general')} collapsible>
+      <FormSection title={tEntity('sections.general')} collapsible="expanded">
         <TextField
           name="subject"
           control={control}
@@ -335,7 +335,7 @@ export function ActivityDetailPage() {
       { value: 'Outgoing', label: tEnums('direction.Outgoing', { defaultValue: 'Giden' }) },
     ];
     return (
-      <FormSection title={tEntity('sections.phoneCall')} collapsible>
+      <FormSection title={tEntity('sections.phoneCall')} collapsible="expanded">
         <FormRow>
           <EntityLookupField
             name="caller"
@@ -378,7 +378,7 @@ export function ActivityDetailPage() {
   function TaskSection() {
     const form = useFormContext<TaskFormValues>();
     return (
-      <FormSection title={tEntity('sections.task')} collapsible>
+      <FormSection title={tEntity('sections.task')} collapsible="expanded">
         <TextAreaField
           name="taskDescription"
           control={form.control}
@@ -409,7 +409,7 @@ export function ActivityDetailPage() {
     const form = useFormContext<AppointmentFormValues>();
     const { partyEntityTypes } = useActivityEntityTypes();
     return (
-      <FormSection title={tEntity('sections.appointment')} collapsible>
+      <FormSection title={tEntity('sections.appointment')} collapsible="expanded">
         <FormRow>
           <DateTimeField
             name="startTime"
@@ -493,7 +493,7 @@ export function ActivityDetailPage() {
     const form = useFormContext<EmailFormValues>();
     const { partyEntityTypes } = useActivityEntityTypes();
     return (
-      <FormSection title={tEntity('sections.email')} collapsible>
+      <FormSection title={tEntity('sections.email')} collapsible="expanded">
         <EntityLookupField
           name="from"
           control={form.control}

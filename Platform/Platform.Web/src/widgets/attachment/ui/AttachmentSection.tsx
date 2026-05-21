@@ -35,7 +35,7 @@ export function AttachmentSection({
 }: AttachmentSectionProps) {
   const { t } = useTranslation('widget.attachment');
   return (
-    <FormSection title={title ?? t('title')} collapsible>
+    <FormSection title={title ?? t('title')} collapsible="expanded">
       <AttachmentsField
         entityType={entityType}
         entityId={entityId}

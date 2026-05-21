@@ -110,6 +110,21 @@ export function AccountDetailPage() {
               <RelatedActivitiesTab entityType="Account" entityId={id} />
             ),
           },
+          {
+            key: "attachments",
+            label: tCommon("tabs.attachments"),
+            content: (
+              <div style={{ marginBottom: 16 }}>
+                <AttachmentsField
+                  entityType="Account"
+                  entityId={id}
+                  accept={ACCOUNT_ATTACHMENT_ACCEPT}
+                  documentTypes={accountDocumentTypes}
+                  documentTypeLabel={getAccountDocumentTypeLabel}
+                />
+              </div>
+            ),
+          },
         ];
 
   return (
@@ -144,15 +159,6 @@ export function AccountDetailPage() {
       />
       <DetailsSection />
       <ContactsSection />
-      <FormSection title={tEntity("sections.attachments")} collapsible>
-        <AttachmentsField
-          entityType="Account"
-          entityId={id}
-          accept={ACCOUNT_ATTACHMENT_ACCEPT}
-          documentTypes={accountDocumentTypes}
-          documentTypeLabel={getAccountDocumentTypeLabel}
-        />
-      </FormSection>
     </DetailPageLayout>
   );
 
@@ -165,7 +171,7 @@ export function AccountDetailPage() {
   }) {
     const form = useFormContext<AccountFormValues>();
     return (
-      <FormSection title={tEntity("sections.general")} collapsible>
+      <FormSection title={tEntity("sections.general")} collapsible="expanded">
         <TextField
           name="accountName"
           control={form.control}
@@ -211,7 +217,7 @@ export function AccountDetailPage() {
   function ContactsSection() {
     const form = useFormContext<AccountFormValues>();
     return (
-      <FormSection title={tEntity("sections.contacts")} collapsible>
+      <FormSection title={tEntity("sections.contacts")} collapsible="expanded">
         <EntityRelationTable<AccountFormValues>
           name="contacts"
           control={form.control}
@@ -229,7 +235,7 @@ export function AccountDetailPage() {
   function DetailsSection() {
     const form = useFormContext<AccountFormValues>();
     return (
-      <FormSection title={tEntity("sections.details")} collapsible>
+      <FormSection title={tEntity("sections.details")} collapsible="expanded">
         <TextField
           name="website"
           control={form.control}

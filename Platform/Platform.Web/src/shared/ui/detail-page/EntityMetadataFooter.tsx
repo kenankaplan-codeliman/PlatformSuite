@@ -71,7 +71,7 @@ export function EntityMetadataFooter({ entityType, entityId }: EntityMetadataFoo
   if (!entityId) return null;
 
   return (
-    <FormSection title={t("metadata.title", { defaultValue: "Kayıt Bilgileri" })} collapsible>
+    <FormSection title={t("metadata.title", { defaultValue: "Kayıt Bilgileri" })} collapsible="collapsed">
       {isLoading || !data ? (
         <Spinner />
       ) : (

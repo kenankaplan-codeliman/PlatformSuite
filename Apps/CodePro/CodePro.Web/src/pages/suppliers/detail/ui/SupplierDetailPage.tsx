@@ -116,7 +116,7 @@ export function SupplierDetailPage() {
   function GeneralSection() {
     const form = useFormContext<SupplierFormValues>();
     return (
-      <FormSection title={tEntity('sections.general')} collapsible>
+      <FormSection title={tEntity('sections.general')} collapsible="expanded">
         <TextField
           name="name"
           control={form.control}
@@ -173,7 +173,7 @@ export function SupplierDetailPage() {
     const { options: companyTypeOptions } = useGeneralParameters('CompanyType');
     const { options: companyLegalTypeOptions } = useGeneralParameters('CompanyLegalType');
     return (
-      <FormSection title={tEntity('sections.company')} collapsible>
+      <FormSection title={tEntity('sections.company')} collapsible="expanded">
         <FormRow>
           <SelectField
             name="supplierStatus"
@@ -231,7 +231,7 @@ export function SupplierDetailPage() {
   function ContactSection() {
     const form = useFormContext<SupplierFormValues>();
     return (
-      <FormSection title={tEntity('sections.contact')} collapsible>
+      <FormSection title={tEntity('sections.contact')} collapsible="expanded">
         <TextField
           name="contactPersonName"
           control={form.control}
@@ -257,7 +257,7 @@ export function SupplierDetailPage() {
   function AddressSection() {
     const form = useFormContext<SupplierFormValues>();
     return (
-      <FormSection title={tEntity('sections.address')} collapsible>
+      <FormSection title={tEntity('sections.address')} collapsible="expanded">
         <TextField
           name="addressLine"
           control={form.control}
