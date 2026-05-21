@@ -170,6 +170,7 @@ export { TextField } from './shared/ui/form/fields/TextField';
 export { NumberField } from './shared/ui/form/fields/NumberField';
 export { SelectField, type SelectOption } from './shared/ui/form/fields/SelectField';
 export { TextAreaField } from './shared/ui/form/fields/TextAreaField';
+export { RichTextEditor } from './shared/ui/form/fields/RichTextEditor';
 export { DateTimeField } from './shared/ui/form/fields/DateTimeField';
 export { PasswordField } from './shared/ui/form/fields/PasswordField';
 export { EntityLookupField } from './shared/ui/form/fields/EntityLookupField';

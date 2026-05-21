@@ -46,7 +46,9 @@
     "phoneCall": "Telefon Görüşmesi Detayı",
     "task": "Görev Detayı",
     "appointment": "Randevu Detayı",
-    "email": "E-posta Detayı"
+    "email": "E-posta Detayı",
+    "emailBody": "İçerik",
+    "attachments": "Ekler"
   },
   "owner": {
     "addLabel": "Sorumlu Seç",

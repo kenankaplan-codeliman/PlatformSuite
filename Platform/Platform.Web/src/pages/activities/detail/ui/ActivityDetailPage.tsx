@@ -1,18 +1,23 @@
 import { useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
-import { useFormContext, type Control } from 'react-hook-form';
+import { useFormContext, useWatch, type Control } from 'react-hook-form';
 import { useParams } from 'react-router-dom';
 import { Alert } from '../../../../shared/ui/feedback/Alert';
-import { DetailPageLayout } from '../../../../shared/ui/detail-page/DetailPageLayout';
+import {
+  DetailPageLayout,
+  type DetailPageTab,
+} from '../../../../shared/ui/detail-page/DetailPageLayout';
 import { FormSection } from '../../../../shared/ui/form/FormSection';
 import { FormRow } from '../../../../shared/ui/form/FormRow';
 import { TextField } from '../../../../shared/ui/form/fields/TextField';
 import { TextAreaField } from '../../../../shared/ui/form/fields/TextAreaField';
+import { RichTextEditor } from '../../../../shared/ui/form/fields/RichTextEditor';
 import { NumberField } from '../../../../shared/ui/form/fields/NumberField';
 import { SelectField, type SelectOption } from '../../../../shared/ui/form/fields/SelectField';
 import { CheckboxField } from '../../../../shared/ui/form/fields/CheckboxField';
 import { DateTimeField } from '../../../../shared/ui/form/fields/DateTimeField';
 import { EntityLookupField } from '../../../../shared/ui/form/fields/EntityLookupField';
+import { AttachmentsField } from '../../../../widgets/attachment/ui/AttachmentsField';
 import { ServicePath } from '../../../../shared/api/servicePaths';
 import { useRouteMode } from '../../../../shared/hooks/useRouteMode';
 import { useActivityEntityTypes } from '../../../../shared/lib/activity/ActivityEntityTypesContext';
@@ -43,6 +48,9 @@ import {
   type TaskFormValues,
 } from '../../../../entities/activity/model/types';
 import { RoutePaths } from '../../../../app/router/paths';
+
+const ACTIVITY_ATTACHMENT_ACCEPT =
+  '.pdf,.doc,.docx,.xls,.xlsx,.jpg,.jpeg,.png,.eml,.msg';
 
 function buildEmptyValues(type: ActivityType): ActivityFormValues {
   const baseShared = {
@@ -118,6 +126,7 @@ export function ActivityDetailPage() {
   const { t: tPage } = useTranslation('page.activities-detail');
   const { t: tEntity } = useTranslation('entity.activity');
   const { t: tEnums } = useTranslation('enums');
+  const { t: tCommon } = useTranslation('common');
 
   const activityType = params.type ? ACTIVITY_TYPE_BY_SLUG[params.type] : undefined;
 
@@ -147,6 +156,26 @@ export function ActivityDetailPage() {
 
   const empty = buildEmptyValues(activityType);
 
+  // Ekler ayrı bir "Belgeler" sekmesinde (Account detayındaki gibi). Sekme her
+  // modda görünür: yeni modda (id yok) AttachmentsField pending dosyaları
+  // collector'a register eder, DetailPageLayout submit'te command'a "attachments"
+  // olarak enjekte eder; kayıtlı modda mevcut ekleri de listeler.
+  const attachmentTabs: DetailPageTab[] = [
+    {
+      key: 'attachments',
+      label: tCommon('tabs.attachments'),
+      content: (
+        <div style={{ marginBottom: 16 }}>
+          <AttachmentsField
+            entityType="Activity"
+            entityId={id}
+            accept={ACTIVITY_ATTACHMENT_ACCEPT}
+          />
+        </div>
+      ),
+    },
+  ];
+
   switch (activityType) {
     case 'PhoneCall':
       return (
@@ -171,6 +200,7 @@ export function ActivityDetailPage() {
           afterSaveNavigation={(saved) =>
             RoutePaths.ActivityView(ACTIVITY_SLUG_BY_TYPE.PhoneCall, saved.id)
           }
+          tabs={attachmentTabs}
         >
           <GeneralSection statusOptions={statusOptions} priorityOptions={priorityOptions} />
           <PhoneCallSection />
@@ -200,6 +230,7 @@ export function ActivityDetailPage() {
           afterSaveNavigation={(saved) =>
             RoutePaths.ActivityView(ACTIVITY_SLUG_BY_TYPE.Task, saved.id)
           }
+          tabs={attachmentTabs}
         >
           <GeneralSection statusOptions={statusOptions} priorityOptions={priorityOptions} />
           <TaskSection />
@@ -229,6 +260,7 @@ export function ActivityDetailPage() {
           afterSaveNavigation={(saved) =>
             RoutePaths.ActivityView(ACTIVITY_SLUG_BY_TYPE.Appointment, saved.id)
           }
+          tabs={attachmentTabs}
         >
           <GeneralSection statusOptions={statusOptions} priorityOptions={priorityOptions} />
           <AppointmentSection />
@@ -258,6 +290,7 @@ export function ActivityDetailPage() {
           afterSaveNavigation={(saved) =>
             RoutePaths.ActivityView(ACTIVITY_SLUG_BY_TYPE.Email, saved.id)
           }
+          tabs={attachmentTabs}
         >
           <GeneralSection statusOptions={statusOptions} priorityOptions={priorityOptions} />
           <EmailSection />
@@ -492,7 +525,9 @@ export function ActivityDetailPage() {
   function EmailSection() {
     const form = useFormContext<EmailFormValues>();
     const { partyEntityTypes } = useActivityEntityTypes();
+    const isHtml = useWatch({ control: form.control, name: 'isHtml' });
     return (
+      <>
       <FormSection title={tEntity('sections.email')} collapsible="expanded">
         <EntityLookupField
           name="from"
@@ -530,13 +565,15 @@ export function ActivityDetailPage() {
           control={form.control}
           label={tEntity('fields.isHtml.label')}
         />
-        <TextAreaField
-          name="body"
-          control={form.control}
-          label={tEntity('fields.body.label')}
-          rows={8}
-        />
       </FormSection>
+      <FormSection title={tEntity('sections.emailBody')} collapsible="expanded">
+        {isHtml ? (
+          <RichTextEditor name="body" control={form.control} minHeight={200} />
+        ) : (
+          <TextAreaField name="body" control={form.control} rows={8} />
+        )}
+      </FormSection>
+      </>
     );
   }
 }

@@ -1,3 +1,4 @@
+using Platform.Application.Common.Attachments;
 using Platform.Application.Exceptions;
 using Platform.Application.Interfaces;
 using Platform.Application.Modals.ActivityModal;
@@ -11,6 +12,13 @@ namespace Platform.Application.CommandHandler;
 
 public class ActivityCommandHandler
 {
+    /// <summary>
+    /// Attachment polimorfik sahip tipi — alt tür (Task/Email/...) farkı gözetmeksizin
+    /// tüm aktiviteler "Activity" olarak ilişkilendirilir; client AttachmentsField'ı da
+    /// aynı entityType ile listeler.
+    /// </summary>
+    private const string ActivityEntityType = "Activity";
+
     private readonly IUnitOfWork unitOfWork;
     private readonly IReferenceRepository referenceRepository;
     private readonly IActivityRepository activityRepository;
@@ -18,6 +26,7 @@ public class ActivityCommandHandler
     private readonly IAppointmentActivityRepository appointmentActivityRepository;
     private readonly ITaskActivityRepository taskActivityRepository;
     private readonly IPhoneCallActivityRepository phoneCallActivityRepository;
+    private readonly IAttachmentRepository attachmentRepository;
 
     public ActivityCommandHandler(
         IUnitOfWork unitOfWork,
@@ -26,7 +35,8 @@ public class ActivityCommandHandler
         IEmailActivityRepository emailActivityRepository,
         IAppointmentActivityRepository appointmentActivityRepository,
         ITaskActivityRepository taskActivityRepository,
-        IPhoneCallActivityRepository phoneCallActivityRepository)
+        IPhoneCallActivityRepository phoneCallActivityRepository,
+        IAttachmentRepository attachmentRepository)
     {
         this.unitOfWork = unitOfWork;
         this.referenceRepository = referenceRepository;
@@ -35,6 +45,22 @@ public class ActivityCommandHandler
         this.appointmentActivityRepository = appointmentActivityRepository;
         this.taskActivityRepository = taskActivityRepository;
         this.phoneCallActivityRepository = phoneCallActivityRepository;
+        this.attachmentRepository = attachmentRepository;
+    }
+
+    /// <summary>
+    /// Pending draft attachment'ları aktiviteyle ilişkilendirir. AssociateAsync
+    /// SaveChanges çağırmaz; çağıran metodun açtığı transaction commit edilince
+    /// (CommitTransactionAsync) relation'lar da aynı atomik işlemde yazılır.
+    /// </summary>
+    private async Task AssociateAttachmentsAsync(
+        ActivityBaseModal modal, Guid entityId, CancellationToken cancellationToken)
+    {
+        if (modal.Attachments.Count == 0) return;
+
+        var metadataIds = modal.Attachments.Select(a => a.MetadataId).ToList();
+        await attachmentRepository.AssociateAsync(
+            metadataIds, entityId, ActivityEntityType, cancellationToken);
     }
 
     // ── Calendar & List ───────────────────────────────────────────────────
@@ -69,6 +95,7 @@ public class ActivityCommandHandler
             var entity = await MapToTaskEntity(task, cancellationToken);
             await unitOfWork.BeginTransactionAsync();
             var created = await taskActivityRepository.CreateAsync(entity, cancellationToken);
+            await AssociateAttachmentsAsync(task, created.Id, cancellationToken);
             await unitOfWork.CommitTransactionAsync();
             return MapToTaskModal(created);
         }
@@ -86,6 +113,7 @@ public class ActivityCommandHandler
             var entity = await MapToTaskEntity(task, cancellationToken);
             await unitOfWork.BeginTransactionAsync();
             var updated = await taskActivityRepository.UpdateAsync(entity, cancellationToken);
+            await AssociateAttachmentsAsync(task, updated.Id, cancellationToken);
             await unitOfWork.CommitTransactionAsync();
             return MapToTaskModal(updated);
         }
@@ -138,6 +166,7 @@ public class ActivityCommandHandler
             var entity = await MapToPhoneCallEntity(phonecall, cancellationToken);
             await unitOfWork.BeginTransactionAsync();
             var created = await phoneCallActivityRepository.CreateAsync(entity, cancellationToken);
+            await AssociateAttachmentsAsync(phonecall, created.Id, cancellationToken);
             await unitOfWork.CommitTransactionAsync();
             return MapToPhoneCallModal(created);
         }
@@ -156,6 +185,7 @@ public class ActivityCommandHandler
             var entity = await MapToPhoneCallEntity(phonecall, cancellationToken);
             await unitOfWork.BeginTransactionAsync();
             var updated = await phoneCallActivityRepository.UpdateAsync(entity, cancellationToken);
+            await AssociateAttachmentsAsync(phonecall, updated.Id, cancellationToken);
             await unitOfWork.CommitTransactionAsync();
             return MapToPhoneCallModal(updated);
         }
@@ -219,6 +249,7 @@ public class ActivityCommandHandler
             var entity = await MapToAppointmentEntity(appointment, cancellationToken);
             await unitOfWork.BeginTransactionAsync();
             var created = await appointmentActivityRepository.CreateAsync(entity, cancellationToken);
+            await AssociateAttachmentsAsync(appointment, created.Id, cancellationToken);
             await unitOfWork.CommitTransactionAsync();
             return MapToAppointmentModal(created);
         }
@@ -237,6 +268,7 @@ public class ActivityCommandHandler
             var entity = await MapToAppointmentEntity(appointment, cancellationToken);
             await unitOfWork.BeginTransactionAsync();
             var updated = await appointmentActivityRepository.UpdateAsync(entity, cancellationToken);
+            await AssociateAttachmentsAsync(appointment, updated.Id, cancellationToken);
             await unitOfWork.CommitTransactionAsync();
             return MapToAppointmentModal(updated);
         }
@@ -316,6 +348,7 @@ public class ActivityCommandHandler
             var entity = await MapToEmailEntity(email, cancellationToken);
             await unitOfWork.BeginTransactionAsync();
             var created = await emailActivityRepository.CreateAsync(entity, cancellationToken);
+            await AssociateAttachmentsAsync(email, created.Id, cancellationToken);
             await unitOfWork.CommitTransactionAsync();
             return MapToEmailModal(created);
         }
@@ -333,6 +366,7 @@ public class ActivityCommandHandler
             var entity = await MapToEmailEntity(email, cancellationToken);
             await unitOfWork.BeginTransactionAsync();
             var updated = await emailActivityRepository.UpdateAsync(entity, cancellationToken);
+            await AssociateAttachmentsAsync(email, updated.Id, cancellationToken);
             await unitOfWork.CommitTransactionAsync();
             return MapToEmailModal(updated);
         }
