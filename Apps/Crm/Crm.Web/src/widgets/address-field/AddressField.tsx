@@ -88,7 +88,7 @@ export function AddressField<TValues extends FieldValues>({
       </Space>
 
       {fields.length === 0 && isView && (
-        <EmptyState size="small" description="Adres bulunmuyor." />
+        <EmptyState description="Adres bulunmuyor." />
       )}
 
       {!isView && (

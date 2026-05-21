@@ -104,7 +104,7 @@ export function PhoneField<TValues extends FieldValues>({
       </Space>
 
       {fields.length === 0 && isView && (
-        <EmptyState size="small" description="Telefon bulunmuyor." />
+        <EmptyState description="Telefon bulunmuyor." />
       )}
 
       {!isView && (

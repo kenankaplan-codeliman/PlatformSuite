@@ -15,7 +15,7 @@ export interface EmptyStateProps {
  * Global olarak `AppProviders.renderEmpty` üzerinden antd Table/Select gibi
  * bileşenlerin default empty state'i de bu component ile değiştirilir.
  */
-export function EmptyState({ description, size = 'default' }: EmptyStateProps) {
+export function EmptyState({ description, size = 'small' }: EmptyStateProps) {
   const { t } = useTranslation('common');
   return (
     <Empty

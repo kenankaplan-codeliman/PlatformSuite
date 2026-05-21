@@ -8,9 +8,7 @@ export function AppProviders({ children }: { children: ReactNode }) {
   return (
     <ConfigProvider
       locale={trTR}
-      renderEmpty={(componentName) => (
-        <EmptyState size={componentName === "Select" ? "small" : "default"} />
-      )}
+      renderEmpty={() => <EmptyState />}
       theme={{
         components: {
           Form: {

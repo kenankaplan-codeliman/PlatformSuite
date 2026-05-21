@@ -104,7 +104,7 @@ export function EmailField<TValues extends FieldValues>({
       </Space>
 
       {fields.length === 0 && isView && (
-        <EmptyState size="small" description="E-posta bulunmuyor." />
+        <EmptyState description="E-posta bulunmuyor." />
       )}
 
       {!isView && (
