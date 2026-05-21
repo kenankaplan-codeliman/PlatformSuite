@@ -2,6 +2,7 @@ using Platform.Application.Common.Parameters;
 using Platform.Application.Common.Results;
 using Platform.Application.Interfaces;
 using Crm.Application.Interfaces;
+using Crm.Application.Common.Communications;
 using Crm.Application.Features.Accounts.Dtos;
 using Crm.Domain.Entities.Accounts;
 using Crm.Domain.Parameters;
@@ -15,17 +16,20 @@ public sealed class UpdateAccountHandler : IRequestHandler<UpdateAccountCommand,
 {
     private readonly IAccountRepository _repository;
     private readonly IAttachmentRepository _attachmentRepository;
+    private readonly ICommunicationRepository _communications;
     private readonly ICrmDbContext _db;
     private readonly IGeneralParameterReader _parameters;
 
     public UpdateAccountHandler(
         IAccountRepository repository,
         IAttachmentRepository attachmentRepository,
+        ICommunicationRepository communications,
         ICrmDbContext db,
         IGeneralParameterReader parameters)
     {
         _repository = repository;
         _attachmentRepository = attachmentRepository;
+        _communications = communications;
         _db = db;
         _parameters = parameters;
     }
@@ -44,6 +48,9 @@ public sealed class UpdateAccountHandler : IRequestHandler<UpdateAccountCommand,
         request.Adapt(entity);
         await _repository.UpdateAsync(entity, cancellationToken);
 
+        await _communications.SyncAsync(
+            nameof(Account), entity.Id, request.Emails, request.Phones, request.Addresses, cancellationToken);
+
         if (request.Attachments.Count > 0)
         {
             var metadataIds = request.Attachments.Select(a => a.MetadataId).ToList();
@@ -59,6 +66,9 @@ public sealed class UpdateAccountHandler : IRequestHandler<UpdateAccountCommand,
             .AsNoTracking()
             .WithDetailIncludes()
             .FirstAsync(a => a.Id == id, cancellationToken);
-        return saved.Adapt<AccountDetailItem>();
+        var dto = saved.Adapt<AccountDetailItem>();
+        (dto.Emails, dto.Phones, dto.Addresses) =
+            await _db.LoadCommunicationsAsync(nameof(Account), id, cancellationToken);
+        return dto;
     }
 }

@@ -33,6 +33,10 @@ export function CheckboxField<TValues extends FieldValues>({
 
   const isViewMode = force === 'readonly' || (force !== 'editable' && mode === 'view');
 
+  // View modunda inline checkbox metni kaybolur; etiket yoksa `text`'i etiket olarak kullan
+  // ki Tag neyin değerini gösterdiği belli olsun.
+  const effectiveLabel = label ?? (isViewMode ? text : undefined);
+
   return (
     <Controller
       name={name}
@@ -40,7 +44,7 @@ export function CheckboxField<TValues extends FieldValues>({
       render={({ field }) => {
         const checked = !!field.value;
         return (
-          <Form.Item label={label}>
+          <Form.Item label={effectiveLabel}>
             {isViewMode ? (
               <Tag color={checked ? 'blue' : 'default'}>
                 {checked ? t('actions.yes', { defaultValue: 'Evet' }) : t('actions.no', { defaultValue: 'Hayır' })}

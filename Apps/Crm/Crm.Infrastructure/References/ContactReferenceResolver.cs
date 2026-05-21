@@ -28,12 +28,12 @@ public class ContactReferenceResolver : IEntityReferenceResolver
             cnt.Id,
             cnt.FirstName,
             cnt.LastName,
-            PrimaryEmail = cnt.Emails
-                .Where(e => e.IsPrimary && !e.IsDeleted)
+            PrimaryEmail = dbContext.EmailAddress
+                .Where(e => e.ParentEntityType == nameof(Contact) && e.ParentEntityId == cnt.Id && e.IsPrimary)
                 .Select(e => e.Email)
                 .FirstOrDefault(),
-            PrimaryPhone = cnt.Phones
-                .Where(p => p.IsPrimary && !p.IsDeleted)
+            PrimaryPhone = dbContext.Phone
+                .Where(p => p.ParentEntityType == nameof(Contact) && p.ParentEntityId == cnt.Id && p.IsPrimary)
                 .Select(p => p.PhoneNumber)
                 .FirstOrDefault(),
         }).FirstOrDefault(c => c.Id == id) ?? throw new NotFoundException();
@@ -72,12 +72,12 @@ public class ContactReferenceResolver : IEntityReferenceResolver
             cnt.Id,
             cnt.FirstName,
             cnt.LastName,
-            PrimaryEmail = cnt.Emails
-                .Where(e => e.IsPrimary && !e.IsDeleted)
+            PrimaryEmail = dbContext.EmailAddress
+                .Where(e => e.ParentEntityType == nameof(Contact) && e.ParentEntityId == cnt.Id && e.IsPrimary)
                 .Select(e => e.Email)
                 .FirstOrDefault(),
-            PrimaryPhone = cnt.Phones
-                .Where(p => p.IsPrimary && !p.IsDeleted)
+            PrimaryPhone = dbContext.Phone
+                .Where(p => p.ParentEntityType == nameof(Contact) && p.ParentEntityId == cnt.Id && p.IsPrimary)
                 .Select(p => p.PhoneNumber)
                 .FirstOrDefault(),
         });

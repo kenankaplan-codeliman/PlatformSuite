@@ -19,9 +19,6 @@ public class ContactRepository : BaseEntityRepository<Contact>, IContactReposito
     public override async Task<Contact?> GetAsync(Guid Id, CancellationToken cancellationToken = default)
     {
         return await this.crmDbContext.Contact
-            .Include(c => c.Emails)
-            .Include(c => c.Phones)
-            .Include(c => c.Addresses)
             .Include(c => c.AccountContacts).ThenInclude(ac => ac.Account)
             .FirstOrDefaultAsync(e => e.Id == Id, cancellationToken);
     }

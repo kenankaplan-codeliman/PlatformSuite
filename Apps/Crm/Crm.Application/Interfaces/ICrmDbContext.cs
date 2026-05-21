@@ -1,4 +1,5 @@
 using Crm.Domain.Entities.Accounts;
+using Crm.Domain.Entities.Communications;
 using Crm.Domain.Entities.Contacts;
 using Crm.Domain.Entities.Leads;
 using Crm.Domain.Entities.Opportunities;
@@ -16,16 +17,15 @@ public interface ICrmDbContext : IApplicationDbContext
 {
     // Account
     DbSet<Account> Account { get; }
-    DbSet<AccountEmail> AccountEmail { get; }
-    DbSet<AccountPhone> AccountPhone { get; }
-    DbSet<AccountAddress> AccountAddress { get; }
     DbSet<AccountContact> AccountContact { get; }
 
     // Contact
     DbSet<Contact> Contact { get; }
-    DbSet<ContactEmail> ContactEmail { get; }
-    DbSet<ContactPhone> ContactPhone { get; }
-    DbSet<ContactAddress> ContactAddress { get; }
+
+    // Communications (polimorfik owner — Account/Contact/... ortak)
+    DbSet<EmailAddress> EmailAddress { get; }
+    DbSet<Phone> Phone { get; }
+    DbSet<Address> Address { get; }
 
     // CRM features
     DbSet<Lead> Lead { get; }

@@ -10,6 +10,8 @@ namespace Platform.Application.Features.GeneralParameters.Queries.ListGeneralPar
 public sealed class ListGeneralParametersHandler
     : IRequestHandler<ListGeneralParametersQuery, Result<IReadOnlyList<GeneralParameterListItem>>>
 {
+    private const string DefaultLang = "tr";
+
     private readonly IApplicationDbContext _db;
 
     public ListGeneralParametersHandler(IApplicationDbContext db) => _db = db;
@@ -17,10 +19,17 @@ public sealed class ListGeneralParametersHandler
     public async Task<Result<IReadOnlyList<GeneralParameterListItem>>> Handle(
         ListGeneralParametersQuery request, CancellationToken cancellationToken)
     {
-        var query = _db.GeneralParameter.AsNoTracking().Where(p => p.IsActive);
+        var lang = string.IsNullOrWhiteSpace(request.Lang) ? DefaultLang : request.Lang!;
+
+        var scope = _db.GeneralParameter.AsNoTracking().Where(p => p.IsActive);
 
         if (!string.IsNullOrWhiteSpace(request.ParentCode))
-            query = query.Where(p => p.ParentCode == request.ParentCode);
+            scope = scope.Where(p => p.ParentCode == request.ParentCode);
+
+        // İstenen dilde kayıt varsa onu, yoksa varsayılan dile (tr) fallback.
+        var query = scope.Where(p => p.Lang == lang);
+        if (lang != DefaultLang && !await query.AnyAsync(cancellationToken))
+            query = scope.Where(p => p.Lang == DefaultLang);
 
         var items = await query
             .OrderBy(p => p.ParentCode)

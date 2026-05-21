@@ -1,4 +1,4 @@
-using Platform.Application.Common.Dtos.Communications;
+using Crm.Application.Common.Dtos.Communications;
 using Platform.Application.Modals.Common;
 
 namespace Crm.Application.Features.Accounts.Dtos;

@@ -1,7 +1,9 @@
 using Platform.Application.Common.Abstractions;
 using Crm.Application.Interfaces;
+using Crm.Application.Common.Communications;
 using Platform.Application.Common.Results;
 using Crm.Application.Features.Accounts.Dtos;
+using Crm.Domain.Entities.Accounts;
 using Mapster;
 using MapsterMapper;
 using MediatR;
@@ -30,6 +32,9 @@ public sealed class GetAccountHandler : IRequestHandler<GetAccountQuery, Result<
 
         if (entity is null) return AccountErrors.NotFound;
 
-        return entity.Adapt<AccountDetailItem>();
+        var dto = entity.Adapt<AccountDetailItem>();
+        (dto.Emails, dto.Phones, dto.Addresses) =
+            await _db.LoadCommunicationsAsync(nameof(Account), entity.Id, cancellationToken);
+        return dto;
     }
 }

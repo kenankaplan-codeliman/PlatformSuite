@@ -16,6 +16,7 @@ CREATE TABLE IF NOT EXISTS general_parameter (
 
     code         VARCHAR(100) NOT NULL,
     parent_code  VARCHAR(100),
+    lang         VARCHAR(10)  NOT NULL DEFAULT 'tr',
     label        VARCHAR(250) NOT NULL,
     order_index  INTEGER      NOT NULL DEFAULT 0,
     description  VARCHAR(500),
@@ -30,14 +31,14 @@ CREATE TABLE IF NOT EXISTS general_parameter (
     updated_at   TIMESTAMPTZ
 );
 
--- Değer satırları: (parent_code, code) benzersiz
+-- Değer satırları: (parent_code, code, lang) benzersiz
 CREATE UNIQUE INDEX IF NOT EXISTS uq_general_parameter_value_code
-    ON general_parameter (parent_code, code)
+    ON general_parameter (parent_code, code, lang)
     WHERE parent_code IS NOT NULL;
 
--- Kök satırlar: code benzersiz
+-- Kök satırlar: (code, lang) benzersiz
 CREATE UNIQUE INDEX IF NOT EXISTS uq_general_parameter_root_code
-    ON general_parameter (code)
+    ON general_parameter (code, lang)
     WHERE parent_code IS NULL;
 
 -- parent_code ile gruplu listeleme için

@@ -120,8 +120,10 @@ export type {
 } from './entities/attachment/model/types';
 
 // ─── Shared UI primitifleri ──────────────────────────────────────────────────
-export { Button } from './shared/ui/Button';
-export { Card } from './shared/ui/Card';
+export { Button, type ButtonProps } from './shared/ui/Button';
+export { Card, type CardProps } from './shared/ui/Card';
+export { Space, type SpaceProps } from './shared/ui/Space';
+export { Title, Text, type TitleProps, type TextProps } from './shared/ui/Typography';
 export { Dropdown, type DropdownItem } from './shared/ui/Dropdown';
 export { DataTable, type DataTableColumn } from './shared/ui/DataTable';
 export { Alert } from './shared/ui/feedback/Alert';
@@ -173,6 +175,8 @@ export { PasswordField } from './shared/ui/form/fields/PasswordField';
 export { EntityLookupField } from './shared/ui/form/fields/EntityLookupField';
 export { EntityRelationTable } from './shared/ui/form/fields/EntityRelationTable';
 export { CheckboxField } from './shared/ui/form/fields/CheckboxField';
+export { ParameterAutocomplete } from './shared/ui/form/fields/ParameterAutocomplete';
+export type { ParameterAutocompleteProps } from './shared/ui/form/fields/ParameterAutocomplete';
 
 // ─── API katmanı ─────────────────────────────────────────────────────────────
 export { httpClient } from './shared/api/httpClient';

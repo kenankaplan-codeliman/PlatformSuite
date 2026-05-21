@@ -36,18 +36,10 @@ public class Account :
     #endregion
 
     // Navigation
-    public virtual ICollection<AccountEmail> Emails { get; } = new List<AccountEmail>();
-    public ICollection<AccountPhone> Phones { get; } = new List<AccountPhone>();
-    public ICollection<AccountAddress> Addresses { get; } = new List<AccountAddress>();
+    // Email/Phone/Address artık aggregate navigation değil — polimorfik owner ile
+    // crm_email/crm_phone/crm_address tablolarında yaşar (ParentEntityType="Account").
+    // ICommunicationRepository üzerinden yüklenir/senkronlanır.
     public ICollection<AccountContact> AccountContacts { get; } = new List<AccountContact>();
-
-    //Helper Method
-    public void AddEmail(AccountEmail email) {
-        email.AccountId = Id;
-        Emails.Add(email);
-    }
-
-
 
     // Audit
     public Guid CreatedBy { get; private set; }

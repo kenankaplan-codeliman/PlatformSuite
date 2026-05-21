@@ -1,7 +1,6 @@
 {
   "singular": "Firma",
   "plural": "Firmalar",
-  "newTitle": "Yeni Firma",
   "fields": {
     "accountName": { "label": "Firma Adı", "placeholder": "Örn: Acme A.Ş." },
     "accountType": { "label": "Firma Tipi" },
@@ -21,7 +20,11 @@
     "general": "Genel Bilgiler",
     "details": "Detaylar",
     "contacts": "Kontaklar",
-    "attachments": "Ek Dosyalar"
+    "attachments": "Ek Dosyalar",
+    "communicationInfo": "İletişim Bilgileri",
+    "emails": "E-postalar",
+    "phones": "Telefonlar",
+    "addresses": "Adresler"
   },
   "contacts": {
     "addLabel": "Kontak Ekle",

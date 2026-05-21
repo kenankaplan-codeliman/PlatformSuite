@@ -11,6 +11,6 @@ export const appUserSchema = z.object({
     message: 'common:errors.required',
   }),
   manager: entityReferenceSchema.nullable(),
-  roles: z.array(entityReferenceSchema).default([]),
+  roles: z.array(entityReferenceSchema),
   isActive: z.boolean(),
 });

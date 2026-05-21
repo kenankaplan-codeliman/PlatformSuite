@@ -28,6 +28,7 @@ public static class DependencyInjection
         // CRM-spesifik repository'ler
         services.AddScoped<IAccountRepository, AccountRepository>();
         services.AddScoped<IContactRepository, ContactRepository>();
+        services.AddScoped<ICommunicationRepository, CommunicationRepository>();
         services.AddScoped<ILeadRepository, LeadRepository>();
         services.AddScoped<IOpportunityRepository, OpportunityRepository>();
 

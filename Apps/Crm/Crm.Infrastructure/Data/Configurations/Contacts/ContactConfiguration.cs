@@ -95,25 +95,8 @@ public class ContactConfiguration : IEntityTypeConfiguration<Contact>
             .HasColumnName("deleted_at");
 
         // Relationships
-        builder.HasMany(x => x.Emails)
-            .WithOne(x => x.Contact)
-            .HasForeignKey(x => x.ContactId)
-            .HasConstraintName("fk_contact_email")
-            .OnDelete(DeleteBehavior.Cascade);
-
-        builder.HasMany(x => x.Phones)
-            .WithOne(x => x.Contact)
-            .HasForeignKey(x => x.ContactId)
-            .HasConstraintName("fk_contact_phone")
-            .OnDelete(DeleteBehavior.Cascade);
-
-        builder.HasMany(x => x.Addresses)
-            .WithOne(x => x.Contact)
-            .HasForeignKey(x => x.ContactId)
-            .HasConstraintName("fk_contact_address")
-            .OnDelete(DeleteBehavior.Cascade);
-
-        
+        // Email/Phone/Address artık aggregate navigation değil — polimorfik owner ile
+        // crm_email/crm_phone/crm_address tablolarında, FK olmadan tutulur.
         builder.HasMany(a => a.AccountContacts)
             .WithOne(ac => ac.Contact)
             .HasForeignKey(ac => ac.ContactId)

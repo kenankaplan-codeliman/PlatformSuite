@@ -2,6 +2,7 @@ using Platform.Application.Common.Parameters;
 using Platform.Application.Common.Results;
 using Platform.Application.Interfaces;
 using Crm.Application.Interfaces;
+using Crm.Application.Common.Communications;
 using Crm.Application.Features.Accounts.Dtos;
 using Crm.Domain.Entities.Accounts;
 using Crm.Domain.Parameters;
@@ -15,17 +16,20 @@ public sealed class CreateAccountHandler : IRequestHandler<CreateAccountCommand,
 {
     private readonly IAccountRepository _repository;
     private readonly IAttachmentRepository _attachmentRepository;
+    private readonly ICommunicationRepository _communications;
     private readonly ICrmDbContext _db;
     private readonly IGeneralParameterReader _parameters;
 
     public CreateAccountHandler(
         IAccountRepository repository,
         IAttachmentRepository attachmentRepository,
+        ICommunicationRepository communications,
         ICrmDbContext db,
         IGeneralParameterReader parameters)
     {
         _repository = repository;
         _attachmentRepository = attachmentRepository;
+        _communications = communications;
         _db = db;
         _parameters = parameters;
     }
@@ -40,6 +44,9 @@ public sealed class CreateAccountHandler : IRequestHandler<CreateAccountCommand,
 
         var entity = request.Adapt<Account>();
         await _repository.CreateAsync(entity, cancellationToken);
+
+        await _communications.SyncAsync(
+            nameof(Account), entity.Id, request.Emails, request.Phones, request.Addresses, cancellationToken);
 
         if (request.Attachments.Count > 0)
         {
@@ -56,6 +63,9 @@ public sealed class CreateAccountHandler : IRequestHandler<CreateAccountCommand,
             .AsNoTracking()
             .WithDetailIncludes()
             .FirstAsync(a => a.Id == id, cancellationToken);
-        return saved.Adapt<AccountDetailItem>();
+        var dto = saved.Adapt<AccountDetailItem>();
+        (dto.Emails, dto.Phones, dto.Addresses) =
+            await _db.LoadCommunicationsAsync(nameof(Account), id, cancellationToken);
+        return dto;
     }
 }

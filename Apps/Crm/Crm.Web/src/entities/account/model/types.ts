@@ -29,10 +29,15 @@ export interface AddressModal {
   id?: string;
   addressLine1: string;
   addressLine2?: string | null;
-  city?: string | null;
+  // Ülke/şehir/ilçe: GeneralParameter kodu + denormalize ad (code boşsa elle yazılmış).
+  countryCode?: string | null;
+  countryName?: string | null;
+  cityCode?: string | null;
+  cityName?: string | null;
+  districtCode?: string | null;
+  districtName?: string | null;
   state?: string | null;
   postalCode?: string | null;
-  country?: string | null;
   type: AddressType;
   isPrimary: boolean;
 }

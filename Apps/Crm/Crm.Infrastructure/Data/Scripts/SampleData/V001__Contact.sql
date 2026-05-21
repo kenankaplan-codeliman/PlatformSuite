@@ -27,10 +27,10 @@ FROM (VALUES
 WHERE NOT EXISTS (SELECT 1 FROM contact c WHERE c.id = t.id::uuid);
 
 -- ---------------------------------------------
--- contact_email
+-- email (parent_entity_type='Contact')
 -- ---------------------------------------------
-INSERT INTO contact_email (id, contact_id, email, type, is_primary, is_active, created_by, created_at)
-SELECT gen_random_uuid(), t.contact_id::uuid, t.email, t.type, t.is_primary,
+INSERT INTO email_address (id, parent_entity_type, parent_entity_id, email, type, is_primary, is_active, created_by, created_at)
+SELECT gen_random_uuid(), 'Contact', t.contact_id::uuid, t.email, t.type, t.is_primary,
        true, '00000000-0000-0000-0000-000000000020'::uuid, current_timestamp
 FROM (VALUES
     ('22222222-0000-0000-0000-000000000001', 'burak.celik@kobiltd.com',   'Work',     true),
@@ -41,15 +41,15 @@ FROM (VALUES
     ('22222222-0000-0000-0000-000000000005', 'gul.polat@medyaplus.com',   'Work',     true)
 ) AS t(contact_id, email, type, is_primary)
 WHERE NOT EXISTS (
-    SELECT 1 FROM contact_email ce
-    WHERE ce.contact_id = t.contact_id::uuid AND ce.email = t.email
+    SELECT 1 FROM email_address ce
+    WHERE ce.parent_entity_type = 'Contact' AND ce.parent_entity_id = t.contact_id::uuid AND ce.email = t.email
 );
 
 -- ---------------------------------------------
--- contact_phone
+-- phone (parent_entity_type='Contact')
 -- ---------------------------------------------
-INSERT INTO contact_phone (id, contact_id, phone_number, type, is_primary, is_active, created_by, created_at)
-SELECT gen_random_uuid(), t.contact_id::uuid, t.phone, t.type, t.is_primary,
+INSERT INTO phone (id, parent_entity_type, parent_entity_id, phone_number, type, is_primary, is_active, created_by, created_at)
+SELECT gen_random_uuid(), 'Contact', t.contact_id::uuid, t.phone, t.type, t.is_primary,
        true, '00000000-0000-0000-0000-000000000020'::uuid, current_timestamp
 FROM (VALUES
     ('22222222-0000-0000-0000-000000000001', '+90 212 555 0101', 'Work',   true),
@@ -60,24 +60,25 @@ FROM (VALUES
     ('22222222-0000-0000-0000-000000000005', '+90 232 555 0105', 'Mobile', true)
 ) AS t(contact_id, phone, type, is_primary)
 WHERE NOT EXISTS (
-    SELECT 1 FROM contact_phone cp
-    WHERE cp.contact_id = t.contact_id::uuid AND cp.phone_number = t.phone
+    SELECT 1 FROM phone cp
+    WHERE cp.parent_entity_type = 'Contact' AND cp.parent_entity_id = t.contact_id::uuid AND cp.phone_number = t.phone
 );
 
 -- ---------------------------------------------
--- contact_address
+-- address (parent_entity_type='Contact')
 -- ---------------------------------------------
-INSERT INTO contact_address (id, contact_id, address_line1, city, state, postal_code, country, type, is_primary, is_active, created_by, created_at)
-SELECT gen_random_uuid(), t.contact_id::uuid, t.line1, t.city, t.state, t.zip, 'Türkiye', t.type, t.is_primary,
+-- Parametrik il/ilçe kodlarıyla (country_code='TR'); code seçili olduğu için name'ler de dolu (snapshot).
+INSERT INTO address (id, parent_entity_type, parent_entity_id, address_line1, country_code, country_name, city_code, city_name, district_code, district_name, postal_code, type, is_primary, is_active, created_by, created_at)
+SELECT gen_random_uuid(), 'Contact', t.contact_id::uuid, t.line1, 'TR', 'Türkiye', t.city_code, t.city_name, t.district_code, t.district_name, t.zip, t.type, t.is_primary,
        true, '00000000-0000-0000-0000-000000000020'::uuid, current_timestamp
 FROM (VALUES
-    ('22222222-0000-0000-0000-000000000001', 'Maslak Mah. Büyükdere Cd. No:255',  'İstanbul', 'Sarıyer',   '34485', 'Office', true),
-    ('22222222-0000-0000-0000-000000000002', 'Levent Mah. Esentepe Cd. No:17',    'İstanbul', 'Beşiktaş',  '34330', 'Office', true),
-    ('22222222-0000-0000-0000-000000000003', 'Kozyatağı Mah. Bayar Cd. No:48',    'İstanbul', 'Kadıköy',   '34736', 'Office', true),
-    ('22222222-0000-0000-0000-000000000004', 'Çankaya Mah. Atatürk Bulvarı No:9', 'Ankara',   'Çankaya',   '06680', 'Office', true),
-    ('22222222-0000-0000-0000-000000000005', 'Alsancak Mah. Kıbrıs Şehitleri Cd. No:75', 'İzmir', 'Konak', '35220', 'Office', true)
-) AS t(contact_id, line1, city, state, zip, type, is_primary)
+    ('22222222-0000-0000-0000-000000000001', 'Maslak Mah. Büyükdere Cd. No:255',  '34', 'İstanbul', '34-sariyer',  'Sarıyer',  '34485', 'Office', true),
+    ('22222222-0000-0000-0000-000000000002', 'Levent Mah. Esentepe Cd. No:17',    '34', 'İstanbul', '34-besiktas', 'Beşiktaş', '34330', 'Office', true),
+    ('22222222-0000-0000-0000-000000000003', 'Kozyatağı Mah. Bayar Cd. No:48',    '34', 'İstanbul', '34-kadikoy',  'Kadıköy',  '34736', 'Office', true),
+    ('22222222-0000-0000-0000-000000000004', 'Çankaya Mah. Atatürk Bulvarı No:9', '06', 'Ankara',   '06-cankaya',  'Çankaya',  '06680', 'Office', true),
+    ('22222222-0000-0000-0000-000000000005', 'Alsancak Mah. Kıbrıs Şehitleri Cd. No:75', '35', 'İzmir', '35-konak', 'Konak',    '35220', 'Office', true)
+) AS t(contact_id, line1, city_code, city_name, district_code, district_name, zip, type, is_primary)
 WHERE NOT EXISTS (
-    SELECT 1 FROM contact_address ca
-    WHERE ca.contact_id = t.contact_id::uuid AND ca.address_line1 = t.line1
+    SELECT 1 FROM address ca
+    WHERE ca.parent_entity_type = 'Contact' AND ca.parent_entity_id = t.contact_id::uuid AND ca.address_line1 = t.line1
 );

@@ -1,6 +1,6 @@
 using Platform.Application.Common.Abstractions;
 using Platform.Application.Common.Attachments;
-using Platform.Application.Common.Dtos.Communications;
+using Crm.Application.Common.Dtos.Communications;
 using Crm.Application.Features.Accounts.Dtos;
 using Platform.Application.Modals.Common;
 

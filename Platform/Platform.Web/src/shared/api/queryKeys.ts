@@ -57,5 +57,6 @@ export const attachmentKeys = {
 
 export const parameterKeys = {
   all: ['general-parameter'] as const,
-  list: (parentCode: string) => [...parameterKeys.all, 'list', parentCode] as const,
+  list: (parentCode: string, lang: string) =>
+    [...parameterKeys.all, 'list', parentCode, lang] as const,
 };

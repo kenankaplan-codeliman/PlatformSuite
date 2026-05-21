@@ -17,9 +17,6 @@ public static class MappingConfig
 {
     public static void Register(TypeAdapterConfig config)
     {
-        // Base/shared map'ler önce — derived tipler Inherits ile bunlardan beslenir.
-        CommunicationsMappings.Register(config);
-
         AppOrganizationMappings.Register(config);
         AppUserMappings.Register(config);
         AppRoleMappings.Register(config);

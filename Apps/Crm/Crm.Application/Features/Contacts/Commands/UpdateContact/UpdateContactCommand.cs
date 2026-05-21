@@ -1,5 +1,5 @@
 using Platform.Application.Common.Abstractions;
-using Platform.Application.Common.Dtos.Communications;
+using Crm.Application.Common.Dtos.Communications;
 using Crm.Application.Features.Contacts.Dtos;
 
 namespace Crm.Application.Features.Contacts.Commands.UpdateContact;

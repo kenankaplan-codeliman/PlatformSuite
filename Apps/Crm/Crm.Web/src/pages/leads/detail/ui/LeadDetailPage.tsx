@@ -83,11 +83,12 @@ export function LeadDetailPage() {
     (a): a is DetailPageAction => a !== null,
   );
 
-  const title = useMemo(() => {
-    if (mode === 'new') return tPage('newTitle');
-    if (mode === 'edit') return tPage('editTitle');
-    return query.data?.subject ?? tPage('viewTitle');
-  }, [mode, query.data?.subject, tPage]);
+  // new/edit başlığı DetailPageLayout'ta entityType'tan generic üretilir;
+  // burada yalnız view modunun kayıt adını sağlıyoruz.
+  const title = useMemo(
+    () => query.data?.subject ?? tPage('viewTitle'),
+    [query.data?.subject, tPage],
+  );
 
   const tabs: DetailPageTab[] | undefined =
     mode === 'new' || !id

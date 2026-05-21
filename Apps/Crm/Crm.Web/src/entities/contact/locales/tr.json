@@ -1,7 +1,6 @@
 {
   "singular": "Kontak",
   "plural": "Kontaklar",
-  "newTitle": "Yeni Kontak",
   "fields": {
     "firstName": { "label": "Ad", "placeholder": "Örn: Ahmet" },
     "lastName": { "label": "Soyad", "placeholder": "Örn: Yılmaz" },
@@ -19,7 +18,11 @@
   "sections": {
     "general": "Genel Bilgiler",
     "details": "Detaylar",
-    "accounts": "Bağlı Firmalar"
+    "accounts": "Bağlı Firmalar",
+    "communicationInfo": "İletişim Bilgileri",
+    "emails": "E-postalar",
+    "phones": "Telefonlar",
+    "addresses": "Adresler"
   },
   "accounts": {
     "addLabel": "Firma Ekle",

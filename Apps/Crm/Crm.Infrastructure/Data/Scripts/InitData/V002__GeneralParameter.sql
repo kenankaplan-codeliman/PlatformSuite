@@ -14,8 +14,8 @@
 -- Tüm insert'ler WHERE NOT EXISTS ile idempotent'tir.
 -- =============================================
 
-INSERT INTO general_parameter (id, code, parent_code, label, order_index, is_active, created_by, created_at)
-SELECT gen_random_uuid(), v.code, v.parent_code, v.label, v.order_index, true,
+INSERT INTO general_parameter (id, code, parent_code, lang, label, order_index, is_active, created_by, created_at)
+SELECT gen_random_uuid(), v.code, v.parent_code, 'tr', v.label, v.order_index, true,
        '00000000-0000-0000-0000-000000000020'::uuid, current_timestamp
 FROM (VALUES
     -- LeadStatus
@@ -71,4 +71,5 @@ WHERE NOT EXISTS (
     SELECT 1 FROM general_parameter g
     WHERE g.code = v.code
       AND g.parent_code IS NOT DISTINCT FROM v.parent_code
+      AND g.lang = 'tr'
 );

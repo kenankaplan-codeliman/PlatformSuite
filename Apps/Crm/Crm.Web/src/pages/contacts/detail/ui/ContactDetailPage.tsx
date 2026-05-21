@@ -19,6 +19,9 @@ import { useSetStateAction } from "@platform/ui";
 import type { DetailPageAction } from "@platform/ui";
 import { useGeneralParameters } from "@platform/ui";
 import { RelatedActivitiesTab, type DetailPageTab } from "@platform/ui";
+import { AddressField } from "../../../../widgets/address-field";
+import { EmailField } from "../../../../widgets/email-field";
+import { PhoneField } from "../../../../widgets/phone-field";
 import { useContactQuery } from "../../../../entities/contact/api/useContactQueries";
 import {
   useUpsertContact,
@@ -77,18 +80,23 @@ export function ContactDetailPage() {
     (a): a is DetailPageAction => a !== null,
   );
 
+  // new/edit başlığı DetailPageLayout'ta entityType'tan generic üretilir;
+  // burada yalnız view modunun kayıt adını sağlıyoruz.
   const title = useMemo(() => {
-    if (mode === "new") return tPage("newTitle");
-    if (mode === "edit") return tPage("editTitle");
     const data = query.data;
     if (data) return `${data.firstName} ${data.lastName}`.trim();
     return tPage("viewTitle");
-  }, [mode, query.data, tPage]);
+  }, [query.data, tPage]);
 
-  const tabs: DetailPageTab[] | undefined =
-    mode === "new" || !id
-      ? undefined
-      : [
+  // İletişim Bilgileri her modda var (form-bound, entity ile kaydedilir).
+  const tabs: DetailPageTab[] = [
+    {
+      key: "communication-info",
+      label: tEntity("sections.communicationInfo"),
+      content: <CommunicationInfoTab />,
+    },
+    ...(id && mode !== "new"
+      ? [
           {
             key: "activities",
             label: tCommon("tabs.activities"),
@@ -96,7 +104,9 @@ export function ContactDetailPage() {
               <RelatedActivitiesTab entityType="Contact" entityId={id} />
             ),
           },
-        ];
+        ]
+      : []),
+  ];
 
   return (
     <DetailPageLayout<ContactFormValues>
@@ -180,6 +190,23 @@ export function ContactDetailPage() {
           required
         />
       </FormSection>
+    );
+  }
+
+  function CommunicationInfoTab() {
+    const form = useFormContext<ContactFormValues>();
+    return (
+      <>
+        <FormSection title={tEntity("sections.emails")} collapsible="expanded">
+          <EmailField<ContactFormValues> control={form.control} name="emails" />
+        </FormSection>
+        <FormSection title={tEntity("sections.phones")} collapsible="expanded">
+          <PhoneField<ContactFormValues> control={form.control} name="phones" />
+        </FormSection>
+        <FormSection title={tEntity("sections.addresses")} collapsible="expanded">
+          <AddressField<ContactFormValues> control={form.control} name="addresses" />
+        </FormSection>
+      </>
     );
   }
 

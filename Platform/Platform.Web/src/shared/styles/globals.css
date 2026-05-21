@@ -20,3 +20,10 @@ body {
 .entity-lookup-row:hover {
   background-color: #e6f4ff;
 }
+
+/* İletişim editörü kartları (adres/e-posta/telefon row'ları): başlık şeridi yok,
+   son satır ile kart alt kenarı arasındaki fazla boşluğu kıs. */
+.comm-card .ant-card-body > *:last-child .ant-form-item,
+.comm-card .ant-card-body > *:last-child.ant-form-item {
+  margin-bottom: 0;
+}

@@ -1,7 +1,9 @@
 using Platform.Application.Common.Abstractions;
 using Crm.Application.Interfaces;
+using Crm.Application.Common.Communications;
 using Platform.Application.Common.Results;
 using Crm.Application.Features.Contacts.Dtos;
+using Crm.Domain.Entities.Contacts;
 using Mapster;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
@@ -18,14 +20,14 @@ public sealed class GetContactHandler : IRequestHandler<GetContactQuery, Result<
     {
         var entity = await _db.Contact
             .AsNoTracking()
-            .Include(c => c.Emails)
-            .Include(c => c.Phones)
-            .Include(c => c.Addresses)
             .Include(c => c.AccountContacts).ThenInclude(ac => ac.Account)
             .FirstOrDefaultAsync(c => c.Id == request.Id, cancellationToken);
 
         if (entity is null) return ContactErrors.NotFound;
 
-        return entity.Adapt<ContactDetailItem>();
+        var dto = entity.Adapt<ContactDetailItem>();
+        (dto.Emails, dto.Phones, dto.Addresses) =
+            await _db.LoadCommunicationsAsync(nameof(Contact), entity.Id, cancellationToken);
+        return dto;
     }
 }

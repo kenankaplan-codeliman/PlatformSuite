@@ -35,10 +35,9 @@ public class Contact :
     public Guid OrganizationId { get; private set; }
     #endregion
 
+    // Email/Phone/Address artık aggregate navigation değil — polimorfik owner ile
+    // crm_email/crm_phone/crm_address tablolarında yaşar (ParentEntityType="Contact").
     public ICollection<AccountContact> AccountContacts { get;} = new List<AccountContact>();
-    public ICollection<ContactEmail> Emails { get;} = new List<ContactEmail>();
-    public ICollection<ContactPhone> Phones { get;} = new List<ContactPhone>();
-    public ICollection<ContactAddress> Addresses { get; } = new List<ContactAddress>();
 
     public Guid CreatedBy { get; private set; }
     public DateTime CreatedAt { get; private set; }

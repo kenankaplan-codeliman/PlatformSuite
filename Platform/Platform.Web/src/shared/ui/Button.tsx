@@ -1,5 +1,5 @@
 import { Button as AntButton, type ButtonProps as AntButtonProps } from 'antd';
-import type { ReactNode } from 'react';
+import type { CSSProperties, ReactNode } from 'react';
 
 export interface ButtonProps {
   children?: ReactNode;
@@ -12,6 +12,7 @@ export interface ButtonProps {
   block?: boolean;
   size?: 'small' | 'middle' | 'large';
   icon?: ReactNode;
+  style?: CSSProperties;
   'aria-label'?: string;
 }
 

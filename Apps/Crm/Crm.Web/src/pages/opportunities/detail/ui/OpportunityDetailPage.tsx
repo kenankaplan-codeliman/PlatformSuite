@@ -77,11 +77,12 @@ export function OpportunityDetailPage() {
     (a): a is DetailPageAction => a !== null,
   );
 
-  const title = useMemo(() => {
-    if (mode === 'new') return tPage('newTitle');
-    if (mode === 'edit') return tPage('editTitle');
-    return query.data?.name ?? tPage('viewTitle');
-  }, [mode, query.data?.name, tPage]);
+  // new/edit başlığı DetailPageLayout'ta entityType'tan generic üretilir;
+  // burada yalnız view modunun kayıt adını sağlıyoruz.
+  const title = useMemo(
+    () => query.data?.name ?? tPage('viewTitle'),
+    [query.data?.name, tPage],
+  );
 
   const tabs: DetailPageTab[] | undefined =
     mode === 'new' || !id

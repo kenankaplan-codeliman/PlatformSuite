@@ -13,6 +13,7 @@ public class GeneralParameterConfiguration : IEntityTypeConfiguration<GeneralPar
         builder.Property(p => p.Id).HasColumnName("id");
         builder.Property(p => p.Code).HasColumnName("code").IsRequired().HasMaxLength(100);
         builder.Property(p => p.ParentCode).HasColumnName("parent_code").HasMaxLength(100);
+        builder.Property(p => p.Lang).HasColumnName("lang").IsRequired().HasMaxLength(10);
         builder.Property(p => p.Label).HasColumnName("label").IsRequired().HasMaxLength(250);
         builder.Property(p => p.OrderIndex).HasColumnName("order_index").IsRequired().HasDefaultValue(0);
         builder.Property(p => p.Description).HasColumnName("description").HasMaxLength(500);

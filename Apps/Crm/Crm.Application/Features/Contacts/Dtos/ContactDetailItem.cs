@@ -1,4 +1,4 @@
-using Platform.Application.Common.Dtos.Communications;
+using Crm.Application.Common.Dtos.Communications;
 
 namespace Crm.Application.Features.Contacts.Dtos;
 

@@ -30,6 +30,7 @@ import {
 } from "../../../widgets/attachment/model/AttachmentsContext";
 import { EntityMetadataFooter } from "./EntityMetadataFooter";
 import { entityMetadataKeys } from "../../api/queryKeys";
+import { useEntityTypeRegistry } from "../../lib/entity-type/EntityTypeRegistryContext";
 
 const { Title } = Typography;
 
@@ -123,6 +124,10 @@ function DetailPageLayoutInner<TValues extends FieldValues>({
   children,
 }: DetailPageLayoutProps<TValues>) {
   const { t: tCommon } = useTranslation("common");
+  // Başlık "[Entity Türü]: [title]" formatında; tür ön eki field label'larıyla
+  // aynı gri tonda. entityType registry'de kayıtlı değilse ön ek gösterilmez.
+  const entityMeta = useEntityTypeRegistry().get(entityType);
+  const entityTypeLabel = entityMeta ? tCommon(entityMeta.label) : null;
   const navigate = useNavigate();
   const { pathname } = useLocation();
   const [searchParams, setSearchParams] = useSearchParams();
@@ -286,7 +291,20 @@ function DetailPageLayoutInner<TValues extends FieldValues>({
               color: "rgba(0, 0, 0, 0.88)",
             }}
           >
-            {title}
+            {entityTypeLabel && mode === "new" ? (
+              tCommon("detailPage.newTitle", { entity: entityTypeLabel })
+            ) : entityTypeLabel && mode === "edit" ? (
+              tCommon("detailPage.editTitle", { entity: entityTypeLabel })
+            ) : (
+              <>
+                {entityTypeLabel && (
+                  <span style={{ color: "rgba(0, 0, 0, 0.50)", fontWeight: 600 }}>
+                    {entityTypeLabel}:{" "}
+                  </span>
+                )}
+                {title}
+              </>
+            )}
           </Title>
         </Space>
         {renderActions()}

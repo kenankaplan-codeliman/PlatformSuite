@@ -1,5 +1,6 @@
 import { useCallback, useMemo } from 'react';
 import { useQuery } from '@tanstack/react-query';
+import { useTranslation } from 'react-i18next';
 import { httpClient } from '../api/httpClient';
 import { ServicePath } from '../api/servicePaths';
 import { parameterKeys } from '../api/queryKeys';
@@ -26,21 +27,32 @@ export interface UseGeneralParametersResult {
  * çeker; statik enum tanımlarının yerini alır. Referans verisi olduğundan
  * 5 dakika cache'lenir.
  *
+ * `lang` etiket dilidir; verilmezse aktif i18n dili kullanılır. Backend o dilde
+ * kayıt yoksa varsayılan dile (tr) fallback yapar. `parentCode` boşsa (ör. bağımlı
+ * dropdown'da üst henüz seçilmemişse) sorgu çalışmaz ve boş liste döner.
+ *
  * @example
  *   const { options, getLabel } = useGeneralParameters('LeadStatus');
  *   <SelectField options={options} ... />
- *   <span>{getLabel(lead.status)}</span>
  */
-export function useGeneralParameters(parentCode: string): UseGeneralParametersResult {
+export function useGeneralParameters(
+  parentCode: string | null | undefined,
+  lang?: string,
+): UseGeneralParametersResult {
+  const { i18n } = useTranslation();
+  const effectiveLang = (lang ?? i18n.language ?? 'tr').split('-')[0] ?? 'tr';
+  const enabled = !!parentCode;
+
   const query = useQuery({
-    queryKey: parameterKeys.list(parentCode),
+    queryKey: parameterKeys.list(parentCode ?? '', effectiveLang),
     queryFn: async () => {
       const response = await httpClient.post<GeneralParameterItem[]>(
         ServicePath.GeneralParameter.List,
-        { parentCode },
+        { parentCode, lang: effectiveLang },
       );
       return response.data;
     },
+    enabled,
     staleTime: 5 * 60_000,
   });
 

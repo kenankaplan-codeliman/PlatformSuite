@@ -15,6 +15,7 @@ public static class CrmMappingConfig
 {
     public static void Register(TypeAdapterConfig config)
     {
+        CommunicationsMappings.Register(config);
         AccountMappings.Register(config);
         ContactMappings.Register(config);
         LeadMappings.Register(config);

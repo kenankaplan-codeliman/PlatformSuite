@@ -64,6 +64,10 @@
     "activities": "İlişkili Aktiviteler",
     "attachments": "Belgeler"
   },
+  "detailPage": {
+    "newTitle": "Yeni {{entity}}",
+    "editTitle": "{{entity}} Düzenle"
+  },
   "metadata": {
     "title": "Kayıt Bilgileri",
     "owner": "Sahibi",
