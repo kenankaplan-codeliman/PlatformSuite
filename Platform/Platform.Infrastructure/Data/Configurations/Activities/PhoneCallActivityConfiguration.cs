@@ -26,6 +26,10 @@ public class PhoneCallActivityConfiguration : IEntityTypeConfiguration<PhoneCall
             .HasColumnName("call_notes")
             .HasColumnType("text");
 
+        builder.Property(e => e.IsHtml)
+            .HasColumnName("is_html")
+            .IsRequired();
+
         // Ignored computed/wrapper properties
         builder.Ignore(e => e.Caller);
         builder.Ignore(e => e.Recipient);

@@ -44,6 +44,10 @@ public class AppointmentActivityConfiguration : IEntityTypeConfiguration<Appoint
             .HasColumnName("meeting_notes")
             .HasColumnType("text");
 
+        builder.Property(e => e.IsHtml)
+            .HasColumnName("is_html")
+            .IsRequired();
+
         // Ignored computed/wrapper properties
         builder.Ignore(e => e.Organizer);
         builder.Ignore(e => e.Attendees);

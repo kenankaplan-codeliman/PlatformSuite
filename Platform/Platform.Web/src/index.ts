@@ -176,6 +176,8 @@ export { PasswordField } from './shared/ui/form/fields/PasswordField';
 export { EntityLookupField } from './shared/ui/form/fields/EntityLookupField';
 export { EntityRelationTable } from './shared/ui/form/fields/EntityRelationTable';
 export { CheckboxField } from './shared/ui/form/fields/CheckboxField';
+export { SwitchField } from './shared/ui/form/fields/SwitchField';
+export type { SwitchFieldProps } from './shared/ui/form/fields/SwitchField';
 export { ParameterAutocomplete } from './shared/ui/form/fields/ParameterAutocomplete';
 export type { ParameterAutocompleteProps } from './shared/ui/form/fields/ParameterAutocomplete';
 

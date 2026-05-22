@@ -49,6 +49,8 @@ namespace Platform.Application.Modals.ActivityModal
 
         // Notlar
         public string? MeetingNotes { get; set; }
+
+        public bool IsHtml { get; set; }
     }
 
 }

@@ -1,6 +1,12 @@
 import { useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
-import { useFormContext, useWatch, type Control } from 'react-hook-form';
+import {
+  useFormContext,
+  useWatch,
+  type Control,
+  type FieldPath,
+  type FieldValues,
+} from 'react-hook-form';
 import { useParams } from 'react-router-dom';
 import { Alert } from '../../../../shared/ui/feedback/Alert';
 import {
@@ -15,6 +21,7 @@ import { RichTextEditor } from '../../../../shared/ui/form/fields/RichTextEditor
 import { NumberField } from '../../../../shared/ui/form/fields/NumberField';
 import { SelectField, type SelectOption } from '../../../../shared/ui/form/fields/SelectField';
 import { CheckboxField } from '../../../../shared/ui/form/fields/CheckboxField';
+import { SwitchField } from '../../../../shared/ui/form/fields/SwitchField';
 import { DateTimeField } from '../../../../shared/ui/form/fields/DateTimeField';
 import { EntityLookupField } from '../../../../shared/ui/form/fields/EntityLookupField';
 import { AttachmentsField } from '../../../../widgets/attachment/ui/AttachmentsField';
@@ -74,6 +81,7 @@ function buildEmptyValues(type: ActivityType): ActivityFormValues {
         recipient: null,
         direction: 'Outgoing',
         callNotes: null,
+        isHtml: true,
         recordingUrl: null,
       };
     case 'Task':
@@ -81,6 +89,7 @@ function buildEmptyValues(type: ActivityType): ActivityFormValues {
         ...baseShared,
         activityType: 'Task',
         taskDescription: null,
+        isHtml: true,
         percentComplete: 0,
         reminderAt: null,
       };
@@ -102,6 +111,7 @@ function buildEmptyValues(type: ActivityType): ActivityFormValues {
         isRecurring: false,
         recurringParentId: null,
         meetingNotes: null,
+        isHtml: true,
       };
     case 'Email':
       return {
@@ -360,6 +370,43 @@ export function ActivityDetailPage() {
     );
   }
 
+  // İçerik bölümü: not/açıklama alanı `isHtml` bayrağına göre zengin metin
+  // (RichTextEditor) veya düz metin (TextAreaField) ile beslenir. `isHtml`
+  // toggle'ı bölüm başlığının sağında (FormSection `extra`) durur. Her aktivite
+  // türünün kendi içerik alanı farklı isimde olduğu için tür-spesifik form
+  // değerleri üzerinden generic çalışır (`control` çağırandan geçer).
+  function ContentSection<TValues extends FieldValues>({
+    control,
+    name,
+    rows = 8,
+  }: {
+    control: Control<TValues>;
+    name: FieldPath<TValues>;
+    rows?: number;
+  }) {
+    const isHtmlName = 'isHtml' as FieldPath<TValues>;
+    const isHtml = useWatch({ control, name: isHtmlName });
+    return (
+      <FormSection
+        title={tEntity('sections.content')}
+        collapsible="expanded"
+        extra={
+          <SwitchField
+            name={isHtmlName}
+            control={control}
+            style={{ marginBottom: 0 }}
+          />
+        }
+      >
+        {isHtml ? (
+          <RichTextEditor name={name} control={control} minHeight={200} />
+        ) : (
+          <TextAreaField name={name} control={control} rows={rows} />
+        )}
+      </FormSection>
+    );
+  }
+
   function PhoneCallSection() {
     const form = useFormContext<PhoneCallFormValues>();
     const { partyEntityTypes } = useActivityEntityTypes();
@@ -368,6 +415,7 @@ export function ActivityDetailPage() {
       { value: 'Outgoing', label: tEnums('direction.Outgoing', { defaultValue: 'Giden' }) },
     ];
     return (
+      <>
       <FormSection title={tEntity('sections.phoneCall')} collapsible="expanded">
         <FormRow>
           <EntityLookupField
@@ -392,12 +440,6 @@ export function ActivityDetailPage() {
           options={directionOptions}
           required
         />
-        <TextAreaField
-          name="callNotes"
-          control={form.control}
-          label={tEntity('fields.callNotes.label')}
-          rows={4}
-        />
         <TextField
           name="recordingUrl"
           control={form.control}
@@ -405,19 +447,16 @@ export function ActivityDetailPage() {
           placeholder="https://..."
         />
       </FormSection>
+      <ContentSection control={form.control} name="callNotes" rows={4} />
+      </>
     );
   }
 
   function TaskSection() {
     const form = useFormContext<TaskFormValues>();
     return (
+      <>
       <FormSection title={tEntity('sections.task')} collapsible="expanded">
-        <TextAreaField
-          name="taskDescription"
-          control={form.control}
-          label={tEntity('fields.taskDescription.label')}
-          rows={4}
-        />
         <FormRow>
           <NumberField
             name="percentComplete"
@@ -435,6 +474,8 @@ export function ActivityDetailPage() {
           />
         </FormRow>
       </FormSection>
+      <ContentSection control={form.control} name="taskDescription" rows={4} />
+      </>
     );
   }
 
@@ -442,6 +483,7 @@ export function ActivityDetailPage() {
     const form = useFormContext<AppointmentFormValues>();
     const { partyEntityTypes } = useActivityEntityTypes();
     return (
+      <>
       <FormSection title={tEntity('sections.appointment')} collapsible="expanded">
         <FormRow>
           <DateTimeField
@@ -512,20 +554,15 @@ export function ActivityDetailPage() {
           min={0}
           step={5}
         />
-        <TextAreaField
-          name="meetingNotes"
-          control={form.control}
-          label={tEntity('fields.meetingNotes.label')}
-          rows={4}
-        />
       </FormSection>
+      <ContentSection control={form.control} name="meetingNotes" rows={4} />
+      </>
     );
   }
 
   function EmailSection() {
     const form = useFormContext<EmailFormValues>();
     const { partyEntityTypes } = useActivityEntityTypes();
-    const isHtml = useWatch({ control: form.control, name: 'isHtml' });
     return (
       <>
       <FormSection title={tEntity('sections.email')} collapsible="expanded">
@@ -560,19 +597,8 @@ export function ActivityDetailPage() {
           label={tEntity('fields.bcc.label', { defaultValue: 'BCC' })}
           modalTitle={tEntity('emailContacts.modalTitle')}
         />
-        <CheckboxField
-          name="isHtml"
-          control={form.control}
-          label={tEntity('fields.isHtml.label')}
-        />
       </FormSection>
-      <FormSection title={tEntity('sections.emailBody')} collapsible="expanded">
-        {isHtml ? (
-          <RichTextEditor name="body" control={form.control} minHeight={200} />
-        ) : (
-          <TextAreaField name="body" control={form.control} rows={8} />
-        )}
-      </FormSection>
+      <ContentSection control={form.control} name="body" rows={8} />
       </>
     );
   }

@@ -14,6 +14,10 @@ public class TaskActivityConfiguration : IEntityTypeConfiguration<TaskActivity>
             .HasColumnName("task_description")
             .HasColumnType("text");
 
+        builder.Property(e => e.IsHtml)
+            .HasColumnName("is_html")
+            .IsRequired();
+
         builder.Property(e => e.ReminderAt)
             .HasColumnName("reminder_at");
 

@@ -17,7 +17,12 @@ public class TaskActivity : ActivityBase
     /// Görev açıklaması (Detaylı)
     /// </summary>
     public string? TaskDescription { get; set; }
-   
+
+    /// <summary>
+    /// Görev açıklaması HTML formatında mı?
+    /// </summary>
+    public bool IsHtml { get; set; } = true;
+
     /// <summary>
     /// Hatırlatıcı tarihi
     /// </summary>

@@ -57,6 +57,11 @@ public class AppointmentActivity : ActivityBase
     /// Toplantı notları
     /// </summary>
     public string? MeetingNotes { get; set; }
+
+    /// <summary>
+    /// Toplantı notları HTML formatında mı?
+    /// </summary>
+    public bool IsHtml { get; set; } = true;
     #endregion
 
     #region Party Helper Properties

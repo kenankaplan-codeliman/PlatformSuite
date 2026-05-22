@@ -51,12 +51,14 @@ export interface PhoneCallActivityDetail extends ActivityBaseFields {
   recipient?: EntityReference | null;
   direction: CallDirection;
   callNotes?: string | null;
+  isHtml: boolean;
   recordingUrl?: string | null;
 }
 
 export interface TaskActivityDetail extends ActivityBaseFields {
   activityType: 'Task';
   taskDescription?: string | null;
+  isHtml: boolean;
   percentComplete: number;
   reminderAt?: string | null;
 }
@@ -77,6 +79,7 @@ export interface AppointmentActivityDetail extends ActivityBaseFields {
   isRecurring: boolean;
   recurringParentId?: string | null;
   meetingNotes?: string | null;
+  isHtml: boolean;
 }
 
 export interface EmailActivityDetail extends ActivityBaseFields {

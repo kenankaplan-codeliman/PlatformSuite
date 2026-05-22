@@ -24,6 +24,7 @@ export const phoneCallSchema = z.object({
   recipient: entityReferenceSchema.nullish(),
   direction: z.enum(['Incoming', 'Outgoing']),
   callNotes: z.string().nullish(),
+  isHtml: z.boolean(),
   recordingUrl: z.string().nullish(),
 });
 
@@ -31,6 +32,7 @@ export const taskSchema = z.object({
   ...baseShape,
   activityType: z.literal('Task'),
   taskDescription: z.string().nullish(),
+  isHtml: z.boolean(),
   percentComplete: z.number().min(0).max(100),
   reminderAt: z.string().nullish(),
 });
@@ -52,6 +54,7 @@ export const appointmentSchema = z.object({
   isRecurring: z.boolean(),
   recurringParentId: z.string().nullish(),
   meetingNotes: z.string().nullish(),
+  isHtml: z.boolean(),
 });
 
 export const emailSchema = z.object({

@@ -19,6 +19,8 @@ namespace Platform.Application.Modals.ActivityModal
 
         public string? CallNotes { get; set; }
 
+        public bool IsHtml { get; set; }
+
         public string? RecordingUrl { get; set; }
     }
 }

@@ -28,6 +28,11 @@ public class PhoneCallActivity : ActivityBase
     /// </summary>
     public string? CallNotes { get; set; }
 
+    /// <summary>
+    /// Görüşme notları HTML formatında mı?
+    /// </summary>
+    public bool IsHtml { get; set; } = true;
+
     #endregion
 
     #region Party Helper Properties

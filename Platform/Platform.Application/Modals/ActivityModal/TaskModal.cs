@@ -13,6 +13,7 @@ namespace Platform.Application.Modals.ActivityModal
         }
 
         public string? TaskDescription { get; set; }
+        public bool IsHtml { get; set; }
         public int PercentComplete { get; set; }
         public DateTime? ReminderAt { get; set; }
     }

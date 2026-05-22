@@ -134,6 +134,7 @@ public class ActivityCommandHandler
 
         SetToActivityBaseEntity(entity, modal);
         entity.TaskDescription = modal.TaskDescription;
+        entity.IsHtml = modal.IsHtml;
         entity.PercentComplete = modal.PercentComplete;
         entity.ReminderAt = modal.ReminderAt;
         return entity;
@@ -144,6 +145,7 @@ public class ActivityCommandHandler
         var modal = new TaskModal();
         SetActivityBaseModal(modal, entity);
         modal.TaskDescription = entity.TaskDescription;
+        modal.IsHtml = entity.IsHtml;
         modal.PercentComplete = entity.PercentComplete;
         modal.ReminderAt = entity.ReminderAt;
         return modal;
@@ -207,6 +209,7 @@ public class ActivityCommandHandler
         SetToActivityBaseEntity(entity, modal);
         entity.CallDirection = modal.Direction;
         entity.CallNotes = modal.CallNotes;
+        entity.IsHtml = modal.IsHtml;
         entity.RecordingUrl = modal.RecordingUrl;
 
         if (modal.Caller != null)
@@ -228,6 +231,7 @@ public class ActivityCommandHandler
 
         modal.Direction = entity.CallDirection;
         modal.CallNotes = entity.CallNotes;
+        modal.IsHtml = entity.IsHtml;
         modal.RecordingUrl = entity.RecordingUrl;
         return modal;
     }
@@ -290,6 +294,7 @@ public class ActivityCommandHandler
         SetToActivityBaseEntity(entity, modal);
         entity.IsAllDay = modal.IsAllDay;
         entity.MeetingNotes = modal.MeetingNotes;
+        entity.IsHtml = modal.IsHtml;
         entity.ReminderMinutesBefore = modal.ReminderMinutesBefore;
         entity.RecurrenceRule = modal.RecurrenceRule;
         entity.IsRecurring = modal.IsRecurring;
@@ -317,6 +322,7 @@ public class ActivityCommandHandler
         modal.IsOnline = entity.IsOnline;
         modal.IsAllDay = entity.IsAllDay;
         modal.MeetingNotes = entity.MeetingNotes;
+        modal.IsHtml = entity.IsHtml;
         modal.ReminderMinutesBefore = entity.ReminderMinutesBefore;
         modal.RecurrenceRule = entity.RecurrenceRule;
         modal.IsRecurring = entity.IsRecurring;

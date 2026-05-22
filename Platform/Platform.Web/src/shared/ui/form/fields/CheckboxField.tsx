@@ -1,4 +1,5 @@
 import { Checkbox, Form, Tag } from 'antd';
+import type { CSSProperties } from 'react';
 import { Controller, type Control, type FieldPath, type FieldValues } from 'react-hook-form';
 import { useTranslation } from 'react-i18next';
 import type { FormMode } from '../../../types/FormMode';
@@ -13,6 +14,8 @@ export interface CheckboxFieldProps<TValues extends FieldValues> extends FormRow
   text?: string;
   force?: 'readonly' | 'editable';
   hideInMode?: FormMode[];
+  /** Form.Item'a uygulanan ek stil (örn. başlık içinde kompakt için marginBottom: 0). */
+  style?: CSSProperties;
 }
 
 /**
@@ -25,6 +28,7 @@ export function CheckboxField<TValues extends FieldValues>({
   text,
   force,
   hideInMode,
+  style,
 }: CheckboxFieldProps<TValues>) {
   const { mode } = useFormMode();
   const { t } = useTranslation('common');
@@ -44,7 +48,7 @@ export function CheckboxField<TValues extends FieldValues>({
       render={({ field }) => {
         const checked = !!field.value;
         return (
-          <Form.Item label={effectiveLabel}>
+          <Form.Item label={effectiveLabel} style={style}>
             {isViewMode ? (
               <Tag color={checked ? 'blue' : 'default'}>
                 {checked ? t('actions.yes', { defaultValue: 'Evet' }) : t('actions.no', { defaultValue: 'Hayır' })}
