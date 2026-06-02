@@ -4,7 +4,7 @@
 -- aynı fiyat listesine (veya liste dışı) bağlı sadece bir kayıt olabilir.
 -- =============================================
 
-CREATE TABLE IF NOT EXISTS product_price (
+CREATE TABLE product_price (
     id              UUID            PRIMARY KEY DEFAULT gen_random_uuid(),
     is_active       BOOLEAN         NOT NULL DEFAULT TRUE,
     product_id      UUID            NOT NULL REFERENCES product(id) ON DELETE CASCADE,
@@ -36,20 +36,20 @@ CREATE TABLE IF NOT EXISTS product_price (
     CONSTRAINT chk_product_price_unit_price_non_negative CHECK (unit_price >= 0)
 );
 
-CREATE INDEX IF NOT EXISTS idx_product_price_product_id
+CREATE INDEX idx_product_price_product_id
     ON product_price(product_id) WHERE is_deleted = FALSE;
 
-CREATE INDEX IF NOT EXISTS idx_product_price_supplier_id
+CREATE INDEX idx_product_price_supplier_id
     ON product_price(supplier_id) WHERE is_deleted = FALSE;
 
-CREATE INDEX IF NOT EXISTS idx_product_price_price_list_id
+CREATE INDEX idx_product_price_price_list_id
     ON product_price(price_list_id) WHERE is_deleted = FALSE;
 
 -- Aynı tarih aralığında aynı tedarikçi + ürün + minimum miktar için
 -- aynı fiyat listesi içinde (veya liste dışı NULL grubunda) tek kayıt.
 -- PostgreSQL UNIQUE indeksi NULL'ları farklı kabul ettiği için COALESCE
 -- ile sabit bir sentinel UUID kullanıyoruz.
-CREATE UNIQUE INDEX IF NOT EXISTS uq_product_price_rule
+CREATE UNIQUE INDEX uq_product_price_rule
     ON product_price (
         product_id,
         supplier_id,

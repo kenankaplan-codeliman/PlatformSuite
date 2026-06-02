@@ -21,6 +21,8 @@ public class Account :
     public string AccountStatus { get; set; } = "Prospect";
     public string? Industry { get; set; }
     public decimal? AnnualRevenue { get; set; }
+    // AnnualRevenue'nun para birimi — GeneralParameter code (parentCode: CurrencyType).
+    public string? AnnualRevenueCurrency { get; set; }
     public int? NumberOfEmployees { get; set; }
     public string? Website { get; set; }
     public string? Description { get; set; }

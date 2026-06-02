@@ -169,12 +169,19 @@ export { FormRow } from './shared/ui/form/FormRow';
 export { TextField } from './shared/ui/form/fields/TextField';
 export { NumberField } from './shared/ui/form/fields/NumberField';
 export { SelectField, type SelectOption } from './shared/ui/form/fields/SelectField';
+export { CurrencyField, type CurrencyFieldProps } from './shared/ui/form/fields/CurrencyField';
 export { TextAreaField } from './shared/ui/form/fields/TextAreaField';
 export { RichTextEditor } from './shared/ui/form/fields/RichTextEditor';
 export { DateTimeField } from './shared/ui/form/fields/DateTimeField';
 export { PasswordField } from './shared/ui/form/fields/PasswordField';
 export { EntityLookupField } from './shared/ui/form/fields/EntityLookupField';
 export { EntityRelationTable } from './shared/ui/form/fields/EntityRelationTable';
+export { TableField } from './shared/ui/form/fields/TableField';
+export type {
+  TableFieldColumn,
+  TableFieldProps,
+  TableFieldRenderArgs,
+} from './shared/ui/form/fields/TableField';
 export { CheckboxField } from './shared/ui/form/fields/CheckboxField';
 export { SwitchField } from './shared/ui/form/fields/SwitchField';
 export type { SwitchFieldProps } from './shared/ui/form/fields/SwitchField';

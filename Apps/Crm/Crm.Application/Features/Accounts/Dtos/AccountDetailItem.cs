@@ -11,6 +11,7 @@ public class AccountDetailItem
     public string AccountStatus { get; set; } = default!;
     public string? Industry { get; set; }
     public decimal? AnnualRevenue { get; set; }
+    public string? AnnualRevenueCurrency { get; set; }
     public int? NumberOfEmployees { get; set; }
     public string? Website { get; set; }
     public string? Description { get; set; }

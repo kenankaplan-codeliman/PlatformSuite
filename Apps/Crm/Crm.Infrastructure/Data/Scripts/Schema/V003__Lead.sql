@@ -15,6 +15,7 @@ CREATE TABLE lead (
 
     score integer,
     estimated_value numeric(18,2),
+    estimated_value_currency varchar(10),
     description text,
 
     converted_account_id uuid NULL,

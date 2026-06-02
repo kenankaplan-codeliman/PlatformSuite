@@ -20,5 +20,7 @@ public sealed class UpdateLeadValidator : AbstractValidator<UpdateLeadCommand>
         RuleFor(x => x.Source).NotEmpty().MaximumLength(50);
         RuleFor(x => x.Status).NotEmpty().MaximumLength(50);
         RuleFor(x => x.EstimatedValue).GreaterThanOrEqualTo(0).When(x => x.EstimatedValue.HasValue);
+        // EstimatedValueCurrency GeneralParameter code'u — geçerli kod kontrolü handler'da.
+        RuleFor(x => x.EstimatedValueCurrency).MaximumLength(10);
     }
 }

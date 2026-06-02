@@ -7,7 +7,7 @@
 -- Sadece ID ile ayrı çekilir; liste sorgularına dahil edilmez.
 -- =============================================
 
-CREATE TABLE IF NOT EXISTS attachment_file_data (
+CREATE TABLE attachment_file_data (
     id          UUID    PRIMARY KEY DEFAULT gen_random_uuid(),
     data_bytes  BYTEA   NOT NULL
 );
@@ -22,7 +22,7 @@ CREATE TABLE IF NOT EXISTS attachment_file_data (
 -- AttachmentCleanupService (Platform.Api) süresi geçenleri saatte bir siler.
 -- =============================================
 
-CREATE TABLE IF NOT EXISTS attachment_file_metadata (
+CREATE TABLE attachment_file_metadata (
     id              UUID        PRIMARY KEY DEFAULT gen_random_uuid(),
     file_data_id    UUID        NOT NULL REFERENCES attachment_file_data(id) ON DELETE CASCADE,
 
@@ -59,7 +59,7 @@ CREATE TABLE IF NOT EXISTS attachment_file_metadata (
 -- Bir dosyanın hangi entity ile ilişkili olduğunu tutar.
 -- =============================================
 
-CREATE TABLE IF NOT EXISTS attachment_file_relation (
+CREATE TABLE attachment_file_relation (
     id              UUID        PRIMARY KEY DEFAULT gen_random_uuid(),
     metadata_id     UUID        NOT NULL REFERENCES attachment_file_metadata(id) ON DELETE CASCADE,
     entity_id       UUID        NOT NULL,
@@ -70,8 +70,8 @@ CREATE TABLE IF NOT EXISTS attachment_file_relation (
 -- Indexes
 -- =============================================
 
-CREATE INDEX IF NOT EXISTS idx_attachment_metadata_owner_id         ON attachment_file_metadata(owner_id);
-CREATE INDEX IF NOT EXISTS idx_attachment_metadata_organization_id  ON attachment_file_metadata(organization_id);
-CREATE INDEX IF NOT EXISTS idx_attachment_metadata_expires_at       ON attachment_file_metadata(expires_at) WHERE expires_at IS NOT NULL;
-CREATE INDEX IF NOT EXISTS idx_attachment_relation_entity           ON attachment_file_relation(entity_id, entity_type);
-CREATE INDEX IF NOT EXISTS idx_attachment_relation_metadata_id      ON attachment_file_relation(metadata_id);
+CREATE INDEX idx_attachment_metadata_owner_id         ON attachment_file_metadata(owner_id);
+CREATE INDEX idx_attachment_metadata_organization_id  ON attachment_file_metadata(organization_id);
+CREATE INDEX idx_attachment_metadata_expires_at       ON attachment_file_metadata(expires_at) WHERE expires_at IS NOT NULL;
+CREATE INDEX idx_attachment_relation_entity           ON attachment_file_relation(entity_id, entity_type);
+CREATE INDEX idx_attachment_relation_metadata_id      ON attachment_file_relation(metadata_id);

@@ -2,7 +2,7 @@
 -- purchase_order — Satın Alma Siparişleri
 -- =============================================
 
-CREATE TABLE IF NOT EXISTS purchase_order (
+CREATE TABLE purchase_order (
     id                          UUID PRIMARY KEY DEFAULT gen_random_uuid(),
 
     -- Otomatik üretilen sipariş numarası (PO-YYYY-NNNN)
@@ -56,7 +56,7 @@ CREATE TABLE IF NOT EXISTS purchase_order (
 -- product_id null ise free-text line (product_name kullanılır).
 -- =============================================
 
-CREATE TABLE IF NOT EXISTS purchase_order_line (
+CREATE TABLE purchase_order_line (
     id                        UUID PRIMARY KEY DEFAULT gen_random_uuid(),
 
     purchase_order_id         UUID NOT NULL REFERENCES purchase_order(id) ON DELETE CASCADE,
@@ -113,7 +113,7 @@ CREATE TABLE IF NOT EXISTS purchase_order_line (
 -- 1 OrderLine → N RequestLine (junction)
 -- =============================================
 
-CREATE TABLE IF NOT EXISTS purchase_order_request_line (
+CREATE TABLE purchase_order_request_line (
     id                          UUID PRIMARY KEY DEFAULT gen_random_uuid(),
 
     purchase_order_line_id      UUID NOT NULL REFERENCES purchase_order_line(id) ON DELETE CASCADE,
@@ -130,22 +130,22 @@ CREATE TABLE IF NOT EXISTS purchase_order_request_line (
 );
 
 -- Indexes
-CREATE INDEX IF NOT EXISTS idx_purchase_order_supplier ON purchase_order(supplier_id);
-CREATE INDEX IF NOT EXISTS idx_purchase_order_request ON purchase_order(purchase_request_id);
-CREATE INDEX IF NOT EXISTS idx_purchase_order_organization ON purchase_order(organization_id);
-CREATE INDEX IF NOT EXISTS idx_purchase_order_owner ON purchase_order(owner_id);
-CREATE INDEX IF NOT EXISTS idx_purchase_order_status ON purchase_order(status) WHERE is_deleted = FALSE;
-CREATE INDEX IF NOT EXISTS idx_purchase_order_line_order ON purchase_order_line(purchase_order_id);
-CREATE INDEX IF NOT EXISTS idx_purchase_order_line_request_line ON purchase_order_line(purchase_request_line_id);
-CREATE INDEX IF NOT EXISTS idx_purchase_order_line_product ON purchase_order_line(product_id);
-CREATE INDEX IF NOT EXISTS idx_purchase_order_line_product_price ON purchase_order_line(product_price_id);
-CREATE INDEX IF NOT EXISTS idx_purchase_order_line_status ON purchase_order_line(status) WHERE is_deleted = FALSE;
-CREATE INDEX IF NOT EXISTS idx_po_request_line_order_line ON purchase_order_request_line(purchase_order_line_id);
-CREATE INDEX IF NOT EXISTS idx_po_request_line_request_line ON purchase_order_request_line(purchase_request_line_id);
-CREATE UNIQUE INDEX IF NOT EXISTS uq_purchase_order_number ON purchase_order(order_number) WHERE is_deleted = FALSE;
+CREATE INDEX idx_purchase_order_supplier ON purchase_order(supplier_id);
+CREATE INDEX idx_purchase_order_request ON purchase_order(purchase_request_id);
+CREATE INDEX idx_purchase_order_organization ON purchase_order(organization_id);
+CREATE INDEX idx_purchase_order_owner ON purchase_order(owner_id);
+CREATE INDEX idx_purchase_order_status ON purchase_order(status) WHERE is_deleted = FALSE;
+CREATE INDEX idx_purchase_order_line_order ON purchase_order_line(purchase_order_id);
+CREATE INDEX idx_purchase_order_line_request_line ON purchase_order_line(purchase_request_line_id);
+CREATE INDEX idx_purchase_order_line_product ON purchase_order_line(product_id);
+CREATE INDEX idx_purchase_order_line_product_price ON purchase_order_line(product_price_id);
+CREATE INDEX idx_purchase_order_line_status ON purchase_order_line(status) WHERE is_deleted = FALSE;
+CREATE INDEX idx_po_request_line_order_line ON purchase_order_request_line(purchase_order_line_id);
+CREATE INDEX idx_po_request_line_request_line ON purchase_order_request_line(purchase_request_line_id);
+CREATE UNIQUE INDEX uq_purchase_order_number ON purchase_order(order_number) WHERE is_deleted = FALSE;
 
 -- Sequence for order number generation
-CREATE SEQUENCE IF NOT EXISTS purchase_order_seq START 1;
+CREATE SEQUENCE purchase_order_seq START 1;
 
 COMMENT ON TABLE purchase_order IS 'Satın alma siparişleri — tedarikçiye gönderilir';
 COMMENT ON TABLE purchase_order_line IS 'Sipariş satırları — satır bazlı status ve fiyat; aynı ürün için birden fazla talep satırı gruplanabilir';

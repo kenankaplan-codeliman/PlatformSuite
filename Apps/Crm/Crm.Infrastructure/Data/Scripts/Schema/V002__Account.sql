@@ -5,6 +5,7 @@ CREATE TABLE account (
     account_status varchar(50) NOT NULL DEFAULT 'Prospect' CHECK (account_status IN ('Prospect', 'Active', 'AtRisk', 'Inactive', 'Churned')),
     industry varchar(150),
     annual_revenue numeric(18,2),
+    annual_revenue_currency varchar(10),
     number_of_employees integer,
     website varchar(250),
     description text,

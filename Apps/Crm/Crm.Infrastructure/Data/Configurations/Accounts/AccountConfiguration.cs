@@ -47,6 +47,11 @@ public class AccountConfiguration : IEntityTypeConfiguration<Account>
             .HasColumnName("annual_revenue")
             .HasPrecision(18, 2);
 
+        // AnnualRevenue para birimi: GeneralParameter code (CurrencyType) — düz string.
+        builder.Property(a => a.AnnualRevenueCurrency)
+            .HasColumnName("annual_revenue_currency")
+            .HasMaxLength(10);
+
         builder.Property(a => a.NumberOfEmployees)
             .HasColumnName("number_of_employees");
 

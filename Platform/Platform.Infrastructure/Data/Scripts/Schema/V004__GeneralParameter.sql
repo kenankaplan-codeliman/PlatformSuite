@@ -11,7 +11,7 @@
 -- API yalnız okur.
 -- =============================================
 
-CREATE TABLE IF NOT EXISTS general_parameter (
+CREATE TABLE general_parameter (
     id           UUID         PRIMARY KEY DEFAULT gen_random_uuid(),
 
     code         VARCHAR(100) NOT NULL,
@@ -32,15 +32,15 @@ CREATE TABLE IF NOT EXISTS general_parameter (
 );
 
 -- Değer satırları: (parent_code, code, lang) benzersiz
-CREATE UNIQUE INDEX IF NOT EXISTS uq_general_parameter_value_code
+CREATE UNIQUE INDEX uq_general_parameter_value_code
     ON general_parameter (parent_code, code, lang)
     WHERE parent_code IS NOT NULL;
 
 -- Kök satırlar: (code, lang) benzersiz
-CREATE UNIQUE INDEX IF NOT EXISTS uq_general_parameter_root_code
+CREATE UNIQUE INDEX uq_general_parameter_root_code
     ON general_parameter (code, lang)
     WHERE parent_code IS NULL;
 
 -- parent_code ile gruplu listeleme için
-CREATE INDEX IF NOT EXISTS idx_general_parameter_parent_code
+CREATE INDEX idx_general_parameter_parent_code
     ON general_parameter (parent_code);

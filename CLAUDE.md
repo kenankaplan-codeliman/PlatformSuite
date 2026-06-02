@@ -108,6 +108,7 @@ Bağımlılık **yalnızca yukarıdan aşağıya** akar. Ters import yasaktır.
 | Birden fazla sayfada kullanılan kompozisyon | `<App>.Web/src/widgets/<ad>/ui/` |
 | Sadece tek sayfada kullanılıyor | `<App>.Web/src/pages/<sayfa>/ui/` |
 | Birden fazla app'in tüketeceği layout/primitive | `Platform.Web/src/shared/ui/` ve `index.ts` export listesine ekle |
+| Editable satır koleksiyonu (line items) | `@platform/ui`'dan `TableField` + kullanım yerinde column array. Per-entity widget AÇMA; Email/Phone gibi çok-tüketicili durumlarda thin wrapper kabul; tek-tüketicili tablolar (Opportunity products) sayfa içinde inline. |
 
 **Altın kural:** İkinci sayfada kullanılana kadar `pages/` dışına taşıma. İkinci app'te kullanılana kadar `Platform.Web` (`@platform/ui`)'a promote etme. Erken soyutlama yapma.
 

@@ -7,6 +7,7 @@
     "accountStatus": { "label": "Durum" },
     "industry": { "label": "Sektör", "placeholder": "Bilişim, İnşaat, …" },
     "annualRevenue": { "label": "Yıllık Ciro" },
+    "annualRevenueCurrency": { "label": "Para Birimi" },
     "numberOfEmployees": { "label": "Çalışan Sayısı" },
     "website": { "label": "Web Sitesi", "placeholder": "https://…" },
     "description": { "label": "Açıklama" },

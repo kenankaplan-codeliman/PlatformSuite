@@ -6,6 +6,7 @@ public class ProductPriceListItem
     public Guid ProductId { get; set; }
     public string? ProductCode { get; set; }
     public string? ProductName { get; set; }
+    public string? ProductUnitOfMeasure { get; set; }
     public Guid SupplierId { get; set; }
     public string? SupplierName { get; set; }
     public Guid? PriceListId { get; set; }

@@ -30,6 +30,10 @@ public sealed class UpdateLeadHandler : IRequestHandler<UpdateLeadCommand, Resul
         if (!await _parameters.ExistsAsync(LeadParameterCodes.Source, request.Source, cancellationToken))
             return LeadErrors.InvalidSource;
 
+        if (!string.IsNullOrEmpty(request.EstimatedValueCurrency) &&
+            !await _parameters.ExistsAsync(CurrencyParameterCodes.CurrencyType, request.EstimatedValueCurrency, cancellationToken))
+            return LeadErrors.InvalidCurrency;
+
         request.Adapt(entity);
         await _repository.UpdateAsync(entity, cancellationToken);
         return entity.Adapt<LeadDetailItem>();

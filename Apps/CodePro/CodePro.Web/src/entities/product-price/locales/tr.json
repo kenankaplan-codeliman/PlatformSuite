@@ -3,6 +3,7 @@
   "plural": "Ürün Fiyatları",
   "fields": {
     "product": { "label": "Ürün", "placeholder": "Ürün seçiniz" },
+    "unitOfMeasure": { "label": "Ölçü Birimi" },
     "supplier": { "label": "Tedarikçi", "placeholder": "Tedarikçi seçiniz" },
     "priceList": { "label": "Fiyat Listesi", "placeholder": "(Opsiyonel)" },
     "minimumQuantity": { "label": "Minimum Miktar" },

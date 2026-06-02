@@ -19,6 +19,7 @@ export interface LeadDetailItem {
   status: string;
   score?: number | null;
   estimatedValue?: number | null;
+  estimatedValueCurrency?: string | null;
   description?: string | null;
   convertedAccountId?: string | null;
   convertedAccountName?: string | null;

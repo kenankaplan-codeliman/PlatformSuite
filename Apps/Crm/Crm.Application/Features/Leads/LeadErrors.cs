@@ -12,4 +12,7 @@ public static class LeadErrors
 
     public static readonly Error InvalidSource =
         new("Lead.InvalidSource", "Geçersiz aday kaynağı.", ErrorType.Validation);
+
+    public static readonly Error InvalidCurrency =
+        new("Lead.InvalidCurrency", "Geçersiz para birimi.", ErrorType.Validation);
 }

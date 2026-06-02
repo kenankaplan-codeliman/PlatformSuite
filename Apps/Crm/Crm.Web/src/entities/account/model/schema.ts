@@ -53,6 +53,8 @@ export const accountSchema = z.object({
   accountStatus: z.string().min(1, 'common:errors.required'),
   industry: z.string().max(200).nullish(),
   annualRevenue: z.number().min(0).nullish(),
+  // Para birimi: GeneralParameter code (CurrencyType). Geçerlilik backend handler'ında.
+  annualRevenueCurrency: z.string().nullish(),
   numberOfEmployees: z.number().int().min(0).nullish(),
   website: z.string().max(500).nullish(),
   description: z.string().nullish(),

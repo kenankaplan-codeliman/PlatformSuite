@@ -19,6 +19,15 @@ import {
 import { RoutePaths } from '../../../../app/router/paths';
 import { OpportunitiesFilterPanel } from './OpportunitiesFilterPanel';
 
+// Amount kolonları sadece formatlı sayı gösterir; currency ayrı kolonda.
+const formatAmount = (amount: number | null | undefined) => {
+  if (amount === null || amount === undefined) return '';
+  return amount.toLocaleString('tr-TR', {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  });
+};
+
 export function OpportunitiesListPage() {
   const { t } = useTranslation('page.opportunities-list');
   const { t: tEntity } = useTranslation('entity.opportunity');
@@ -46,7 +55,23 @@ export function OpportunitiesListPage() {
         dataIndex: 'accountName',
       },
       { key: 'stage', title: tEntity('fields.stage.label'), render: (_v, r) => getStageLabel(r.stage) },
-      { key: 'amount', title: tEntity('fields.amount.label'), dataIndex: 'amount' },
+      {
+        key: 'estimatedAmount',
+        title: tEntity('fields.estimatedAmount.label'),
+        align: 'right',
+        render: (_v, r) => formatAmount(r.estimatedAmount),
+      },
+      {
+        key: 'actualAmount',
+        title: tEntity('fields.actualAmount.label'),
+        align: 'right',
+        render: (_v, r) => formatAmount(r.actualAmount),
+      },
+      {
+        key: 'currency',
+        title: tEntity('fields.currency.label'),
+        dataIndex: 'currency',
+      },
       {
         key: 'probability',
         title: tEntity('fields.probability.label'),

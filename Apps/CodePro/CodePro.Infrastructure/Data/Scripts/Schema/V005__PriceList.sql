@@ -4,7 +4,7 @@
 -- product_price tablosunda price_list_id ile bu başlığa bağlanır.
 -- =============================================
 
-CREATE TABLE IF NOT EXISTS price_list (
+CREATE TABLE price_list (
     id              UUID            PRIMARY KEY DEFAULT gen_random_uuid(),
     is_active       BOOLEAN         NOT NULL DEFAULT TRUE,
 
@@ -27,14 +27,14 @@ CREATE TABLE IF NOT EXISTS price_list (
     deleted_at      TIMESTAMPTZ
 );
 
-CREATE UNIQUE INDEX IF NOT EXISTS uq_price_list_code
+CREATE UNIQUE INDEX uq_price_list_code
     ON price_list(code) WHERE is_deleted = FALSE;
 
-CREATE INDEX IF NOT EXISTS idx_price_list_supplier_id
+CREATE INDEX idx_price_list_supplier_id
     ON price_list(supplier_id) WHERE is_deleted = FALSE;
 
 -- Sequence for code generation (PL-YYYY-NNNN)
-CREATE SEQUENCE IF NOT EXISTS price_list_seq START 1;
+CREATE SEQUENCE price_list_seq START 1;
 
 COMMENT ON TABLE price_list IS 'Tedarikçi bazlı fiyat listesi başlığı';
 COMMENT ON COLUMN price_list.code IS 'Boş gönderilirse auto-gen PL-YYYY-NNNN';

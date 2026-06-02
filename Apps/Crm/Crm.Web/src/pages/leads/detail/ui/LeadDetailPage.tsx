@@ -4,6 +4,7 @@ import { useTranslation } from 'react-i18next';
 import {
   AttachmentsField,
   commonDocumentTypes,
+  CurrencyField,
   DetailPageLayout,
   FormSection,
   NumberField,
@@ -43,6 +44,7 @@ const emptyLead: LeadFormValues = {
   status: 'New',
   score: null,
   estimatedValue: null,
+  estimatedValueCurrency: null,
   description: null,
   convertedAccountId: null,
   convertedContactId: null,
@@ -154,6 +156,7 @@ export function LeadDetailPage() {
     statusOptions: SelectOption<string>[];
   }) {
     const form = useFormContext<LeadFormValues>();
+    const { options: currencyOptions } = useGeneralParameters('CurrencyType');
     return (
       <FormSection title={tEntity('sections.general')}>
         <TextField
@@ -185,12 +188,19 @@ export function LeadDetailPage() {
           min={0}
           max={100}
         />
-        <NumberField
+        <CurrencyField<LeadFormValues>
           name="estimatedValue"
           control={form.control}
           label={tEntity('fields.estimatedValue.label')}
           min={0}
           precision={2}
+        />
+        <SelectField<LeadFormValues>
+          name="estimatedValueCurrency"
+          control={form.control}
+          label={tEntity('fields.estimatedValueCurrency.label')}
+          options={currencyOptions}
+          allowClear
         />
       </FormSection>
     );

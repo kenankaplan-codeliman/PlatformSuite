@@ -6,6 +6,7 @@ import { FormSection } from "@platform/ui";
 import { FormRow } from "@platform/ui";
 import { TextField } from "@platform/ui";
 import { NumberField } from "@platform/ui";
+import { CurrencyField } from "@platform/ui";
 import {
   SelectField,
   type SelectOption,
@@ -47,6 +48,7 @@ const emptyAccount: AccountFormValues = {
   accountStatus: "Prospect",
   industry: null,
   annualRevenue: null,
+  annualRevenueCurrency: null,
   numberOfEmployees: null,
   website: null,
   description: null,
@@ -263,6 +265,7 @@ export function AccountDetailPage() {
 
   function DetailsSection() {
     const form = useFormContext<AccountFormValues>();
+    const { options: currencyOptions } = useGeneralParameters('CurrencyType');
     return (
       <FormSection title={tEntity("sections.details")} collapsible="expanded">
         <TextField
@@ -273,13 +276,21 @@ export function AccountDetailPage() {
           maxLength={500}
         />
         <FormRow columns={3}>
-          <NumberField
+          <CurrencyField<AccountFormValues>
             name="annualRevenue"
             control={form.control}
             label={tEntity("fields.annualRevenue.label")}
             min={0}
             precision={2}
-            columns={2}
+            columns={1}
+          />
+          <SelectField<AccountFormValues>
+            name="annualRevenueCurrency"
+            control={form.control}
+            label={tEntity("fields.annualRevenueCurrency.label")}
+            options={currencyOptions}
+            allowClear
+            columns={1}
           />
           <NumberField
             name="numberOfEmployees"

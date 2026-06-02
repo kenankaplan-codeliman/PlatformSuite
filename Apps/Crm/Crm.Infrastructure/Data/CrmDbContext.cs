@@ -4,6 +4,7 @@ using Crm.Domain.Entities.Communications;
 using Crm.Domain.Entities.Contacts;
 using Crm.Domain.Entities.Leads;
 using Crm.Domain.Entities.Opportunities;
+using Crm.Domain.Entities.Products;
 using Platform.Application.Interfaces;
 using Platform.Infrastructure.Data;
 using Microsoft.EntityFrameworkCore;
@@ -40,6 +41,8 @@ public sealed class CrmDbContext : PlatformDbContext, ICrmDbContext
     // ======= CRM features =======
     public DbSet<Lead> Lead { get; set; }
     public DbSet<Opportunity> Opportunity { get; set; }
+    public DbSet<OpportunityProduct> OpportunityProduct { get; set; }
+    public DbSet<Product> Product { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {

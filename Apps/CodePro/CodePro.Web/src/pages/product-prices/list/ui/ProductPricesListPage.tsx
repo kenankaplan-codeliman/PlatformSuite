@@ -39,9 +39,20 @@ export function ProductPricesListPage() {
       { key: 'priceListName', title: tEntity('fields.priceList.label'), dataIndex: 'priceListName' },
       { key: 'minimumQuantity', title: tEntity('fields.minimumQuantity.label'), dataIndex: 'minimumQuantity' },
       {
+        key: 'productUnitOfMeasure',
+        title: tEntity('fields.unitOfMeasure.label'),
+        dataIndex: 'productUnitOfMeasure',
+      },
+      {
         key: 'unitPrice',
         title: tEntity('fields.unitPrice.label'),
-        render: (_v, r) => `${r.unitPrice} ${r.currency}`,
+        dataIndex: 'unitPrice',
+        align: 'right',
+      },
+      {
+        key: 'currency',
+        title: tEntity('fields.currency.label'),
+        dataIndex: 'currency',
       },
       {
         key: 'isActive',

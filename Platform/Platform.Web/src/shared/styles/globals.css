@@ -27,3 +27,59 @@ body {
 .comm-card .ant-card-body > *:last-child.ant-form-item {
   margin-bottom: 0;
 }
+
+/* Generic TableField: editable satır koleksiyonu için liste-satırı görünümü
+   (Opportunity products, Communication emails/phones, vb.). Kart yerine grid;
+   view ve edit modunda aynı yapı — field primitive'leri kendi view-mode
+   davranışını render eder. Grid track template'i TableField inline `style` ile
+   set eder; CSS sadece görsel iskelet (border, hover, header tint). */
+.table-field {
+  border: 1px solid #f0f0f0;
+  border-radius: 6px;
+  overflow: hidden;
+  background: #fff;
+}
+.table-field-row {
+  display: grid;
+  gap: 12px;
+  padding: 8px 12px;
+  align-items: center;
+  border-bottom: 1px solid #f0f0f0;
+}
+.table-field-row:last-child {
+  border-bottom: none;
+}
+.table-field-row .ant-form-item {
+  margin-bottom: 0;
+}
+.table-field-header {
+  background-color: #fafafa;
+  font-weight: 500;
+  font-size: 12px;
+  color: rgba(0, 0, 0, 0.65);
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+}
+.table-field-right {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+.table-field-empty {
+  padding: 8px 12px;
+  display: flex;
+  justify-content: center;
+}
+/* antd Empty'nin default vertical margin'lerini sıkıştır — boş tabloda
+   ekran yer kaplamasın. */
+.table-field-empty .ant-empty {
+  margin: 0;
+}
+.table-field-empty .ant-empty-image {
+  margin-bottom: 4px;
+  height: auto;
+}
+.table-field-empty .ant-empty-description {
+  margin-top: 0;
+  font-size: 12px;
+  color: rgba(0, 0, 0, 0.45);
+}

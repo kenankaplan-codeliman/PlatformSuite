@@ -15,6 +15,7 @@
     "status": { "label": "Durum" },
     "score": { "label": "Skor" },
     "estimatedValue": { "label": "Tahmini Değer" },
+    "estimatedValueCurrency": { "label": "Para Birimi" },
     "description": { "label": "Açıklama" },
     "isActive": { "label": "Aktif" }
   },

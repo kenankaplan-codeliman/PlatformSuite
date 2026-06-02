@@ -7,6 +7,7 @@ const ApiBase = '/api';
 const ControllerPaths = {
   Lead: `${ApiBase}/lead`,
   Opportunity: `${ApiBase}/opportunity`,
+  Product: `${ApiBase}/product`,
 } as const;
 
 export const CrmServicePath = {
@@ -27,5 +28,14 @@ export const CrmServicePath = {
     Delete: `${ControllerPaths.Opportunity}/delete`,
     Assign: `${ControllerPaths.Opportunity}/assign`,
     SetState: `${ControllerPaths.Opportunity}/set-state`,
+  },
+  Product: {
+    List: `${ControllerPaths.Product}/list`,
+    Search: `${ControllerPaths.Product}/search`,
+    Get: `${ControllerPaths.Product}/get`,
+    Create: `${ControllerPaths.Product}/create`,
+    Update: `${ControllerPaths.Product}/update`,
+    Delete: `${ControllerPaths.Product}/delete`,
+    SetState: `${ControllerPaths.Product}/set-state`,
   },
 } as const;

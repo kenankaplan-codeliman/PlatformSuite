@@ -8,7 +8,21 @@ CREATE TABLE opportunity (
     primary_contact_id uuid NULL,
 
     stage varchar(50) NOT NULL DEFAULT 'Prospecting' CHECK (stage IN ('Prospecting', 'Qualification', 'NeedsAnalysis', 'Proposal', 'Negotiation', 'ClosedWon', 'ClosedLost')),
-    amount numeric(18,2),
+    estimated_amount numeric(18,2),
+    -- Deal-level para birimi (GeneralParameter CurrencyType code).
+    -- estimated_amount + actual_amount + tüm opportunity_product satırları bu currency'de.
+    -- Multi-currency line item desteği yok (FX dönüşümü kapsam dışı).
+    currency varchar(10),
+    -- Gerçekleşen tutar: Products satır toplamlarının (brüt) toplamı (server hesaplar).
+    -- Tüm satırlar tek currency'de olduğu için toplam matematiksel olarak anlamlı.
+    actual_amount numeric(18,2),
+    -- Gerçekleşen NET tutar: satırların NetAmount toplamı (oran+tutar indirim uygulanmış).
+    actual_net_amount numeric(18,2),
+    -- Tüm satırların indirim tutarlarının (oran cinsinden + tutar cinsinden) currency toplamı.
+    total_discount_amount numeric(18,2),
+    -- Fırsat seviyesindeki efektif indirim oranı (0-100) = total_discount_amount / actual_amount * 100.
+    -- actual_amount NULL/0 ise NULL.
+    total_discount_rate numeric(5,2),
     probability integer NOT NULL DEFAULT 0 CHECK (probability BETWEEN 0 AND 100),
     close_date timestamp NULL,
     loss_reason varchar(500),

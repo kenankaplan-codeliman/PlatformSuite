@@ -1,0 +1,19 @@
+{
+  "singular": "Ürün",
+  "plural": "Ürünler",
+  "fields": {
+    "name": { "label": "Ürün Adı", "placeholder": "Örn: Yıllık Bakım Paketi" },
+    "productCode": { "label": "Ürün Kodu", "placeholder": "Örn: PRD-001" },
+    "category": { "label": "Kategori" },
+    "unitPrice": { "label": "Birim Fiyat" },
+    "unitPriceCurrency": { "label": "Para Birimi" },
+    "unitOfMeasure": { "label": "Ölçü Birimi" },
+    "description": { "label": "Açıklama" },
+    "isActive": { "label": "Aktif" }
+  },
+  "sections": {
+    "general": "Genel Bilgiler",
+    "pricing": "Fiyatlandırma",
+    "details": "Detaylar"
+  }
+}

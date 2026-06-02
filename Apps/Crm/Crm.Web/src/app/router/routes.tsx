@@ -17,6 +17,8 @@ import { LeadDetailPage } from '../../pages/leads/detail/ui/LeadDetailPage';
 import { LeadsListPage } from '../../pages/leads/list/ui/LeadsListPage';
 import { OpportunityDetailPage } from '../../pages/opportunities/detail/ui/OpportunityDetailPage';
 import { OpportunitiesListPage } from '../../pages/opportunities/list/ui/OpportunitiesListPage';
+import { ProductDetailPage } from '../../pages/products/detail/ui/ProductDetailPage';
+import { ProductsListPage } from '../../pages/products/list/ui/ProductsListPage';
 import { ProtectedShell } from './ProtectedShell';
 import { RoutePaths, RoutePatterns } from './paths';
 
@@ -52,6 +54,11 @@ export const router = createBrowserRouter([
       { path: RoutePatterns.OpportunityNew, element: <OpportunityDetailPage /> },
       { path: RoutePatterns.OpportunityEdit, element: <OpportunityDetailPage /> },
       { path: RoutePatterns.OpportunityView, element: <OpportunityDetailPage /> },
+
+      { path: RoutePatterns.ProductsList, element: <ProductsListPage /> },
+      { path: RoutePatterns.ProductNew, element: <ProductDetailPage /> },
+      { path: RoutePatterns.ProductEdit, element: <ProductDetailPage /> },
+      { path: RoutePatterns.ProductView, element: <ProductDetailPage /> },
 
       { path: RoutePatterns.AppUsersList, element: <AppUsersListPage /> },
       { path: RoutePatterns.AppUserNew, element: <AppUserDetailPage /> },

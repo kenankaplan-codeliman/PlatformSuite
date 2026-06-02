@@ -3,6 +3,7 @@ using Crm.Domain.Entities.Communications;
 using Crm.Domain.Entities.Contacts;
 using Crm.Domain.Entities.Leads;
 using Crm.Domain.Entities.Opportunities;
+using Crm.Domain.Entities.Products;
 using Platform.Application.Common.Abstractions;
 using Microsoft.EntityFrameworkCore;
 
@@ -30,4 +31,6 @@ public interface ICrmDbContext : IApplicationDbContext
     // CRM features
     DbSet<Lead> Lead { get; }
     DbSet<Opportunity> Opportunity { get; }
+    DbSet<OpportunityProduct> OpportunityProduct { get; }
+    DbSet<Product> Product { get; }
 }

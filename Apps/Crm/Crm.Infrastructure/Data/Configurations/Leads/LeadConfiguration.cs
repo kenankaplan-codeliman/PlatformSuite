@@ -46,6 +46,8 @@ public class LeadConfiguration : IEntityTypeConfiguration<Lead>
 
         builder.Property(l => l.Score).HasColumnName("score");
         builder.Property(l => l.EstimatedValue).HasColumnName("estimated_value").HasPrecision(18, 2);
+        // EstimatedValue para birimi: GeneralParameter code (CurrencyType) — düz string.
+        builder.Property(l => l.EstimatedValueCurrency).HasColumnName("estimated_value_currency").HasMaxLength(10);
         builder.Property(l => l.Description).HasColumnName("description").HasColumnType("text");
 
         builder.Property(l => l.ConvertedAccountId).HasColumnName("converted_account_id");

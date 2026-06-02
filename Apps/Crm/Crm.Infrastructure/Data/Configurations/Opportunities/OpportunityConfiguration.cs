@@ -47,7 +47,18 @@ public class OpportunityConfiguration : IEntityTypeConfiguration<Opportunity>
             .IsRequired()
             .HasMaxLength(50);
 
-        builder.Property(o => o.Amount).HasColumnName("amount").HasPrecision(18, 2);
+        builder.Property(o => o.EstimatedAmount).HasColumnName("estimated_amount").HasPrecision(18, 2);
+        // Deal-level para birimi: GeneralParameter code (CurrencyType) — düz string.
+        // EstimatedAmount + ActualAmount + tüm OpportunityProduct satırları bu currency'dedir.
+        builder.Property(o => o.Currency).HasColumnName("currency").HasMaxLength(10);
+        // ActualAmount sunucu tarafında Products toplamı olarak hesaplanır (tek currency olduğu için doğru).
+        builder.Property(o => o.ActualAmount).HasColumnName("actual_amount").HasPrecision(18, 2);
+
+        // Net + indirim toplamları handler/mapping tarafından satırlardan hesaplanır;
+        // client değeri yok sayılır. Currency parent Opportunity.Currency'sidir.
+        builder.Property(o => o.ActualNetAmount).HasColumnName("actual_net_amount").HasPrecision(18, 2);
+        builder.Property(o => o.TotalDiscountAmount).HasColumnName("total_discount_amount").HasPrecision(18, 2);
+        builder.Property(o => o.TotalDiscountRate).HasColumnName("total_discount_rate").HasPrecision(5, 2);
 
         builder.Property(o => o.Probability)
             .HasColumnName("probability")
@@ -71,6 +82,12 @@ public class OpportunityConfiguration : IEntityTypeConfiguration<Opportunity>
         builder.Property(o => o.IsDeleted).HasColumnName("is_deleted").IsRequired().HasDefaultValue(false);
         builder.Property(o => o.DeletedBy).HasColumnName("deleted_by");
         builder.Property(o => o.DeletedAt).HasColumnName("deleted_at");
+
+        builder.HasMany(o => o.Products)
+            .WithOne(p => p.Opportunity)
+            .HasForeignKey(p => p.OpportunityId)
+            .HasConstraintName("fk_opportunity_product_opportunity")
+            .OnDelete(DeleteBehavior.Cascade);
 
         builder.HasIndex(o => o.Stage).HasDatabaseName("ix_opportunity_stage");
         builder.HasIndex(o => o.AccountId).HasDatabaseName("ix_opportunity_account");

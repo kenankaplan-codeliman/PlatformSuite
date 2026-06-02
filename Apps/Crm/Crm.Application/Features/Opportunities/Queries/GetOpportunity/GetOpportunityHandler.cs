@@ -17,8 +17,7 @@ public sealed class GetOpportunityHandler : IRequestHandler<GetOpportunityQuery,
     {
         var entity = await _db.Opportunity
             .AsNoTracking()
-            .Include(o => o.Account)
-            .Include(o => o.PrimaryContact)
+            .WithDetailIncludes()
             .FirstOrDefaultAsync(o => o.Id == request.Id, cancellationToken);
 
         if (entity is null) return OpportunityErrors.NotFound;

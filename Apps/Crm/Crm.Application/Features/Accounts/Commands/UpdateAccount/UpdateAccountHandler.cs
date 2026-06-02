@@ -42,6 +42,10 @@ public sealed class UpdateAccountHandler : IRequestHandler<UpdateAccountCommand,
         if (!await _parameters.ExistsAsync(AccountParameterCodes.Type, request.AccountType, cancellationToken))
             return AccountErrors.InvalidType;
 
+        if (!string.IsNullOrEmpty(request.AnnualRevenueCurrency) &&
+            !await _parameters.ExistsAsync(CurrencyParameterCodes.CurrencyType, request.AnnualRevenueCurrency, cancellationToken))
+            return AccountErrors.InvalidCurrency;
+
         var entity = await _repository.GetAsync(request.Id, cancellationToken);
         if (entity is null) return AccountErrors.NotFound;
 

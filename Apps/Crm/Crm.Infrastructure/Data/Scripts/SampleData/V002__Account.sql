@@ -13,18 +13,18 @@
 -- ---------------------------------------------
 -- account (parent first so self-FK doesn't break)
 -- ---------------------------------------------
-INSERT INTO account (id, account_name, account_type, account_status, industry, annual_revenue, number_of_employees, website, parent_account_id, owner_id, organization_id, is_active, created_by, created_at)
-SELECT t.id::uuid, t.name, t.type, t.status, t.industry, t.revenue::numeric, t.employees::int, t.website,
+INSERT INTO account (id, account_name, account_type, account_status, industry, annual_revenue, annual_revenue_currency, number_of_employees, website, parent_account_id, owner_id, organization_id, is_active, created_by, created_at)
+SELECT t.id::uuid, t.name, t.type, t.status, t.industry, t.revenue::numeric, t.revenue_currency, t.employees::int, t.website,
        NULLIF(t.parent_id, '')::uuid,
        t.owner_id::uuid, t.org_id::uuid, true,
        '00000000-0000-0000-0000-000000000020'::uuid, current_timestamp
 FROM (VALUES
-    ('11111111-0000-0000-0000-000000000001', 'KobiLtd Holding A.Ş.',     'Customer', 'Active',   'Holding',   '500000000.00', '850', 'https://kobiltd.com',    '', '00000000-0000-0000-0000-000000000100', '00000000-0000-0000-0000-000000000200'),
-    ('11111111-0000-0000-0000-000000000002', 'KobiLtd Üretim A.Ş.',      'Customer', 'Active',   'Üretim',    '120000000.00', '320', 'https://uretim.kobiltd.com', '11111111-0000-0000-0000-000000000001', '00000000-0000-0000-0000-000000000101', '00000000-0000-0000-0000-000000000200'),
-    ('11111111-0000-0000-0000-000000000003', 'Tekno Holding A.Ş.',       'Customer', 'Prospect', 'Teknoloji', '250000000.00', '450', 'https://teknoholding.com.tr', '', '00000000-0000-0000-0000-000000000101', '00000000-0000-0000-0000-000000000200'),
-    ('11111111-0000-0000-0000-000000000004', 'Mega Lojistik A.Ş.',       'Partner',  'AtRisk',   'Lojistik',  '85000000.00',  '180', 'https://megalojistik.com.tr', '', '00000000-0000-0000-0000-000000000104', '00000000-0000-0000-0000-000000000202'),
-    ('11111111-0000-0000-0000-000000000005', 'MedyaPlus Reklam Ltd.',    'Customer', 'Churned',  'Pazarlama', '12000000.00',  '45',  'https://medyaplus.com',  '', '00000000-0000-0000-0000-000000000101', '00000000-0000-0000-0000-000000000200')
-) AS t(id, name, type, status, industry, revenue, employees, website, parent_id, owner_id, org_id)
+    ('11111111-0000-0000-0000-000000000001', 'KobiLtd Holding A.Ş.',     'Customer', 'Active',   'Holding',   '500000000.00', 'TRY', '850', 'https://kobiltd.com',    '', '00000000-0000-0000-0000-000000000100', '00000000-0000-0000-0000-000000000200'),
+    ('11111111-0000-0000-0000-000000000002', 'KobiLtd Üretim A.Ş.',      'Customer', 'Active',   'Üretim',    '120000000.00', 'TRY', '320', 'https://uretim.kobiltd.com', '11111111-0000-0000-0000-000000000001', '00000000-0000-0000-0000-000000000101', '00000000-0000-0000-0000-000000000200'),
+    ('11111111-0000-0000-0000-000000000003', 'Tekno Holding A.Ş.',       'Customer', 'Prospect', 'Teknoloji', '250000000.00', 'USD', '450', 'https://teknoholding.com.tr', '', '00000000-0000-0000-0000-000000000101', '00000000-0000-0000-0000-000000000200'),
+    ('11111111-0000-0000-0000-000000000004', 'Mega Lojistik A.Ş.',       'Partner',  'AtRisk',   'Lojistik',  '85000000.00',  'EUR', '180', 'https://megalojistik.com.tr', '', '00000000-0000-0000-0000-000000000104', '00000000-0000-0000-0000-000000000202'),
+    ('11111111-0000-0000-0000-000000000005', 'MedyaPlus Reklam Ltd.',    'Customer', 'Churned',  'Pazarlama', '12000000.00',  'TRY', '45',  'https://medyaplus.com',  '', '00000000-0000-0000-0000-000000000101', '00000000-0000-0000-0000-000000000200')
+) AS t(id, name, type, status, industry, revenue, revenue_currency, employees, website, parent_id, owner_id, org_id)
 WHERE NOT EXISTS (SELECT 1 FROM account a WHERE a.id = t.id::uuid);
 
 -- ---------------------------------------------

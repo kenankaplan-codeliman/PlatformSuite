@@ -17,5 +17,6 @@ public sealed class CreateLeadCommand : ICommand<LeadDetailItem>
     public string Status { get; init; } = "New";
     public int? Score { get; init; }
     public decimal? EstimatedValue { get; init; }
+    public string? EstimatedValueCurrency { get; init; }
     public string? Description { get; init; }
 }

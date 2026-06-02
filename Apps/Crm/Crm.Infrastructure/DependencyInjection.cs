@@ -31,12 +31,14 @@ public static class DependencyInjection
         services.AddScoped<ICommunicationRepository, CommunicationRepository>();
         services.AddScoped<ILeadRepository, LeadRepository>();
         services.AddScoped<IOpportunityRepository, OpportunityRepository>();
+        services.AddScoped<IProductRepository, ProductRepository>();
 
         // CRM entity'leri için Activity.RegardingEntityType / ParticipantEntityType resolver kayıtları
         services.AddScoped<IEntityReferenceResolver, AccountReferenceResolver>();
         services.AddScoped<IEntityReferenceResolver, ContactReferenceResolver>();
         services.AddScoped<IEntityReferenceResolver, LeadReferenceResolver>();
         services.AddScoped<IEntityReferenceResolver, OpportunityReferenceResolver>();
+        services.AddScoped<IEntityReferenceResolver, ProductReferenceResolver>();
 
         // Generic ortak metadata (audit/owner/state) resolver'ı — CRM entity'lerinin tamamını kapsar.
         services.AddScoped<IEntityMetadataResolver, CrmEntityMetadataResolver>();

@@ -2,7 +2,7 @@
 -- auth_organization
 -- =============================================
 
-create table if not exists auth_organization (
+create table auth_organization (
     -- IBaseEntity
     id                      uuid primary key default gen_random_uuid(),
 
@@ -49,7 +49,7 @@ create table if not exists auth_organization (
 -- auth_user
 -- =============================================
 
-create table if not exists auth_user (
+create table auth_user (
     -- IBaseEntity
     id                  uuid primary key default gen_random_uuid(),
 
@@ -90,7 +90,7 @@ create table if not exists auth_user (
 -- auth_role
 -- =============================================
 
-create table if not exists auth_role (
+create table auth_role (
     -- IBaseEntity
     id              uuid primary key default gen_random_uuid(),
 
@@ -113,7 +113,7 @@ create table if not exists auth_role (
 -- auth_privilege
 -- =============================================
 
-create table if not exists auth_privilege (
+create table auth_privilege (
     -- IBaseEntity
     id               uuid primary key default gen_random_uuid(),
 
@@ -135,7 +135,7 @@ create table if not exists auth_privilege (
 -- =============================================
 -- auth_user_role
 -- =============================================
-create table if not exists auth_user_role (
+create table auth_user_role (
     -- IBaseEntity
     id          uuid primary key default gen_random_uuid(),
 
@@ -159,7 +159,7 @@ create table if not exists auth_user_role (
 -- auth_role_privilege
 -- =============================================
 
-create table if not exists auth_role_privilege (
+create table auth_role_privilege (
     -- IBaseEntity
     id              uuid primary key default gen_random_uuid(),
 
@@ -186,7 +186,7 @@ create table if not exists auth_role_privilege (
 -- auth_user_login
 -- =============================================
 
-create table if not exists auth_user_login (
+create table auth_user_login (
     -- IBaseEntity
     id                          uuid primary key default gen_random_uuid(),
 

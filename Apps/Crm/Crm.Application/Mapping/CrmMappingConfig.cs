@@ -2,6 +2,7 @@ using Crm.Application.Features.Accounts;
 using Crm.Application.Features.Contacts;
 using Crm.Application.Features.Leads;
 using Crm.Application.Features.Opportunities;
+using Crm.Application.Features.Products;
 using Mapster;
 
 namespace Crm.Application.Mapping;
@@ -20,5 +21,6 @@ public static class CrmMappingConfig
         ContactMappings.Register(config);
         LeadMappings.Register(config);
         OpportunityMappings.Register(config);
+        ProductMappings.Register(config);
     }
 }

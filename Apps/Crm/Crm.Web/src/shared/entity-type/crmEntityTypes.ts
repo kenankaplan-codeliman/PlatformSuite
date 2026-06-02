@@ -3,6 +3,7 @@ import {
   ContactsOutlined,
   HomeOutlined,
   RiseOutlined,
+  ShoppingOutlined,
 } from '@ant-design/icons';
 import type { EntityTypeMeta } from '@platform/ui';
 import { RoutePaths } from '../../app/router/paths';
@@ -47,5 +48,13 @@ export const crmEntityTypes: EntityTypeMeta[] = [
     icon: RiseOutlined,
     tone: 'purple',
     getDetailHref: (id) => RoutePaths.OpportunityView(id),
+  },
+  {
+    key: 'Product',
+    label: 'app.crm:entities.product',
+    labelPlural: 'app.crm:entities.products',
+    icon: ShoppingOutlined,
+    tone: 'cyan',
+    getDetailHref: (id) => RoutePaths.ProductView(id),
   },
 ];

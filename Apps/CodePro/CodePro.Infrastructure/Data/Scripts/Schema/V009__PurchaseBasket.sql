@@ -3,7 +3,7 @@
 -- Kullanıcıların Purchase Request öncesi ürün biriktirdiği sepet
 -- =============================================
 
-CREATE TABLE IF NOT EXISTS purchase_basket (
+CREATE TABLE purchase_basket (
     id                      UUID PRIMARY KEY DEFAULT gen_random_uuid(),
 
     -- Sepet durumu: Preparing → Converted
@@ -37,22 +37,22 @@ CREATE TABLE IF NOT EXISTS purchase_basket (
 );
 
 -- Kullanıcı başına sadece bir aktif Preparing sepet olabilir
-CREATE UNIQUE INDEX IF NOT EXISTS uq_purchase_basket_preparing_per_user
+CREATE UNIQUE INDEX uq_purchase_basket_preparing_per_user
     ON purchase_basket(owner_id)
     WHERE status = 'Preparing' AND is_deleted = FALSE;
 
-CREATE INDEX IF NOT EXISTS idx_purchase_basket_organization
+CREATE INDEX idx_purchase_basket_organization
     ON purchase_basket(organization_id);
-CREATE INDEX IF NOT EXISTS idx_purchase_basket_owner
+CREATE INDEX idx_purchase_basket_owner
     ON purchase_basket(owner_id);
-CREATE INDEX IF NOT EXISTS idx_purchase_basket_status
+CREATE INDEX idx_purchase_basket_status
     ON purchase_basket(status) WHERE is_deleted = FALSE;
 
 -- =============================================
 -- purchase_basket_line — Sepet Satırları
 -- =============================================
 
-CREATE TABLE IF NOT EXISTS purchase_basket_line (
+CREATE TABLE purchase_basket_line (
     id                      UUID PRIMARY KEY DEFAULT gen_random_uuid(),
 
     purchase_basket_id      UUID NOT NULL REFERENCES purchase_basket(id) ON DELETE CASCADE,
@@ -76,9 +76,9 @@ CREATE TABLE IF NOT EXISTS purchase_basket_line (
     deleted_at              TIMESTAMPTZ
 );
 
-CREATE INDEX IF NOT EXISTS idx_purchase_basket_line_basket
+CREATE INDEX idx_purchase_basket_line_basket
     ON purchase_basket_line(purchase_basket_id);
-CREATE INDEX IF NOT EXISTS idx_purchase_basket_line_product
+CREATE INDEX idx_purchase_basket_line_product
     ON purchase_basket_line(product_id);
 
 COMMENT ON TABLE purchase_basket IS 'Kullanıcıya özel satın alma sepeti — Purchase Request öncesi hazırlık aşaması';

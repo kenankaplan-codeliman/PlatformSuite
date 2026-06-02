@@ -12,4 +12,10 @@ public static class OpportunityErrors
 
     public static readonly Error InvalidStage =
         new("Opportunity.InvalidStage", "Geçersiz fırsat aşaması.", ErrorType.Validation);
+
+    public static readonly Error InvalidCurrency =
+        new("Opportunity.InvalidCurrency", "Geçersiz para birimi.", ErrorType.Validation);
+
+    public static readonly Error ProductNotFound =
+        new("Opportunity.ProductNotFound", "Satır kalemindeki ürün bulunamadı.", ErrorType.Validation);
 }

@@ -7,7 +7,10 @@ public class OpportunityListItem
     public Guid AccountId { get; set; }
     public string? AccountName { get; set; }
     public string Stage { get; set; } = default!;
-    public decimal? Amount { get; set; }
+    public decimal? EstimatedAmount { get; set; }
+    public decimal? ActualAmount { get; set; }
+    /// <summary>Deal currency (CurrencyType code). Amount kolonlarını sıralı/anlamlı göstermek için liste DTO'sunda da taşınır.</summary>
+    public string? Currency { get; set; }
     public int Probability { get; set; }
     public DateTime? CloseDate { get; set; }
     public bool IsActive { get; set; }

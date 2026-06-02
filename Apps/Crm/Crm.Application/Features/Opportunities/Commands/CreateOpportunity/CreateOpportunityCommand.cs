@@ -11,8 +11,10 @@ public sealed class CreateOpportunityCommand : ICommand<OpportunityDetailItem>
     public EntityReference? Account { get; init; }
     public EntityReference? PrimaryContact { get; init; }
     public string Stage { get; init; } = "Prospecting";
-    public decimal? Amount { get; init; }
+    public decimal? EstimatedAmount { get; init; }
+    public string? Currency { get; init; }
     public int Probability { get; init; }
     public DateTime? CloseDate { get; init; }
     public string? LossReason { get; init; }
+    public List<OpportunityProductModal> Products { get; init; } = new();
 }

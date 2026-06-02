@@ -57,6 +57,7 @@ export interface AccountDetailItem {
   accountStatus: string;
   industry?: string | null;
   annualRevenue?: number | null;
+  annualRevenueCurrency?: string | null;
   numberOfEmployees?: number | null;
   website?: string | null;
   description?: string | null;

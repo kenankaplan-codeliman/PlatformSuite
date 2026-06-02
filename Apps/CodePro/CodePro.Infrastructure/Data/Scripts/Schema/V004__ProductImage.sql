@@ -5,7 +5,7 @@
 -- Her ürünün en fazla bir varsayılan (is_default = TRUE) resmi olabilir.
 -- =============================================
 
-CREATE TABLE IF NOT EXISTS product_image (
+CREATE TABLE product_image (
     id              UUID            PRIMARY KEY DEFAULT gen_random_uuid(),
     product_id      UUID            NOT NULL REFERENCES product(id) ON DELETE CASCADE,
 
@@ -30,9 +30,9 @@ CREATE TABLE IF NOT EXISTS product_image (
     deleted_at      TIMESTAMPTZ
 );
 
-CREATE INDEX IF NOT EXISTS idx_product_image_product_id ON product_image(product_id) WHERE is_deleted = FALSE;
+CREATE INDEX idx_product_image_product_id ON product_image(product_id) WHERE is_deleted = FALSE;
 
 -- Ürün başına yalnızca bir varsayılan olabilir.
-CREATE UNIQUE INDEX IF NOT EXISTS uq_product_image_default
+CREATE UNIQUE INDEX uq_product_image_default
     ON product_image(product_id)
     WHERE is_default = TRUE AND is_deleted = FALSE;

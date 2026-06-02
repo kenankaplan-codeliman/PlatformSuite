@@ -41,4 +41,13 @@ public static class CrmPrivilegeCodes
         public const string Assign = "Opportunity.Assign";
         public const string State = "Opportunity.State";
     }
+
+    public static class ProductPrivilegeCodes
+    {
+        public const string Read = "Product.Read";
+        public const string Create = "Product.Create";
+        public const string Update = "Product.Update";
+        public const string Delete = "Product.Delete";
+        public const string State = "Product.State";
+    }
 }

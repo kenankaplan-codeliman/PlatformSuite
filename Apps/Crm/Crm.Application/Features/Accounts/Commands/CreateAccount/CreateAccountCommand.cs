@@ -13,6 +13,7 @@ public sealed class CreateAccountCommand : ICommand<AccountDetailItem>, IAttachm
     public string AccountStatus { get; init; } = "Prospect";
     public string? Industry { get; init; }
     public decimal? AnnualRevenue { get; init; }
+    public string? AnnualRevenueCurrency { get; init; }
     public int? NumberOfEmployees { get; init; }
     public string? Website { get; init; }
     public string? Description { get; init; }

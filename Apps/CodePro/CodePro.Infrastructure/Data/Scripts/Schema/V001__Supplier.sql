@@ -2,7 +2,7 @@
 -- supplier — CodePro tedarikçi tablosu (kendi başına entity, Account TPH değil)
 -- =============================================
 
-CREATE TABLE IF NOT EXISTS supplier (
+CREATE TABLE supplier (
     id                       UUID PRIMARY KEY,
     is_active                BOOLEAN NOT NULL DEFAULT TRUE,
 
@@ -43,9 +43,9 @@ CREATE TABLE IF NOT EXISTS supplier (
     deleted_at               TIMESTAMP
 );
 
-CREATE INDEX IF NOT EXISTS idx_supplier_owner ON supplier(owner_id);
-CREATE INDEX IF NOT EXISTS idx_supplier_organization ON supplier(organization_id);
-CREATE INDEX IF NOT EXISTS idx_supplier_status ON supplier(supplier_status);
+CREATE INDEX idx_supplier_owner ON supplier(owner_id);
+CREATE INDEX idx_supplier_organization ON supplier(organization_id);
+CREATE INDEX idx_supplier_status ON supplier(supplier_status);
 
 -- supplier_product_category junction is defined in 01-ProductCategory.sql
 -- (depends on product_category which is created there).

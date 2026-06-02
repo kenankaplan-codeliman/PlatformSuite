@@ -34,3 +34,11 @@ export const opportunityKeys = {
   details: () => [...opportunityKeys.all, 'detail'] as const,
   detail: (id: string) => [...opportunityKeys.details(), id] as const,
 };
+
+export const productKeys = {
+  all: ['product'] as const,
+  lists: () => [...productKeys.all, 'list'] as const,
+  list: (params: unknown) => [...productKeys.lists(), params] as const,
+  details: () => [...productKeys.all, 'detail'] as const,
+  detail: (id: string) => [...productKeys.details(), id] as const,
+};

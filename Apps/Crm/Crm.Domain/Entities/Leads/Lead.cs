@@ -29,6 +29,8 @@ public class Lead :
     public string Status { get; set; } = "New";
     public int? Score { get; set; }
     public decimal? EstimatedValue { get; set; }
+    // EstimatedValue'nun para birimi — GeneralParameter code (parentCode: CurrencyType).
+    public string? EstimatedValueCurrency { get; set; }
     public string? Description { get; set; }
 
     // Convert sırasında (Status → Converted) doldurulur — Lead'i Account/Contact/Opportunity'e bağlar.

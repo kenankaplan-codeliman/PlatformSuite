@@ -8,6 +8,7 @@ export interface DataTableColumn<T> {
   width?: number | string;
   fixed?: 'left' | 'right';
   ellipsis?: boolean;
+  align?: 'left' | 'center' | 'right';
 }
 
 export interface DataTableProps<T> {
@@ -41,6 +42,7 @@ export function DataTable<T extends object>({
     width: c.width,
     fixed: c.fixed,
     ellipsis: c.ellipsis,
+    align: c.align,
   }));
 
   return (

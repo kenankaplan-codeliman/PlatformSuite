@@ -24,6 +24,7 @@ export interface ProductPriceListItem {
   productId: string;
   productCode?: string | null;
   productName?: string | null;
+  productUnitOfMeasure?: string | null;
   supplierAccountId: string;
   supplierAccountName?: string | null;
   priceListId?: string | null;

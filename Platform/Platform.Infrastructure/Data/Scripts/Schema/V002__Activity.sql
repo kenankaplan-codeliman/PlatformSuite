@@ -8,7 +8,7 @@
 -- ACTIVITY TABLE (Base - TPT Strategy)
 -- =============================================
 
-CREATE TABLE IF NOT EXISTS activity (
+CREATE TABLE activity (
     -- Primary Key
     id                      UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     
@@ -50,7 +50,7 @@ CREATE TABLE IF NOT EXISTS activity (
 -- ACTIVITY_PARTY TABLE (Katılımcılar)
 -- =============================================
 
-CREATE TABLE IF NOT EXISTS activity_party (
+CREATE TABLE activity_party (
     -- Primary Key
     id                      UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     
@@ -83,7 +83,7 @@ CREATE TABLE IF NOT EXISTS activity_party (
 -- ACTIVITY_EMAIL TABLE
 -- =============================================
 
-CREATE TABLE IF NOT EXISTS activity_email (
+CREATE TABLE activity_email (
     -- Foreign Key to base table
     id                      UUID PRIMARY KEY REFERENCES activity(id) ON DELETE CASCADE,
     
@@ -101,29 +101,32 @@ CREATE TABLE IF NOT EXISTS activity_email (
 -- activity_phone_call TABLE
 -- =============================================
 
-CREATE TABLE IF NOT EXISTS activity_phone_call (
+CREATE TABLE activity_phone_call (
     -- Foreign Key to base table
     id                      UUID PRIMARY KEY REFERENCES activity(id) ON DELETE CASCADE,
-    
+
     -- Phone Call Properties
     call_direction          VARCHAR(10) NOT NULL,  -- Incoming, Outgoing
     recording_url           VARCHAR(500),
-    call_notes              TEXT
+    call_notes              TEXT,
+    -- Email Body gibi zengin metin (HTML) destekler — UI rich text editör tarafında.
+    is_html                 BOOLEAN NOT NULL DEFAULT FALSE
 );
 
 -- =============================================
 -- activity_task TABLE
 -- =============================================
 
-CREATE TABLE IF NOT EXISTS activity_task (
+CREATE TABLE activity_task (
     -- Foreign Key to base table
     id                      UUID PRIMARY KEY REFERENCES activity(id) ON DELETE CASCADE,
-    
+
     -- Task Properties
     task_description        TEXT,
     reminder_at             TIMESTAMPTZ,
-    percent_complete        INTEGER NOT NULL DEFAULT 0
-    
+    percent_complete        INTEGER NOT NULL DEFAULT 0,
+    -- Email Body gibi zengin metin (HTML) destekler — UI rich text editör tarafında.
+    is_html                 BOOLEAN NOT NULL DEFAULT FALSE
 );
 
 
@@ -131,22 +134,23 @@ CREATE TABLE IF NOT EXISTS activity_task (
 -- activity_appointment TABLE
 -- =============================================
 
-CREATE TABLE IF NOT EXISTS activity_appointment (
+CREATE TABLE activity_appointment (
     -- Foreign Key to base table
     id                      UUID PRIMARY KEY REFERENCES activity(id) ON DELETE CASCADE,
-    
+
     -- Appointment Properties
     location                VARCHAR(500),
     is_online               BOOLEAN NOT NULL DEFAULT FALSE,
     meeting_url             VARCHAR(500),
-    
+
     is_all_day              BOOLEAN NOT NULL DEFAULT FALSE,
     reminder_minutes_before INTEGER,
     recurrence_rule         VARCHAR(500),
     is_recurring            BOOLEAN NOT NULL DEFAULT FALSE,
     recurring_parent_id     UUID REFERENCES activity(id),
-    meeting_notes           TEXT
-    
+    meeting_notes           TEXT,
+    -- Email Body gibi zengin metin (HTML) destekler — UI rich text editör tarafında.
+    is_html                 BOOLEAN NOT NULL DEFAULT FALSE
 );
 
 

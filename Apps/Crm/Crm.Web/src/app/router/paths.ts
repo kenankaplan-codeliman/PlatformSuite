@@ -29,6 +29,12 @@ export const RoutePaths = {
   OpportunityNew: '/opportunities/new',
   OpportunityView: (id: string) => `/opportunities/${id}`,
   OpportunityEdit: (id: string) => `/opportunities/${id}/edit`,
+
+  // Product
+  ProductsList: '/products',
+  ProductNew: '/products/new',
+  ProductView: (id: string) => `/products/${id}`,
+  ProductEdit: (id: string) => `/products/${id}/edit`,
 } as const;
 
 export const RoutePatterns = {
@@ -57,4 +63,10 @@ export const RoutePatterns = {
   OpportunityNew: '/opportunities/new',
   OpportunityView: '/opportunities/:id',
   OpportunityEdit: '/opportunities/:id/edit',
+
+  // Product
+  ProductsList: '/products',
+  ProductNew: '/products/new',
+  ProductView: '/products/:id',
+  ProductEdit: '/products/:id/edit',
 } as const;

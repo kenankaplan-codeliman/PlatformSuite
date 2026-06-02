@@ -42,6 +42,10 @@ public sealed class CreateAccountHandler : IRequestHandler<CreateAccountCommand,
         if (!await _parameters.ExistsAsync(AccountParameterCodes.Type, request.AccountType, cancellationToken))
             return AccountErrors.InvalidType;
 
+        if (!string.IsNullOrEmpty(request.AnnualRevenueCurrency) &&
+            !await _parameters.ExistsAsync(CurrencyParameterCodes.CurrencyType, request.AnnualRevenueCurrency, cancellationToken))
+            return AccountErrors.InvalidCurrency;
+
         var entity = request.Adapt<Account>();
         await _repository.CreateAsync(entity, cancellationToken);
 

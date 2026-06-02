@@ -22,6 +22,8 @@ export const leadSchema = z.object({
   status: z.string().min(1, 'common:errors.required'),
   score: z.number().int().min(0).max(100).nullish(),
   estimatedValue: z.number().min(0).nullish(),
+  // Para birimi: GeneralParameter code (CurrencyType). Geçerlilik backend handler'ında.
+  estimatedValueCurrency: z.string().nullish(),
   description: z.string().nullish(),
   convertedAccountId: z.string().nullish(),
   convertedContactId: z.string().nullish(),

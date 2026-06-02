@@ -1,46 +1,47 @@
 import {
-  useFieldArray,
   type ArrayPath,
   type Control,
-  type FieldArray,
-  type FieldPath,
   type FieldValues,
-} from "react-hook-form";
-import { DeleteOutlined, PlusOutlined } from "@ant-design/icons";
+} from 'react-hook-form';
 import {
-  Button,
-  Card,
   CheckboxField,
-  EmptyState,
-  FormRow,
   SelectField,
-  Space,
+  TableField,
   TextField,
-  useFormMode,
   type SelectOption,
-} from "@platform/ui";
+  type TableFieldColumn,
+} from '@platform/ui';
 
 /**
- * CRM ortak e-posta editörü — Account/Contact gibi e-posta tutan entity'lerde kullanılır.
+ * CRM ortak e-posta editörü — Account/Contact gibi e-posta tutan entity'lerde
+ * kullanılır. Dış API'si (`{ control, name }`) korunur; içeride generic
+ * `TableField` primitive'i column template'i ile sarılır.
  *
- * Form-state'e bağlıdır (react-hook-form field array); entity command'ı ile aynı transaction'da
- * kaydedilir (AYRI servis yoktur). Yeni satırlara client UUID atanır; backend eşleşmeyen id'yi
- * yeni kayıt olarak ekler. Autocomplete YOK — düz alanlar.
+ * Form-state'e bağlıdır (react-hook-form field array); entity command'ı ile
+ * aynı transaction'da kaydedilir. Yeni satırlara `crypto.randomUUID()` atanır;
+ * backend `CollectionSync.Merge` eşleşmeyen id'leri yeni kayıt olarak ekler.
  */
+
+interface EmailRow {
+  id: string;
+  email: string;
+  type: string;
+  isPrimary: boolean;
+}
 
 // E-posta türü küçük ve sabit bir enum — GeneralParameter'a taşınmadı.
 const emailTypeOptions: SelectOption<string>[] = [
-  { value: "Work", label: "İş" },
-  { value: "Personal", label: "Kişisel" },
-  { value: "Billing", label: "Fatura" },
-  { value: "Support", label: "Destek" },
-  { value: "Other", label: "Diğer" },
+  { value: 'Work', label: 'İş' },
+  { value: 'Personal', label: 'Kişisel' },
+  { value: 'Billing', label: 'Fatura' },
+  { value: 'Support', label: 'Destek' },
+  { value: 'Other', label: 'Diğer' },
 ];
 
-const newEmail = () => ({
+const newEmail = (): EmailRow => ({
   id: crypto.randomUUID(),
-  email: "",
-  type: "Work",
+  email: '',
+  type: 'Work',
   isPrimary: false,
 });
 
@@ -54,72 +55,51 @@ export function EmailField<TValues extends FieldValues>({
   control,
   name,
 }: EmailFieldProps<TValues>) {
-  const { mode } = useFormMode();
-  const isView = mode === "view";
-  const { fields, append, remove } = useFieldArray<TValues>({ control, name });
-
-  const path = (index: number, sub: string) =>
-    `${name}.${index}.${sub}` as FieldPath<TValues>;
+  const columns: TableFieldColumn<TValues, EmailRow>[] = [
+    {
+      key: 'email',
+      header: 'E-posta',
+      width: '1fr',
+      render: ({ path }) => (
+        <TextField
+          name={path('email')}
+          control={control}
+          required
+          maxLength={250}
+        />
+      ),
+    },
+    {
+      key: 'type',
+      header: 'Tür',
+      width: '160px',
+      render: ({ path }) => (
+        <SelectField
+          name={path('type')}
+          control={control}
+          options={emailTypeOptions}
+        />
+      ),
+    },
+    {
+      key: 'isPrimary',
+      header: 'Birincil',
+      width: '90px',
+      align: 'center',
+      render: ({ path }) => (
+        <CheckboxField name={path('isPrimary')} control={control} />
+      ),
+    },
+  ];
 
   return (
-    <div style={{ marginBottom: 12 }}>
-      <Space direction="vertical" style={{ width: "100%" }} size={12}>
-        {fields.map((f, index) => (
-          <Card key={f.id} size="small" className="comm-card">
-            <FormRow columns={2}>
-              <TextField
-                name={path(index, "email")}
-                control={control}
-                label="E-posta"
-                required
-                maxLength={250}
-                columns={1}
-              />
-              <SelectField
-                name={path(index, "type")}
-                control={control}
-                label="Tür"
-                options={emailTypeOptions}
-                columns={1}
-              />
-            </FormRow>
-            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-end" }}>
-              <CheckboxField
-                name={path(index, "isPrimary")}
-                control={control}
-                text="Birincil e-posta"
-              />
-              {!isView && (
-                <Button
-                  type="text"
-                  danger
-                  icon={<DeleteOutlined />}
-                  onClick={() => remove(index)}
-                  aria-label="E-postayı sil"
-                />
-              )}
-            </div>
-          </Card>
-        ))}
-      </Space>
-
-      {fields.length === 0 && isView && (
-        <EmptyState description="E-posta bulunmuyor." />
-      )}
-
-      {!isView && (
-        <Button
-          type="dashed"
-          block
-          icon={<PlusOutlined />}
-          onClick={() =>
-            append(newEmail() as unknown as FieldArray<TValues, ArrayPath<TValues>>)
-          }
-          style={{ marginTop: 12, marginBottom: 16 }}
-        >
-          E-posta Ekle
-        </Button>
-      )}
-    </div>
+    <TableField<TValues, EmailRow>
+      control={control}
+      name={name}
+      columns={columns}
+      newRow={newEmail}
+      addLabel="E-posta Ekle"
+      emptyLabel="E-posta bulunmuyor."
+    />
   );
 }

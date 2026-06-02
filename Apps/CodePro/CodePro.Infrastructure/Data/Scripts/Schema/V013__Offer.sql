@@ -141,7 +141,7 @@ CREATE TABLE offer_form_answer (
 
 CREATE INDEX ix_offer_form_answer_form_id ON offer_form_answer(offer_form_id);
 
--- Contract tablosuna related_offer_id için FK constraint (alan zaten var, şimdi FK eklenir)
-ALTER TABLE contract
-    ADD CONSTRAINT fk_contract_offer
-    FOREIGN KEY (related_offer_id) REFERENCES offer(id);
+-- Not: contract.related_offer_id ile offer.converted_contract_id arasında circular FK var.
+-- Offer → Contract FK V013'te inline tanımlı (yukarıda). Contract → Offer yönü ise weak
+-- ref (sadece UUID, DB FK yok) — referans bütünlüğü Application/Domain katmanında sağlanır.
+-- Bu sayede tüm şema "ALTER" gerektirmeden from-zero CREATE'lerle kurulabilir.

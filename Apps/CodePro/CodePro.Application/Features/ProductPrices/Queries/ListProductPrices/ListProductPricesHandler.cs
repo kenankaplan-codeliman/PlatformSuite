@@ -45,6 +45,7 @@ public sealed class ListProductPricesHandler : IRequestHandler<ListProductPrices
                 ProductId = p.ProductId,
                 ProductCode = _db.Product.Where(x => x.Id == p.ProductId).Select(x => x.Code).FirstOrDefault(),
                 ProductName = _db.Product.Where(x => x.Id == p.ProductId).Select(x => x.Name).FirstOrDefault(),
+                ProductUnitOfMeasure = _db.Product.Where(x => x.Id == p.ProductId).Select(x => x.UnitOfMeasure).FirstOrDefault(),
                 SupplierId = p.SupplierId,
                 SupplierName = _db.Supplier.Where(a => a.Id == p.SupplierId).Select(a => a.Name).FirstOrDefault(),
                 PriceListId = p.PriceListId,

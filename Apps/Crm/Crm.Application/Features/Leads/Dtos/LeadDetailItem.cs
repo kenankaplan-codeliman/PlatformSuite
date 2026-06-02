@@ -15,6 +15,7 @@ public class LeadDetailItem
     public string Status { get; set; } = default!;
     public int? Score { get; set; }
     public decimal? EstimatedValue { get; set; }
+    public string? EstimatedValueCurrency { get; set; }
     public string? Description { get; set; }
 
     public Guid? ConvertedAccountId { get; set; }

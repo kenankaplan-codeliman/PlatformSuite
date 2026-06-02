@@ -17,6 +17,7 @@ public class OpportunityRepository : BaseEntityRepository<Opportunity>, IOpportu
         return await dbSet
             .Include(o => o.Account)
             .Include(o => o.PrimaryContact)
+            .Include(o => o.Products).ThenInclude(p => p.Product)
             .FirstOrDefaultAsync(o => o.Id == Id, cancellationToken);
     }
 }

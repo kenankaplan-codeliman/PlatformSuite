@@ -2,7 +2,7 @@
 -- purchase_request — Satın Alma Talepleri
 -- =============================================
 
-CREATE TABLE IF NOT EXISTS purchase_request (
+CREATE TABLE purchase_request (
     id                       UUID PRIMARY KEY DEFAULT gen_random_uuid(),
 
     -- Talep numarası — kullanıcı elle girer; boş gönderilirse servis PR-YYYY-NNNN formatında üretir
@@ -51,7 +51,7 @@ CREATE TABLE IF NOT EXISTS purchase_request (
 -- product_id null ise free-text line yani product ile ilişkili olmayan satır.
 -- =============================================
 
-CREATE TABLE IF NOT EXISTS purchase_request_line (
+CREATE TABLE purchase_request_line (
     id                        UUID PRIMARY KEY DEFAULT gen_random_uuid(),
 
     purchase_request_id       UUID NOT NULL REFERENCES purchase_request(id) ON DELETE CASCADE,
@@ -105,18 +105,18 @@ CREATE TABLE IF NOT EXISTS purchase_request_line (
 );
 
 -- Indexes
-CREATE INDEX IF NOT EXISTS idx_purchase_request_organization ON purchase_request(organization_id);
-CREATE INDEX IF NOT EXISTS idx_purchase_request_owner ON purchase_request(owner_id);
-CREATE INDEX IF NOT EXISTS idx_purchase_request_status ON purchase_request(status) WHERE is_deleted = FALSE;
-CREATE INDEX IF NOT EXISTS idx_purchase_request_line_request ON purchase_request_line(purchase_request_id);
-CREATE INDEX IF NOT EXISTS idx_purchase_request_line_product ON purchase_request_line(product_id);
-CREATE INDEX IF NOT EXISTS idx_purchase_request_line_product_price ON purchase_request_line(product_price_id);
-CREATE INDEX IF NOT EXISTS idx_purchase_request_line_supplier ON purchase_request_line(supplier_id);
-CREATE INDEX IF NOT EXISTS idx_purchase_request_line_status ON purchase_request_line(status) WHERE is_deleted = FALSE;
-CREATE UNIQUE INDEX IF NOT EXISTS uq_purchase_request_number ON purchase_request(request_number) WHERE is_deleted = FALSE;
+CREATE INDEX idx_purchase_request_organization ON purchase_request(organization_id);
+CREATE INDEX idx_purchase_request_owner ON purchase_request(owner_id);
+CREATE INDEX idx_purchase_request_status ON purchase_request(status) WHERE is_deleted = FALSE;
+CREATE INDEX idx_purchase_request_line_request ON purchase_request_line(purchase_request_id);
+CREATE INDEX idx_purchase_request_line_product ON purchase_request_line(product_id);
+CREATE INDEX idx_purchase_request_line_product_price ON purchase_request_line(product_price_id);
+CREATE INDEX idx_purchase_request_line_supplier ON purchase_request_line(supplier_id);
+CREATE INDEX idx_purchase_request_line_status ON purchase_request_line(status) WHERE is_deleted = FALSE;
+CREATE UNIQUE INDEX uq_purchase_request_number ON purchase_request(request_number) WHERE is_deleted = FALSE;
 
 -- Sequence for request number generation
-CREATE SEQUENCE IF NOT EXISTS purchase_request_seq START 1;
+CREATE SEQUENCE purchase_request_seq START 1;
 
 COMMENT ON TABLE purchase_request IS 'Satın alma talepleri';
 COMMENT ON TABLE purchase_request_line IS 'Talep satırları — satır bazlı status ve fiyat';

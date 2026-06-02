@@ -28,6 +28,10 @@ public sealed class CreateLeadHandler : IRequestHandler<CreateLeadCommand, Resul
         if (!await _parameters.ExistsAsync(LeadParameterCodes.Source, request.Source, cancellationToken))
             return LeadErrors.InvalidSource;
 
+        if (!string.IsNullOrEmpty(request.EstimatedValueCurrency) &&
+            !await _parameters.ExistsAsync(CurrencyParameterCodes.CurrencyType, request.EstimatedValueCurrency, cancellationToken))
+            return LeadErrors.InvalidCurrency;
+
         var entity = request.Adapt<Lead>();
         await _repository.CreateAsync(entity, cancellationToken);
         return entity.Adapt<LeadDetailItem>();

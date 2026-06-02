@@ -7,7 +7,12 @@
     "account": { "label": "Firma" },
     "primaryContact": { "label": "Birincil İletişim" },
     "stage": { "label": "Aşama" },
-    "amount": { "label": "Tutar" },
+    "estimatedAmount": { "label": "Tahmini Tutar" },
+    "currency": { "label": "Para Birimi" },
+    "actualAmount": { "label": "Gerçekleşen Tutar" },
+    "totalDiscountRate": { "label": "Toplam İndirim (%)" },
+    "totalDiscountAmount": { "label": "Toplam İndirim Tutarı" },
+    "actualNetAmount": { "label": "Gerçekleşen Net Tutar" },
     "probability": { "label": "Olasılık (%)" },
     "closeDate": { "label": "Kapanış Tarihi" },
     "lossReason": { "label": "Kayıp Sebebi" },
@@ -16,6 +21,21 @@
   "sections": {
     "general": "Genel Bilgiler",
     "financial": "Finansal",
+    "products": "Ürünler",
     "details": "Detaylar"
+  },
+  "products": {
+    "addLabel": "Ürün Ekle",
+    "emptyLabel": "Kayıt Yok",
+    "columns": {
+      "product": "Ürün",
+      "quantity": "Miktar",
+      "unitCode": "Birim",
+      "unitPrice": "Birim Fiyat",
+      "discountRate": "İnd. %",
+      "discountAmount": "İnd. Tutarı",
+      "lineTotal": "Satır Toplamı",
+      "netAmount": "Net Tutar"
+    }
   }
 }

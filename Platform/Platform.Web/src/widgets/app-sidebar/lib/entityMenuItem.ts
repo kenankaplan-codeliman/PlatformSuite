@@ -1,7 +1,14 @@
 import { createElement } from 'react';
-import type { TFunction } from 'i18next';
 import type { EntityTypeMeta } from '../../../shared/lib/entity-type/types';
 import type { MenuItem } from '../model/types';
+
+/**
+ * Minimal i18next translator signature. `TFunction<Ns>` namespace-tied tuple
+ * overload'ları cross-namespace çağrılarda contravariance hatası verdiği için
+ * `entityMenuItem` sadece `(key: string) => string` çağrı kalıbına ihtiyaç
+ * duyduğu kadarını ister.
+ */
+type Translator = (key: string) => string;
 
 export interface EntityMenuItemOverrides {
   /** MenuItem.key; verilmezse `meta.key.toLowerCase()` kullanılır. */
@@ -27,7 +34,7 @@ export interface EntityMenuItemOverrides {
  */
 export function entityMenuItem(
   meta: EntityTypeMeta,
-  t: TFunction,
+  t: Translator,
   overrides: EntityMenuItemOverrides,
 ): MenuItem {
   return {
