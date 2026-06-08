@@ -21,6 +21,10 @@ import {
   type SelectOption,
 } from '@platform/ui';
 import { CrmServicePath } from '../../../../shared/api/servicePaths';
+import { AddressField } from '../../../../widgets/address-field';
+import { EmailField } from '../../../../widgets/email-field';
+import { PhoneField } from '../../../../widgets/phone-field';
+import { useLeadConvertAction } from '../../../../features/lead-convert';
 import { useLeadQuery } from '../../../../entities/lead/api/useLeadQueries';
 import {
   useDeleteLead,
@@ -35,17 +39,21 @@ const emptyLead: LeadFormValues = {
   subject: '',
   firstName: null,
   lastName: null,
-  company: null,
   title: null,
-  email: null,
-  phone: null,
+  department: null,
+  company: null,
+  industry: null,
   website: null,
   source: 'Other',
   status: 'New',
+  rating: null,
   score: null,
   estimatedValue: null,
   estimatedValueCurrency: null,
   description: null,
+  emails: [],
+  phones: [],
+  addresses: [],
   convertedAccountId: null,
   convertedContactId: null,
   isActive: true,
@@ -61,7 +69,7 @@ export function LeadDetailPage() {
   const upsert = useUpsertLead();
   const deleteMutation = useDeleteLead();
 
-  // source / status GeneralParameter'dan beslenir — statik enum yok.
+  // source / status / rating GeneralParameter'dan beslenir — statik enum yok.
   const { options: statusOptions } = useGeneralParameters('LeadStatus');
   const { options: sourceOptions } = useGeneralParameters('LeadSource');
 
@@ -81,9 +89,18 @@ export function LeadDetailPage() {
       void query.refetch();
     },
   });
-  const extraActions = [ownerAssign.action, stateToggle.action].filter(
-    (a): a is DetailPageAction => a !== null,
-  );
+
+  // Convert: ayrı action + dialog. Zaten Converted ise gizlenir.
+  const convert = useLeadConvertAction({
+    leadId: id,
+    alreadyConverted: query.data?.status === 'Converted',
+  });
+
+  const extraActions = [
+    convert.action,
+    ownerAssign.action,
+    stateToggle.action,
+  ].filter((a): a is DetailPageAction => a !== null);
 
   // new/edit başlığı DetailPageLayout'ta entityType'tan generic üretilir;
   // burada yalnız view modunun kayıt adını sağlıyoruz.
@@ -92,10 +109,16 @@ export function LeadDetailPage() {
     [query.data?.subject, tPage],
   );
 
-  const tabs: DetailPageTab[] | undefined =
-    mode === 'new' || !id
-      ? undefined
-      : [
+  // İletişim Bilgileri her modda var (form-bound, entity ile kaydedilir).
+  // Activities/Attachments yalnız kayıtlı entity'de (kendi servisleri, entityId gerekir).
+  const tabs: DetailPageTab[] = [
+    {
+      key: 'communication-info',
+      label: tEntity('sections.communicationInfo'),
+      content: <CommunicationInfoTab />,
+    },
+    ...(id && mode !== 'new'
+      ? [
           {
             key: 'activities',
             label: tCommon('tabs.activities'),
@@ -114,7 +137,9 @@ export function LeadDetailPage() {
               </div>
             ),
           },
-        ];
+        ]
+      : []),
+  ];
 
   return (
     <DetailPageLayout<LeadFormValues>
@@ -142,8 +167,10 @@ export function LeadDetailPage() {
       extraActions={extraActions}
     >
       {ownerAssign.modal}
+      {convert.modal}
       <GeneralSection sourceOptions={sourceOptions} statusOptions={statusOptions} />
-      <ContactSection />
+      <PersonSection />
+      <CompanySection />
       <DetailsSection />
     </DetailPageLayout>
   );
@@ -157,6 +184,7 @@ export function LeadDetailPage() {
   }) {
     const form = useFormContext<LeadFormValues>();
     const { options: currencyOptions } = useGeneralParameters('CurrencyType');
+    const { options: ratingOptions } = useGeneralParameters('LeadRating');
     return (
       <FormSection title={tEntity('sections.general')}>
         <TextField
@@ -180,6 +208,13 @@ export function LeadDetailPage() {
           label={tEntity('fields.source.label')}
           options={sourceOptions}
           required
+        />
+        <SelectField<LeadFormValues>
+          name="rating"
+          control={form.control}
+          label={tEntity('fields.rating.label')}
+          options={ratingOptions}
+          allowClear
         />
         <NumberField
           name="score"
@@ -206,10 +241,10 @@ export function LeadDetailPage() {
     );
   }
 
-  function ContactSection() {
+  function PersonSection() {
     const form = useFormContext<LeadFormValues>();
     return (
-      <FormSection title={tEntity('sections.contact')}>
+      <FormSection title={tEntity('sections.person')}>
         <TextField
           name="firstName"
           control={form.control}
@@ -223,28 +258,36 @@ export function LeadDetailPage() {
           maxLength={100}
         />
         <TextField
-          name="company"
-          control={form.control}
-          label={tEntity('fields.company.label')}
-          maxLength={250}
-        />
-        <TextField
           name="title"
           control={form.control}
           label={tEntity('fields.title.label')}
           maxLength={150}
         />
         <TextField
-          name="email"
+          name="department"
           control={form.control}
-          label={tEntity('fields.email.label')}
+          label={tEntity('fields.department.label')}
+          maxLength={200}
+        />
+      </FormSection>
+    );
+  }
+
+  function CompanySection() {
+    const form = useFormContext<LeadFormValues>();
+    return (
+      <FormSection title={tEntity('sections.company')}>
+        <TextField
+          name="company"
+          control={form.control}
+          label={tEntity('fields.company.label')}
           maxLength={250}
         />
         <TextField
-          name="phone"
+          name="industry"
           control={form.control}
-          label={tEntity('fields.phone.label')}
-          maxLength={50}
+          label={tEntity('fields.industry.label')}
+          maxLength={150}
         />
         <TextField
           name="website"
@@ -253,6 +296,23 @@ export function LeadDetailPage() {
           maxLength={250}
         />
       </FormSection>
+    );
+  }
+
+  function CommunicationInfoTab() {
+    const form = useFormContext<LeadFormValues>();
+    return (
+      <>
+        <FormSection title={tEntity('sections.emails')} collapsible="expanded">
+          <EmailField<LeadFormValues> control={form.control} name="emails" />
+        </FormSection>
+        <FormSection title={tEntity('sections.phones')} collapsible="expanded">
+          <PhoneField<LeadFormValues> control={form.control} name="phones" />
+        </FormSection>
+        <FormSection title={tEntity('sections.addresses')} collapsible="expanded">
+          <AddressField<LeadFormValues> control={form.control} name="addresses" />
+        </FormSection>
+      </>
     );
   }
 

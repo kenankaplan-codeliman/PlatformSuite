@@ -9,4 +9,5 @@ public static class LeadParameterCodes
 {
     public const string Status = "LeadStatus";
     public const string Source = "LeadSource";
+    public const string Rating = "LeadRating";
 }

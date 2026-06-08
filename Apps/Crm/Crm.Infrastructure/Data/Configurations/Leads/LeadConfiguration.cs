@@ -26,11 +26,13 @@ public class LeadConfiguration : IEntityTypeConfiguration<Lead>
 
         builder.Property(l => l.FirstName).HasColumnName("first_name").HasMaxLength(100);
         builder.Property(l => l.LastName).HasColumnName("last_name").HasMaxLength(100);
-        builder.Property(l => l.Company).HasColumnName("company").HasMaxLength(250);
         builder.Property(l => l.Title).HasColumnName("title").HasMaxLength(150);
-        builder.Property(l => l.Email).HasColumnName("email").HasMaxLength(250);
-        builder.Property(l => l.Phone).HasColumnName("phone").HasMaxLength(50);
+        builder.Property(l => l.Department).HasColumnName("department").HasMaxLength(200);
+        builder.Property(l => l.Company).HasColumnName("company").HasMaxLength(250);
+        builder.Property(l => l.Industry).HasColumnName("industry").HasMaxLength(150);
         builder.Property(l => l.Website).HasColumnName("website").HasMaxLength(250);
+
+        // Email/Phone düz alanları kaldırıldı — Communications (email_address/phone) tablolarına taşındı.
 
         // Source / Status: GeneralParameter'a taşındı — düz string code olarak
         // tutulur (geçerlilik handler'da IGeneralParameterReader ile doğrulanır).
@@ -43,6 +45,9 @@ public class LeadConfiguration : IEntityTypeConfiguration<Lead>
             .HasColumnName("status")
             .IsRequired()
             .HasMaxLength(50);
+
+        // Rating: GeneralParameter code (LeadRating) — opsiyonel, düz string.
+        builder.Property(l => l.Rating).HasColumnName("rating").HasMaxLength(50);
 
         builder.Property(l => l.Score).HasColumnName("score");
         builder.Property(l => l.EstimatedValue).HasColumnName("estimated_value").HasPrecision(18, 2);

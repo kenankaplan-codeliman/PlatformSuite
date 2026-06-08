@@ -1,5 +1,8 @@
+using Crm.Application.Common.Communications;
+using Crm.Application.Features.Leads;
 using Crm.Application.Features.Leads.Dtos;
 using Crm.Application.Interfaces;
+using Crm.Domain.Entities.Leads;
 using Crm.Domain.Parameters;
 using Platform.Application.Common.Parameters;
 using Platform.Application.Common.Results;
@@ -11,11 +14,19 @@ namespace Crm.Application.Features.Leads.Commands.UpdateLead;
 public sealed class UpdateLeadHandler : IRequestHandler<UpdateLeadCommand, Result<LeadDetailItem>>
 {
     private readonly ILeadRepository _repository;
+    private readonly ICommunicationRepository _communications;
+    private readonly ICrmDbContext _db;
     private readonly IGeneralParameterReader _parameters;
 
-    public UpdateLeadHandler(ILeadRepository repository, IGeneralParameterReader parameters)
+    public UpdateLeadHandler(
+        ILeadRepository repository,
+        ICommunicationRepository communications,
+        ICrmDbContext db,
+        IGeneralParameterReader parameters)
     {
         _repository = repository;
+        _communications = communications;
+        _db = db;
         _parameters = parameters;
     }
 
@@ -30,12 +41,20 @@ public sealed class UpdateLeadHandler : IRequestHandler<UpdateLeadCommand, Resul
         if (!await _parameters.ExistsAsync(LeadParameterCodes.Source, request.Source, cancellationToken))
             return LeadErrors.InvalidSource;
 
+        if (!string.IsNullOrEmpty(request.Rating) &&
+            !await _parameters.ExistsAsync(LeadParameterCodes.Rating, request.Rating, cancellationToken))
+            return LeadErrors.InvalidRating;
+
         if (!string.IsNullOrEmpty(request.EstimatedValueCurrency) &&
             !await _parameters.ExistsAsync(CurrencyParameterCodes.CurrencyType, request.EstimatedValueCurrency, cancellationToken))
             return LeadErrors.InvalidCurrency;
 
         request.Adapt(entity);
         await _repository.UpdateAsync(entity, cancellationToken);
-        return entity.Adapt<LeadDetailItem>();
+
+        await _communications.SyncAsync(
+            nameof(Lead), entity.Id, request.Emails, request.Phones, request.Addresses, cancellationToken);
+
+        return await _db.BuildLeadDetailAsync(entity.Id, cancellationToken);
     }
 }

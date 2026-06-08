@@ -6,22 +6,51 @@
     "firstName": { "label": "Ad" },
     "lastName": { "label": "Soyad" },
     "fullName": { "label": "Ad Soyad" },
-    "company": { "label": "Şirket" },
     "title": { "label": "Ünvan" },
-    "email": { "label": "E-posta" },
-    "phone": { "label": "Telefon" },
+    "department": { "label": "Departman" },
+    "company": { "label": "Şirket" },
+    "industry": { "label": "Sektör" },
     "website": { "label": "Web Sitesi" },
     "source": { "label": "Kaynak" },
     "status": { "label": "Durum" },
+    "rating": { "label": "Sınıf" },
     "score": { "label": "Skor" },
     "estimatedValue": { "label": "Tahmini Değer" },
     "estimatedValueCurrency": { "label": "Para Birimi" },
+    "primaryEmail": { "label": "E-posta" },
+    "primaryPhone": { "label": "Telefon" },
     "description": { "label": "Açıklama" },
     "isActive": { "label": "Aktif" }
   },
   "sections": {
     "general": "Genel Bilgiler",
-    "contact": "İletişim",
-    "details": "Detaylar"
+    "person": "Kişi Bilgileri",
+    "company": "Firma Bilgileri",
+    "details": "Detaylar",
+    "communicationInfo": "İletişim Bilgileri",
+    "emails": "E-postalar",
+    "phones": "Telefonlar",
+    "addresses": "Adresler"
+  },
+  "convert": {
+    "action": "Dönüştür",
+    "title": "Adayı Dönüştür",
+    "confirm": "Dönüştür",
+    "cancel": "Vazgeç",
+    "accountSection": "Firma",
+    "account": {
+      "create": "Yeni firma oluştur",
+      "link": "Mevcut firmaya bağla",
+      "none": "Firma oluşturma",
+      "lookupLabel": "Firma seç"
+    },
+    "createContact": "Kişi oluştur",
+    "createOpportunity": "Fırsat oluştur",
+    "success": "Aday başarıyla dönüştürüldü.",
+    "errors": {
+      "selectAccount": "Lütfen bağlanacak firmayı seçin.",
+      "nothingToConvert": "En az bir hedef (firma veya kişi) seçmelisiniz.",
+      "failed": "Dönüştürme sırasında bir hata oluştu."
+    }
   }
 }

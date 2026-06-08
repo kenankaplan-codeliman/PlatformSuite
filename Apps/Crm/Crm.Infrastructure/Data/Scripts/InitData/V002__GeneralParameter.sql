@@ -25,6 +25,11 @@ FROM (VALUES
     ('Qualified',    'LeadStatus', 'Nitelikli',         3),
     ('Unqualified',  'LeadStatus', 'Niteliksiz',        4),
     ('Converted',    'LeadStatus', 'Dönüştürüldü',      5),
+    -- LeadRating (Aday sınıfı — sıcaklık)
+    ('LeadRating', NULL,         'Aday Sınıfı', 0),
+    ('Hot',        'LeadRating', 'Sıcak',       1),
+    ('Warm',       'LeadRating', 'Ilık',        2),
+    ('Cold',       'LeadRating', 'Soğuk',       3),
     -- LeadSource
     ('LeadSource',     NULL,         'Aday Kaynağı',   0),
     ('Other',          'LeadSource', 'Diğer',          1),

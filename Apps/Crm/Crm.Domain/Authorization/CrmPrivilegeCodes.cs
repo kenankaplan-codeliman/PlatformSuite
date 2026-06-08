@@ -30,6 +30,7 @@ public static class CrmPrivilegeCodes
         public const string Delete = "Lead.Delete";
         public const string Assign = "Lead.Assign";
         public const string State = "Lead.State";
+        public const string Convert = "Lead.Convert";
     }
 
     public static class OpportunityPrivilegeCodes

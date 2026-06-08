@@ -2,6 +2,8 @@ import { httpClient } from '@platform/ui';
 import type { PagedResult, PaginationRequest } from '@platform/ui';
 import { CrmServicePath } from '../../../shared/api/servicePaths';
 import type {
+  ConvertLeadInput,
+  ConvertLeadResult,
   LeadDetailItem,
   LeadFormValues,
   LeadListFilter,
@@ -52,5 +54,13 @@ export const leadDataSource = {
 
   delete: async (id: string): Promise<void> => {
     await httpClient.post(CrmServicePath.Lead.Delete, { id } satisfies IdBody);
+  },
+
+  convert: async (input: ConvertLeadInput): Promise<ConvertLeadResult> => {
+    const response = await httpClient.post<ConvertLeadResult>(
+      CrmServicePath.Lead.Convert,
+      input,
+    );
+    return response.data;
   },
 };

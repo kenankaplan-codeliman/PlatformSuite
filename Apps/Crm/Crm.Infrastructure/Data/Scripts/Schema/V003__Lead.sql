@@ -2,16 +2,25 @@ CREATE TABLE lead (
     id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
 
     subject varchar(250) NOT NULL,
+
+    -- Kişi bilgisi (Convert sırasında Contact'a taşınır)
     first_name varchar(100),
     last_name varchar(100),
-    company varchar(250),
     title varchar(150),
-    email varchar(250),
-    phone varchar(50),
+    department varchar(200),
+
+    -- Firma bilgisi (Convert sırasında Account'a taşınır)
+    company varchar(250),
+    industry varchar(150),
     website varchar(250),
+
+    -- İletişim (email/telefon/adres) polimorfik Communications modelinde tutulur
+    -- (email_address/phone/address, parent_entity_type = 'Lead') — düz alan yok.
 
     source varchar(50) NOT NULL CHECK (source IN ('Other', 'Website', 'Email', 'Phone', 'Referral', 'Advertisement', 'SocialMedia', 'Event', 'PartnerNetwork')),
     status varchar(50) NOT NULL DEFAULT 'New' CHECK (status IN ('New', 'Contacted', 'Qualified', 'Unqualified', 'Converted')),
+    -- Sınıflandırma: GeneralParameter code (LeadRating → Hot/Warm/Cold)
+    rating varchar(50),
 
     score integer,
     estimated_value numeric(18,2),

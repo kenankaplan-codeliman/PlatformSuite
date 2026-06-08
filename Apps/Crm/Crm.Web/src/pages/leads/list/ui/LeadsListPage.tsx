@@ -21,6 +21,7 @@ export function LeadsListPage() {
   const { t: tEntity } = useTranslation('entity.lead');
   const { getLabel: getStatusLabel } = useGeneralParameters('LeadStatus');
   const { getLabel: getSourceLabel } = useGeneralParameters('LeadSource');
+  const { getLabel: getRatingLabel } = useGeneralParameters('LeadRating');
   const navigate = useNavigate();
 
   const { filters, setFilters, clearFilters } = useUrlFilters<LeadListFilter>({
@@ -40,13 +41,14 @@ export function LeadsListPage() {
       { key: 'subject', title: tEntity('fields.subject.label'), dataIndex: 'subject' },
       { key: 'fullName', title: tEntity('fields.fullName.label'), dataIndex: 'fullName' },
       { key: 'company', title: tEntity('fields.company.label'), dataIndex: 'company' },
-      { key: 'email', title: tEntity('fields.email.label'), dataIndex: 'email' },
-      { key: 'phone', title: tEntity('fields.phone.label'), dataIndex: 'phone' },
+      { key: 'primaryEmail', title: tEntity('fields.primaryEmail.label'), dataIndex: 'primaryEmail' },
+      { key: 'primaryPhone', title: tEntity('fields.primaryPhone.label'), dataIndex: 'primaryPhone' },
       { key: 'status', title: tEntity('fields.status.label'), render: (_v, r) => getStatusLabel(r.status) },
       { key: 'source', title: tEntity('fields.source.label'), render: (_v, r) => getSourceLabel(r.source) },
+      { key: 'rating', title: tEntity('fields.rating.label'), render: (_v, r) => (r.rating ? getRatingLabel(r.rating) : '') },
       { key: 'score', title: tEntity('fields.score.label'), dataIndex: 'score' },
     ],
-    [tEntity, getStatusLabel, getSourceLabel],
+    [tEntity, getStatusLabel, getSourceLabel, getRatingLabel],
   );
 
   return (

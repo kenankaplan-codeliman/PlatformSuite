@@ -1,5 +1,7 @@
+using Crm.Application.Common.Communications;
 using Crm.Application.Features.Leads.Dtos;
 using Crm.Application.Interfaces;
+using Crm.Domain.Entities.Leads;
 using Platform.Application.Common.Results;
 using Mapster;
 using MediatR;
@@ -23,6 +25,9 @@ public sealed class GetLeadHandler : IRequestHandler<GetLeadQuery, Result<LeadDe
 
         if (entity is null) return LeadErrors.NotFound;
 
-        return entity.Adapt<LeadDetailItem>();
+        var dto = entity.Adapt<LeadDetailItem>();
+        (dto.Emails, dto.Phones, dto.Addresses) =
+            await _db.LoadCommunicationsAsync(nameof(Lead), entity.Id, cancellationToken);
+        return dto;
     }
 }

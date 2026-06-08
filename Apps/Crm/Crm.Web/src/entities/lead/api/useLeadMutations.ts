@@ -1,9 +1,19 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { mapAxiosError } from '@platform/ui';
 import type { AppError } from '@platform/ui';
-import { leadKeys } from '../../../shared/api/queryKeys';
+import {
+  accountKeys,
+  contactKeys,
+  leadKeys,
+  opportunityKeys,
+} from '../../../shared/api/queryKeys';
 import { leadDataSource } from './leadDataSource';
-import type { LeadDetailItem, LeadFormValues } from '../model/types';
+import type {
+  ConvertLeadInput,
+  ConvertLeadResult,
+  LeadDetailItem,
+  LeadFormValues,
+} from '../model/types';
 
 /** Hem create hem update için tek hook — Id boşsa create, doluysa update. */
 export function useUpsertLead() {
@@ -23,6 +33,33 @@ export function useUpsertLead() {
     onSuccess: (saved) => {
       queryClient.invalidateQueries({ queryKey: leadKeys.lists() });
       queryClient.setQueryData(leadKeys.detail(saved.id), saved);
+    },
+  });
+}
+
+/** Lead → Account/Contact (+ opsiyonel Opportunity) dönüşümü. */
+export function useConvertLead() {
+  const queryClient = useQueryClient();
+
+  return useMutation<ConvertLeadResult, AppError, ConvertLeadInput>({
+    mutationFn: async (input) => {
+      try {
+        return await leadDataSource.convert(input);
+      } catch (err) {
+        throw mapAxiosError(err);
+      }
+    },
+    onSuccess: (result) => {
+      // Lead artık Converted — detayı + listeleri tazele.
+      queryClient.invalidateQueries({ queryKey: leadKeys.detail(result.leadId) });
+      queryClient.invalidateQueries({ queryKey: leadKeys.lists() });
+      // Çapraz etki: oluşturulan kayıtların listeleri.
+      if (result.accountId)
+        queryClient.invalidateQueries({ queryKey: accountKeys.lists() });
+      if (result.contactId)
+        queryClient.invalidateQueries({ queryKey: contactKeys.lists() });
+      if (result.opportunityId)
+        queryClient.invalidateQueries({ queryKey: opportunityKeys.lists() });
     },
   });
 }

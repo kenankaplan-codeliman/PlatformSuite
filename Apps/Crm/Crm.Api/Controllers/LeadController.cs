@@ -1,4 +1,5 @@
 using Crm.Application.Features.Leads.Commands.AssignLead;
+using Crm.Application.Features.Leads.Commands.ConvertLead;
 using Crm.Application.Features.Leads.Commands.CreateLead;
 using Crm.Application.Features.Leads.Commands.DeleteLead;
 using Crm.Application.Features.Leads.Commands.SetStateLead;
@@ -54,5 +55,10 @@ public sealed class LeadController : ControllerBase
     [HttpPost("set-state")]
     [PrivilegeAuthorize(CrmPrivilegeCodes.LeadPrivilegeCodes.State)]
     public async Task<IActionResult> SetStateAsync([FromBody] SetStateLeadCommand command, CancellationToken ct)
+        => (await _sender.Send(command, ct)).ToActionResult(HttpContext);
+
+    [HttpPost("convert")]
+    [PrivilegeAuthorize(CrmPrivilegeCodes.LeadPrivilegeCodes.Convert)]
+    public async Task<IActionResult> ConvertAsync([FromBody] ConvertLeadCommand command, CancellationToken ct)
         => (await _sender.Send(command, ct)).ToActionResult(HttpContext);
 }

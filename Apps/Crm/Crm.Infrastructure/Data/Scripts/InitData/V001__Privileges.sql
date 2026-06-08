@@ -24,7 +24,7 @@ FROM (VALUES
     ('Contact.Read'), ('Contact.Create'), ('Contact.Update'), ('Contact.Delete'),
     ('Contact.Assign'), ('Contact.State'),
     ('Lead.Read'), ('Lead.Create'), ('Lead.Update'), ('Lead.Delete'),
-    ('Lead.Assign'), ('Lead.State'),
+    ('Lead.Assign'), ('Lead.State'), ('Lead.Convert'),
     ('Opportunity.Read'), ('Opportunity.Create'), ('Opportunity.Update'), ('Opportunity.Delete'),
     ('Opportunity.Assign'), ('Opportunity.State')
 ) AS codes(code)
@@ -44,7 +44,7 @@ CROSS JOIN (VALUES
     ('Contact.Read'), ('Contact.Create'), ('Contact.Update'), ('Contact.Delete'),
     ('Contact.Assign'), ('Contact.State'),
     ('Lead.Read'), ('Lead.Create'), ('Lead.Update'), ('Lead.Delete'),
-    ('Lead.Assign'), ('Lead.State'),
+    ('Lead.Assign'), ('Lead.State'), ('Lead.Convert'),
     ('Opportunity.Read'), ('Opportunity.Create'), ('Opportunity.Update'), ('Opportunity.Delete'),
     ('Opportunity.Assign'), ('Opportunity.State')
 ) AS codes(code)
@@ -66,7 +66,7 @@ CROSS JOIN (VALUES
     ('Contact.Read'), ('Contact.Create'), ('Contact.Update'), ('Contact.Delete'),
     ('Contact.Assign'), ('Contact.State'),
     ('Lead.Read'), ('Lead.Create'), ('Lead.Update'), ('Lead.Delete'),
-    ('Lead.Assign'), ('Lead.State'),
+    ('Lead.Assign'), ('Lead.State'), ('Lead.Convert'),
     ('Opportunity.Read'), ('Opportunity.Create'), ('Opportunity.Update'), ('Opportunity.Delete'),
     ('Opportunity.Assign'), ('Opportunity.State')
 ) AS codes(code)

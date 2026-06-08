@@ -24,15 +24,29 @@ public class LeadReferenceResolver : IEntityReferenceResolver
     public EntityReference GetReference(Guid id)
     {
         var lead = dbContext.Lead
-            .Select(l => new { l.Id, l.Subject, l.FirstName, l.LastName, l.Email, l.Phone })
+            .Select(l => new
+            {
+                l.Id,
+                l.Subject,
+                l.FirstName,
+                l.LastName,
+                PrimaryEmail = dbContext.EmailAddress
+                    .Where(e => e.ParentEntityType == nameof(Lead) && e.ParentEntityId == l.Id && e.IsPrimary)
+                    .Select(e => e.Email)
+                    .FirstOrDefault(),
+                PrimaryPhone = dbContext.Phone
+                    .Where(p => p.ParentEntityType == nameof(Lead) && p.ParentEntityId == l.Id && p.IsPrimary)
+                    .Select(p => p.PhoneNumber)
+                    .FirstOrDefault(),
+            })
             .FirstOrDefault(l => l.Id == id) ?? throw new NotFoundException();
 
         return new EntityReference(nameof(Lead))
         {
             Id = lead.Id,
             Name = BuildName(lead.Subject, lead.FirstName, lead.LastName),
-            Email = lead.Email,
-            Phone = lead.Phone,
+            Email = lead.PrimaryEmail,
+            Phone = lead.PrimaryPhone,
         };
     }
 
@@ -55,12 +69,25 @@ public class LeadReferenceResolver : IEntityReferenceResolver
             var pattern = $"%{searchText}%";
             tempQuery = tempQuery.Where(l =>
                 EF.Functions.ILike(l.Subject, pattern)
-                || EF.Functions.ILike(((l.FirstName ?? "") + " " + (l.LastName ?? "")), pattern)
-                || EF.Functions.ILike(l.Email ?? string.Empty, pattern));
+                || EF.Functions.ILike(((l.FirstName ?? "") + " " + (l.LastName ?? "")), pattern));
         }
 
         var entityList = tempQuery
-            .Select(l => new { l.Id, l.Subject, l.FirstName, l.LastName, l.Email, l.Phone })
+            .Select(l => new
+            {
+                l.Id,
+                l.Subject,
+                l.FirstName,
+                l.LastName,
+                PrimaryEmail = dbContext.EmailAddress
+                    .Where(e => e.ParentEntityType == nameof(Lead) && e.ParentEntityId == l.Id && e.IsPrimary)
+                    .Select(e => e.Email)
+                    .FirstOrDefault(),
+                PrimaryPhone = dbContext.Phone
+                    .Where(p => p.ParentEntityType == nameof(Lead) && p.ParentEntityId == l.Id && p.IsPrimary)
+                    .Select(p => p.PhoneNumber)
+                    .FirstOrDefault(),
+            })
             .Skip(skipCnt).Take(pageSize + 1).ToList();
 
         var hasMore = entityList.Count > pageSize;
@@ -70,8 +97,8 @@ public class LeadReferenceResolver : IEntityReferenceResolver
             {
                 Id = l.Id,
                 Name = BuildName(l.Subject, l.FirstName, l.LastName),
-                Email = l.Email,
-                Phone = l.Phone,
+                Email = l.PrimaryEmail,
+                Phone = l.PrimaryPhone,
             })
             .ToList();
 
