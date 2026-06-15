@@ -7,7 +7,7 @@ CREATE TABLE opportunity (
     account_id uuid NOT NULL,
     primary_contact_id uuid NULL,
 
-    stage varchar(50) NOT NULL DEFAULT 'Prospecting' CHECK (stage IN ('Prospecting', 'Qualification', 'NeedsAnalysis', 'Proposal', 'Negotiation', 'ClosedWon', 'ClosedLost')),
+    stage varchar(50) NOT NULL DEFAULT 'Prospecting',
     estimated_amount numeric(18,2),
     -- Deal-level para birimi (GeneralParameter CurrencyType code).
     -- estimated_amount + actual_amount + tüm opportunity_product satırları bu currency'de.
@@ -23,7 +23,7 @@ CREATE TABLE opportunity (
     -- Fırsat seviyesindeki efektif indirim oranı (0-100) = total_discount_amount / actual_amount * 100.
     -- actual_amount NULL/0 ise NULL.
     total_discount_rate numeric(5,2),
-    probability integer NOT NULL DEFAULT 0 CHECK (probability BETWEEN 0 AND 100),
+    probability integer NOT NULL DEFAULT 0,
     close_date timestamp NULL,
     loss_reason varchar(500),
 

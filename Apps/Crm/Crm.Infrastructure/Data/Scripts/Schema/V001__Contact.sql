@@ -2,7 +2,7 @@ CREATE TABLE contact (
     id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
     first_name varchar(150) NOT NULL,
     last_name varchar(150) NOT NULL,
-    contact_status varchar(50) NOT NULL DEFAULT 'Active' CHECK (contact_status IN ('Active', 'DoNotContact', 'Unsubscribed', 'Inactive')),
+    contact_status varchar(50) NOT NULL DEFAULT 'Active',
     title varchar(150),
     department varchar(150),
     birth_date date,

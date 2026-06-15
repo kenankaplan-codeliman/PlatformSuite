@@ -37,12 +37,6 @@ CREATE TABLE offer (
 
     CONSTRAINT pk_offer PRIMARY KEY (id),
     CONSTRAINT uq_offer_number UNIQUE (offer_number),
-    CONSTRAINT chk_offer_type
-        CHECK (offer_type IN ('Rfi', 'Rfq', 'Rfp', 'Purchase', 'Sale')),
-    CONSTRAINT chk_offer_status
-        CHECK (status IN ('Draft', 'InInternalApproval', 'Sent', 'Won', 'Lost', 'Expired', 'Rejected')),
-    CONSTRAINT chk_offer_currency
-        CHECK (currency IN ('TRY', 'USD', 'EUR')),
     CONSTRAINT fk_offer_contract
         FOREIGN KEY (converted_contract_id) REFERENCES contract(id)
 );
@@ -84,11 +78,7 @@ CREATE TABLE offer_item (
     line_total      NUMERIC(18,2)  NOT NULL DEFAULT 0,
     line_vat        NUMERIC(18,2)  NOT NULL DEFAULT 0,
 
-    CONSTRAINT pk_offer_item PRIMARY KEY (id),
-    CONSTRAINT chk_offer_item_unit
-        CHECK (unit IN ('Piece', 'Hour', 'Day', 'Month', 'Kg', 'Meter', 'SquareMeter', 'CubicMeter', 'Package', 'Liter', 'Other')),
-    CONSTRAINT chk_offer_item_vat_rate
-        CHECK (vat_rate IN ('Zero', 'One', 'Ten', 'Twenty'))
+    CONSTRAINT pk_offer_item PRIMARY KEY (id)
 );
 
 CREATE INDEX ix_offer_item_offer_id ON offer_item(offer_id);
@@ -103,9 +93,7 @@ CREATE TABLE offer_approval_step (
     actioned_at       TIMESTAMPTZ,
     rejection_reason  VARCHAR(2000),
 
-    CONSTRAINT pk_offer_approval_step PRIMARY KEY (id),
-    CONSTRAINT chk_offer_approval_step_status
-        CHECK (status IN ('NotYet', 'Waiting', 'Approved', 'Rejected'))
+    CONSTRAINT pk_offer_approval_step PRIMARY KEY (id)
 );
 
 CREATE INDEX ix_offer_approval_step_offer_id ON offer_approval_step(offer_id);
@@ -119,9 +107,7 @@ CREATE TABLE offer_form (
     filled_at          TIMESTAMPTZ,
     created_at         TIMESTAMPTZ  NOT NULL DEFAULT now(),
 
-    CONSTRAINT pk_offer_form PRIMARY KEY (id),
-    CONSTRAINT chk_offer_form_status
-        CHECK (status IN ('Empty', 'Partial', 'Completed'))
+    CONSTRAINT pk_offer_form PRIMARY KEY (id)
 );
 
 CREATE INDEX ix_offer_form_offer_id ON offer_form(offer_id);

@@ -17,6 +17,7 @@ export const ControllerPaths = {
   Reference: `${ApiBase}/reference`,
   GeneralParameter: `${ApiBase}/general-parameter`,
   EntityMetadata: `${ApiBase}/entity-metadata`,
+  Assistant: `${ApiBase}/assistant`,
 } as const;
 
 export const ServicePath = {
@@ -123,5 +124,14 @@ export const ServicePath = {
    */
   EntityMetadata: {
     Get: `${ControllerPaths.EntityMetadata}/get`,
+  },
+  /**
+   * AI Asistan sohbet turu. Body: { message, attachmentId?, history[] }
+   * Yanıt: { reply, links[], history[] }. Araçlar sunucuda registry üzerinden çözülür.
+   */
+  Assistant: {
+    Chat: `${ControllerPaths.Assistant}/chat`,
+    /** Kullanıcının onayladığı yazma işlemini (imzalı token) çalıştırır. */
+    Confirm: `${ControllerPaths.Assistant}/confirm`,
   },
 } as const;

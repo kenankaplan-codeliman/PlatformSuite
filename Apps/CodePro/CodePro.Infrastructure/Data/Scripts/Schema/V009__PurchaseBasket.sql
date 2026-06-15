@@ -30,8 +30,6 @@ CREATE TABLE purchase_basket (
     deleted_by              UUID,
     deleted_at              TIMESTAMPTZ,
 
-    CONSTRAINT chk_purchase_basket_status
-        CHECK (status IN ('Preparing','Converted')),
     CONSTRAINT fk_purchase_basket_purchase_request
         FOREIGN KEY (purchase_request_id) REFERENCES purchase_request(id)
 );
@@ -59,7 +57,7 @@ CREATE TABLE purchase_basket_line (
     product_id              UUID NOT NULL REFERENCES product(id),
 
     -- İstenen adet (>0)
-    quantity                INTEGER NOT NULL CHECK (quantity > 0),
+    quantity                INTEGER NOT NULL,
 
     -- IBaseEntity
     is_active               BOOLEAN NOT NULL DEFAULT TRUE,

@@ -26,9 +26,7 @@ CREATE TABLE product_catalog (
     -- ISoftDeleteEntity
     is_deleted              BOOLEAN         NOT NULL DEFAULT FALSE,
     deleted_by              UUID,
-    deleted_at              TIMESTAMPTZ,
-
-    CONSTRAINT chk_product_catalog_valid_until_after_from CHECK (valid_until >= valid_from)
+    deleted_at              TIMESTAMPTZ
 );
 
 CREATE UNIQUE INDEX uq_product_catalog_code

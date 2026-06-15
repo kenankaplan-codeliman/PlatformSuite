@@ -96,9 +96,7 @@ CREATE TABLE product (
     -- ISoftDeleteEntity
     is_deleted              BOOLEAN NOT NULL DEFAULT FALSE,
     deleted_by              UUID,
-    deleted_at              TIMESTAMPTZ,
-
-    CONSTRAINT chk_valid_until_after_from CHECK (valid_until >= valid_from)
+    deleted_at              TIMESTAMPTZ
 );
 
 CREATE UNIQUE INDEX uq_product_code ON product(code) WHERE is_deleted = FALSE;

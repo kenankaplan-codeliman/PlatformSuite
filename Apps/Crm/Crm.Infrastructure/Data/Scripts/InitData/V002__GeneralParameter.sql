@@ -25,6 +25,8 @@ FROM (VALUES
     ('Qualified',    'LeadStatus', 'Nitelikli',         3),
     ('Unqualified',  'LeadStatus', 'Niteliksiz',        4),
     ('Converted',    'LeadStatus', 'Dönüştürüldü',      5),
+    -- AI Asistan (kartvizit tarama + CSV import) ile oluşturulan adayların özel statüsü.
+    ('AssistantDraft', 'LeadStatus', 'Asistan Taslağı', 6),
     -- LeadRating (Aday sınıfı — sıcaklık)
     ('LeadRating', NULL,         'Aday Sınıfı', 0),
     ('Hot',        'LeadRating', 'Sıcak',       1),

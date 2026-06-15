@@ -36,6 +36,9 @@ export type {
 } from './widgets/attachment/model/AttachmentsContext';
 export { AppShell } from './widgets/app-shell/ui/AppShell';
 export type { AppShellProps } from './widgets/app-shell/ui/AppShell';
+export { AssistantWidget } from './features/assistant-chat/ui/AssistantWidget';
+export type { AssistantWidgetProps } from './features/assistant-chat/ui/AssistantWidget';
+export type { ResolveLink as AssistantResolveLink } from './features/assistant-chat/model/types';
 export { AppMetaProvider, useAppMeta } from './shared/lib/app-meta/AppMetaContext';
 export type { AppMeta, AppMetaProviderProps } from './shared/lib/app-meta/AppMetaContext';
 export {

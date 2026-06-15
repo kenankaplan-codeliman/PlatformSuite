@@ -1,4 +1,5 @@
 using Crm.Application.Interfaces;
+using Crm.Infrastructure.Assistant;
 using Crm.Infrastructure.Data;
 using Crm.Infrastructure.Data.Migrations;
 using Crm.Infrastructure.Metadata;
@@ -6,6 +7,7 @@ using Crm.Infrastructure.References;
 using Crm.Infrastructure.Repositories;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Platform.Application.Common.Assistant;
 using Platform.Application.Common.Database;
 using Platform.Application.Common.Metadata;
 using Platform.Application.Common.References;
@@ -42,6 +44,13 @@ public static class DependencyInjection
 
         // Generic ortak metadata (audit/owner/state) resolver'ı — CRM entity'lerinin tamamını kapsar.
         services.AddScoped<IEntityMetadataResolver, CrmEntityMetadataResolver>();
+
+        // AI Asistan araçları — Platform'daki IAssistantToolRegistry bunları otomatik toplar.
+        // (EntityReferenceResolver kayıtlarıyla aynı desen; Platform'a dokunmadan eklenir.)
+        // Analitik artık Platform'da generic (reflection) — CRM'e özel analitik aracı yok.
+        services.AddScoped<IAssistantTool, CreateLeadFromCardTool>();
+        services.AddScoped<IAssistantTool, ImportLeadsFromCsvTool>();
+        services.AddScoped<IAssistantTool, RecordLookupTool>();
 
         return services;
     }

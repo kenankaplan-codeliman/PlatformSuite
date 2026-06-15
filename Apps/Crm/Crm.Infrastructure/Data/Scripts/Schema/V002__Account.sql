@@ -2,7 +2,7 @@ CREATE TABLE account (
     id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
     account_name varchar(250) NOT NULL,
     account_type varchar(50) NOT NULL,
-    account_status varchar(50) NOT NULL DEFAULT 'Prospect' CHECK (account_status IN ('Prospect', 'Active', 'AtRisk', 'Inactive', 'Churned')),
+    account_status varchar(50) NOT NULL DEFAULT 'Prospect',
     industry varchar(150),
     annual_revenue numeric(18,2),
     annual_revenue_currency varchar(10),

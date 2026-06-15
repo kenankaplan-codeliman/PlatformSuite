@@ -62,7 +62,8 @@ FROM (VALUES
     ('Activity.UpdateStatus'), ('Activity.Assign'), ('Activity.State'),
     ('Organization.Read'), ('Organization.Create'), ('Organization.Update'), ('Organization.Delete'),
     ('AppRole.Read'), ('AppRole.Create'), ('AppRole.Update'), ('AppRole.Delete'),
-    ('Attachment.Read'), ('Attachment.Create'), ('Attachment.Delete')
+    ('Attachment.Read'), ('Attachment.Create'), ('Attachment.Delete'),
+    ('Assistant.Use')
 ) AS codes(code)
 WHERE NOT EXISTS (
     SELECT 1 FROM auth_privilege p WHERE p.privilege_code = codes.code
@@ -81,7 +82,8 @@ WHERE p.privilege_code IN (
     'Activity.UpdateStatus', 'Activity.Assign', 'Activity.State',
     'Organization.Read', 'Organization.Create', 'Organization.Update', 'Organization.Delete',
     'AppRole.Read', 'AppRole.Create', 'AppRole.Update', 'AppRole.Delete',
-    'Attachment.Read', 'Attachment.Create', 'Attachment.Delete'
+    'Attachment.Read', 'Attachment.Create', 'Attachment.Delete',
+    'Assistant.Use'
 )
 AND NOT EXISTS (
     SELECT 1 FROM auth_role_privilege rp
@@ -99,7 +101,8 @@ WHERE p.privilege_code IN (
     'Activity.UpdateStatus', 'Activity.Assign', 'Activity.State',
     'Organization.Read', 'Organization.Create', 'Organization.Update', 'Organization.Delete',
     'AppRole.Read', 'AppRole.Create', 'AppRole.Update', 'AppRole.Delete',
-    'Attachment.Read', 'Attachment.Create', 'Attachment.Delete'
+    'Attachment.Read', 'Attachment.Create', 'Attachment.Delete',
+    'Assistant.Use'
 )
 AND NOT EXISTS (
     SELECT 1 FROM auth_role_privilege rp

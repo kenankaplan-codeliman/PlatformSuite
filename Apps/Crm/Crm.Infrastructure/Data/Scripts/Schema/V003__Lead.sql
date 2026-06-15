@@ -17,8 +17,8 @@ CREATE TABLE lead (
     -- İletişim (email/telefon/adres) polimorfik Communications modelinde tutulur
     -- (email_address/phone/address, parent_entity_type = 'Lead') — düz alan yok.
 
-    source varchar(50) NOT NULL CHECK (source IN ('Other', 'Website', 'Email', 'Phone', 'Referral', 'Advertisement', 'SocialMedia', 'Event', 'PartnerNetwork')),
-    status varchar(50) NOT NULL DEFAULT 'New' CHECK (status IN ('New', 'Contacted', 'Qualified', 'Unqualified', 'Converted')),
+    source varchar(50) NOT NULL,
+    status varchar(50) NOT NULL DEFAULT 'New',
     -- Sınıflandırma: GeneralParameter code (LeadRating → Hot/Warm/Cold)
     rating varchar(50),
 

@@ -75,23 +75,7 @@ CREATE TABLE budget (
     CONSTRAINT fk_budget_scope_organization
         FOREIGN KEY (scope_organization_id) REFERENCES auth_organization(id) ON DELETE RESTRICT,
     CONSTRAINT fk_budget_category
-        FOREIGN KEY (budget_category_id) REFERENCES budget_category(id) ON DELETE RESTRICT,
-    CONSTRAINT chk_budget_period_type
-        CHECK (period_type IN ('Yearly', 'Quarterly', 'Monthly', 'Custom')),
-    CONSTRAINT chk_budget_overflow_behavior
-        CHECK (overflow_behavior IN ('Block', 'Warn', 'Free')),
-    CONSTRAINT chk_budget_release_point
-        CHECK (reservation_release_point IN ('RequestApproval', 'PurchaseOrder', 'Contract', 'Invoice')),
-    CONSTRAINT chk_budget_status
-        CHECK (status IN ('Draft', 'InInternalApproval', 'Active', 'Depleted', 'Expired', 'Passive', 'Rejected')),
-    CONSTRAINT chk_budget_currency
-        CHECK (currency IN ('TRY', 'USD', 'EUR')),
-    CONSTRAINT chk_budget_dates
-        CHECK (end_date >= start_date),
-    CONSTRAINT chk_budget_total_amount
-        CHECK (total_amount >= 0),
-    CONSTRAINT chk_budget_alert_threshold
-        CHECK (alert_threshold_percentage BETWEEN 0 AND 100)
+        FOREIGN KEY (budget_category_id) REFERENCES budget_category(id) ON DELETE RESTRICT
 );
 
 CREATE INDEX ix_budget_scope_category_period
@@ -121,11 +105,7 @@ CREATE TABLE budget_transaction (
     CONSTRAINT fk_budget_transaction_budget
         FOREIGN KEY (budget_id) REFERENCES budget(id) ON DELETE CASCADE,
     CONSTRAINT fk_budget_transaction_related
-        FOREIGN KEY (related_transaction_id) REFERENCES budget_transaction(id) ON DELETE SET NULL,
-    CONSTRAINT chk_budget_transaction_type
-        CHECK (transaction_type IN ('Reserve', 'ReserveCancel', 'Usage', 'Adjustment', 'Increase', 'CarryOver')),
-    CONSTRAINT chk_budget_transaction_source_type
-        CHECK (source_type IS NULL OR source_type IN ('PurchaseRequest', 'Rfq', 'PurchaseOrder', 'Contract', 'Manual'))
+        FOREIGN KEY (related_transaction_id) REFERENCES budget_transaction(id) ON DELETE SET NULL
 );
 
 CREATE INDEX ix_budget_transaction_budget ON budget_transaction(budget_id);
@@ -148,11 +128,7 @@ CREATE TABLE budget_allocation (
 
     CONSTRAINT pk_budget_allocation PRIMARY KEY (id),
     CONSTRAINT fk_budget_allocation_budget
-        FOREIGN KEY (budget_id) REFERENCES budget(id) ON DELETE CASCADE,
-    CONSTRAINT chk_budget_allocation_status
-        CHECK (status IN ('Reserved', 'Used', 'Cancelled')),
-    CONSTRAINT chk_budget_allocation_source_type
-        CHECK (source_type IN ('PurchaseRequest', 'Rfq', 'PurchaseOrder', 'Contract', 'Manual'))
+        FOREIGN KEY (budget_id) REFERENCES budget(id) ON DELETE CASCADE
 );
 
 CREATE INDEX ix_budget_allocation_budget ON budget_allocation(budget_id);
@@ -174,9 +150,7 @@ CREATE TABLE budget_approval_step (
 
     CONSTRAINT pk_budget_approval_step PRIMARY KEY (id),
     CONSTRAINT fk_budget_approval_step_budget
-        FOREIGN KEY (budget_id) REFERENCES budget(id) ON DELETE CASCADE,
-    CONSTRAINT chk_budget_approval_step_status
-        CHECK (status IN ('NotYet', 'Waiting', 'Approved', 'Rejected'))
+        FOREIGN KEY (budget_id) REFERENCES budget(id) ON DELETE CASCADE
 );
 
 CREATE INDEX ix_budget_approval_step_budget ON budget_approval_step(budget_id);

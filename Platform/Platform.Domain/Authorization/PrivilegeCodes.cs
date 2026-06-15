@@ -48,5 +48,10 @@ namespace Platform.Domain.Authorization
         {
             public const string Read = "GeneralParameter.Read";
         }
+
+        public static class AssistantPrivilegeCodes
+        {
+            public const string Use = "Assistant.Use";
+        }
     }
 }

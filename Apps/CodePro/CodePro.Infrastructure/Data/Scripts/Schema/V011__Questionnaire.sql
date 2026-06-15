@@ -18,11 +18,7 @@ CREATE TABLE questionnaire (
     deleted_by        UUID,
     deleted_at        TIMESTAMPTZ,
 
-    CONSTRAINT pk_questionnaire PRIMARY KEY (id),
-    CONSTRAINT chk_questionnaire_status
-        CHECK (status IN ('Active', 'Passive', 'Draft')),
-    CONSTRAINT chk_questionnaire_related_module
-        CHECK (related_module IN ('Offer', 'Contract', 'Supplier', 'Order'))
+    CONSTRAINT pk_questionnaire PRIMARY KEY (id)
 );
 
 CREATE TABLE questionnaire_question (
@@ -33,9 +29,7 @@ CREATE TABLE questionnaire_question (
     is_required       BOOLEAN      NOT NULL DEFAULT false,
     order_index       INTEGER      NOT NULL DEFAULT 0,
 
-    CONSTRAINT pk_questionnaire_question PRIMARY KEY (id),
-    CONSTRAINT chk_questionnaire_question_type
-        CHECK (question_type IN ('YesNo', 'ShortText', 'LongText', 'Number', 'Date', 'MultipleChoice'))
+    CONSTRAINT pk_questionnaire_question PRIMARY KEY (id)
 );
 
 CREATE INDEX ix_questionnaire_question_questionnaire_id

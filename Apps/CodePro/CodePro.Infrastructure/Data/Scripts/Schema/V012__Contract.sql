@@ -36,17 +36,7 @@ CREATE TABLE contract (
     deleted_at                TIMESTAMPTZ,
 
     CONSTRAINT pk_contract PRIMARY KEY (id),
-    CONSTRAINT uq_contract_number UNIQUE (contract_number),
-    CONSTRAINT chk_contract_type
-        CHECK (type IN ('It', 'Personnel', 'Supplier', 'Sales', 'Rent', 'Other')),
-    CONSTRAINT chk_contract_status
-        CHECK (status IN ('Draft', 'InInternalApproval', 'WaitingForSignature', 'Active', 'Expired', 'Rejected')),
-    CONSTRAINT chk_contract_renewal_type
-        CHECK (renewal_type IN ('Manual', 'Automatic', 'None')),
-    CONSTRAINT chk_contract_currency
-        CHECK (currency IS NULL OR currency IN ('TRY', 'USD', 'EUR')),
-    CONSTRAINT chk_contract_payment_type
-        CHECK (payment_type IS NULL OR payment_type IN ('Onetime', 'Monthly', 'Quarterly', 'Yearly'))
+    CONSTRAINT uq_contract_number UNIQUE (contract_number)
 );
 
 CREATE INDEX ix_contract_status ON contract(status);
@@ -63,9 +53,7 @@ CREATE TABLE contract_approval_step (
     actioned_at       TIMESTAMPTZ,
     rejection_reason  VARCHAR(2000),
 
-    CONSTRAINT pk_contract_approval_step PRIMARY KEY (id),
-    CONSTRAINT chk_contract_approval_step_status
-        CHECK (status IN ('NotYet', 'Waiting', 'Approved', 'Rejected'))
+    CONSTRAINT pk_contract_approval_step PRIMARY KEY (id)
 );
 
 CREATE INDEX ix_contract_approval_step_contract_id ON contract_approval_step(contract_id);
@@ -79,9 +67,7 @@ CREATE TABLE contract_form (
     filled_at          TIMESTAMPTZ,
     created_at         TIMESTAMPTZ  NOT NULL DEFAULT now(),
 
-    CONSTRAINT pk_contract_form PRIMARY KEY (id),
-    CONSTRAINT chk_contract_form_status
-        CHECK (status IN ('Empty', 'Partial', 'Completed'))
+    CONSTRAINT pk_contract_form PRIMARY KEY (id)
 );
 
 CREATE INDEX ix_contract_form_contract_id ON contract_form(contract_id);

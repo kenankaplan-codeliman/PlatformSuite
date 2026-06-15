@@ -43,12 +43,7 @@ CREATE TABLE purchase_order (
     -- ISoftDeleteEntity
     is_deleted                  BOOLEAN NOT NULL DEFAULT FALSE,
     deleted_by                  UUID,
-    deleted_at                  TIMESTAMPTZ,
-
-    CONSTRAINT chk_purchase_order_status
-        CHECK (status IN ('Draft','Submitted','Confirmed','InDelivery','Received','Cancelled')),
-    CONSTRAINT chk_purchase_order_priority
-        CHECK (priority IN ('Low','Medium','High','Urgent'))
+    deleted_at                  TIMESTAMPTZ
 );
 
 -- =============================================
@@ -76,7 +71,7 @@ CREATE TABLE purchase_order_line (
     product_price_id          UUID REFERENCES product_price(id),
 
     -- Sipariş miktarı — 3 ondalık hane
-    quantity                  NUMERIC(18,3) NOT NULL CHECK (quantity > 0),
+    quantity                  NUMERIC(18,3) NOT NULL,
 
     unit_of_measure           VARCHAR(25),
     unit_price                NUMERIC(18,4),
@@ -102,10 +97,7 @@ CREATE TABLE purchase_order_line (
     -- ISoftDeleteEntity
     is_deleted                BOOLEAN NOT NULL DEFAULT FALSE,
     deleted_by                UUID,
-    deleted_at                TIMESTAMPTZ,
-
-    CONSTRAINT chk_purchase_order_line_status
-        CHECK (status IN ('Draft','Submitted','Confirmed','InDelivery','Received','Cancelled'))
+    deleted_at                TIMESTAMPTZ
 );
 
 -- =============================================
@@ -120,7 +112,7 @@ CREATE TABLE purchase_order_request_line (
     purchase_request_line_id    UUID NOT NULL REFERENCES purchase_request_line(id) ON DELETE RESTRICT,
 
     -- Bu talep satırından bu sipariş satırına aktarılan miktar (3 ondalık)
-    allocated_quantity          NUMERIC(18,3) NOT NULL CHECK (allocated_quantity > 0),
+    allocated_quantity          NUMERIC(18,3) NOT NULL,
 
     -- IBaseEntity
     is_active                   BOOLEAN NOT NULL DEFAULT TRUE,

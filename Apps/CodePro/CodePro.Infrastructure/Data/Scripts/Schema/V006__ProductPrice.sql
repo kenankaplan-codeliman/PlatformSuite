@@ -29,11 +29,7 @@ CREATE TABLE product_price (
     -- ISoftDeleteEntity
     is_deleted      BOOLEAN         NOT NULL DEFAULT FALSE,
     deleted_by      UUID,
-    deleted_at      TIMESTAMPTZ,
-
-    CONSTRAINT chk_product_price_valid_until_after_from CHECK (valid_until >= valid_from),
-    CONSTRAINT chk_product_price_minimum_quantity_positive CHECK (minimum_quantity > 0),
-    CONSTRAINT chk_product_price_unit_price_non_negative CHECK (unit_price >= 0)
+    deleted_at      TIMESTAMPTZ
 );
 
 CREATE INDEX idx_product_price_product_id

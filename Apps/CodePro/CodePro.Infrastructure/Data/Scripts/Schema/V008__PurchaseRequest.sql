@@ -38,12 +38,7 @@ CREATE TABLE purchase_request (
     -- ISoftDeleteEntity
     is_deleted               BOOLEAN NOT NULL DEFAULT FALSE,
     deleted_by               UUID,
-    deleted_at               TIMESTAMPTZ,
-
-    CONSTRAINT chk_purchase_request_status
-        CHECK (status IN ('Setup','PendingApproval','InPurchasing','PartialOrderCreated','OrderCreated','Rejected','Completed','Cancelled')),
-    CONSTRAINT chk_purchase_request_priority
-        CHECK (priority IN ('Low','Medium','High','Urgent'))
+    deleted_at               TIMESTAMPTZ
 );
 
 -- =============================================
@@ -72,7 +67,7 @@ CREATE TABLE purchase_request_line (
     supplier_id               UUID REFERENCES supplier(id),
 
     -- Miktar — 3 ondalık hane
-    quantity                  NUMERIC(18,3) NOT NULL CHECK (quantity > 0),
+    quantity                  NUMERIC(18,3) NOT NULL,
 
     unit_of_measure           VARCHAR(25),
     unit_price                NUMERIC(18,4),
@@ -98,10 +93,7 @@ CREATE TABLE purchase_request_line (
     -- ISoftDeleteEntity
     is_deleted                BOOLEAN NOT NULL DEFAULT FALSE,
     deleted_by                UUID,
-    deleted_at                TIMESTAMPTZ,
-
-    CONSTRAINT chk_purchase_request_line_status
-        CHECK (status IN ('Setup','PendingApproval','Approved','Rejected','InPurchasing','OrderCreated','Completed','Cancelled'))
+    deleted_at                TIMESTAMPTZ
 );
 
 -- Indexes
