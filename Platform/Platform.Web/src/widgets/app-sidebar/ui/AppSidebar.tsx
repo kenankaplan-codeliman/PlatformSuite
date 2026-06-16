@@ -1,7 +1,10 @@
 import { useMemo } from 'react';
-import { Layout, Menu } from 'antd';
+import { Layout, Menu, Skeleton } from 'antd';
 import type { MenuProps } from 'antd';
 import { useLocation, useNavigate } from 'react-router-dom';
+import { useCurrentUserQuery } from '../../../entities/user/api/useCurrentUserQuery';
+import { canAccessEntity } from '../../../entities/user/lib/privileges';
+import type { AccessLevel } from '../../../entities/user/model/types';
 import { isMenuGroup, type MenuGroup, type MenuItem, type MenuSchema } from '../model/types';
 
 const { Sider } = Layout;
@@ -28,6 +31,27 @@ function toAntdItem(node: MenuItem | MenuGroup): AntdMenuItem {
     icon: node.icon,
     label: node.label,
   };
+}
+
+/**
+ * Privilege'lere göre menüyü süzer: `entity` taşıyan item, o entity'de `None`
+ * dışında bir privilege yoksa düşer; tüm çocukları düşen grup da düşer.
+ * `entity` taşımayan item'lar (Home gibi) her zaman kalır.
+ */
+function filterByPrivileges(
+  schema: MenuSchema,
+  privileges: Record<string, AccessLevel> | undefined,
+): MenuSchema {
+  const out: MenuSchema = [];
+  for (const node of schema) {
+    if (isMenuGroup(node)) {
+      const children = filterByPrivileges(node.children, privileges);
+      if (children.length > 0) out.push({ ...node, children });
+    } else if (!node.entity || canAccessEntity(node.entity, privileges)) {
+      out.push(node);
+    }
+  }
+  return out;
 }
 
 function collectLeafKeys(items: MenuSchema): MenuItem[] {
@@ -74,16 +98,28 @@ function findOpenKeys(items: MenuSchema, activeKey: string | undefined): string[
 export function AppSidebar({ items, collapsed, onCollapse }: AppSidebarProps) {
   const location = useLocation();
   const navigate = useNavigate();
+  const { data: user, isLoading } = useCurrentUserQuery();
 
-  const antdItems = useMemo(() => items.map(toAntdItem), [items]);
-  const active = useMemo(() => findActiveLeaf(items, location.pathname), [items, location.pathname]);
-  const defaultOpenKeys = useMemo(() => findOpenKeys(items, active?.key), [items, active?.key]);
+  const visibleItems = useMemo(
+    () => filterByPrivileges(items, user?.privileges),
+    [items, user?.privileges],
+  );
+
+  const antdItems = useMemo(() => visibleItems.map(toAntdItem), [visibleItems]);
+  const active = useMemo(
+    () => findActiveLeaf(visibleItems, location.pathname),
+    [visibleItems, location.pathname],
+  );
+  const defaultOpenKeys = useMemo(
+    () => findOpenKeys(visibleItems, active?.key),
+    [visibleItems, active?.key],
+  );
 
   const leafByKey = useMemo(() => {
     const map = new Map<string, MenuItem>();
-    collectLeafKeys(items).forEach((l) => map.set(l.key, l));
+    collectLeafKeys(visibleItems).forEach((l) => map.set(l.key, l));
     return map;
-  }, [items]);
+  }, [visibleItems]);
 
   return (
     <Sider
@@ -96,18 +132,22 @@ export function AppSidebar({ items, collapsed, onCollapse }: AppSidebarProps) {
       style={{ borderRight: '1px solid #f0f0f0', background: '#fff' }}
     >
       <div style={{ height: '100%', overflowY: 'auto', paddingBottom: 48 }}>
-        <Menu
-          mode="inline"
-          theme="light"
-          items={antdItems}
-          selectedKeys={active ? [active.key] : []}
-          defaultOpenKeys={defaultOpenKeys}
-          onClick={({ key }) => {
-            const leaf = leafByKey.get(String(key));
-            if (leaf) navigate(leaf.to);
-          }}
-          style={{ borderInlineEnd: 0 }}
-        />
+        {isLoading ? (
+          <Skeleton active paragraph={{ rows: 6 }} title={false} style={{ padding: 16 }} />
+        ) : (
+          <Menu
+            mode="inline"
+            theme="light"
+            items={antdItems}
+            selectedKeys={active ? [active.key] : []}
+            defaultOpenKeys={defaultOpenKeys}
+            onClick={({ key }) => {
+              const leaf = leafByKey.get(String(key));
+              if (leaf) navigate(leaf.to);
+            }}
+            style={{ borderInlineEnd: 0 }}
+          />
+        )}
       </div>
     </Sider>
   );

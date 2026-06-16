@@ -43,5 +43,6 @@ export function entityMenuItem(
     icon: createElement(meta.icon),
     to: overrides.to,
     privilege: overrides.privilege,
+    entity: meta.key,
   };
 }

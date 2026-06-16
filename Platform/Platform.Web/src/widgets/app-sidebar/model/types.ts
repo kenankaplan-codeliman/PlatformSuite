@@ -6,6 +6,12 @@ export interface MenuItem {
   icon?: ReactNode;
   to: string;
   privilege?: string;
+  /**
+   * Entity registry anahtarı ("Lead", "Account"...). Verildiğinde menü, o
+   * entity'de `None` dışında en az bir privilege yoksa gizlenir. Boşsa
+   * (örn. Home) menü her zaman görünür.
+   */
+  entity?: string;
 }
 
 export interface MenuGroup {

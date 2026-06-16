@@ -116,6 +116,7 @@ namespace Platform.Application.CommandHandler
                 {
                     Email = usr.Email,
                     DisplayName = usr.DisplayName,
+                    Privileges = usr.PrivilegesCodes,
                 };
             }
             else
