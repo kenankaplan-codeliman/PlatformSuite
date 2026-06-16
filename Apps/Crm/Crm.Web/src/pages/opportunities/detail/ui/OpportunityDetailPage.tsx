@@ -6,6 +6,7 @@ import {
   DateTimeField,
   DetailPageLayout,
   EntityLookupField,
+  FormColumn,
   FormRow,
   FormSection,
   NumberField,
@@ -545,73 +546,80 @@ export function OpportunityDetailPage() {
     const { options: currencyOptions } = useGeneralParameters("CurrencyType");
     return (
       <FormSection title={tEntity("sections.financial")}>
-        <FormRow columns={2}>
-          <SelectField<OpportunityFormValues>
-            name="currency"
-            control={form.control}
-            label={tEntity("fields.currency.label")}
-            options={currencyOptions}
-            allowClear
-          />
-          <CurrencyField<OpportunityFormValues>
-            name="estimatedAmount"
-            control={form.control}
-            label={tEntity("fields.estimatedAmount.label")}
-            min={0}
-            precision={2}
-          />
-        </FormRow>
-        <FormRow columns={4}>
-          {/* İndirim alanları — üçü de satırlardan canlı hesaplanan readonly. Backend
+        <FormRow columns={3}>
+          <FormColumn columns={2}>
+            <FormRow columns={2}>
+              <SelectField<OpportunityFormValues>
+                name="currency"
+                control={form.control}
+                label={tEntity("fields.currency.label")}
+                options={currencyOptions}
+                allowClear
+                columns={1}
+              />
+              <CurrencyField<OpportunityFormValues>
+                name="estimatedAmount"
+                control={form.control}
+                label={tEntity("fields.estimatedAmount.label")}
+                min={0}
+                precision={2}
+                columns={1}
+              />
+            </FormRow>
+            <FormRow columns={2}>
+              {/* İndirim alanları — üçü de satırlardan canlı hesaplanan readonly. Backend
             `RecalculateTotals` ile birebir formül; client display sadece UX için.
               - totalDiscountRate  = Σ satır İnd. % (yüzde toplamı)
               - totalDiscountAmount = Σ satır İnd. Tutarı (tutar toplamı)
               - totalDiscount       = ikisinin para birimi karşılığı (brüt − net) */}
-          <NumberField<OpportunityFormValues>
-            name="totalDiscountRate"
-            control={form.control}
-            label={tEntity("fields.totalDiscountRate.label")}
-            min={0}
-            precision={2}
-            force="readonly"
-          />
-          <CurrencyField<OpportunityFormValues>
-            name="totalDiscountAmount"
-            control={form.control}
-            label={tEntity("fields.totalDiscountAmount.label")}
-            precision={2}
-            force="readonly"
-          />
-          <CurrencyField<OpportunityFormValues>
-            name="totalDiscount"
-            control={form.control}
-            label={tEntity("fields.totalDiscount.label")}
-            precision={2}
-            force="readonly"
-            columns={2}
-          />
-        </FormRow>
-        <FormRow columns={2}>
-          {/* ActualAmount Products satır toplamlarından (brüt) canlı hesaplanır; edit modda
+              <NumberField<OpportunityFormValues>
+                name="totalDiscountRate"
+                control={form.control}
+                label={tEntity("fields.totalDiscountRate.label")}
+                min={0}
+                precision={2}
+                force="readonly"
+              />
+              <CurrencyField<OpportunityFormValues>
+                name="totalDiscountAmount"
+                control={form.control}
+                label={tEntity("fields.totalDiscountAmount.label")}
+                precision={2}
+                force="readonly"
+              />
+            </FormRow>
+          </FormColumn>
+
+          <FormColumn>
+            {/* ActualAmount Products satır toplamlarından (brüt) canlı hesaplanır; edit modda
             bile salt-okunur. Tüm line item'lar deal currency'de olduğu için toplam
             matematiksel olarak doğru. */}
-          <CurrencyField<OpportunityFormValues>
-            name="actualAmount"
-            control={form.control}
-            label={tEntity("fields.actualAmount.label")}
-            precision={2}
-            force="readonly"
-          />
-          {/* ActualNetAmount Products satır toplamlarından (net) canlı hesaplanır; edit modda
+            <CurrencyField<OpportunityFormValues>
+              name="actualAmount"
+              control={form.control}
+              label={tEntity("fields.actualAmount.label")}
+              precision={2}
+              force="readonly"
+            />
+            <CurrencyField<OpportunityFormValues>
+              name="totalDiscount"
+              control={form.control}
+              label={tEntity("fields.totalDiscount.label")}
+              precision={2}
+              force="readonly"
+              columns={2}
+            />
+            {/* ActualNetAmount Products satır toplamlarından (net) canlı hesaplanır; edit modda
             bile salt-okunur. Tüm line item'lar deal currency'de olduğu için toplam
             matematiksel olarak doğru. */}
-          <CurrencyField<OpportunityFormValues>
-            name="actualNetAmount"
-            control={form.control}
-            label={tEntity("fields.actualNetAmount.label")}
-            precision={2}
-            force="readonly"
-          />
+            <CurrencyField<OpportunityFormValues>
+              name="actualNetAmount"
+              control={form.control}
+              label={tEntity("fields.actualNetAmount.label")}
+              precision={2}
+              force="readonly"
+            />
+          </FormColumn>
         </FormRow>
       </FormSection>
     );

@@ -169,6 +169,8 @@ export { FilterPanel, type FilterPanelProps } from './shared/ui/list-page/Filter
 export { FormSection } from './shared/ui/form/FormSection';
 export type { FormSectionProps, FormSectionCollapsible } from './shared/ui/form/FormSection';
 export { FormRow } from './shared/ui/form/FormRow';
+export type { FormRowProps, FormRowItemProps } from './shared/ui/form/FormRow';
+export { FormColumn, type FormColumnProps } from './shared/ui/form/FormColumn';
 export { TextField } from './shared/ui/form/fields/TextField';
 export { NumberField } from './shared/ui/form/fields/NumberField';
 export { SelectField, type SelectOption } from './shared/ui/form/fields/SelectField';
