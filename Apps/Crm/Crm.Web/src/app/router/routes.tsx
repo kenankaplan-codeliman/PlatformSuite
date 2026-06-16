@@ -6,11 +6,11 @@ import {
   AppRolesListPage,
   AppUserDetailPage,
   AppUsersListPage,
-  HomePage,
   LoginPage,
   OrganizationDetailPage,
   OrganizationsListPage,
 } from '@platform/ui';
+import { DashboardPage } from '../../pages/dashboard/ui/DashboardPage';
 import { AccountDetailPage } from '../../pages/accounts/detail/ui/AccountDetailPage';
 import { AccountsListPage } from '../../pages/accounts/list/ui/AccountsListPage';
 import { ContactDetailPage } from '../../pages/contacts/detail/ui/ContactDetailPage';
@@ -30,7 +30,7 @@ export const router = createBrowserRouter([
   {
     element: <ProtectedShell />,
     children: [
-      { path: RoutePaths.Home, element: <HomePage /> },
+      { path: RoutePaths.Home, element: <DashboardPage /> },
 
       { path: RoutePatterns.AccountsList, element: <AccountsListPage /> },
       { path: RoutePatterns.AccountNew, element: <AccountDetailPage /> },

@@ -42,3 +42,13 @@ export const productKeys = {
   details: () => [...productKeys.all, 'detail'] as const,
   detail: (id: string) => [...productKeys.details(), id] as const,
 };
+
+/**
+ * Dashboard key'leri: her widget bağımsız cache'lenir (widget anahtarı + opsiyonel parametre),
+ * kişisel layout tercihi ayrı.
+ */
+export const dashboardKeys = {
+  all: ['dashboard'] as const,
+  widgets: () => [...dashboardKeys.all, 'widget'] as const,
+  widget: (key: string, params?: unknown) => [...dashboardKeys.widgets(), key, params] as const,
+};

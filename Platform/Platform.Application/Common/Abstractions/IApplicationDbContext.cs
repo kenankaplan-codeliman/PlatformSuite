@@ -2,6 +2,7 @@ using Platform.Domain.Entities.Activities;
 using Platform.Domain.Entities.Attachments;
 using Platform.Domain.Entities.Identities;
 using Platform.Domain.Entities.Parameters;
+using Platform.Domain.Entities.Preferences;
 using Microsoft.EntityFrameworkCore;
 
 namespace Platform.Application.Common.Abstractions;
@@ -39,6 +40,9 @@ public interface IApplicationDbContext
 
     // GeneralParameter (Platform-seviye, dinamik enum/parametre verisi)
     DbSet<GeneralParameter> GeneralParameter { get; }
+
+    // UserPreference (Platform-seviye, generic kullanıcı tercih deposu)
+    DbSet<UserPreference> UserPreference { get; }
 
     Task<int> SaveChangesAsync(CancellationToken cancellationToken = default);
 }

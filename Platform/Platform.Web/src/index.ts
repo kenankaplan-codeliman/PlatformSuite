@@ -36,6 +36,22 @@ export type {
 } from './widgets/attachment/model/AttachmentsContext';
 export { AppShell } from './widgets/app-shell/ui/AppShell';
 export type { AppShellProps } from './widgets/app-shell/ui/AppShell';
+
+// Dashboard framework — app'ler katalog + widget bileşeni sağlar, gerisi paylaşılan altyapı.
+export { DashboardContainer } from './widgets/dashboard/ui/DashboardContainer';
+export type { DashboardContainerProps } from './widgets/dashboard/ui/DashboardContainer';
+export { DashboardWidgetShell } from './widgets/dashboard/ui/DashboardWidgetShell';
+export { WidgetMoreList } from './widgets/dashboard/ui/WidgetMoreList';
+export { DigestRow } from './widgets/dashboard/ui/DigestRow';
+export { OwnerScopeSwitch } from './widgets/dashboard/ui/OwnerScopeSwitch';
+export { StatBlock } from './widgets/dashboard/ui/StatBlock';
+export { MiniBar } from './widgets/dashboard/ui/MiniBar';
+export { MiniTag, type MiniTagColor } from './widgets/dashboard/ui/MiniTag';
+export type {
+  DashboardWidgetMeta,
+  DashboardWidgetProps,
+  DashboardComponentMap,
+} from './widgets/dashboard/model/contracts';
 export { AssistantWidget } from './features/assistant-chat/ui/AssistantWidget';
 export type { AssistantWidgetProps } from './features/assistant-chat/ui/AssistantWidget';
 export type { ResolveLink as AssistantResolveLink } from './features/assistant-chat/model/types';
@@ -122,6 +138,14 @@ export type {
   UploadAttachmentDraftInput,
 } from './entities/attachment/model/types';
 
+// ─── UserPreference entity (generic kişisel tercih) ──────────────────────────
+export {
+  useUserPreference,
+  useSaveUserPreference,
+} from './entities/user-preference/api/useUserPreferenceQueries';
+export { userPreferenceDataSource } from './entities/user-preference/api/userPreferenceDataSource';
+export type { UserPreferenceItem } from './entities/user-preference/model/types';
+
 // ─── Shared UI primitifleri ──────────────────────────────────────────────────
 export { Button, type ButtonProps } from './shared/ui/Button';
 export { Card, type CardProps } from './shared/ui/Card';
@@ -196,7 +220,7 @@ export type { ParameterAutocompleteProps } from './shared/ui/form/fields/Paramet
 export { httpClient } from './shared/api/httpClient';
 export { ServicePath } from './shared/api/servicePaths';
 export { mapAxiosError } from './shared/api/errorMapper';
-export { activityKeys, authKeys, organizationKeys, appUserKeys, appRoleKeys, attachmentKeys, parameterKeys } from './shared/api/queryKeys';
+export { activityKeys, authKeys, organizationKeys, appUserKeys, appRoleKeys, attachmentKeys, parameterKeys, preferenceKeys } from './shared/api/queryKeys';
 
 // ─── Hook'lar ────────────────────────────────────────────────────────────────
 export { useRouteMode } from './shared/hooks/useRouteMode';

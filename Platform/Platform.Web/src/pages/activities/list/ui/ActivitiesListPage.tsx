@@ -16,7 +16,6 @@ import {
   type DropdownItem,
 } from '../../../../shared/ui/Dropdown';
 import { Segmented } from '../../../../shared/ui/Segmented';
-import { Space } from '../../../../shared/ui/Space';
 import { Title } from '../../../../shared/ui/Typography';
 import { useEntityTypeRegistry } from '../../../../shared/lib/entity-type/EntityTypeRegistryContext';
 import { useUrlFilters } from '../../../../shared/hooks/useUrlFilters';
@@ -96,38 +95,41 @@ export function ActivitiesListPage() {
       <div
         style={{
           display: 'flex',
-          justifyContent: 'space-between',
           alignItems: 'center',
+          gap: 12,
           marginBottom: 16,
         }}
       >
-        <Title level={3} style={{ margin: 0, display: 'inline-flex', alignItems: 'center', gap: 8 }}>
+        <Title
+          level={3}
+          style={{ margin: 0, flex: 1, minWidth: 0, display: 'inline-flex', alignItems: 'center', gap: 8 }}
+        >
           {TitleIcon ? <TitleIcon /> : null}
           <span>{t('title')}</span>
         </Title>
-        <Space>
-          <Segmented<ViewMode>
-            value={viewMode}
-            onChange={handleViewChange}
-            options={[
-              {
-                value: 'list',
-                icon: <UnorderedListOutlined />,
-                label: t('viewMode.list'),
-              },
-              {
-                value: 'calendar',
-                icon: <CalendarOutlined />,
-                label: t('viewMode.calendar'),
-              },
-            ]}
-          />
+        <Segmented<ViewMode>
+          value={viewMode}
+          onChange={handleViewChange}
+          options={[
+            {
+              value: 'list',
+              icon: <UnorderedListOutlined />,
+              label: t('viewMode.list'),
+            },
+            {
+              value: 'calendar',
+              icon: <CalendarOutlined />,
+              label: t('viewMode.calendar'),
+            },
+          ]}
+        />
+        <div style={{ flex: 1, display: 'flex', justifyContent: 'flex-end' }}>
           <Dropdown items={createItems}>
             <Button type="primary" icon={<AppstoreOutlined />}>
               {t('createButton')} <DownOutlined />
             </Button>
           </Dropdown>
-        </Space>
+        </div>
       </div>
 
       <div style={{ marginBottom: 16 }}>

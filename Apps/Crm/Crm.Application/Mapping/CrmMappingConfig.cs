@@ -1,5 +1,6 @@
 using Crm.Application.Features.Accounts;
 using Crm.Application.Features.Contacts;
+using Crm.Application.Features.Dashboard;
 using Crm.Application.Features.Leads;
 using Crm.Application.Features.Opportunities;
 using Crm.Application.Features.Products;
@@ -22,5 +23,6 @@ public static class CrmMappingConfig
         LeadMappings.Register(config);
         OpportunityMappings.Register(config);
         ProductMappings.Register(config);
+        DashboardMappings.Register(config);
     }
 }

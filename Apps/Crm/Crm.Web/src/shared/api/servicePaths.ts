@@ -8,6 +8,7 @@ const ControllerPaths = {
   Lead: `${ApiBase}/lead`,
   Opportunity: `${ApiBase}/opportunity`,
   Product: `${ApiBase}/product`,
+  Dashboard: `${ApiBase}/dashboard`,
 } as const;
 
 export const CrmServicePath = {
@@ -38,5 +39,22 @@ export const CrmServicePath = {
     Update: `${ControllerPaths.Product}/update`,
     Delete: `${ControllerPaths.Product}/delete`,
     SetState: `${ControllerPaths.Product}/set-state`,
+  },
+  Dashboard: {
+    // Her widget kendi endpoint'ini asenkron çağırır.
+    Kpi: {
+      OpenOpportunities: `${ControllerPaths.Dashboard}/kpi/open-opportunities`,
+      WonThisMonth: `${ControllerPaths.Dashboard}/kpi/won-this-month`,
+      NewLeads: `${ControllerPaths.Dashboard}/kpi/new-leads`,
+      ConversionRate: `${ControllerPaths.Dashboard}/kpi/conversion-rate`,
+    },
+    Pipeline: `${ControllerPaths.Dashboard}/pipeline`,
+    ClosingOpportunities: `${ControllerPaths.Dashboard}/closing-opportunities`,
+    MyTasks: `${ControllerPaths.Dashboard}/my-tasks`,
+    LeadsToAttention: `${ControllerPaths.Dashboard}/leads-to-attention`,
+    RecentActivities: `${ControllerPaths.Dashboard}/recent-activities`,
+    TopAccounts: `${ControllerPaths.Dashboard}/top-accounts`,
+    WonLost: `${ControllerPaths.Dashboard}/won-lost`,
+    RecentRecords: `${ControllerPaths.Dashboard}/recent-records`,
   },
 } as const;

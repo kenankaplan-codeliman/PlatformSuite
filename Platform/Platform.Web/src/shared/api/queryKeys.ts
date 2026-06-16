@@ -61,3 +61,8 @@ export const parameterKeys = {
   list: (parentCode: string, lang: string) =>
     [...parameterKeys.all, 'list', parentCode, lang] as const,
 };
+
+export const preferenceKeys = {
+  all: ['preference'] as const,
+  byKey: (key: string) => [...preferenceKeys.all, key] as const,
+};

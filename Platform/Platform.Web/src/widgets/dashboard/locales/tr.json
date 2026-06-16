@@ -1,0 +1,15 @@
+{
+  "customize": "Özelleştir",
+  "done": "Bitti",
+  "save": "Kaydet",
+  "customizeTitle": "Panel Ayarları",
+  "customizeHint": "Widget'ları göster/gizle. Sıralamak için panel üzerinde sürükleyin.",
+  "reset": "Sıfırla",
+  "forbidden": "Bu widget için yetkiniz yok.",
+  "error": "Veri yüklenemedi.",
+  "retry": "Tekrar dene",
+  "empty": "Kayıt yok.",
+  "loadMore": "Daha fazla göster",
+  "ownerOnly": "Sadece Benim Kayıtlarım",
+  "dragHandle": "Sürükle"
+}

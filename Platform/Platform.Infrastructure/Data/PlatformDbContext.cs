@@ -6,6 +6,7 @@ using Platform.Domain.Entities.Common;
 using Platform.Domain.Entities.Identities;
 using Platform.Domain.Entities.Numbering;
 using Platform.Domain.Entities.Parameters;
+using Platform.Domain.Entities.Preferences;
 using Platform.Domain.Enums;
 using Platform.Infrastructure.Data.Configurations;
 using Microsoft.EntityFrameworkCore;
@@ -59,6 +60,9 @@ public abstract class PlatformDbContext : DbContext, IApplicationDbContext
 
     // ======= GeneralParameter =======
     public DbSet<GeneralParameter> GeneralParameter { get; set; }
+
+    // ======= UserPreference =======
+    public DbSet<UserPreference> UserPreference { get; set; }
 
     // ======= Numbering =======
     public DbSet<NumberCounter> NumberCounter { get; set; }

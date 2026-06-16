@@ -1,0 +1,46 @@
+{
+  "title": "Ana Sayfa",
+  "conversionDetail": "{{converted}} / {{total}} dönüştü",
+  "scoreLabel": "Skor: {{score}}",
+  "openOpportunityCount": "{{count}} açık fırsat",
+  "wonLostLabels": {
+    "won": "Kazanılan",
+    "lost": "Kaybedilen"
+  },
+  "widgets": {
+    "openOpportunities": "Açık Fırsatlar",
+    "wonThisMonth": "Bu Ay Kazanılan Fırsatlar",
+    "newLeads": "Yeni Lead (Bu Ay)",
+    "conversionRate": "Fırsat Dönüşüm Oranı",
+    "pipeline": "Satış Pipeline",
+    "wonLost": "Kazanılan / Kaybedilen Fırsat",
+    "myTasks": "Görevlerim",
+    "leadsToAttention": "İlgilenilmesi Gereken Lead'ler",
+    "closingOpportunities": "Bu Ay Kapanacak Fırsatlar",
+    "recentActivities": "Son Aktiviteler",
+    "topAccounts": "Top Hesaplar",
+    "recentRecords": "Son Eklenenler"
+  },
+  "stages": {
+    "Prospecting": "Keşif",
+    "Qualification": "Niteliklendirme",
+    "NeedsAnalysis": "İhtiyaç Analizi",
+    "Proposal": "Teklif",
+    "Negotiation": "Müzakere"
+  },
+  "ratings": {
+    "Hot": "Sıcak",
+    "Warm": "Ilık",
+    "Cold": "Soğuk"
+  },
+  "activityTypes": {
+    "Task": "Görev",
+    "Appointment": "Randevu",
+    "Email": "E-posta",
+    "PhoneCall": "Telefon"
+  },
+  "entityTypes": {
+    "Account": "Firma",
+    "Contact": "Kişi"
+  }
+}

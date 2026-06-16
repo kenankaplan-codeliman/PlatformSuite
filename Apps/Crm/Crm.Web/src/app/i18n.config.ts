@@ -16,6 +16,7 @@ import opportunitiesListTr from '../pages/opportunities/list/locales/tr.json';
 import opportunitiesDetailTr from '../pages/opportunities/detail/locales/tr.json';
 import productsListTr from '../pages/products/list/locales/tr.json';
 import productsDetailTr from '../pages/products/detail/locales/tr.json';
+import dashboardTr from '../pages/dashboard/locales/tr.json';
 import crmEnumsTr from '../shared/locales/enums/tr.json';
 import crmMenuTr from './menu/locales/tr.json';
 import crmAppTr from './locales/tr.json';
@@ -40,6 +41,7 @@ export function registerCrmTranslations(): void {
   i18n.addResourceBundle('tr', 'page.opportunities-detail', opportunitiesDetailTr, true, true);
   i18n.addResourceBundle('tr', 'page.products-list', productsListTr, true, true);
   i18n.addResourceBundle('tr', 'page.products-detail', productsDetailTr, true, true);
+  i18n.addResourceBundle('tr', 'page.dashboard', dashboardTr, true, true);
 
   // enums namespace Platform tarafından init edildi; üzerine CRM enum'larını deep-merge et.
   i18n.addResourceBundle('tr', 'enums', crmEnumsTr, true, false);

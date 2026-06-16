@@ -53,5 +53,11 @@ namespace Platform.Domain.Authorization
         {
             public const string Use = "Assistant.Use";
         }
+
+        /// <summary>Kişisel kullanıcı tercihi (dashboard layout vb.) get/save.</summary>
+        public static class PreferencePrivilegeCodes
+        {
+            public const string Manage = "Preference.Manage";
+        }
     }
 }

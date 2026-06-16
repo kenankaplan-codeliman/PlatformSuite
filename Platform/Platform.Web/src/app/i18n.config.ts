@@ -20,6 +20,7 @@ import attachmentTr from "../entities/attachment/locales/tr.json";
 import authLoginTr from "../features/auth-login/locales/tr.json";
 // widgets
 import widgetAttachmentTr from "../widgets/attachment/locales/tr.json";
+import widgetDashboardTr from "../widgets/dashboard/locales/tr.json";
 // pages
 import activitiesListPageTr from "../pages/activities/list/locales/tr.json";
 import activitiesDetailPageTr from "../pages/activities/detail/locales/tr.json";
@@ -41,6 +42,7 @@ const namespaces = [
   "entity.attachment",
   "feature.auth-login",
   "widget.attachment",
+  "widget.dashboard",
   "page.activities-list",
   "page.activities-detail",
   "page.organizations-list",
@@ -68,6 +70,7 @@ void i18n.use(initReactI18next).init({
       "entity.attachment": attachmentTr,
       "feature.auth-login": authLoginTr,
       "widget.attachment": widgetAttachmentTr,
+      "widget.dashboard": widgetDashboardTr,
       "page.activities-list": activitiesListPageTr,
       "page.activities-detail": activitiesDetailPageTr,
       "page.organizations-list": organizationsListPageTr,

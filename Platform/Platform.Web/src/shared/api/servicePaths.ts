@@ -18,6 +18,7 @@ export const ControllerPaths = {
   GeneralParameter: `${ApiBase}/general-parameter`,
   EntityMetadata: `${ApiBase}/entity-metadata`,
   Assistant: `${ApiBase}/assistant`,
+  Preference: `${ApiBase}/preference`,
 } as const;
 
 export const ServicePath = {
@@ -134,5 +135,14 @@ export const ServicePath = {
     Chat: `${ControllerPaths.Assistant}/chat`,
     /** Kullanıcının onayladığı yazma işlemini (imzalı token) çalıştırır. */
     Confirm: `${ControllerPaths.Assistant}/confirm`,
+  },
+  /**
+   * Generic kullanıcı tercihi (anahtar bazlı, opak JSON value). Body:
+   *   get  → { key }
+   *   save → { key, value }
+   */
+  Preference: {
+    Get: `${ControllerPaths.Preference}/get`,
+    Save: `${ControllerPaths.Preference}/save`,
   },
 } as const;

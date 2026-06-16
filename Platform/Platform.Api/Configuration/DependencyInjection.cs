@@ -112,6 +112,7 @@ public static class DependencyInjection
         services.AddScoped<IAuthUserLoginRepository, AuthUserLoginRepository>();
         services.AddScoped<IAuditRepository, AuditRepository>();
         services.AddScoped<IAttachmentRepository, AttachmentRepository>();
+        services.AddScoped<IUserPreferenceRepository, UserPreferenceRepository>();
 
         // Süresi geçen draft attachment'ları saatte bir temizler.
         services.AddHostedService<AttachmentCleanupService>();
