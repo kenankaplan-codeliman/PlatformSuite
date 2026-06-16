@@ -41,3 +41,18 @@ export interface AppRoleFormValues {
   isActive: boolean;
   privileges: AppRolePrivilegeItem[];
 }
+
+/**
+ * Sistemde tanımlı tüm privilege code'larının entity bazında kataloğu
+ * (backend: GetPrivilegeCatalog). Rol detay ekranı, rolün kendi seviyeleriyle
+ * birleştirip "satır başı entity + yanında privilege'lar" görünümünü kurar.
+ */
+export interface PrivilegeCatalogEntry {
+  code: string;
+  action: string;
+}
+
+export interface PrivilegeCatalogGroup {
+  entity: string;
+  privileges: PrivilegeCatalogEntry[];
+}

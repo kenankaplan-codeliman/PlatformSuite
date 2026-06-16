@@ -41,6 +41,7 @@ export const ServicePath = {
   AppRole: {
     List: `${ControllerPaths.AppRole}/list`,
     Get: `${ControllerPaths.AppRole}/get`,
+    PrivilegeCatalog: `${ControllerPaths.AppRole}/privilege-catalog`,
     Create: `${ControllerPaths.AppRole}/create`,
     Update: `${ControllerPaths.AppRole}/update`,
     Delete: `${ControllerPaths.AppRole}/delete`,

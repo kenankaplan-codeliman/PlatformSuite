@@ -47,6 +47,7 @@ export const appRoleKeys = {
   list: (params: unknown) => [...appRoleKeys.lists(), params] as const,
   details: () => [...appRoleKeys.all, 'detail'] as const,
   detail: (id: string) => [...appRoleKeys.details(), id] as const,
+  privilegeCatalog: () => [...appRoleKeys.all, 'privilege-catalog'] as const,
 };
 
 export const attachmentKeys = {

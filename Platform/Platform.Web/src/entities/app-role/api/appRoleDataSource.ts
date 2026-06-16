@@ -6,6 +6,7 @@ import type {
   AppRoleFormValues,
   AppRoleListFilter,
   AppRoleListItem,
+  PrivilegeCatalogGroup,
 } from '../model/types';
 
 interface AppRoleListBody {
@@ -30,6 +31,14 @@ export const appRoleDataSource = {
     const response = await httpClient.post<AppRoleDetailItem>(
       ServicePath.AppRole.Get,
       { id } satisfies IdBody,
+    );
+    return response.data;
+  },
+
+  privilegeCatalog: async (): Promise<PrivilegeCatalogGroup[]> => {
+    const response = await httpClient.post<PrivilegeCatalogGroup[]>(
+      ServicePath.AppRole.PrivilegeCatalog,
+      {},
     );
     return response.data;
   },

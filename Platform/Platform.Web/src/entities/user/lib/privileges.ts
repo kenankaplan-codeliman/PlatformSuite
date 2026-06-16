@@ -1,4 +1,4 @@
-import type { AccessLevel } from '../model/types';
+import type { AccessLevel } from "../model/types";
 
 /**
  * Bir entity'de kullanıcının okuma/yazma/güncelleme vb. privilege'lerinden
@@ -15,6 +15,19 @@ export function canAccessEntity(
   if (!privileges) return false;
   const prefix = `${entityKey}.`;
   return Object.entries(privileges).some(
-    ([code, level]) => code.startsWith(prefix) && level !== 'None',
+    ([code, level]) => code.startsWith(prefix) && level !== "None",
   );
+}
+
+/**
+ * Kullanıcının belirli bir privilege code'una `None` dışında bir erişim seviyesi
+ * var mı? (ör. "Assistant.Use"). Tek bir koda göre UI gate için kullanılır;
+ * bir entity'nin herhangi bir privilege'ı için ise `canAccessEntity`'e bakılır.
+ */
+export function hasPrivilege(
+  code: string,
+  privileges: Record<string, AccessLevel> | undefined,
+): boolean {
+  if (!privileges) return false;
+  return (privileges[code] ?? "None") !== "None";
 }

@@ -4,6 +4,7 @@ using Platform.Application.Features.AppRoles.Commands.CreateAppRole;
 using Platform.Application.Features.AppRoles.Commands.DeleteAppRole;
 using Platform.Application.Features.AppRoles.Commands.UpdateAppRole;
 using Platform.Application.Features.AppRoles.Queries.GetAppRole;
+using Platform.Application.Features.AppRoles.Queries.GetPrivilegeCatalog;
 using Platform.Application.Features.AppRoles.Queries.ListAppRoles;
 using Platform.Domain.Authorization;
 using MediatR;
@@ -27,6 +28,11 @@ public sealed class AppRoleController : ControllerBase
     [HttpPost("get")]
     [PrivilegeAuthorize(PrivilegeCodes.AppRolePrivilegeCodes.Read)]
     public async Task<IActionResult> GetAsync([FromBody] GetAppRoleQuery query, CancellationToken ct)
+        => (await _sender.Send(query, ct)).ToActionResult(HttpContext);
+
+    [HttpPost("privilege-catalog")]
+    [PrivilegeAuthorize(PrivilegeCodes.AppRolePrivilegeCodes.Read)]
+    public async Task<IActionResult> PrivilegeCatalogAsync([FromBody] GetPrivilegeCatalogQuery query, CancellationToken ct)
         => (await _sender.Send(query, ct)).ToActionResult(HttpContext);
 
     [HttpPost("create")]

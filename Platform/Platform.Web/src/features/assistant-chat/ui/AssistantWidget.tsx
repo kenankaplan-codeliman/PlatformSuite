@@ -3,9 +3,13 @@ import { Link } from 'react-router-dom';
 import { Button, Card, Drawer, FloatButton, Input, Space, Spin, Tag, Typography, message } from 'antd';
 import { PaperClipOutlined, RobotOutlined, SendOutlined } from '@ant-design/icons';
 import { attachmentDataSource } from '../../../entities/attachment/api/attachmentDataSource';
+import { useCurrentUserQuery } from '../../../entities/user/api/useCurrentUserQuery';
+import { hasPrivilege } from '../../../entities/user/lib/privileges';
 import { assistantDataSource } from '../api/assistantDataSource';
 import { useAssistantChat } from '../api/useAssistantChat';
 import type { AssistantTurn, ChatMessage, PendingAction, ResolveLink } from '../model/types';
+
+const ASSISTANT_USE_PRIVILEGE = 'Assistant.Use';
 
 export interface AssistantWidgetProps {
   /** entityType + id → app route. Verilmezse linkler düz metin gösterilir. */
@@ -32,6 +36,8 @@ export function AssistantWidget({ resolveLink, title = 'CRM Asistanı' }: Assist
   const fileInputRef = useRef<HTMLInputElement>(null);
   const listRef = useRef<HTMLDivElement>(null);
   const chat = useAssistantChat();
+  const { data: currentUser } = useCurrentUserQuery();
+  const canUseAssistant = hasPrivilege(ASSISTANT_USE_PRIVILEGE, currentUser?.privileges);
 
   const scrollToBottom = () => {
     requestAnimationFrame(() => {
@@ -120,6 +126,10 @@ export function AssistantWidget({ resolveLink, title = 'CRM Asistanı' }: Assist
     setPendingActions((prev) => prev.filter((p) => p.token !== action.token));
     setMessages((prev) => [...prev, { id: newId(), role: 'assistant', text: 'İşlem iptal edildi.' }]);
   };
+
+  // Assistant.Use yetkisi yoksa ikon hiç gösterilmez (backend de endpoint'leri
+  // PrivilegeAuthorize ile korur). Yetki /auth/me ile her girişte tazelenir.
+  if (!canUseAssistant) return null;
 
   return (
     <>

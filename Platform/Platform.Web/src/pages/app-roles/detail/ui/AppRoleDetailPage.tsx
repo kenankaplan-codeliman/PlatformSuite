@@ -5,33 +5,35 @@ import { DetailPageLayout } from '../../../../shared/ui/detail-page/DetailPageLa
 import { FormSection } from '../../../../shared/ui/form/FormSection';
 import { TextField } from '../../../../shared/ui/form/fields/TextField';
 import { TextAreaField } from '../../../../shared/ui/form/fields/TextAreaField';
+import { Spinner } from '../../../../shared/ui/feedback/Spinner';
+import { Alert } from '../../../../shared/ui/feedback/Alert';
 import { useRouteMode } from '../../../../shared/hooks/useRouteMode';
-import { useAppRoleQuery } from '../../../../entities/app-role/api/useAppRoleQueries';
+import {
+  useAppRoleQuery,
+  usePrivilegeCatalogQuery,
+} from '../../../../entities/app-role/api/useAppRoleQueries';
 import {
   useDeleteAppRole,
   useUpsertAppRole,
 } from '../../../../entities/app-role/api/useAppRoleMutations';
 import { appRoleSchema } from '../../../../entities/app-role/model/schema';
 import type { AppRoleFormValues } from '../../../../entities/app-role/model/types';
+import { buildPrivilegeFormList } from '../../../../entities/app-role/lib/privilegeMatrix';
+import { RolePrivilegesSection } from '../sections/RolePrivilegesSection';
 import { RoutePaths } from '../../../../app/router/paths';
-
-const emptyAppRole: AppRoleFormValues = {
-  id: '',
-  roleName: '',
-  description: null,
-  isDefault: false,
-  isActive: true,
-  privileges: [],
-};
 
 export function AppRoleDetailPage() {
   const { mode, id } = useRouteMode();
+  const { t: tCommon } = useTranslation('common');
   const { t: tPage } = useTranslation('page.app-roles-detail');
   const { t: tEntity } = useTranslation('entity.app-role');
 
   const query = useAppRoleQuery(id);
+  const catalogQuery = usePrivilegeCatalogQuery();
   const upsert = useUpsertAppRole();
   const deleteMutation = useDeleteAppRole();
+
+  const catalog = catalogQuery.data;
 
   const title = useMemo(() => {
     if (mode === 'new') return tPage('newTitle');
@@ -39,13 +41,44 @@ export function AppRoleDetailPage() {
     return query.data?.roleName ?? tPage('viewTitle');
   }, [mode, query.data?.roleName, tPage]);
 
+  // Form'un privileges dizisi katalog sırasıyla doldurulur; dizi index'i =
+  // katalog pozisyonu (RolePrivilegesSection binding'i buna dayanır).
+  const defaultValues = useMemo<AppRoleFormValues>(
+    () => ({
+      id: '',
+      roleName: '',
+      description: null,
+      isDefault: false,
+      isActive: true,
+      privileges: catalog ? buildPrivilegeFormList(catalog, []) : [],
+    }),
+    [catalog],
+  );
+
+  const data = useMemo<AppRoleFormValues | undefined>(() => {
+    if (!query.data || !catalog) return undefined;
+    return {
+      ...query.data,
+      privileges: buildPrivilegeFormList(catalog, query.data.privileges),
+    };
+  }, [query.data, catalog]);
+
+  // Katalog form'un başlangıç privileges dizisini belirlediği için, layout
+  // (ve useForm defaultValues'i) mount olmadan katalog hazır olmalı.
+  if (catalogQuery.isLoading) {
+    return <Spinner tip={tCommon('messages.loading')} />;
+  }
+  if (catalogQuery.isError || !catalog) {
+    return <Alert type="error" message={tCommon('messages.unexpectedError')} />;
+  }
+
   return (
     <DetailPageLayout<AppRoleFormValues>
       mode={mode}
       title={title}
       schema={appRoleSchema}
-      defaultValues={emptyAppRole}
-      data={query.data as AppRoleFormValues | undefined}
+      defaultValues={defaultValues}
+      data={data}
       isLoading={query.isLoading}
       error={query.isError ? query.error : undefined}
       onSubmit={async (values) => {
@@ -61,6 +94,7 @@ export function AppRoleDetailPage() {
       afterSaveNavigation={(saved) => RoutePaths.AppRoleView(saved.id)}
     >
       <GeneralSection />
+      <RolePrivilegesSection catalog={catalog} />
     </DetailPageLayout>
   );
 

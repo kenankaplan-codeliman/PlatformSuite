@@ -11,5 +11,29 @@
   "sections": {
     "general": "Genel Bilgiler",
     "privileges": "Yetkiler"
+  },
+  "entities": {
+    "User": "Kullanıcı",
+    "Activity": "Aktivite",
+    "Organization": "Organizasyon",
+    "AppRole": "Rol",
+    "Attachment": "Ek Dosya",
+    "GeneralParameter": "Genel Parametre",
+    "Assistant": "Asistan",
+    "Account": "Firma",
+    "Contact": "Kişi",
+    "Lead": "Aday",
+    "Opportunity": "Fırsat",
+    "Supplier": "Tedarikçi"
+  },
+  "actions": {
+    "Read": "Görüntüleme",
+    "Create": "Oluşturma",
+    "Update": "Güncelleme",
+    "Delete": "Silme",
+    "UpdateStatus": "Durum Güncelleme",
+    "Assign": "Atama",
+    "State": "Aktif/Pasif",
+    "Use": "Kullanım"
   }
 }

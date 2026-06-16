@@ -11,6 +11,18 @@ export function useAppRoleQuery(id: string | undefined) {
   });
 }
 
+/**
+ * Sistemde tanımlı tüm privilege code'larının entity bazında kataloğu.
+ * Nadiren değişir (kod sabitlerinden gelir) → uzun staleTime.
+ */
+export function usePrivilegeCatalogQuery() {
+  return useQuery({
+    queryKey: appRoleKeys.privilegeCatalog(),
+    queryFn: () => appRoleDataSource.privilegeCatalog(),
+    staleTime: 5 * 60 * 1000,
+  });
+}
+
 export interface UseAppRoleListParams {
   filters: AppRoleListFilter;
   pageSize?: number;

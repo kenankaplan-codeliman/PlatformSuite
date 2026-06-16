@@ -1,4 +1,10 @@
 {
+  "accessLevel": {
+    "None": "Yok",
+    "User": "Kullanıcı",
+    "Organization": "Organizasyon",
+    "All": "Tümü"
+  },
   "emailType": {
     "Work": "İş",
     "Personal": "Kişisel",
