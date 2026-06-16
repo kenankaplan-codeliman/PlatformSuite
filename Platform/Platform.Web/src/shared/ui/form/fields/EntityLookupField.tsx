@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react';
-import { Button, Form, Tag, Space } from 'antd';
+import { Button, Form, Tag } from 'antd';
 import { CloseOutlined, SearchOutlined } from '@ant-design/icons';
 import {
   Controller,
@@ -181,7 +181,19 @@ export function EntityLookupField<TValues extends FieldValues>({
         const renderTags = () => {
           if (valueArray.length === 0) return null;
           return (
-            <Space wrap size={4}>
+            // Tek seçimde tek satır (nowrap) + ellipsis; çoklu seçimde wrap.
+            // minWidth:0 + overflow:hidden zinciri, uzun içeriğin component'i
+            // taşırmasını engeller — taşan kısım tag içinde "..." ile kesilir.
+            <div
+              style={{
+                display: 'flex',
+                flexWrap: multiple ? 'wrap' : 'nowrap',
+                gap: 4,
+                minWidth: 0,
+                maxWidth: '100%',
+                overflow: 'hidden',
+              }}
+            >
               {valueArray.map((v) => {
                 const meta = entityTypeRegistry.get(v.entityType);
                 const Icon = meta?.icon;
@@ -196,31 +208,56 @@ export function EntityLookupField<TValues extends FieldValues>({
                       handleRemoveOne(v.id);
                     }}
                     icon={Icon ? <Icon /> : undefined}
+                    title={v.name}
                     style={{
                       marginRight: 0,
+                      maxWidth: '100%',
+                      display: 'inline-flex',
+                      alignItems: 'center',
                       fontSize: 13,
                       padding: '0 8px',
                       cursor: href ? 'pointer' : 'default',
                     }}
                   >
-                    {v.name}
+                    <span
+                      style={{
+                        minWidth: 0,
+                        overflow: 'hidden',
+                        textOverflow: 'ellipsis',
+                        whiteSpace: 'nowrap',
+                      }}
+                    >
+                      {v.name}
+                    </span>
                   </Tag>
                 );
                 if (!href) {
-                  return <span key={v.id}>{tag}</span>;
+                  return (
+                    <span
+                      key={v.id}
+                      style={{ minWidth: 0, maxWidth: '100%', display: 'inline-flex' }}
+                    >
+                      {tag}
+                    </span>
+                  );
                 }
                 return (
                   <Link
                     key={v.id}
                     to={href}
                     onClick={(e) => e.stopPropagation()}
-                    style={{ display: 'inline-flex', textDecoration: 'none' }}
+                    style={{
+                      display: 'inline-flex',
+                      minWidth: 0,
+                      maxWidth: '100%',
+                      textDecoration: 'none',
+                    }}
                   >
                     {tag}
                   </Link>
                 );
               })}
-            </Space>
+            </div>
           );
         };
 
@@ -254,14 +291,31 @@ export function EntityLookupField<TValues extends FieldValues>({
                     gap: 8,
                   }}
                 >
-                  {valueArray.length > 0 ? (
-                    renderTags()
-                  ) : (
-                    <span style={{ color: 'rgba(0,0,0,0.25)' }}>
-                      {placeholder ?? t('actions.search')}
-                    </span>
-                  )}
-                  <span style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+                  <div
+                    style={{
+                      flex: 1,
+                      minWidth: 0,
+                      display: 'flex',
+                      alignItems: 'center',
+                      overflow: 'hidden',
+                    }}
+                  >
+                    {valueArray.length > 0 ? (
+                      renderTags()
+                    ) : (
+                      <span
+                        style={{
+                          color: 'rgba(0,0,0,0.25)',
+                          overflow: 'hidden',
+                          textOverflow: 'ellipsis',
+                          whiteSpace: 'nowrap',
+                        }}
+                      >
+                        {placeholder ?? t('actions.search')}
+                      </span>
+                    )}
+                  </div>
+                  <span style={{ display: 'flex', alignItems: 'center', gap: 4, flexShrink: 0 }}>
                     {allowClear && valueArray.length > 0 && (
                       <Button
                         type="text"

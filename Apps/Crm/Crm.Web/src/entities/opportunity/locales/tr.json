@@ -3,6 +3,7 @@
   "plural": "Fırsatlar",
   "fields": {
     "name": { "label": "Fırsat Adı", "placeholder": "Örn: Q4 lisans yenileme" },
+    "opportunityCode": { "label": "Fırsat Kodu" },
     "description": { "label": "Açıklama" },
     "account": { "label": "Firma" },
     "primaryContact": { "label": "Birincil İletişim" },

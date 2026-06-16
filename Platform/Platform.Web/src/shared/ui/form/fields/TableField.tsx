@@ -120,8 +120,17 @@ export function TableField<
   const visibleColumns = columns.filter((c) => !c.hideInMode?.includes(mode));
 
   // Grid track template — opsiyonel delete kolonu ile.
+  // `fr` track'leri `minmax(0, …)` ile sarılır: çıplak `1fr` = `minmax(auto, 1fr)`
+  // olduğundan track'in minimumu hücrenin min-content'idir. Header düz metin (küçük
+  // min-content), satır ise edit modda input/Select (büyük min-content) render ettiği
+  // için aynı `1fr` track header'da dar, satırda geniş hesaplanır → header/satır kayar.
+  // `minmax(0, …)` minimumu 0'a çeker; header ve satır track'leri birebir eşitlenir.
   const gridTemplateColumns = useMemo(() => {
-    const tracks = visibleColumns.map((c) => c.width ?? '1fr');
+    const toTrack = (width: string | undefined) => {
+      const track = (width ?? '1fr').trim();
+      return /fr$/.test(track) ? `minmax(0, ${track})` : track;
+    };
+    const tracks = visibleColumns.map((c) => toTrack(c.width));
     if (showActions) tracks.push('40px');
     return tracks.join(' ');
   }, [visibleColumns, showActions]);
@@ -135,12 +144,10 @@ export function TableField<
           className="table-field-row table-field-header"
           style={{ gridTemplateColumns }}
         >
+          {/* Satırlar kolonun `align`'ına göre sağa/sola dayanır; başlıklar her
+              zaman ortalanır. */}
           {visibleColumns.map((col) => (
-            <div
-              key={col.key}
-              className={col.align === 'right' ? 'table-field-right' : undefined}
-              style={col.align === 'center' ? { textAlign: 'center' } : undefined}
-            >
+            <div key={col.key} style={{ textAlign: 'center' }}>
               {col.header}
             </div>
           ))}

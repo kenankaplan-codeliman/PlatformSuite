@@ -1,8 +1,10 @@
 using Crm.Application.Features.Opportunities.Dtos;
 using Crm.Application.Interfaces;
+using Crm.Domain.Entities.Opportunities;
 using Crm.Domain.Parameters;
 using Platform.Application.Common.Parameters;
 using Platform.Application.Common.Results;
+using Platform.Application.Interfaces;
 using Mapster;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
@@ -12,15 +14,18 @@ namespace Crm.Application.Features.Opportunities.Commands.UpdateOpportunity;
 public sealed class UpdateOpportunityHandler : IRequestHandler<UpdateOpportunityCommand, Result<OpportunityDetailItem>>
 {
     private readonly IOpportunityRepository _repository;
+    private readonly IAttachmentRepository _attachmentRepository;
     private readonly ICrmDbContext _db;
     private readonly IGeneralParameterReader _parameters;
 
     public UpdateOpportunityHandler(
         IOpportunityRepository repository,
+        IAttachmentRepository attachmentRepository,
         ICrmDbContext db,
         IGeneralParameterReader parameters)
     {
         _repository = repository;
+        _attachmentRepository = attachmentRepository;
         _db = db;
         _parameters = parameters;
     }
@@ -42,6 +47,12 @@ public sealed class UpdateOpportunityHandler : IRequestHandler<UpdateOpportunity
 
         request.Adapt(entity);
         await _repository.UpdateAsync(entity, cancellationToken);
+
+        if (request.Attachments.Count > 0)
+        {
+            var metadataIds = request.Attachments.Select(a => a.MetadataId).ToList();
+            await _attachmentRepository.AssociateAsync(metadataIds, entity.Id, nameof(Opportunity), cancellationToken);
+        }
 
         return await BuildDetailAsync(entity.Id, cancellationToken);
     }

@@ -57,7 +57,7 @@ export function ContactsListPage() {
       {
         key: 'primaryAccount',
         title: tEntity('fields.primaryAccount.label'),
-        render: (_v, r) => r.primaryAccount?.accountName ?? '',
+        render: (_v, r) => r.primaryAccount?.account?.name ?? '',
       },
       {
         key: 'primaryEmail',

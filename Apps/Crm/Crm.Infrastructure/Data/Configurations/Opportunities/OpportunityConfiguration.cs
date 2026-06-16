@@ -24,6 +24,13 @@ public class OpportunityConfiguration : IEntityTypeConfiguration<Opportunity>
             .IsRequired()
             .HasMaxLength(250);
 
+        // Fırsat Kodu — numarator ile üretilir; benzersiz (DB tarafında lower() partial
+        // unique index, V008 schema script'inde tanımlı).
+        builder.Property(o => o.OpportunityCode)
+            .HasColumnName("opportunity_code")
+            .IsRequired()
+            .HasMaxLength(30);
+
         builder.Property(o => o.Description).HasColumnName("description").HasColumnType("text");
 
         builder.Property(o => o.AccountId).HasColumnName("account_id").IsRequired();
@@ -95,5 +102,6 @@ public class OpportunityConfiguration : IEntityTypeConfiguration<Opportunity>
 
         builder.HasIndex(o => o.Stage).HasDatabaseName("ix_opportunity_stage");
         builder.HasIndex(o => o.AccountId).HasDatabaseName("ix_opportunity_account");
+        builder.HasIndex(o => o.OpportunityCode).IsUnique().HasDatabaseName("ux_opportunity_code");
     }
 }

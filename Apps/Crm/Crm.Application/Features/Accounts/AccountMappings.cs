@@ -4,6 +4,7 @@ using Crm.Application.Features.Accounts.Dtos;
 using Platform.Application.Mapping;
 using Platform.Application.Modals.Common;
 using Crm.Domain.Entities.Accounts;
+using Crm.Domain.Entities.Contacts;
 using Mapster;
 
 namespace Crm.Application.Features.Accounts;
@@ -12,9 +13,13 @@ public static class AccountMappings
 {
     public static void Register(TypeAdapterConfig config)
     {
-        // AccountContact kendine özel DTO'su var (join table + Contact.DisplayName flatten)
+        // AccountContact kendine özel DTO'su var (join table + Contact → EntityReference)
         config.NewConfig<AccountContact, AccountContactModal>()
-            .Map(d => d.ContactName, s => s.Contact != null ? s.Contact.DisplayName : null);
+            .Map(d => d.Contact, s => new EntityReference(nameof(Contact))
+            {
+                Id = s.ContactId,
+                Name = s.Contact != null ? s.Contact.DisplayName : null,
+            });
 
         // ========= Account → Detail =========
         // Emails/Phones/Addresses aggregate navigation değil; handler ICrmDbContext üzerinden doldurur.
@@ -64,13 +69,13 @@ public static class AccountMappings
             factory: s => new AccountContact
             {
                 AccountId = account.Id,
-                ContactId = s.ContactId,
+                ContactId = s.Contact!.Id,
                 Role = s.Role,
                 IsPrimary = s.IsPrimary,
             },
             update: (s, d) =>
             {
-                d.ContactId = s.ContactId;
+                d.ContactId = s.Contact!.Id;
                 d.Role = s.Role;
                 d.IsPrimary = s.IsPrimary;
             });

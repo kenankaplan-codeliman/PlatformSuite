@@ -5,7 +5,7 @@
  * Geçerli değerler `useGeneralParameters('ContactStatus')` ile çekilir.
  */
 
-import type { AttachmentAssociation } from '@platform/ui';
+import type { AttachmentAssociation, EntityReference } from '@platform/ui';
 import type {
   AddressModal,
   EmailModal,
@@ -15,8 +15,7 @@ import type {
 /** `ContactAccountModal` (Account ↔ Contact köprüsü, Contact tarafından bakış). */
 export interface ContactAccountModal {
   id: string;
-  accountId: string;
-  accountName?: string | null;
+  account?: EntityReference | null;
   role?: string | null;
   isPrimary: boolean;
 }

@@ -18,4 +18,7 @@ public static class OpportunityErrors
 
     public static readonly Error ProductNotFound =
         new("Opportunity.ProductNotFound", "Satır kalemindeki ürün bulunamadı.", ErrorType.Validation);
+
+    public static readonly Error DuplicateOpportunityCode =
+        new("Opportunity.DuplicateOpportunityCode", "Bu fırsat kodu zaten kullanımda.", ErrorType.Conflict);
 }

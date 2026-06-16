@@ -5,7 +5,7 @@
  * Geçerli değerler `useGeneralParameters('OpportunityStage')` ile çekilir.
  */
 
-import type { EntityReference } from '@platform/ui';
+import type { AttachmentAssociation, EntityReference } from '@platform/ui';
 
 /**
  * Opportunity satır kalemi — ürün ilişkisi EntityReference (ham Guid değil) ve
@@ -41,6 +41,8 @@ export interface OpportunityProductModal {
 export interface OpportunityDetailItem {
   id: string;
   name: string;
+  /** Fırsat Kodu — create sonrası numarator ile üretilir; salt-okunur. */
+  opportunityCode?: string | null;
   description?: string | null;
   account?: EntityReference | null;
   primaryContact?: EntityReference | null;
@@ -71,6 +73,8 @@ export interface OpportunityDetailItem {
 export interface OpportunityListItem {
   id: string;
   name: string;
+  /** Fırsat Kodu — listede 2. kolon. */
+  opportunityCode?: string | null;
   accountId: string;
   accountName?: string | null;
   stage: string;
@@ -91,8 +95,16 @@ export interface OpportunityListFilter {
   isActive?: boolean;
 }
 
-/** Form için kullanılan, API'ye gönderilen shape. */
+/**
+ * Form için kullanılan, API'ye gönderilen shape.
+ *
+ * attachments: schema'da tutulmaz; DetailPageLayout submit anında
+ * AttachmentsField'ların pending listelerini collector'dan toplayıp
+ * payload'a enjekte eder. Backend CreateOpportunityCommand.Attachments'a binding.
+ */
 export type OpportunityFormValues = Omit<
   OpportunityDetailItem,
   'createdAt' | 'updatedAt'
->;
+> & {
+  attachments?: AttachmentAssociation[];
+};

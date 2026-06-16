@@ -15,6 +15,11 @@ public class Opportunity :
     public bool IsActive { get; private set; } = true;
 
     public string Name { get; set; } = null!;
+
+    /// <summary>Fırsat Kodu — create sırasında numarator ile otomatik üretilir
+    /// (FRS-{yıl}-{sıra}). Kullanıcı müdahalesi yoktur, update'te değişmez.</summary>
+    public string OpportunityCode { get; set; } = null!;
+
     public string? Description { get; set; }
 
     // İlişkili Firma (zorunlu) ve birincil İletişim (opsiyonel).

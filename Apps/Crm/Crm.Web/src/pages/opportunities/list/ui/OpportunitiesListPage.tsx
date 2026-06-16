@@ -50,6 +50,11 @@ export function OpportunitiesListPage() {
     () => [
       { key: 'name', title: tEntity('fields.name.label'), dataIndex: 'name' },
       {
+        key: 'opportunityCode',
+        title: tEntity('fields.opportunityCode.label'),
+        dataIndex: 'opportunityCode',
+      },
+      {
         key: 'accountName',
         title: tEntity('fields.account.label'),
         dataIndex: 'accountName',

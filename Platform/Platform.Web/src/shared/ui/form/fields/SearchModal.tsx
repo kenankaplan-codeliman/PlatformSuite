@@ -85,7 +85,7 @@ const { Text } = Typography;
 
 /**
  * Backend `EntityReference` arama modal'ı. `EntityLookupField` ve
- * `EntityRelationTable` tarafından paylaşılır.
+ * `SetOwnerModal` tarafından paylaşılır.
  *
  * Dört mod:
  *  - Tek-tip + tek-seçim: `entityOptions` tek öğe, `multiple` false (varsayılan).

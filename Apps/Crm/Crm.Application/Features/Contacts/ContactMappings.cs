@@ -2,6 +2,7 @@ using Crm.Application.Features.Contacts.Commands.CreateContact;
 using Crm.Application.Features.Contacts.Commands.UpdateContact;
 using Crm.Application.Features.Contacts.Dtos;
 using Platform.Application.Mapping;
+using Platform.Application.Modals.Common;
 using Crm.Domain.Entities.Accounts;
 using Crm.Domain.Entities.Contacts;
 using Mapster;
@@ -12,9 +13,13 @@ public static class ContactMappings
 {
     public static void Register(TypeAdapterConfig config)
     {
-        // AccountContact → Contact tarafından bakış (ContactAccountModal)
+        // AccountContact → Contact tarafından bakış (ContactAccountModal); Account → EntityReference
         config.NewConfig<AccountContact, ContactAccountModal>()
-            .Map(d => d.AccountName, s => s.Account != null ? s.Account.AccountName : null);
+            .Map(d => d.Account, s => new EntityReference(nameof(Account))
+            {
+                Id = s.AccountId,
+                Name = s.Account != null ? s.Account.AccountName : null,
+            });
 
         // ========= Contact → Detail =========
         // Emails/Phones/Addresses aggregate navigation değil; handler ICrmDbContext üzerinden doldurur.
@@ -32,8 +37,11 @@ public static class ContactMappings
                        .Select(ac => new ContactAccountModal
                        {
                            Id = ac.Id,
-                           AccountId = ac.AccountId,
-                           AccountName = ac.Account != null ? ac.Account.AccountName : null,
+                           Account = new EntityReference(nameof(Account))
+                           {
+                               Id = ac.AccountId,
+                               Name = ac.Account != null ? ac.Account.AccountName : null,
+                           },
                            Role = ac.Role,
                            IsPrimary = ac.IsPrimary,
                        })
@@ -64,13 +72,13 @@ public static class ContactMappings
             factory: s => new AccountContact
             {
                 ContactId = contact.Id,
-                AccountId = s.AccountId,
+                AccountId = s.Account!.Id,
                 Role = s.Role,
                 IsPrimary = s.IsPrimary,
             },
             update: (s, d) =>
             {
-                d.AccountId = s.AccountId;
+                d.AccountId = s.Account!.Id;
                 d.Role = s.Role;
                 d.IsPrimary = s.IsPrimary;
             });

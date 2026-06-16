@@ -25,8 +25,13 @@ export const opportunityProductModalSchema = z.object({
 export const opportunitySchema = z.object({
   id: z.string(),
   name: z.string().min(1, 'common:errors.required').max(250),
+  // Numarator ile üretilir; new modda boş, save sonrası dolar — form'da salt-okunur.
+  opportunityCode: z.string().nullish(),
   description: z.string().nullish(),
-  account: entityReferenceSchema.nullish(),
+  // Firma zorunlu — backend CreateOpportunityValidator (Account.NotNull) ile uyumlu.
+  account: entityReferenceSchema.nullish().refine((v) => !!v && !!v.id, {
+    message: 'common:errors.required',
+  }),
   primaryContact: entityReferenceSchema.nullish(),
   stage: z.string().min(1, 'common:errors.required'),
   estimatedAmount: z.number().min(0).nullish(),

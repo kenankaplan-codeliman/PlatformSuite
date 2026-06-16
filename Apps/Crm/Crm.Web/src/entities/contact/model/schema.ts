@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { entityReferenceSchema } from '@platform/ui';
 
 /**
  * Client_Architecture: zod şeması + rhf resolver. Validation mesajları i18n key'i olarak yazılır,
@@ -37,8 +38,9 @@ const addressModalSchema = z.object({
 
 const contactAccountModalSchema = z.object({
   id: z.string(),
-  accountId: z.string().min(1, 'common:errors.required'),
-  accountName: z.string().nullish(),
+  account: entityReferenceSchema.nullish().refine((v) => !!v && !!v.id, {
+    message: 'common:errors.required',
+  }),
   role: z.string().nullish(),
   isPrimary: z.boolean(),
 });

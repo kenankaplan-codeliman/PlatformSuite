@@ -2,6 +2,7 @@ import { useEffect, useMemo, useRef } from "react";
 import { useFormContext, useWatch } from "react-hook-form";
 import { useTranslation } from "react-i18next";
 import {
+  AttachmentsField,
   CurrencyField,
   DateTimeField,
   DetailPageLayout,
@@ -37,7 +38,14 @@ import type {
   OpportunityProductModal,
 } from "../../../../entities/opportunity/model/types";
 import { productDataSource } from "../../../../entities/product/api/productDataSource";
+import {
+  opportunityDocumentTypes,
+  getOpportunityDocumentTypeLabel,
+} from "../../../../entities/opportunity/model/documentTypes";
 import { RoutePaths } from "../../../../app/router/paths";
+
+const OPPORTUNITY_ATTACHMENT_ACCEPT =
+  ".pdf,.doc,.docx,.xls,.xlsx,.jpg,.jpeg,.png";
 
 // Yeni satır kalemi factory'si — `id: crypto.randomUUID()` ile yeni satırlar
 // backend `CollectionSync.Merge` tarafından yeni kayıt olarak algılanır.
@@ -84,6 +92,7 @@ const computeLineNet = (row: OpportunityProductModal | undefined): number => {
 const emptyOpportunity: OpportunityFormValues = {
   id: "",
   name: "",
+  opportunityCode: null,
   description: null,
   account: null,
   primaryContact: null,
@@ -235,6 +244,7 @@ export function OpportunityDetailPage() {
     [query.data?.name, tPage],
   );
 
+  // Activities/Attachments yalnız kayıtlı entity'de (kendi servisleri, entityId gerekir).
   const tabs: DetailPageTab[] | undefined =
     mode === "new" || !id
       ? undefined
@@ -244,6 +254,21 @@ export function OpportunityDetailPage() {
             label: tCommon("tabs.activities"),
             content: (
               <RelatedActivitiesTab entityType="Opportunity" entityId={id} />
+            ),
+          },
+          {
+            key: "attachments",
+            label: tCommon("tabs.attachments"),
+            content: (
+              <div style={{ marginBottom: 16 }}>
+                <AttachmentsField
+                  entityType="Opportunity"
+                  entityId={id}
+                  accept={OPPORTUNITY_ATTACHMENT_ACCEPT}
+                  documentTypes={opportunityDocumentTypes}
+                  documentTypeLabel={getOpportunityDocumentTypeLabel}
+                />
+              </div>
             ),
           },
         ];
@@ -347,13 +372,13 @@ export function OpportunityDetailPage() {
       {
         key: "quantity",
         header: tEntity("products.columns.quantity"),
-        width: "110px",
+        width: "50px",
         render: ({ path }) => (
           <NumberField
             name={path("quantity")}
             control={form.control}
             min={0}
-            precision={4}
+            precision={1}
             required
           />
         ),
@@ -361,7 +386,7 @@ export function OpportunityDetailPage() {
       {
         key: "unitCode",
         header: tEntity("products.columns.unitCode"),
-        width: "140px",
+        width: "80px",
         // Ürün seçimi ile snapshot olarak doldurulur (applyProductPrefill); kullanıcı
         // doğrudan değiştiremez — force="readonly" ile her modda salt-okunur (SelectField
         // <span>{label}</span> render eder, dropdown açılmaz). Yeni bir birim isteniyorsa
@@ -371,14 +396,14 @@ export function OpportunityDetailPage() {
             name={path("unitCode")}
             control={form.control}
             options={unitOptions}
-            force="readonly"
+            //force="readonly"
           />
         ),
       },
       {
         key: "unitPrice",
         header: tEntity("products.columns.unitPrice"),
-        width: "140px",
+        width: "100px",
         align: "right",
         render: ({ path }) => (
           <CurrencyField
@@ -392,7 +417,7 @@ export function OpportunityDetailPage() {
       {
         key: "discountRate",
         header: tEntity("products.columns.discountRate"),
-        width: "110px",
+        width: "70px",
         align: "right",
         // 0-100 arası yüzde — backend InclusiveBetween(0,100) ile birebir.
         render: ({ path }) => (
@@ -408,7 +433,7 @@ export function OpportunityDetailPage() {
       {
         key: "discountAmount",
         header: tEntity("products.columns.discountAmount"),
-        width: "140px",
+        width: "100px",
         align: "right",
         render: ({ path }) => (
           <CurrencyField
@@ -422,21 +447,21 @@ export function OpportunityDetailPage() {
       {
         key: "lineTotal",
         header: tEntity("products.columns.lineTotal"),
-        width: "140px",
+        width: "110px",
         align: "right",
         compute: (row) => formatAmount(computeLineGross(row)),
       },
       {
         key: "netAmount",
         header: tEntity("products.columns.netAmount"),
-        width: "140px",
+        width: "110px",
         align: "right",
         // Backend `NetAmount` ile birebir: önce oran, sonra tutar; 0'da clamp.
         compute: (row) => formatAmount(computeLineNet(row)),
       },
     ];
     return (
-      <FormSection title={tEntity("sections.products")}>
+      <FormSection title={tEntity("sections.products")} collapsible="expanded">
         <TableField<OpportunityFormValues, OpportunityProductModal>
           control={form.control}
           name="products"
@@ -487,22 +512,37 @@ export function OpportunityDetailPage() {
     stageOptions: SelectOption<string>[];
   }) {
     const form = useFormContext<OpportunityFormValues>();
+
+    const { options: currencyOptions } = useGeneralParameters("CurrencyType");
+
     return (
       <FormSection title={tEntity("sections.general")}>
-        <TextField
-          name="name"
-          control={form.control}
-          label={tEntity("fields.name.label")}
-          placeholder={tEntity("fields.name.placeholder")}
-          required
-          maxLength={250}
-        />
+        {/* Fırsat Kodu numarator ile üretilir; new modda henüz yok (gizli). edit/view'da
+            fırsat adının yanında salt-okunur gösterilir — kullanıcı düzenleyemez. */}
+        <FormRow columns={2}>
+          <TextField
+            name="name"
+            control={form.control}
+            label={tEntity("fields.name.label")}
+            placeholder={tEntity("fields.name.placeholder")}
+            required
+            maxLength={250}
+          />
+          <TextField
+            name="opportunityCode"
+            control={form.control}
+            label={tEntity("fields.opportunityCode.label")}
+            force="readonly"
+            hideInMode={["new"]}
+          />
+        </FormRow>
         <FormRow columns={2}>
           <EntityLookupField
             name="account"
             control={form.control}
             servicePath={ServicePath.Account.Search}
             label={tEntity("fields.account.label")}
+            required
           />
           <EntityLookupField
             name="primaryContact"
@@ -534,92 +574,87 @@ export function OpportunityDetailPage() {
             label={tEntity("fields.closeDate.label")}
           />
         </FormRow>
+        <FormRow columns={3}>
+          <SelectField<OpportunityFormValues>
+            name="currency"
+            control={form.control}
+            label={tEntity("fields.currency.label")}
+            options={currencyOptions}
+            allowClear
+            columns={1}
+          />
+          <CurrencyField<OpportunityFormValues>
+            name="estimatedAmount"
+            control={form.control}
+            label={tEntity("fields.estimatedAmount.label")}
+            min={0}
+            precision={2}
+            columns={1}
+          />
+        </FormRow>
       </FormSection>
     );
   }
 
   function FinancialSection() {
     const form = useFormContext<OpportunityFormValues>();
-    // Currency deal-level — tüm finansal alanlar (estimated/actual + tüm product satırları)
-    // bu currency'dedir. Bu nedenle EstimatedAmount alanına gömülü değil, üst seviye
-    // bağımsız bir dropdown olarak gösterilir.
-    const { options: currencyOptions } = useGeneralParameters("CurrencyType");
+
     return (
-      <FormSection title={tEntity("sections.financial")}>
-        <FormRow columns={3}>
-          <FormColumn columns={2}>
-            <FormRow columns={2}>
-              <SelectField<OpportunityFormValues>
-                name="currency"
-                control={form.control}
-                label={tEntity("fields.currency.label")}
-                options={currencyOptions}
-                allowClear
-                columns={1}
-              />
-              <CurrencyField<OpportunityFormValues>
-                name="estimatedAmount"
-                control={form.control}
-                label={tEntity("fields.estimatedAmount.label")}
-                min={0}
-                precision={2}
-                columns={1}
-              />
-            </FormRow>
-            <FormRow columns={2}>
-              {/* İndirim alanları — üçü de satırlardan canlı hesaplanan readonly. Backend
+      <FormSection title={tEntity("sections.financial")} collapsible="expanded">
+        <FormRow columns={4}>
+          {/* İndirim alanları — üçü de satırlardan canlı hesaplanan readonly. Backend
             `RecalculateTotals` ile birebir formül; client display sadece UX için.
               - totalDiscountRate  = Σ satır İnd. % (yüzde toplamı)
               - totalDiscountAmount = Σ satır İnd. Tutarı (tutar toplamı)
               - totalDiscount       = ikisinin para birimi karşılığı (brüt − net) */}
-              <NumberField<OpportunityFormValues>
-                name="totalDiscountRate"
-                control={form.control}
-                label={tEntity("fields.totalDiscountRate.label")}
-                min={0}
-                precision={2}
-                force="readonly"
-              />
-              <CurrencyField<OpportunityFormValues>
-                name="totalDiscountAmount"
-                control={form.control}
-                label={tEntity("fields.totalDiscountAmount.label")}
-                precision={2}
-                force="readonly"
-              />
-            </FormRow>
-          </FormColumn>
 
-          <FormColumn>
-            {/* ActualAmount Products satır toplamlarından (brüt) canlı hesaplanır; edit modda
+          <NumberField<OpportunityFormValues>
+            name="totalDiscountRate"
+            control={form.control}
+            label={tEntity("fields.totalDiscountRate.label")}
+            min={0}
+            precision={2}
+            force="readonly"
+          />
+          <CurrencyField<OpportunityFormValues>
+            name="totalDiscountAmount"
+            control={form.control}
+            label={tEntity("fields.totalDiscountAmount.label")}
+            precision={2}
+            force="readonly"
+          />
+          <CurrencyField<OpportunityFormValues>
+            name="totalDiscount"
+            control={form.control}
+            label={tEntity("fields.totalDiscount.label")}
+            precision={2}
+            force="readonly"
+            columns={2}
+          />
+        </FormRow>
+        <FormRow columns={4}>
+          {/* ActualAmount Products satır toplamlarından (brüt) canlı hesaplanır; edit modda
             bile salt-okunur. Tüm line item'lar deal currency'de olduğu için toplam
             matematiksel olarak doğru. */}
-            <CurrencyField<OpportunityFormValues>
-              name="actualAmount"
-              control={form.control}
-              label={tEntity("fields.actualAmount.label")}
-              precision={2}
-              force="readonly"
-            />
-            <CurrencyField<OpportunityFormValues>
-              name="totalDiscount"
-              control={form.control}
-              label={tEntity("fields.totalDiscount.label")}
-              precision={2}
-              force="readonly"
-              columns={2}
-            />
-            {/* ActualNetAmount Products satır toplamlarından (net) canlı hesaplanır; edit modda
+          <CurrencyField<OpportunityFormValues>
+            name="actualAmount"
+            control={form.control}
+            label={tEntity("fields.actualAmount.label")}
+            precision={2}
+            force="readonly"
+            columns={2}
+          />
+
+          {/* ActualNetAmount Products satır toplamlarından (net) canlı hesaplanır; edit modda
             bile salt-okunur. Tüm line item'lar deal currency'de olduğu için toplam
             matematiksel olarak doğru. */}
-            <CurrencyField<OpportunityFormValues>
-              name="actualNetAmount"
-              control={form.control}
-              label={tEntity("fields.actualNetAmount.label")}
-              precision={2}
-              force="readonly"
-            />
-          </FormColumn>
+          <CurrencyField<OpportunityFormValues>
+            name="actualNetAmount"
+            control={form.control}
+            label={tEntity("fields.actualNetAmount.label")}
+            precision={2}
+            force="readonly"
+          />
         </FormRow>
       </FormSection>
     );
@@ -628,7 +663,7 @@ export function OpportunityDetailPage() {
   function DetailsSection() {
     const form = useFormContext<OpportunityFormValues>();
     return (
-      <FormSection title={tEntity("sections.details")}>
+      <FormSection title={tEntity("sections.details")} collapsible="expanded">
         <TextAreaField
           name="description"
           control={form.control}

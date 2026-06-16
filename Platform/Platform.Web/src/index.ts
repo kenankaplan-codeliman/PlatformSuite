@@ -180,7 +180,6 @@ export { RichTextEditor } from './shared/ui/form/fields/RichTextEditor';
 export { DateTimeField } from './shared/ui/form/fields/DateTimeField';
 export { PasswordField } from './shared/ui/form/fields/PasswordField';
 export { EntityLookupField } from './shared/ui/form/fields/EntityLookupField';
-export { EntityRelationTable } from './shared/ui/form/fields/EntityRelationTable';
 export { TableField } from './shared/ui/form/fields/TableField';
 export type {
   TableFieldColumn,

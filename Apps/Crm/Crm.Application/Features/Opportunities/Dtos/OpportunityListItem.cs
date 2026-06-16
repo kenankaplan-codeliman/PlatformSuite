@@ -4,6 +4,8 @@ public class OpportunityListItem
 {
     public Guid Id { get; set; }
     public string Name { get; set; } = default!;
+    /// <summary>Fırsat Kodu — numarator ile üretilir; listede 2. kolon.</summary>
+    public string? OpportunityCode { get; set; }
     public Guid AccountId { get; set; }
     public string? AccountName { get; set; }
     public string Stage { get; set; } = default!;

@@ -6,6 +6,8 @@ public class OpportunityDetailItem
 {
     public Guid Id { get; set; }
     public string Name { get; set; } = default!;
+    /// <summary>Fırsat Kodu — numarator ile üretilir, salt-okunur.</summary>
+    public string? OpportunityCode { get; set; }
     public string? Description { get; set; }
     public EntityReference? Account { get; set; }
     public EntityReference? PrimaryContact { get; set; }

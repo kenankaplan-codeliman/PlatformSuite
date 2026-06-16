@@ -38,8 +38,9 @@ const addressModalSchema = z.object({
 
 const accountContactModalSchema = z.object({
   id: z.string(),
-  contactId: z.string().min(1, 'common:errors.required'),
-  contactName: z.string().nullish(),
+  contact: entityReferenceSchema.nullish().refine((v) => !!v && !!v.id, {
+    message: 'common:errors.required',
+  }),
   role: z.string().nullish(),
   isPrimary: z.boolean(),
 });

@@ -48,6 +48,8 @@ public static class OpportunityMappings
             .Map(d => d.PrimaryContactId, s => s.PrimaryContact != null ? (Guid?)s.PrimaryContact.Id : null)
             .Ignore(d => d.Account!, d => d.PrimaryContact!)
             .Ignore(d => d.Products)
+            // OpportunityCode handler'da numarator ile set edilir; command'dan gelmez.
+            .Ignore(d => d.OpportunityCode)
             // ActualAmount + ActualNetAmount + TotalDiscount(Amount/Rate): client değerleri
             // yok sayılır; AfterMapping'te Products toplamından hesaplanır.
             .Ignore(d => d.ActualAmount!)
@@ -68,6 +70,8 @@ public static class OpportunityMappings
             .Ignore(d => d.PrimaryContactId!)
             .Ignore(d => d.Account!, d => d.PrimaryContact!)
             .Ignore(d => d.Products)
+            // OpportunityCode değişmez; update command'da yok, mevcut değer korunur.
+            .Ignore(d => d.OpportunityCode)
             // ActualAmount + ActualNetAmount + TotalDiscount(Amount/Rate): client değerleri
             // yok sayılır; AfterMapping'te Products toplamından hesaplanır.
             .Ignore(d => d.ActualAmount!)

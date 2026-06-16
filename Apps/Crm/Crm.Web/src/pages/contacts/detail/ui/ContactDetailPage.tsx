@@ -11,7 +11,9 @@ import {
   type SelectOption,
 } from "@platform/ui";
 import { TextAreaField } from "@platform/ui";
-import { EntityRelationTable } from "@platform/ui";
+import { EntityLookupField } from "@platform/ui";
+import { CheckboxField } from "@platform/ui";
+import { TableField, type TableFieldColumn } from "@platform/ui";
 import { ServicePath } from "@platform/ui";
 import { useRouteMode } from "@platform/ui";
 import { useOwnerAssignAction } from "@platform/ui";
@@ -29,7 +31,10 @@ import {
   useDeleteContact,
 } from "../../../../entities/contact/api/useContactMutations";
 import { contactSchema } from "../../../../entities/contact/model/schema";
-import type { ContactFormValues } from "../../../../entities/contact/model/types";
+import type {
+  ContactAccountModal,
+  ContactFormValues,
+} from "../../../../entities/contact/model/types";
 import {
   contactDocumentTypes,
   getContactDocumentTypeLabel,
@@ -236,17 +241,69 @@ export function ContactDetailPage() {
 
   function AccountsSection() {
     const form = useFormContext<ContactFormValues>();
+
+    // IsPrimary tek-açık (radio davranışı): bir satır primary yapılınca diğerleri kapanır.
+    const enforceSinglePrimary = (rowIndex: number, field: string, value: unknown) => {
+      if (field !== "isPrimary" || value !== true) return;
+      const rows = form.getValues("accountContacts") ?? [];
+      rows.forEach((_, i) => {
+        if (i === rowIndex) return;
+        const path =
+          `accountContacts.${i}.isPrimary` as `accountContacts.${number}.isPrimary`;
+        if (form.getValues(path)) {
+          form.setValue(path, false, { shouldDirty: true });
+        }
+      });
+    };
+
+    const columns: TableFieldColumn<ContactFormValues, ContactAccountModal>[] = [
+      {
+        key: "account",
+        header: tEntity("accounts.nameColumn"),
+        width: "1fr",
+        render: ({ path }) => (
+          <EntityLookupField
+            name={path("account")}
+            control={form.control}
+            servicePath={ServicePath.Account.Search}
+            entityType="Account"
+            required
+          />
+        ),
+      },
+      {
+        key: "role",
+        header: tCommon("relation.role"),
+        width: "220px",
+        render: ({ path }) => (
+          <TextField name={path("role")} control={form.control} maxLength={200} />
+        ),
+      },
+      {
+        key: "isPrimary",
+        header: tCommon("relation.primary"),
+        width: "100px",
+        align: "center",
+        render: ({ path }) => (
+          <CheckboxField name={path("isPrimary")} control={form.control} />
+        ),
+      },
+    ];
+
     return (
       <FormSection title={tEntity("sections.accounts")} collapsible="expanded">
-        <EntityRelationTable<ContactFormValues>
-          name="accountContacts"
+        <TableField<ContactFormValues, ContactAccountModal>
           control={form.control}
-          servicePath={ServicePath.Account.Search}
-          keyField="accountId"
-          keyNameField="accountName"
+          name="accountContacts"
+          columns={columns}
+          newRow={() => ({
+            id: crypto.randomUUID(),
+            account: null,
+            role: null,
+            isPrimary: false,
+          })}
           addLabel={tEntity("accounts.addLabel")}
-          modalTitle={tEntity("accounts.modalTitle")}
-          nameColumnTitle={tEntity("accounts.nameColumn")}
+          onRowChange={enforceSinglePrimary}
         />
       </FormSection>
     );

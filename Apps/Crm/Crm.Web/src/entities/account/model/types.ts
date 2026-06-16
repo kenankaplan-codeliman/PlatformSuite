@@ -44,8 +44,7 @@ export interface AddressModal {
 
 export interface AccountContactModal {
   id: string;
-  contactId: string;
-  contactName?: string | null;
+  contact?: EntityReference | null;
   role?: string | null;
   isPrimary: boolean;
 }

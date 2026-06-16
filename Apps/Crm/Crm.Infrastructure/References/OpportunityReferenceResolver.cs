@@ -24,13 +24,13 @@ public class OpportunityReferenceResolver : IEntityReferenceResolver
     public EntityReference GetReference(Guid id)
     {
         var opp = dbContext.Opportunity
-            .Select(o => new { o.Id, o.Name })
+            .Select(o => new { o.Id, o.Name, o.OpportunityCode })
             .FirstOrDefault(o => o.Id == id) ?? throw new NotFoundException();
 
         return new EntityReference(nameof(Opportunity))
         {
             Id = opp.Id,
-            Name = opp.Name,
+            Name = FormatLabel(opp.OpportunityCode, opp.Name),
         };
     }
 
@@ -48,13 +48,17 @@ public class OpportunityReferenceResolver : IEntityReferenceResolver
 
         var tempQuery = dbContext.Opportunity.AsNoTracking().Where(x => x.IsActive);
 
+        // Ad VEYA Fırsat Kodu üzerinden ara — kullanıcı koda göre de bulabilsin.
         if (!string.IsNullOrEmpty(searchText))
         {
-            tempQuery = tempQuery.Where(o => EF.Functions.ILike(o.Name, $"%{searchText}%"));
+            var pattern = $"%{searchText}%";
+            tempQuery = tempQuery.Where(o =>
+                EF.Functions.ILike(o.Name, pattern) ||
+                EF.Functions.ILike(o.OpportunityCode, pattern));
         }
 
         var entityList = tempQuery
-            .Select(o => new { o.Id, o.Name })
+            .Select(o => new { o.Id, o.Name, o.OpportunityCode })
             .Skip(skipCnt).Take(pageSize + 1).ToList();
 
         var hasMore = entityList.Count > pageSize;
@@ -63,7 +67,7 @@ public class OpportunityReferenceResolver : IEntityReferenceResolver
             .Select(o => new EntityReference(nameof(Opportunity))
             {
                 Id = o.Id,
-                Name = o.Name,
+                Name = FormatLabel(o.OpportunityCode, o.Name),
             })
             .ToList();
 
@@ -75,4 +79,8 @@ public class OpportunityReferenceResolver : IEntityReferenceResolver
             PageSize = pageSize,
         };
     }
+
+    // Lookup etiketi: kod varsa "FRS-2026-0001 · Fırsat Adı", yoksa düz ad.
+    private static string FormatLabel(string? code, string name) =>
+        string.IsNullOrWhiteSpace(code) ? name : $"{code} · {name}";
 }

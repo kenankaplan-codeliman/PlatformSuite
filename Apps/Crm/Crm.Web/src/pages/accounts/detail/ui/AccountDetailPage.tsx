@@ -7,13 +7,11 @@ import { FormRow } from "@platform/ui";
 import { TextField } from "@platform/ui";
 import { NumberField } from "@platform/ui";
 import { CurrencyField } from "@platform/ui";
-import {
-  SelectField,
-  type SelectOption,
-} from "@platform/ui";
+import { SelectField, type SelectOption } from "@platform/ui";
 import { TextAreaField } from "@platform/ui";
 import { EntityLookupField } from "@platform/ui";
-import { EntityRelationTable } from "@platform/ui";
+import { CheckboxField } from "@platform/ui";
+import { TableField, type TableFieldColumn } from "@platform/ui";
 import { ServicePath } from "@platform/ui";
 import { useRouteMode } from "@platform/ui";
 import { useOwnerAssignAction } from "@platform/ui";
@@ -31,15 +29,17 @@ import {
   useDeleteAccount,
 } from "../../../../entities/account/api/useAccountMutations";
 import { accountSchema } from "../../../../entities/account/model/schema";
-import type { AccountFormValues } from "../../../../entities/account/model/types";
+import type {
+  AccountContactModal,
+  AccountFormValues,
+} from "../../../../entities/account/model/types";
 import {
   accountDocumentTypes,
   getAccountDocumentTypeLabel,
 } from "../../../../entities/account/model/documentTypes";
 import { RoutePaths } from "../../../../app/router/paths";
 
-const ACCOUNT_ATTACHMENT_ACCEPT =
-  ".pdf,.doc,.docx,.xls,.xlsx,.jpg,.jpeg,.png";
+const ACCOUNT_ATTACHMENT_ACCEPT = ".pdf,.doc,.docx,.xls,.xlsx,.jpg,.jpeg,.png";
 
 const emptyAccount: AccountFormValues = {
   id: "",
@@ -167,10 +167,7 @@ export function AccountDetailPage() {
       extraActions={extraActions}
     >
       {ownerAssign.modal}
-      <GeneralSection
-        typeOptions={typeOptions}
-        statusOptions={statusOptions}
-      />
+      <GeneralSection typeOptions={typeOptions} statusOptions={statusOptions} />
       <DetailsSection />
       <ContactsSection />
     </DetailPageLayout>
@@ -210,20 +207,23 @@ export function AccountDetailPage() {
             required
           />
         </FormRow>
-        <TextField
-          name="industry"
-          control={form.control}
-          label={tEntity("fields.industry.label")}
-          placeholder={tEntity("fields.industry.placeholder")}
-          maxLength={200}
-        />
-        <EntityLookupField
-          name="parentAccount"
-          control={form.control}
-          servicePath={ServicePath.Account.Search}
-          label={tEntity("fields.parentAccount.label")}
-          allowClear
-        />
+
+        <FormRow>
+          <EntityLookupField
+            name="parentAccount"
+            control={form.control}
+            servicePath={ServicePath.Account.Search}
+            label={tEntity("fields.parentAccount.label")}
+            allowClear
+          />
+          <TextField
+            name="industry"
+            control={form.control}
+            label={tEntity("fields.industry.label")}
+            placeholder={tEntity("fields.industry.placeholder")}
+            maxLength={200}
+          />
+        </FormRow>
       </FormSection>
     );
   }
@@ -238,8 +238,14 @@ export function AccountDetailPage() {
         <FormSection title={tEntity("sections.phones")} collapsible="expanded">
           <PhoneField<AccountFormValues> control={form.control} name="phones" />
         </FormSection>
-        <FormSection title={tEntity("sections.addresses")} collapsible="expanded">
-          <AddressField<AccountFormValues> control={form.control} name="addresses" />
+        <FormSection
+          title={tEntity("sections.addresses")}
+          collapsible="expanded"
+        >
+          <AddressField<AccountFormValues>
+            control={form.control}
+            name="addresses"
+          />
         </FormSection>
       </>
     );
@@ -247,17 +253,78 @@ export function AccountDetailPage() {
 
   function ContactsSection() {
     const form = useFormContext<AccountFormValues>();
+
+    // IsPrimary tek-açık (radio davranışı): bir satır primary yapılınca diğerleri kapanır.
+    const enforceSinglePrimary = (
+      rowIndex: number,
+      field: string,
+      value: unknown,
+    ) => {
+      if (field !== "isPrimary" || value !== true) return;
+      const rows = form.getValues("contacts") ?? [];
+      rows.forEach((_, i) => {
+        if (i === rowIndex) return;
+        const path =
+          `contacts.${i}.isPrimary` as `contacts.${number}.isPrimary`;
+        if (form.getValues(path)) {
+          form.setValue(path, false, { shouldDirty: true });
+        }
+      });
+    };
+
+    const columns: TableFieldColumn<AccountFormValues, AccountContactModal>[] =
+      [
+        {
+          key: "contact",
+          header: tEntity("contacts.nameColumn"),
+          width: "1fr",
+          render: ({ path }) => (
+            <EntityLookupField
+              name={path("contact")}
+              control={form.control}
+              servicePath={ServicePath.Contact.Search}
+              entityType="Contact"
+              required
+            />
+          ),
+        },
+        {
+          key: "role",
+          header: tCommon("relation.role"),
+          width: "220px",
+          render: ({ path }) => (
+            <TextField
+              name={path("role")}
+              control={form.control}
+              maxLength={200}
+            />
+          ),
+        },
+        {
+          key: "isPrimary",
+          header: tCommon("relation.primary"),
+          width: "100px",
+          align: "center",
+          render: ({ path }) => (
+            <CheckboxField name={path("isPrimary")} control={form.control} />
+          ),
+        },
+      ];
+
     return (
       <FormSection title={tEntity("sections.contacts")} collapsible="expanded">
-        <EntityRelationTable<AccountFormValues>
-          name="contacts"
+        <TableField<AccountFormValues, AccountContactModal>
           control={form.control}
-          servicePath={ServicePath.Contact.Search}
-          keyField="contactId"
-          keyNameField="contactName"
+          name="contacts"
+          columns={columns}
+          newRow={() => ({
+            id: crypto.randomUUID(),
+            contact: null,
+            role: null,
+            isPrimary: false,
+          })}
           addLabel={tEntity("contacts.addLabel")}
-          modalTitle={tEntity("contacts.modalTitle")}
-          nameColumnTitle={tEntity("contacts.nameColumn")}
+          onRowChange={enforceSinglePrimary}
         />
       </FormSection>
     );
@@ -265,16 +332,26 @@ export function AccountDetailPage() {
 
   function DetailsSection() {
     const form = useFormContext<AccountFormValues>();
-    const { options: currencyOptions } = useGeneralParameters('CurrencyType');
+    const { options: currencyOptions } = useGeneralParameters("CurrencyType");
     return (
       <FormSection title={tEntity("sections.details")} collapsible="expanded">
-        <TextField
-          name="website"
-          control={form.control}
-          label={tEntity("fields.website.label")}
-          placeholder={tEntity("fields.website.placeholder")}
-          maxLength={500}
-        />
+        <FormRow columns={3}>
+          <TextField
+            name="website"
+            control={form.control}
+            label={tEntity("fields.website.label")}
+            placeholder={tEntity("fields.website.placeholder")}
+            maxLength={500}
+            columns={2}
+          />
+          <NumberField
+            name="numberOfEmployees"
+            control={form.control}
+            label={tEntity("fields.numberOfEmployees.label")}
+            min={0}
+            columns={1}
+          />
+        </FormRow>
         <FormRow columns={3}>
           <CurrencyField<AccountFormValues>
             name="annualRevenue"
@@ -290,13 +367,6 @@ export function AccountDetailPage() {
             label={tEntity("fields.annualRevenueCurrency.label")}
             options={currencyOptions}
             allowClear
-            columns={1}
-          />
-          <NumberField
-            name="numberOfEmployees"
-            control={form.control}
-            label={tEntity("fields.numberOfEmployees.label")}
-            min={0}
             columns={1}
           />
         </FormRow>
