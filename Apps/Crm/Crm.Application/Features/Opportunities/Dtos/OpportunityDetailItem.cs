@@ -17,10 +17,12 @@ public class OpportunityDetailItem
     public decimal? ActualAmount { get; set; }
     /// <summary>Sunucu hesaplar: satırların NetAmount toplamı (oran+tutar indirim uygulanmış); read-only.</summary>
     public decimal? ActualNetAmount { get; set; }
-    /// <summary>Sunucu hesaplar: satırların toplam indirim tutarı (oran cinsinden + tutar cinsinden); read-only.</summary>
+    /// <summary>Sunucu hesaplar: satırların DiscountAmount (tutar cinsinden indirim) toplamı; read-only.</summary>
     public decimal? TotalDiscountAmount { get; set; }
-    /// <summary>Sunucu hesaplar: efektif indirim oranı (%), TotalDiscountAmount / ActualAmount × 100; read-only.</summary>
+    /// <summary>Sunucu hesaplar: satırların DiscountRate (yüzde cinsinden indirim) toplamı; read-only.</summary>
     public decimal? TotalDiscountRate { get; set; }
+    /// <summary>Sunucu hesaplar: toplam indirim tutarı = oran + tutar indiriminin para birimi karşılığı (ActualAmount − ActualNetAmount); read-only.</summary>
+    public decimal? TotalDiscount { get; set; }
     public int Probability { get; set; }
     public DateTime? CloseDate { get; set; }
     public string? LossReason { get; set; }

@@ -54,6 +54,7 @@ public static class OpportunityMappings
             .Ignore(d => d.ActualNetAmount!)
             .Ignore(d => d.TotalDiscountAmount!)
             .Ignore(d => d.TotalDiscountRate!)
+            .Ignore(d => d.TotalDiscount!)
             .IgnoreAuditFields()
             .AfterMapping((src, dst) =>
             {
@@ -73,6 +74,7 @@ public static class OpportunityMappings
             .Ignore(d => d.ActualNetAmount!)
             .Ignore(d => d.TotalDiscountAmount!)
             .Ignore(d => d.TotalDiscountRate!)
+            .Ignore(d => d.TotalDiscount!)
             .IgnoreAuditFields()
             .AfterMapping((src, dst) =>
             {
@@ -85,10 +87,11 @@ public static class OpportunityMappings
     /// <summary>
     /// Products satırlarından Opportunity'nin tüm toplamlarını yeniden hesaplar:
     ///  - <c>ActualAmount</c>: brüt satır toplamlarının toplamı (Quantity × UnitPrice).
-    ///  - <c>TotalDiscountAmount</c>: satır oran+tutar indirim toplamı.
     ///  - <c>ActualNetAmount</c>: satır NetAmount (clamped) toplamı.
-    ///  - <c>TotalDiscountRate</c>: (TotalDiscountAmount / ActualAmount) × 100; ActualAmount
-    ///    null veya 0 ise null.
+    ///  - <c>TotalDiscountRate</c>: satır DiscountRate (yüzde) değerlerinin toplamı.
+    ///  - <c>TotalDiscountAmount</c>: satır DiscountAmount (tutar) değerlerinin toplamı.
+    ///  - <c>TotalDiscount</c>: ikisinin birlikte para birimi karşılığı = satır
+    ///    LineDiscountTotal (oran + tutar) toplamı (ActualAmount − ActualNetAmount).
     /// Satır yoksa hepsi null.
     /// </summary>
     private static void RecalculateTotals(Opportunity opportunity)
@@ -99,19 +102,21 @@ public static class OpportunityMappings
             opportunity.ActualNetAmount = null;
             opportunity.TotalDiscountAmount = null;
             opportunity.TotalDiscountRate = null;
+            opportunity.TotalDiscount = null;
             return;
         }
 
         var gross = opportunity.Products.Sum(p => p.LineTotal);
-        var discount = opportunity.Products.Sum(p => p.LineDiscountTotal);
         var net = opportunity.Products.Sum(p => p.NetAmount);
+        var discountRateSum = opportunity.Products.Sum(p => p.DiscountRate);
+        var discountAmountSum = opportunity.Products.Sum(p => p.DiscountAmount);
+        var discountTotal = opportunity.Products.Sum(p => p.LineDiscountTotal);
 
         opportunity.ActualAmount = gross;
         opportunity.ActualNetAmount = net;
-        opportunity.TotalDiscountAmount = discount;
-        opportunity.TotalDiscountRate = gross > 0m
-            ? Math.Round(discount / gross * 100m, 2, MidpointRounding.AwayFromZero)
-            : null;
+        opportunity.TotalDiscountRate = Math.Round(discountRateSum, 2, MidpointRounding.AwayFromZero);
+        opportunity.TotalDiscountAmount = discountAmountSum;
+        opportunity.TotalDiscount = discountTotal;
     }
 
     private static void SyncProducts(IReadOnlyList<OpportunityProductModal> products, Opportunity opportunity)

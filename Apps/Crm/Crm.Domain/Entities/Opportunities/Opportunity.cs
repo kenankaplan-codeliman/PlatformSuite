@@ -41,16 +41,22 @@ public class Opportunity :
     /// yok sayılır.</summary>
     public decimal? ActualNetAmount { get; set; }
 
-    /// <summary>Tüm satırların indirim tutarlarının toplamı (oran cinsinden + tutar cinsinden
-    /// indirimin para birimi cinsinden toplamı). Save sırasında handler/mapping tarafından
-    /// yazılır; client değeri yok sayılır.</summary>
+    /// <summary>Satırların <see cref="OpportunityProduct.DiscountAmount"/> (tutar cinsinden
+    /// indirim) alanlarının toplamı. Save sırasında handler/mapping tarafından yazılır;
+    /// client değeri yok sayılır.</summary>
     public decimal? TotalDiscountAmount { get; set; }
 
-    /// <summary>Fırsat seviyesindeki efektif indirim oranı:
-    /// <c>TotalDiscountAmount / ActualAmount × 100</c>. Yüzde olarak (0-100). ActualAmount
-    /// 0 veya null ise null. Save sırasında handler/mapping tarafından yazılır; client
-    /// değeri yok sayılır.</summary>
+    /// <summary>Satırların <see cref="OpportunityProduct.DiscountRate"/> (yüzde cinsinden
+    /// indirim) alanlarının toplamı. Save sırasında handler/mapping tarafından yazılır;
+    /// client değeri yok sayılır.</summary>
     public decimal? TotalDiscountRate { get; set; }
+
+    /// <summary>Toplam indirim tutarı = oran cinsinden indirimin para birimi karşılığı +
+    /// tutar cinsinden indirim (<c>ActualAmount − ActualNetAmount</c>). Yani
+    /// <see cref="TotalDiscountRate"/> ve <see cref="TotalDiscountAmount"/>'ın birlikte
+    /// uygulanmış para birimi karşılığı. Save sırasında handler/mapping tarafından yazılır;
+    /// client değeri yok sayılır.</summary>
+    public decimal? TotalDiscount { get; set; }
     public int Probability { get; set; }
     public DateTime? CloseDate { get; set; }
     public string? LossReason { get; set; }

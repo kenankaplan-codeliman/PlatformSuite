@@ -18,11 +18,14 @@ CREATE TABLE opportunity (
     actual_amount numeric(18,2),
     -- Gerçekleşen NET tutar: satırların NetAmount toplamı (oran+tutar indirim uygulanmış).
     actual_net_amount numeric(18,2),
-    -- Tüm satırların indirim tutarlarının (oran cinsinden + tutar cinsinden) currency toplamı.
+    -- Satırların discount_amount (tutar cinsinden indirim) alanlarının toplamı.
     total_discount_amount numeric(18,2),
-    -- Fırsat seviyesindeki efektif indirim oranı (0-100) = total_discount_amount / actual_amount * 100.
-    -- actual_amount NULL/0 ise NULL.
-    total_discount_rate numeric(5,2),
+    -- Satırların discount_rate (yüzde cinsinden indirim) alanlarının toplamı.
+    -- Satır sayısıyla 100'ü aşabilir; bu yüzden precision(9,2).
+    total_discount_rate numeric(9,2),
+    -- Toplam indirim tutarı = oran + tutar indiriminin para birimi karşılığı
+    -- (actual_amount - actual_net_amount). Server hesaplar.
+    total_discount numeric(18,2),
     probability integer NOT NULL DEFAULT 0,
     close_date timestamp NULL,
     loss_reason varchar(500),

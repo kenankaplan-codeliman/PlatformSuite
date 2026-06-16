@@ -53,10 +53,12 @@ export interface OpportunityDetailItem {
   actualAmount?: number | null;
   /** Sunucu hesaplar: satırların NetAmount (indirimler düşülmüş) toplamı. Form'da read-only. */
   actualNetAmount?: number | null;
-  /** Sunucu hesaplar: satırların toplam indirim tutarı (oran cinsinden + tutar cinsinden). */
+  /** Sunucu hesaplar: satırların discountAmount (tutar cinsinden indirim) toplamı. */
   totalDiscountAmount?: number | null;
-  /** Sunucu hesaplar: efektif indirim oranı (%), totalDiscountAmount / actualAmount × 100. */
+  /** Sunucu hesaplar: satırların discountRate (yüzde cinsinden indirim) toplamı. */
   totalDiscountRate?: number | null;
+  /** Sunucu hesaplar: toplam indirim tutarı = oran + tutar indiriminin para birimi karşılığı (actualAmount − actualNetAmount). */
+  totalDiscount?: number | null;
   probability: number;
   closeDate?: string | null;
   lossReason?: string | null;

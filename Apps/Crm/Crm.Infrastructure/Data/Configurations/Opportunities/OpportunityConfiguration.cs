@@ -57,8 +57,12 @@ public class OpportunityConfiguration : IEntityTypeConfiguration<Opportunity>
         // Net + indirim toplamları handler/mapping tarafından satırlardan hesaplanır;
         // client değeri yok sayılır. Currency parent Opportunity.Currency'sidir.
         builder.Property(o => o.ActualNetAmount).HasColumnName("actual_net_amount").HasPrecision(18, 2);
+        // TotalDiscountAmount = Σ satır DiscountAmount (tutar). TotalDiscountRate = Σ satır
+        // DiscountRate (yüzde) — satır sayısıyla 100'ü aşabilir, bu yüzden geniş precision.
+        // TotalDiscount = ikisinin birlikte para birimi karşılığı (ActualAmount − ActualNetAmount).
         builder.Property(o => o.TotalDiscountAmount).HasColumnName("total_discount_amount").HasPrecision(18, 2);
-        builder.Property(o => o.TotalDiscountRate).HasColumnName("total_discount_rate").HasPrecision(5, 2);
+        builder.Property(o => o.TotalDiscountRate).HasColumnName("total_discount_rate").HasPrecision(9, 2);
+        builder.Property(o => o.TotalDiscount).HasColumnName("total_discount").HasPrecision(18, 2);
 
         builder.Property(o => o.Probability)
             .HasColumnName("probability")

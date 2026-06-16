@@ -38,6 +38,7 @@ export const opportunitySchema = z.object({
   actualNetAmount: z.number().nullish(),
   totalDiscountAmount: z.number().nullish(),
   totalDiscountRate: z.number().nullish(),
+  totalDiscount: z.number().nullish(),
   probability: z.number().int().min(0).max(100),
   closeDate: z.string().nullish(),
   lossReason: z.string().max(500).nullish(),
