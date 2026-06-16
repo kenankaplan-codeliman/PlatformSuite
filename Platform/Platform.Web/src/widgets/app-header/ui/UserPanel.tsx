@@ -39,7 +39,7 @@ export function UserPanel() {
             {displayName || '—'}
           </Text>
           {email && (
-            <Text type="secondary" style={{ fontSize: 12 }}>
+            <Text type="secondary">
               {email}
             </Text>
           )}

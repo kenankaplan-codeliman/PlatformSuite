@@ -1,100 +1,149 @@
-import { useMemo } from 'react';
-import { useFormContext } from 'react-hook-form';
-import { useTranslation } from 'react-i18next';
-import { FormSection } from '../../../../shared/ui/form/FormSection';
+import { useMemo } from "react";
+import { useFormContext } from "react-hook-form";
+import { useTranslation } from "react-i18next";
+import { FormSection } from "../../../../shared/ui/form/FormSection";
 import {
   SelectField,
   type SelectOption,
-} from '../../../../shared/ui/form/fields/SelectField';
-import { useEnumTranslation } from '../../../../shared/lib/i18n/enum';
+} from "../../../../shared/ui/form/fields/SelectField";
+import { useEnumTranslation } from "../../../../shared/lib/i18n/enum";
 import type {
   AppRoleFormValues,
   PrivilegeCatalogGroup,
-} from '../../../../entities/app-role/model/types';
-import { ACCESS_LEVELS } from '../../../../entities/app-role/lib/privilegeMatrix';
+} from "../../../../entities/app-role/model/types";
+import { ACCESS_LEVELS } from "../../../../entities/app-role/lib/privilegeMatrix";
 
 interface RolePrivilegesSectionProps {
   catalog: PrivilegeCatalogGroup[];
 }
 
 /**
- * Rolün privilege'larını entity bazında gruplayıp listeler ve düzenletir.
- * Satır başında entity adı, yanında o entity'e ait her eylem için erişim
- * seviyesi seçimi (None/User/Organization/All) yer alır. Görünür/düzenlenebilir
- * kararı `SelectField` mode-aware olduğundan view modunda otomatik salt-okunur.
+ * Kolon sıralaması için YALNIZCA görsel ipucu — hangi privilege'ların var olduğunu
+ * BELİRLEMEZ (o tamamen dinamik, auth_privilege tablosundan gelir). Kolonlar önce
+ * "kaç entity'de geçtiği"ne (yaygınlık) göre sıralanır; eşitlikte bilinen CRUD
+ * eylemleri bu sırayla öne alınır, geri kalanı görülme sırasına düşer. Listede
+ * olmayan yeni eylemler de otomatik kolon olur (yaygınlığına göre yerleşir).
+ */
+const COMMON_ACTION_ORDER = [
+  "Read",
+  "Create",
+  "Update",
+  "Delete",
+  "UpdateStatus",
+  "Assign",
+  "State",
+  "Use",
+];
+
+/**
+ * Rolün privilege'larını matris/tablo olarak düzenletir: satır başlarında entity
+ * adı, kolonlarda eylemler (Read/Create/Update...). Her hücre o entity-eylem
+ * çiftinin erişim seviyesi seçimidir (None/User/Organization/All). Görünür/
+ * düzenlenebilir kararı `SelectField` mode-aware olduğundan view modunda otomatik
+ * salt-okunur.
  *
  * Form'un `privileges` dizisi katalog sırasıyla doldurulduğu için (bkz.
  * buildPrivilegeFormList), dizi index'i = katalog pozisyonu; binding buna dayanır.
  */
 export function RolePrivilegesSection({ catalog }: RolePrivilegesSectionProps) {
   const form = useFormContext<AppRoleFormValues>();
-  const { t: tEntity } = useTranslation('entity.app-role');
-  const tAccess = useEnumTranslation('accessLevel');
+  const { t: tEntity } = useTranslation("entity.app-role");
+  const tAccess = useEnumTranslation("accessLevel");
 
   const accessOptions = useMemo<SelectOption[]>(
-    () => ACCESS_LEVELS.map((level) => ({ value: level, label: tAccess(level) })),
+    () =>
+      ACCESS_LEVELS.map((level) => ({ value: level, label: tAccess(level) })),
     [tAccess],
   );
 
-  // Katalog gruplarını, form dizisindeki düz index'leriyle eşleştir.
-  const groups = useMemo(() => {
+  // Katalog gruplarını form dizisindeki düz index'leriyle eşleştir ve her grubu
+  // action -> index sözlüğüne çevir (matris hücrelerinde hızlı erişim için).
+  const rows = useMemo(() => {
     let index = 0;
-    return catalog.map((group) => ({
-      entity: group.entity,
-      privileges: group.privileges.map((entry) => ({
-        ...entry,
-        index: index++,
-      })),
-    }));
+    return catalog.map((group) => {
+      const byAction: Record<string, number> = {};
+      group.privileges.forEach((entry) => {
+        byAction[entry.action] = index++;
+      });
+      return { entity: group.entity, byAction };
+    });
   }, [catalog]);
 
+  // Kolonları katalogtan dinamik türet: önce yaygınlık (kaç entity'de geçtiği),
+  // eşitlikte bilinen CRUD sırası (COMMON_ACTION_ORDER), sonra ilk görülme sırası.
+  const actions = useMemo(() => {
+    const freq = new Map<string, number>();
+    const firstSeen = new Map<string, number>();
+    let seq = 0;
+    catalog.forEach((group) =>
+      group.privileges.forEach((entry) => {
+        freq.set(entry.action, (freq.get(entry.action) ?? 0) + 1);
+        if (!firstSeen.has(entry.action)) firstSeen.set(entry.action, seq++);
+      }),
+    );
+    const rank = (a: string) => {
+      const i = COMMON_ACTION_ORDER.indexOf(a);
+      return i === -1 ? Number.MAX_SAFE_INTEGER : i;
+    };
+    return [...freq.keys()].sort(
+      (a, b) =>
+        freq.get(b)! - freq.get(a)! ||
+        rank(a) - rank(b) ||
+        firstSeen.get(a)! - firstSeen.get(b)!,
+    );
+  }, [catalog]);
+
+  // 1. kolon entity adı, ardından her eylem için eşit genişlikte kolon.
+  const gridTemplateColumns = `minmax(160px, 1.4fr) repeat(${actions.length}, minmax(120px, 1fr))`;
+  const minWidth = 160 + actions.length * 130;
+
   return (
-    <FormSection title={tEntity('sections.privileges')}>
-      <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
-        {groups.map((group) => (
+    <FormSection title={tEntity("sections.privileges")} flush>
+      <div className="privilege-matrix-scroll">
+        <div className="privilege-matrix" style={{ minWidth }}>
           <div
-            key={group.entity}
-            style={{
-              display: 'flex',
-              alignItems: 'flex-start',
-              gap: 16,
-              padding: '8px 0',
-              borderBottom: '1px solid #f0f0f0',
-            }}
+            className="privilege-matrix-row privilege-matrix-header"
+            style={{ gridTemplateColumns }}
           >
-            <div
-              style={{
-                flex: '0 0 180px',
-                fontWeight: 600,
-                color: 'rgba(0, 0, 0, 0.88)',
-                paddingTop: 6,
-              }}
-            >
-              {tEntity(`entities.${group.entity}`, { defaultValue: group.entity })}
-            </div>
-            <div
-              style={{
-                flex: 1,
-                display: 'flex',
-                flexWrap: 'wrap',
-                gap: 16,
-              }}
-            >
-              {group.privileges.map((entry) => (
-                <div key={entry.code} style={{ minWidth: 150 }}>
-                  <SelectField<AppRoleFormValues>
-                    name={`privileges.${entry.index}.accessLevel`}
-                    control={form.control}
-                    label={tEntity(`actions.${entry.action}`, {
-                      defaultValue: entry.action,
-                    })}
-                    options={accessOptions}
-                  />
-                </div>
-              ))}
-            </div>
+            <div aria-hidden />
+
+            {actions.map((action) => (
+              <div key={action} className="privilege-matrix-cell">
+                {tEntity(`actions.${action}`, { defaultValue: action })}
+              </div>
+            ))}
           </div>
-        ))}
+
+          {rows.map((row) => (
+            <div
+              key={row.entity}
+              className="privilege-matrix-row"
+              style={{ gridTemplateColumns }}
+            >
+              <div className="privilege-matrix-entity">
+                {tEntity(`entities.${row.entity}`, {
+                  defaultValue: row.entity,
+                })}
+              </div>
+              {actions.map((action) => {
+                const index = row.byAction[action];
+                return (
+                  <div key={action} className="privilege-matrix-cell">
+                    {index === undefined ? (
+                      <span className="privilege-matrix-empty">—</span>
+                    ) : (
+                      <SelectField<AppRoleFormValues>
+                        name={`privileges.${index}.accessLevel`}
+                        control={form.control}
+                        options={accessOptions}
+                      />
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+          ))}
+        </div>
       </div>
     </FormSection>
   );

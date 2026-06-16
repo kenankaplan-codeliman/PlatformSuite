@@ -158,9 +158,9 @@ export function AttachmentsField({
           <div style={{ fontWeight: 600, overflow: 'hidden', textOverflow: 'ellipsis' }}>
             {row.fileName}
           </div>
-          {row.subject && <div style={{ fontSize: 12, color: '#666' }}>{row.subject}</div>}
+          {row.subject && <div style={{ color: '#666' }}>{row.subject}</div>}
           {row.description && (
-            <div style={{ fontSize: 12, color: '#888' }}>{row.description}</div>
+            <div style={{ color: '#888' }}>{row.description}</div>
           )}
         </div>
       ),
@@ -171,10 +171,14 @@ export function AttachmentsField({
       width: 200,
       render: (_v, row) => (
         <Space size={[4, 4]} wrap>
-          <Tag color={row.pending ? 'orange' : undefined}>
+          <Tag className="entity-tag" color={row.pending ? 'orange' : undefined}>
             {documentTypeLabel ? documentTypeLabel(row.documentType) : row.documentType}
           </Tag>
-          {row.pending && <Tag color="orange">{t('row.pending')}</Tag>}
+          {row.pending && (
+            <Tag className="entity-tag" color="orange">
+              {t('row.pending')}
+            </Tag>
+          )}
         </Space>
       ),
     },
@@ -207,7 +211,6 @@ export function AttachmentsField({
               href={attachmentDataSource.getDownloadUrl(row.id)}
               target="_blank"
               rel="noopener noreferrer"
-              style={{ fontSize: 13 }}
             >
               {t('actions.download')}
             </a>

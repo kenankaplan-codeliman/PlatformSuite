@@ -54,6 +54,8 @@ type TableFieldColumnBase = {
   /** CSS grid track ('1fr', '110px', vb.). Default '1fr'. */
   width?: string;
   align?: 'left' | 'right' | 'center';
+  /** Kolon başlığının hizası. Default 'left'. */
+  headerAlign?: 'left' | 'right' | 'center';
   hideInMode?: FormMode[];
 };
 
@@ -144,10 +146,10 @@ export function TableField<
           className="table-field-row table-field-header"
           style={{ gridTemplateColumns }}
         >
-          {/* Satırlar kolonun `align`'ına göre sağa/sola dayanır; başlıklar her
-              zaman ortalanır. */}
+          {/* Satırlar kolonun `align`'ına, başlıklar `headerAlign`'a göre
+              hizalanır (default 'left'). */}
           {visibleColumns.map((col) => (
-            <div key={col.key} style={{ textAlign: 'center' }}>
+            <div key={col.key} style={{ textAlign: col.headerAlign ?? 'left' }}>
               {col.header}
             </div>
           ))}
@@ -183,7 +185,13 @@ export function TableField<
           onClick={() =>
             append(newRow() as unknown as FieldArray<TValues, ArrayPath<TValues>>)
           }
-          style={{ marginTop: 12, marginBottom: 16 }}
+          style={{
+            marginTop: 12,
+            marginBottom: 16,
+            marginLeft: 16,
+            marginRight: 16,
+            width: 'calc(100% - 32px)',
+          }}
         >
           {addLabel}
         </Button>

@@ -461,7 +461,11 @@ export function OpportunityDetailPage() {
       },
     ];
     return (
-      <FormSection title={tEntity("sections.products")} collapsible="expanded">
+      <FormSection
+        title={tEntity("sections.products")}
+        collapsible="expanded"
+        flush
+      >
         <TableField<OpportunityFormValues, OpportunityProductModal>
           control={form.control}
           name="products"

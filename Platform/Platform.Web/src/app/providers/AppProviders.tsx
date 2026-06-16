@@ -10,9 +10,14 @@ export function AppProviders({ children }: { children: ReactNode }) {
       locale={trTR}
       renderEmpty={() => <EmptyState />}
       theme={{
+        token: {
+          // Uygulama geneli varsayılan font boyutu (antd default 14 → 12).
+          fontSize: 13,
+        },
         components: {
           Form: {
             labelColor: "rgba(0, 0, 0, 0.50)",
+            itemMarginBottom: 5,
           },
           Table: {
             // Liste satırı hover'ı — sayfa arka planı (#f5f5f5 gri) ile kaynaşmaması

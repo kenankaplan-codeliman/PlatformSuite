@@ -8,6 +8,8 @@ import {
   AppUsersListPage,
   HomePage,
   LoginPage,
+  OrganizationDetailPage,
+  OrganizationsListPage,
 } from '@platform/ui';
 import { AccountDetailPage } from '../../pages/accounts/detail/ui/AccountDetailPage';
 import { AccountsListPage } from '../../pages/accounts/list/ui/AccountsListPage';
@@ -59,6 +61,11 @@ export const router = createBrowserRouter([
       { path: RoutePatterns.ProductNew, element: <ProductDetailPage /> },
       { path: RoutePatterns.ProductEdit, element: <ProductDetailPage /> },
       { path: RoutePatterns.ProductView, element: <ProductDetailPage /> },
+
+      { path: RoutePatterns.OrganizationsList, element: <OrganizationsListPage /> },
+      { path: RoutePatterns.OrganizationNew, element: <OrganizationDetailPage /> },
+      { path: RoutePatterns.OrganizationEdit, element: <OrganizationDetailPage /> },
+      { path: RoutePatterns.OrganizationView, element: <OrganizationDetailPage /> },
 
       { path: RoutePatterns.AppUsersList, element: <AppUsersListPage /> },
       { path: RoutePatterns.AppUserNew, element: <AppUserDetailPage /> },

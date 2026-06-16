@@ -188,7 +188,7 @@ export function AssistantWidget({ resolveLink, title = 'CRM Asistanı' }: Assist
 
           <div style={{ paddingTop: 12 }}>
             {attachmentName && (
-              <Tag closable onClose={() => { setAttachmentId(null); setAttachmentName(null); }} style={{ marginBottom: 8 }}>
+              <Tag className="entity-tag" closable onClose={() => { setAttachmentId(null); setAttachmentName(null); }} style={{ marginBottom: 8 }}>
                 📎 {attachmentName}
               </Tag>
             )}

@@ -1,7 +1,6 @@
 import { useMemo } from 'react';
 import { DatePicker, Form } from 'antd';
 import dayjs from 'dayjs';
-import 'dayjs/locale/tr';
 import {
   Controller,
   type Control,

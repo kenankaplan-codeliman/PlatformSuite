@@ -66,6 +66,11 @@ export function useCrmMenu(): MenuSchema {
       label: t("groups.settings"),
       icon: <SettingOutlined />,
       children: [
+        entityMenuItem(get("Organization")!, t, {
+          key: "orgs",
+          label: t("organizations"),
+          to: RoutePaths.OrganizationsList,
+        }),
         entityMenuItem(get("User")!, t, {
           label: t("users"),
           to: RoutePaths.AppUsersList,

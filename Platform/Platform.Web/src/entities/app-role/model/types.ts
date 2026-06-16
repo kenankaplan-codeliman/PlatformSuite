@@ -50,6 +50,8 @@ export interface AppRoleFormValues {
 export interface PrivilegeCatalogEntry {
   code: string;
   action: string;
+  /** DB'deki privilege_name — lokalizasyon yoksa yedek etiket. */
+  name: string;
 }
 
 export interface PrivilegeCatalogGroup {

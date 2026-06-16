@@ -163,7 +163,7 @@ export function AttachmentAddPanel({
             >
               {t('uploader.choose')}
             </Button>
-            <span style={{ fontSize: 12, color: selectedFile ? '#666' : '#999' }}>
+            <span style={{ color: selectedFile ? '#666' : '#999' }}>
               {selectedFile
                 ? `${selectedFile.name} (${Math.round(selectedFile.size / 1024)} KB)`
                 : t('uploader.dropHint')}

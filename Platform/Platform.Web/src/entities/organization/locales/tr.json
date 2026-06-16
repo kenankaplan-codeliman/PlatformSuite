@@ -5,7 +5,7 @@
     "organizationCode": { "label": "Birim Kodu", "placeholder": "Örn: HQ-001" },
     "organizationName": { "label": "Birim Adı", "placeholder": "Örn: Bilgi Teknolojileri" },
     "description": { "label": "Açıklama" },
-    "title": { "label": "Hiyerarşik Başlık" },
+    "title": { "label": "Hiyerarşik Başlık", "hint": "Üst birime göre otomatik oluşturulur." },
     "type": { "label": "Birim Tipi" },
     "costCenter": { "label": "Maliyet Merkezi" },
     "parentOrganization": { "label": "Üst Birim" },

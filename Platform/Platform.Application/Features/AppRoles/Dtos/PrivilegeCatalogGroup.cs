@@ -2,8 +2,8 @@ namespace Platform.Application.Features.AppRoles.Dtos;
 
 /// <summary>
 /// Bir entity'e ait tüm privilege code'larını gruplar. Rol detay ekranında
-/// "satır başı entity adı + yanında privilege listesi" görünümünü besler.
-/// Kaynak: <see cref="Platform.Domain.Authorization.PrivilegeRegistry.All"/>.
+/// satır = entity, kolon = eylem matrisini besler.
+/// Kaynak: auth_privilege tablosu (dinamik; statik PrivilegeRegistry değil).
 /// </summary>
 public class PrivilegeCatalogGroup
 {
@@ -18,4 +18,10 @@ public class PrivilegeCatalogEntry
 
     /// <summary>Entity sonrası eylem kısmı, ör. "Create".</summary>
     public string Action { get; set; } = default!;
+
+    /// <summary>
+    /// DB'deki privilege_name. Lokalizasyon anahtarı bulunmayan kodlarda
+    /// istemci tarafı yedek etiket olarak kullanılabilir.
+    /// </summary>
+    public string Name { get; set; } = default!;
 }

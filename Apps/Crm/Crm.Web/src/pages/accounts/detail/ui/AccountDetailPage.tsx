@@ -182,7 +182,7 @@ export function AccountDetailPage() {
   }) {
     const form = useFormContext<AccountFormValues>();
     return (
-      <FormSection title={tEntity("sections.general")} collapsible="expanded">
+      <FormSection title={tEntity("sections.general")}>
         <TextField
           name="accountName"
           control={form.control}
@@ -232,10 +232,18 @@ export function AccountDetailPage() {
     const form = useFormContext<AccountFormValues>();
     return (
       <>
-        <FormSection title={tEntity("sections.emails")} collapsible="expanded">
+        <FormSection
+          title={tEntity("sections.emails")}
+          collapsible="expanded"
+          flush
+        >
           <EmailField<AccountFormValues> control={form.control} name="emails" />
         </FormSection>
-        <FormSection title={tEntity("sections.phones")} collapsible="expanded">
+        <FormSection
+          title={tEntity("sections.phones")}
+          collapsible="expanded"
+          flush
+        >
           <PhoneField<AccountFormValues> control={form.control} name="phones" />
         </FormSection>
         <FormSection
@@ -312,7 +320,11 @@ export function AccountDetailPage() {
       ];
 
     return (
-      <FormSection title={tEntity("sections.contacts")} collapsible="expanded">
+      <FormSection
+        title={tEntity("sections.contacts")}
+        collapsible="expanded"
+        flush
+      >
         <TableField<AccountFormValues, AccountContactModal>
           control={form.control}
           name="contacts"

@@ -1,5 +1,10 @@
 import i18n from "i18next";
 import { initReactI18next } from "react-i18next";
+import dayjs from "dayjs";
+import "dayjs/locale/tr";
+
+// dayjs global locale — tüm DatePicker/Calendar/format çıktıları Türkçe.
+dayjs.locale("tr");
 
 // shared
 import commonTr from "../shared/locales/common/tr.json";

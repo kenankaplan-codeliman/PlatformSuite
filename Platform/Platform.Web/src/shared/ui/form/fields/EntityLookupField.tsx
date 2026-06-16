@@ -209,26 +209,9 @@ export function EntityLookupField<TValues extends FieldValues>({
                     }}
                     icon={Icon ? <Icon /> : undefined}
                     title={v.name}
-                    style={{
-                      marginRight: 0,
-                      maxWidth: '100%',
-                      display: 'inline-flex',
-                      alignItems: 'center',
-                      fontSize: 13,
-                      padding: '0 8px',
-                      cursor: href ? 'pointer' : 'default',
-                    }}
+                    className={href ? 'entity-tag entity-tag--link' : 'entity-tag'}
                   >
-                    <span
-                      style={{
-                        minWidth: 0,
-                        overflow: 'hidden',
-                        textOverflow: 'ellipsis',
-                        whiteSpace: 'nowrap',
-                      }}
-                    >
-                      {v.name}
-                    </span>
+                    <span className="entity-tag-label">{v.name}</span>
                   </Tag>
                 );
                 if (!href) {

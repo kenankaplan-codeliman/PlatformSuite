@@ -1,5 +1,6 @@
 import { useMemo } from 'react';
-import { useFormContext } from 'react-hook-form';
+import { Form } from 'antd';
+import { useFormContext, useWatch } from 'react-hook-form';
 import { useTranslation } from 'react-i18next';
 import { DetailPageLayout } from '../../../../shared/ui/detail-page/DetailPageLayout';
 import { FormSection } from '../../../../shared/ui/form/FormSection';
@@ -138,6 +139,22 @@ export function OrganizationDetailPage() {
 
   function HierarchySection() {
     const form = useFormContext<AppOrganizationFormValues>();
+    const organizationName = useWatch({ control: form.control, name: 'organizationName' });
+    const parentOrganization = useWatch({ control: form.control, name: 'parentOrganization' });
+
+    // Parent'ın hiyerarşik başlığı referansta yok (yalnız id + ad taşır); backend
+    // de `parent.Title ?? parent.OrganizationName` kullanıyor. Önizlemeyi backend'le
+    // birebir tutmak için parent kaydını çekip gerçek title'ını okuyoruz.
+    const parentQuery = useOrganizationQuery(parentOrganization?.id);
+    const parentTitle = parentQuery.data?.title ?? parentOrganization?.name ?? null;
+
+    const trimmedName = (organizationName ?? '').trim();
+    const previewTitle = trimmedName
+      ? parentTitle
+        ? `${parentTitle} \\ ${trimmedName}`
+        : trimmedName
+      : '';
+
     return (
       <FormSection title={tEntity('sections.hierarchy')}>
         <EntityLookupField
@@ -154,6 +171,9 @@ export function OrganizationDetailPage() {
           label={tEntity('fields.reportsTo.label')}
           allowClear
         />
+        <Form.Item label={tEntity('fields.title.label')} extra={tEntity('fields.title.hint')}>
+          <span style={{ color: 'rgba(0,0,0,0.85)' }}>{previewTitle || '—'}</span>
+        </Form.Item>
       </FormSection>
     );
   }

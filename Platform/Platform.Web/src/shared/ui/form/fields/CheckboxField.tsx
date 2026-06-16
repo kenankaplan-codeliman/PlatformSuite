@@ -50,7 +50,7 @@ export function CheckboxField<TValues extends FieldValues>({
         return (
           <Form.Item label={effectiveLabel} style={style}>
             {isViewMode ? (
-              <Tag color={checked ? 'blue' : 'default'}>
+              <Tag className="entity-tag" color={checked ? 'blue' : 'default'}>
                 {checked ? t('actions.yes', { defaultValue: 'Evet' }) : t('actions.no', { defaultValue: 'Hayır' })}
               </Tag>
             ) : (

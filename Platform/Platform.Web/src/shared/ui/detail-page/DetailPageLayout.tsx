@@ -299,6 +299,7 @@ function DetailPageLayoutInner<TValues extends FieldValues>({
             level={4}
             style={{
               margin: 0,
+              fontSize: 16,
               fontWeight: 600,
               color: "rgba(0, 0, 0, 0.88)",
             }}
@@ -310,7 +311,7 @@ function DetailPageLayoutInner<TValues extends FieldValues>({
             ) : (
               <>
                 {entityTypeLabel && (
-                  <span style={{ color: "rgba(0, 0, 0, 0.50)", fontWeight: 600 }}>
+                  <span style={{ color: "rgba(0, 0, 0, 0.50)" }}>
                     {entityTypeLabel}:{" "}
                   </span>
                 )}
@@ -324,7 +325,9 @@ function DetailPageLayoutInner<TValues extends FieldValues>({
 
       <FormModeProvider
         mode={mode}
-        isDirty={form.formState.isDirty || (attachmentsCollector?.isDirty ?? false)}
+        isDirty={
+          form.formState.isDirty || (attachmentsCollector?.isDirty ?? false)
+        }
       >
         <FormProvider {...form}>
           {tabs && tabs.length > 0 ? (
@@ -364,7 +367,10 @@ function DetailPageLayoutInner<TValues extends FieldValues>({
               ]}
             />
           ) : (
-            <form id="detail-page-form" onSubmit={form.handleSubmit(handleSubmit)}>
+            <form
+              id="detail-page-form"
+              onSubmit={form.handleSubmit(handleSubmit)}
+            >
               {children}
             </form>
           )}

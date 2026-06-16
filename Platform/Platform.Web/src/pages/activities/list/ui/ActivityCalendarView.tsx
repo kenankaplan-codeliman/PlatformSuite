@@ -3,7 +3,6 @@ import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 import type { Dayjs } from 'dayjs';
 import dayjs from 'dayjs';
-import 'dayjs/locale/tr';
 import {
   CheckSquareOutlined,
   LeftOutlined,
@@ -114,7 +113,6 @@ export function ActivityCalendarView({ filters }: ActivityCalendarViewProps) {
               overflow: 'hidden',
               whiteSpace: 'nowrap',
               textOverflow: 'ellipsis',
-              fontSize: 12,
               lineHeight: 1.4,
             }}
           >
@@ -134,7 +132,7 @@ export function ActivityCalendarView({ filters }: ActivityCalendarViewProps) {
           </div>
         ))}
         {items.length > MAX_VISIBLE_PER_DAY && (
-          <Text type="secondary" style={{ fontSize: 11 }}>
+          <Text type="secondary">
             + {items.length - MAX_VISIBLE_PER_DAY}
           </Text>
         )}

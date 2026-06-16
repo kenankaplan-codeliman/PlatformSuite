@@ -6,10 +6,7 @@ import { DetailPageLayout } from "@platform/ui";
 import { FormSection } from "@platform/ui";
 import { FormRow } from "@platform/ui";
 import { TextField } from "@platform/ui";
-import {
-  SelectField,
-  type SelectOption,
-} from "@platform/ui";
+import { SelectField, type SelectOption } from "@platform/ui";
 import { TextAreaField } from "@platform/ui";
 import { EntityLookupField } from "@platform/ui";
 import { CheckboxField } from "@platform/ui";
@@ -41,8 +38,7 @@ import {
 } from "../../../../entities/contact/model/documentTypes";
 import { RoutePaths } from "../../../../app/router/paths";
 
-const CONTACT_ATTACHMENT_ACCEPT =
-  ".pdf,.doc,.docx,.xls,.xlsx,.jpg,.jpeg,.png";
+const CONTACT_ATTACHMENT_ACCEPT = ".pdf,.doc,.docx,.xls,.xlsx,.jpg,.jpeg,.png";
 
 const emptyContact: ContactFormValues = {
   id: "",
@@ -176,7 +172,7 @@ export function ContactDetailPage() {
   }) {
     const form = useFormContext<ContactFormValues>();
     return (
-      <FormSection title={tEntity("sections.general")} collapsible="expanded">
+      <FormSection title={tEntity("sections.general")}>
         <FormRow>
           <TextField
             name="firstName"
@@ -211,13 +207,20 @@ export function ContactDetailPage() {
             maxLength={200}
           />
         </FormRow>
-        <SelectField<ContactFormValues>
-          name="contactStatus"
-          control={form.control}
-          label={tEntity("fields.contactStatus.label")}
-          options={statusOptions}
-          required
-        />
+        <FormRow>
+          <SelectField<ContactFormValues>
+            name="contactStatus"
+            control={form.control}
+            label={tEntity("fields.contactStatus.label")}
+            options={statusOptions}
+            required
+          />
+          <DateTimeField
+            name="birthDate"
+            control={form.control}
+            label={tEntity("fields.birthDate.label")}
+          />
+        </FormRow>
       </FormSection>
     );
   }
@@ -226,14 +229,28 @@ export function ContactDetailPage() {
     const form = useFormContext<ContactFormValues>();
     return (
       <>
-        <FormSection title={tEntity("sections.emails")} collapsible="expanded">
+        <FormSection
+          title={tEntity("sections.emails")}
+          collapsible="expanded"
+          flush
+        >
           <EmailField<ContactFormValues> control={form.control} name="emails" />
         </FormSection>
-        <FormSection title={tEntity("sections.phones")} collapsible="expanded">
+        <FormSection
+          title={tEntity("sections.phones")}
+          collapsible="expanded"
+          flush
+        >
           <PhoneField<ContactFormValues> control={form.control} name="phones" />
         </FormSection>
-        <FormSection title={tEntity("sections.addresses")} collapsible="expanded">
-          <AddressField<ContactFormValues> control={form.control} name="addresses" />
+        <FormSection
+          title={tEntity("sections.addresses")}
+          collapsible="expanded"
+        >
+          <AddressField<ContactFormValues>
+            control={form.control}
+            name="addresses"
+          />
         </FormSection>
       </>
     );
@@ -243,7 +260,11 @@ export function ContactDetailPage() {
     const form = useFormContext<ContactFormValues>();
 
     // IsPrimary tek-açık (radio davranışı): bir satır primary yapılınca diğerleri kapanır.
-    const enforceSinglePrimary = (rowIndex: number, field: string, value: unknown) => {
+    const enforceSinglePrimary = (
+      rowIndex: number,
+      field: string,
+      value: unknown,
+    ) => {
       if (field !== "isPrimary" || value !== true) return;
       const rows = form.getValues("accountContacts") ?? [];
       rows.forEach((_, i) => {
@@ -256,42 +277,51 @@ export function ContactDetailPage() {
       });
     };
 
-    const columns: TableFieldColumn<ContactFormValues, ContactAccountModal>[] = [
-      {
-        key: "account",
-        header: tEntity("accounts.nameColumn"),
-        width: "1fr",
-        render: ({ path }) => (
-          <EntityLookupField
-            name={path("account")}
-            control={form.control}
-            servicePath={ServicePath.Account.Search}
-            entityType="Account"
-            required
-          />
-        ),
-      },
-      {
-        key: "role",
-        header: tCommon("relation.role"),
-        width: "220px",
-        render: ({ path }) => (
-          <TextField name={path("role")} control={form.control} maxLength={200} />
-        ),
-      },
-      {
-        key: "isPrimary",
-        header: tCommon("relation.primary"),
-        width: "100px",
-        align: "center",
-        render: ({ path }) => (
-          <CheckboxField name={path("isPrimary")} control={form.control} />
-        ),
-      },
-    ];
+    const columns: TableFieldColumn<ContactFormValues, ContactAccountModal>[] =
+      [
+        {
+          key: "account",
+          header: tEntity("accounts.nameColumn"),
+          width: "1fr",
+          render: ({ path }) => (
+            <EntityLookupField
+              name={path("account")}
+              control={form.control}
+              servicePath={ServicePath.Account.Search}
+              entityType="Account"
+              required
+            />
+          ),
+        },
+        {
+          key: "role",
+          header: tCommon("relation.role"),
+          width: "220px",
+          render: ({ path }) => (
+            <TextField
+              name={path("role")}
+              control={form.control}
+              maxLength={200}
+            />
+          ),
+        },
+        {
+          key: "isPrimary",
+          header: tCommon("relation.primary"),
+          width: "100px",
+          align: "center",
+          render: ({ path }) => (
+            <CheckboxField name={path("isPrimary")} control={form.control} />
+          ),
+        },
+      ];
 
     return (
-      <FormSection title={tEntity("sections.accounts")} collapsible="expanded">
+      <FormSection
+        title={tEntity("sections.accounts")}
+        collapsible="expanded"
+        flush
+      >
         <TableField<ContactFormValues, ContactAccountModal>
           control={form.control}
           name="accountContacts"
@@ -313,11 +343,6 @@ export function ContactDetailPage() {
     const form = useFormContext<ContactFormValues>();
     return (
       <FormSection title={tEntity("sections.details")} collapsible="expanded">
-        <DateTimeField
-          name="birthDate"
-          control={form.control}
-          label={tEntity("fields.birthDate.label")}
-        />
         <TextAreaField
           name="description"
           control={form.control}

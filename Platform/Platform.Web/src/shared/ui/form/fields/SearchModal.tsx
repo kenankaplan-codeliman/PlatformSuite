@@ -341,6 +341,7 @@ export function SearchModal({
           {selected.map((s) => (
             <Tag
               key={s.id}
+              className="entity-tag"
               closable
               closeIcon={<CloseOutlined />}
               onClose={(e) => {
@@ -388,12 +389,16 @@ export function SearchModal({
                     <Space size={8}>
                       {itemIcon}
                       <span style={{ fontWeight: 500 }}>{item.name}</span>
-                      {sel && <Tag color="blue">{t("messages.selected")}</Tag>}
+                      {sel && (
+                        <Tag className="entity-tag" color="blue">
+                          {t("messages.selected")}
+                        </Tag>
+                      )}
                     </Space>
                   }
                   description={
                     item.email || item.phone ? (
-                      <span style={{ fontSize: 12, color: "rgba(0,0,0,0.45)" }}>
+                      <span style={{ color: "rgba(0,0,0,0.45)" }}>
                         {item.email ?? item.phone}
                       </span>
                     ) : null
