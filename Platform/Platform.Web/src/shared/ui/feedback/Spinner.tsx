@@ -1,17 +1,22 @@
-import { Spin } from 'antd';
-import type { ReactNode } from 'react';
+import { Spin } from "antd";
+import type { ReactNode } from "react";
 
 export interface SpinnerProps {
   spinning?: boolean;
   tip?: string;
-  size?: 'small' | 'default' | 'large';
+  size?: "small" | "medium" | "large";
   children?: ReactNode;
 }
 
-export function Spinner({ spinning = true, tip, size = 'default', children }: SpinnerProps) {
+export function Spinner({
+  spinning = true,
+  tip,
+  size = "medium",
+  children,
+}: SpinnerProps) {
   if (children) {
     return (
-      <Spin spinning={spinning} tip={tip} size={size}>
+      <Spin spinning={spinning} description={tip} size={size}>
         {children}
       </Spin>
     );
@@ -19,14 +24,14 @@ export function Spinner({ spinning = true, tip, size = 'default', children }: Sp
   return (
     <div
       style={{
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        width: '100%',
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        width: "100%",
         minHeight: 160,
       }}
     >
-      <Spin spinning={spinning} tip={tip} size={size} />
+      <Spin spinning={spinning} description={tip} size={size} />
     </div>
   );
 }

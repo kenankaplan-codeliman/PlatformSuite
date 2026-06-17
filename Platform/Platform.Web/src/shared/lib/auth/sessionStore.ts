@@ -13,7 +13,7 @@ interface SessionState {
 }
 
 export const useSessionStore = create<SessionState>((set) => ({
-  isAuthenticated: tokenStorage.get() !== null,
+  isAuthenticated: tokenStorage.hasLiveSession(),
   setAuthenticated: (tokens) => {
     tokenStorage.set(tokens);
     set({ isAuthenticated: true });

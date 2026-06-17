@@ -18,7 +18,7 @@ public static class AccountMappings
             .Map(d => d.Contact, s => new EntityReference(nameof(Contact))
             {
                 Id = s.ContactId,
-                Name = s.Contact != null ? s.Contact.DisplayName : null,
+                Name = s.Contact != null ? s.Contact.DisplayName : string.Empty,
             });
 
         // ========= Account → Detail =========

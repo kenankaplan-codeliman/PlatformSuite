@@ -1,15 +1,35 @@
-import { useRef, useState } from 'react';
-import { Link } from 'react-router-dom';
-import { Button, Card, Drawer, FloatButton, Input, Space, Spin, Tag, Typography, message } from 'antd';
-import { PaperClipOutlined, RobotOutlined, SendOutlined } from '@ant-design/icons';
-import { attachmentDataSource } from '../../../entities/attachment/api/attachmentDataSource';
-import { useCurrentUserQuery } from '../../../entities/user/api/useCurrentUserQuery';
-import { hasPrivilege } from '../../../entities/user/lib/privileges';
-import { assistantDataSource } from '../api/assistantDataSource';
-import { useAssistantChat } from '../api/useAssistantChat';
-import type { AssistantTurn, ChatMessage, PendingAction, ResolveLink } from '../model/types';
+import { useRef, useState } from "react";
+import { Link } from "react-router-dom";
+import {
+  Button,
+  Card,
+  Drawer,
+  FloatButton,
+  Input,
+  Space,
+  Spin,
+  Tag,
+  Typography,
+  message,
+} from "antd";
+import {
+  PaperClipOutlined,
+  RobotOutlined,
+  SendOutlined,
+} from "@ant-design/icons";
+import { attachmentDataSource } from "../../../entities/attachment/api/attachmentDataSource";
+import { useCurrentUserQuery } from "../../../entities/user/api/useCurrentUserQuery";
+import { hasPrivilege } from "../../../entities/user/lib/privileges";
+import { assistantDataSource } from "../api/assistantDataSource";
+import { useAssistantChat } from "../api/useAssistantChat";
+import type {
+  AssistantTurn,
+  ChatMessage,
+  PendingAction,
+  ResolveLink,
+} from "../model/types";
 
-const ASSISTANT_USE_PRIVILEGE = 'Assistant.Use';
+const ASSISTANT_USE_PRIVILEGE = "Assistant.Use";
 
 export interface AssistantWidgetProps {
   /** entityType + id → app route. Verilmezse linkler düz metin gösterilir. */
@@ -18,15 +38,18 @@ export interface AssistantWidgetProps {
 }
 
 const newId = () =>
-  typeof crypto !== 'undefined' && 'randomUUID' in crypto
+  typeof crypto !== "undefined" && "randomUUID" in crypto
     ? crypto.randomUUID()
     : `${Date.now()}-${Math.round(Math.random() * 1e6)}`;
 
-export function AssistantWidget({ resolveLink, title = 'CRM Asistanı' }: AssistantWidgetProps) {
+export function AssistantWidget({
+  resolveLink,
+  title = "CRM Asistanı",
+}: AssistantWidgetProps) {
   const [open, setOpen] = useState(false);
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [history, setHistory] = useState<AssistantTurn[]>([]);
-  const [input, setInput] = useState('');
+  const [input, setInput] = useState("");
   const [attachmentId, setAttachmentId] = useState<string | null>(null);
   const [attachmentName, setAttachmentName] = useState<string | null>(null);
   const [uploading, setUploading] = useState(false);
@@ -37,26 +60,35 @@ export function AssistantWidget({ resolveLink, title = 'CRM Asistanı' }: Assist
   const listRef = useRef<HTMLDivElement>(null);
   const chat = useAssistantChat();
   const { data: currentUser } = useCurrentUserQuery();
-  const canUseAssistant = hasPrivilege(ASSISTANT_USE_PRIVILEGE, currentUser?.privileges);
+  const canUseAssistant = hasPrivilege(
+    ASSISTANT_USE_PRIVILEGE,
+    currentUser?.privileges,
+  );
 
   const scrollToBottom = () => {
     requestAnimationFrame(() => {
-      if (listRef.current) listRef.current.scrollTop = listRef.current.scrollHeight;
+      if (listRef.current)
+        listRef.current.scrollTop = listRef.current.scrollHeight;
     });
   };
 
-  const handleFileChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileChange = async (
+    event: React.ChangeEvent<HTMLInputElement>,
+  ) => {
     const file = event.target.files?.[0];
-    event.target.value = '';
+    event.target.value = "";
     if (!file) return;
 
     setUploading(true);
     try {
-      const meta = await attachmentDataSource.uploadDraft({ file, documentType: 'AssistantUpload' });
+      const meta = await attachmentDataSource.uploadDraft({
+        file,
+        documentType: "AssistantUpload",
+      });
       setAttachmentId(meta.id);
       setAttachmentName(file.name);
     } catch {
-      message.error('Dosya yüklenemedi.');
+      message.error("Dosya yüklenemedi.");
     } finally {
       setUploading(false);
     }
@@ -68,11 +100,11 @@ export function AssistantWidget({ resolveLink, title = 'CRM Asistanı' }: Assist
 
     const userMessage: ChatMessage = {
       id: newId(),
-      role: 'user',
+      role: "user",
       text: attachmentName ? `${text}\n📎 ${attachmentName}`.trim() : text,
     };
     setMessages((prev) => [...prev, userMessage]);
-    setInput('');
+    setInput("");
     setPendingActions([]); // önceki bekleyen onayları temizle
     const sentAttachmentId = attachmentId;
     setAttachmentId(null);
@@ -88,13 +120,23 @@ export function AssistantWidget({ resolveLink, title = 'CRM Asistanı' }: Assist
       setHistory(response.history);
       setMessages((prev) => [
         ...prev,
-        { id: newId(), role: 'assistant', text: response.reply, links: response.links },
+        {
+          id: newId(),
+          role: "assistant",
+          text: response.reply,
+          links: response.links,
+        },
       ]);
       setPendingActions(response.pendingActions ?? []);
     } catch {
       setMessages((prev) => [
         ...prev,
-        { id: newId(), role: 'assistant', text: 'Bir hata oluştu, lütfen tekrar deneyin.', isError: true },
+        {
+          id: newId(),
+          role: "assistant",
+          text: "Bir hata oluştu, lütfen tekrar deneyin.",
+          isError: true,
+        },
       ]);
     } finally {
       scrollToBottom();
@@ -107,11 +149,17 @@ export function AssistantWidget({ resolveLink, title = 'CRM Asistanı' }: Assist
       const res = await assistantDataSource.confirm(action.token);
       setMessages((prev) => [
         ...prev,
-        { id: newId(), role: 'assistant', text: res.reply, links: res.links, isError: res.isError },
+        {
+          id: newId(),
+          role: "assistant",
+          text: res.reply,
+          links: res.links,
+          isError: res.isError,
+        },
       ]);
       setPendingActions((prev) => prev.filter((p) => p.token !== action.token));
     } catch {
-      message.error('İşlem onaylanamadı (onay süresi dolmuş olabilir).');
+      message.error("İşlem onaylanamadı (onay süresi dolmuş olabilir).");
     } finally {
       setConfirming((s) => {
         const n = new Set(s);
@@ -124,7 +172,10 @@ export function AssistantWidget({ resolveLink, title = 'CRM Asistanı' }: Assist
 
   const handleReject = (action: PendingAction) => {
     setPendingActions((prev) => prev.filter((p) => p.token !== action.token));
-    setMessages((prev) => [...prev, { id: newId(), role: 'assistant', text: 'İşlem iptal edildi.' }]);
+    setMessages((prev) => [
+      ...prev,
+      { id: newId(), role: "assistant", text: "İşlem iptal edildi." },
+    ]);
   };
 
   // Assistant.Use yetkisi yoksa ikon hiç gösterilmez (backend de endpoint'leri
@@ -140,30 +191,50 @@ export function AssistantWidget({ resolveLink, title = 'CRM Asistanı' }: Assist
         onClick={() => setOpen(true)}
       />
 
-      <Drawer title={title} open={open} onClose={() => setOpen(false)} width={440} destroyOnHidden={false}>
-        <div style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
-          <div ref={listRef} style={{ flex: 1, overflowY: 'auto', paddingRight: 4 }}>
+      <Drawer
+        title={title}
+        open={open}
+        onClose={() => setOpen(false)}
+        size={440}
+        destroyOnHidden={false}
+      >
+        <div
+          style={{ display: "flex", flexDirection: "column", height: "100%" }}
+        >
+          <div
+            ref={listRef}
+            style={{ flex: 1, overflowY: "auto", paddingRight: 4 }}
+          >
             {messages.length === 0 && (
               <Typography.Paragraph type="secondary">
-                Kartvizit görseli veya CSV yükleyebilir, analitik soru sorabilir ya da kayıt
-                arayabilirsiniz.
+                Kartvizit görseli veya CSV yükleyebilir, analitik soru sorabilir
+                ya da kayıt arayabilirsiniz.
               </Typography.Paragraph>
             )}
 
-            <Space direction="vertical" size={10} style={{ width: '100%' }}>
+            <Space orientation="vertical" size={10} style={{ width: "100%" }}>
               {messages.map((m) => (
-                <MessageBubble key={m.id} message={m} resolveLink={resolveLink} />
+                <MessageBubble
+                  key={m.id}
+                  message={m}
+                  resolveLink={resolveLink}
+                />
               ))}
               {chat.isPending && (
-                <div style={{ textAlign: 'left' }}>
-                  <Spin size="small" /> <Typography.Text type="secondary">Yazıyor…</Typography.Text>
+                <div style={{ textAlign: "left" }}>
+                  <Spin size="small" />{" "}
+                  <Typography.Text type="secondary">Yazıyor…</Typography.Text>
                 </div>
               )}
 
               {pendingActions.map((action) => (
-                <Card key={action.token} size="small" style={{ borderColor: '#faad14', background: '#fffbe6' }}>
+                <Card
+                  key={action.token}
+                  size="small"
+                  style={{ borderColor: "#faad14", background: "#fffbe6" }}
+                >
                   <Typography.Text strong>Onay gerekiyor</Typography.Text>
-                  <div style={{ margin: '4px 0 8px' }}>{action.summary}</div>
+                  <div style={{ margin: "4px 0 8px" }}>{action.summary}</div>
                   <Space>
                     <Button
                       type="primary"
@@ -188,11 +259,19 @@ export function AssistantWidget({ resolveLink, title = 'CRM Asistanı' }: Assist
 
           <div style={{ paddingTop: 12 }}>
             {attachmentName && (
-              <Tag className="entity-tag" closable onClose={() => { setAttachmentId(null); setAttachmentName(null); }} style={{ marginBottom: 8 }}>
+              <Tag
+                className="entity-tag"
+                closable
+                onClose={() => {
+                  setAttachmentId(null);
+                  setAttachmentName(null);
+                }}
+                style={{ marginBottom: 8 }}
+              >
                 📎 {attachmentName}
               </Tag>
             )}
-            <Space.Compact style={{ width: '100%' }}>
+            <Space.Compact style={{ width: "100%" }}>
               <Button
                 icon={<PaperClipOutlined />}
                 loading={uploading}
@@ -223,7 +302,7 @@ export function AssistantWidget({ resolveLink, title = 'CRM Asistanı' }: Assist
               type="file"
               accept="image/*,.csv"
               capture="environment"
-              style={{ display: 'none' }}
+              style={{ display: "none" }}
               onChange={handleFileChange}
             />
           </div>
@@ -233,25 +312,38 @@ export function AssistantWidget({ resolveLink, title = 'CRM Asistanı' }: Assist
   );
 }
 
-function MessageBubble({ message: m, resolveLink }: { message: ChatMessage; resolveLink?: ResolveLink }) {
-  const isUser = m.role === 'user';
+function MessageBubble({
+  message: m,
+  resolveLink,
+}: {
+  message: ChatMessage;
+  resolveLink?: ResolveLink;
+}) {
+  const isUser = m.role === "user";
   return (
-    <div style={{ textAlign: isUser ? 'right' : 'left' }}>
+    <div style={{ textAlign: isUser ? "right" : "left" }}>
       <div
         style={{
-          display: 'inline-block',
-          maxWidth: '85%',
-          textAlign: 'left',
-          padding: '8px 12px',
+          display: "inline-block",
+          maxWidth: "85%",
+          textAlign: "left",
+          padding: "8px 12px",
           borderRadius: 10,
-          whiteSpace: 'pre-wrap',
-          background: isUser ? '#1677ff' : m.isError ? '#fff1f0' : '#f5f5f5',
-          color: isUser ? '#fff' : m.isError ? '#cf1322' : 'inherit',
+          whiteSpace: "pre-wrap",
+          background: isUser ? "#1677ff" : m.isError ? "#fff1f0" : "#f5f5f5",
+          color: isUser ? "#fff" : m.isError ? "#cf1322" : "inherit",
         }}
       >
         {m.text}
         {m.links && m.links.length > 0 && (
-          <div style={{ marginTop: 8, display: 'flex', flexDirection: 'column', gap: 4 }}>
+          <div
+            style={{
+              marginTop: 8,
+              display: "flex",
+              flexDirection: "column",
+              gap: 4,
+            }}
+          >
             {m.links.map((link) => {
               const href = resolveLink?.(link.entityType, link.id);
               return href ? (

@@ -151,6 +151,13 @@ export { Button, type ButtonProps } from './shared/ui/Button';
 export { Card, type CardProps } from './shared/ui/Card';
 export { Space, type SpaceProps } from './shared/ui/Space';
 export { Title, Text, type TitleProps, type TextProps } from './shared/ui/Typography';
+export { Modal, type ModalProps } from './shared/ui/Modal';
+export {
+  RadioGroup,
+  type RadioGroupProps,
+  type RadioOption,
+} from './shared/ui/Radio';
+export { Checkbox, type CheckboxProps } from './shared/ui/Checkbox';
 export { Dropdown, type DropdownItem } from './shared/ui/Dropdown';
 export { DataTable, type DataTableColumn } from './shared/ui/DataTable';
 export { Alert } from './shared/ui/feedback/Alert';

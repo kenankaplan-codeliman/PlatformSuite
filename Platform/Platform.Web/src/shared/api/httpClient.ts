@@ -32,8 +32,22 @@ export const httpClient: AxiosInstance = axios.create({
   },
 });
 
-httpClient.interceptors.request.use((config) => {
-  const token = tokenStorage.getAccessToken();
+httpClient.interceptors.request.use(async (config) => {
+  // Login/refresh kendi token mantığını taşır; bunlara header iliştirme/yenileme yapma.
+  const url = config.url ?? '';
+  if (url.includes(ServicePath.Auth.Login) || url.includes(ServicePath.Auth.Refresh)) {
+    return config;
+  }
+
+  let token = tokenStorage.getAccessToken();
+
+  // Access token süresi geçmiş ama oturum canlıysa, isteği göndermeden ÖNCE yenile.
+  // Böylece sayfa açılışında ölü token'la doomed 401 yağmuru atılmaz; paralel
+  // istekler `refreshInFlight` üzerinden tek bir refresh'i bekler.
+  if (tokenStorage.isAccessTokenExpired() && tokenStorage.hasLiveSession()) {
+    token = (await tryRefreshAccessToken()) ?? token;
+  }
+
   if (token) {
     config.headers.set('Authorization', `Bearer ${token}`);
   }

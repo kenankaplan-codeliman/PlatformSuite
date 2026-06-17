@@ -1,8 +1,12 @@
 import { useState } from 'react';
-import { useForm } from 'react-hook-form';
+import { useForm, useWatch } from 'react-hook-form';
 import { useTranslation } from 'react-i18next';
-import { Modal, Radio, Checkbox, Space, Typography } from 'antd';
 import {
+  Modal,
+  RadioGroup,
+  Checkbox,
+  Space,
+  Text,
   EntityLookupField,
   ServicePath,
   messageBox,
@@ -39,10 +43,10 @@ export function ConvertLeadDialog({ open, onClose, leadId }: ConvertLeadDialogPr
   const [createContact, setCreateContact] = useState(true);
   const [createOpportunity, setCreateOpportunity] = useState(false);
 
-  const { control, watch, reset } = useForm<AccountLookupForm>({
+  const { control, reset } = useForm<AccountLookupForm>({
     defaultValues: { existingAccount: null },
   });
-  const existingAccount = watch('existingAccount');
+  const existingAccount = useWatch({ control, name: 'existingAccount' });
 
   const close = () => {
     reset({ existingAccount: null });
@@ -94,20 +98,20 @@ export function ConvertLeadDialog({ open, onClose, leadId }: ConvertLeadDialogPr
     >
       <Space direction="vertical" size="middle" style={{ width: '100%' }}>
         <div>
-          <Typography.Text strong>{t('convert.accountSection')}</Typography.Text>
-          <Radio.Group
+          <Text strong>{t('convert.accountSection')}</Text>
+          <RadioGroup<AccountMode>
             value={accountMode}
-            onChange={(e) => {
-              const next = e.target.value as AccountMode;
+            onChange={(next) => {
               setAccountMode(next);
               if (next === 'none') setCreateOpportunity(false);
             }}
-            style={{ display: 'flex', flexDirection: 'column', gap: 4, marginTop: 8 }}
-          >
-            <Radio value="create">{t('convert.account.create')}</Radio>
-            <Radio value="link">{t('convert.account.link')}</Radio>
-            <Radio value="none">{t('convert.account.none')}</Radio>
-          </Radio.Group>
+            style={{ marginTop: 8 }}
+            options={[
+              { value: 'create', label: t('convert.account.create') },
+              { value: 'link', label: t('convert.account.link') },
+              { value: 'none', label: t('convert.account.none') },
+            ]}
+          />
           {accountMode === 'link' && (
             <div style={{ marginTop: 8 }}>
               <EntityLookupField<AccountLookupForm>
@@ -123,17 +127,14 @@ export function ConvertLeadDialog({ open, onClose, leadId }: ConvertLeadDialogPr
           )}
         </div>
 
-        <Checkbox
-          checked={createContact}
-          onChange={(e) => setCreateContact(e.target.checked)}
-        >
+        <Checkbox checked={createContact} onChange={setCreateContact}>
           {t('convert.createContact')}
         </Checkbox>
 
         <Checkbox
           checked={createOpportunity}
           disabled={opportunityDisabled}
-          onChange={(e) => setCreateOpportunity(e.target.checked)}
+          onChange={setCreateOpportunity}
         >
           {t('convert.createOpportunity')}
         </Checkbox>

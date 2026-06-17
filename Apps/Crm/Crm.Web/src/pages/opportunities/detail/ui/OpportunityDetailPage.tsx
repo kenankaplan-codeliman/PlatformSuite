@@ -7,7 +7,6 @@ import {
   DateTimeField,
   DetailPageLayout,
   EntityLookupField,
-  FormColumn,
   FormRow,
   FormSection,
   NumberField,

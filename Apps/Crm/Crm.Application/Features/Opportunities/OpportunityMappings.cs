@@ -18,7 +18,7 @@ public static class OpportunityMappings
             .Map(d => d.Product, s => new EntityReference(nameof(Crm.Domain.Entities.Products.Product))
             {
                 Id = s.ProductId,
-                Name = s.Product != null ? s.Product.Name : null,
+                Name = s.Product != null ? s.Product.Name : string.Empty,
             })
             .Map(d => d.LineTotal, s => s.LineTotal)
             .Map(d => d.NetAmount, s => s.NetAmount);

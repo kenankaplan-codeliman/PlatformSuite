@@ -7,6 +7,7 @@ import {
   type FieldArray,
   type FieldPath,
   type FieldValues,
+  type PathValue,
 } from "react-hook-form";
 import { DeleteOutlined, PlusOutlined } from "@ant-design/icons";
 import {
@@ -131,9 +132,10 @@ function AddressRow<TValues extends FieldValues>({
     | null
     | undefined;
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const clear = (sub: string) =>
-    setValue(path(sub), null as any, { shouldDirty: true });
+    setValue(path(sub), null as PathValue<TValues, FieldPath<TValues>>, {
+      shouldDirty: true,
+    });
 
   const resetDistrict = () => {
     clear("districtCode");

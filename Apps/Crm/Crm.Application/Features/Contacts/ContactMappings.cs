@@ -18,7 +18,7 @@ public static class ContactMappings
             .Map(d => d.Account, s => new EntityReference(nameof(Account))
             {
                 Id = s.AccountId,
-                Name = s.Account != null ? s.Account.AccountName : null,
+                Name = s.Account != null ? s.Account.AccountName : string.Empty,
             });
 
         // ========= Contact → Detail =========
@@ -40,7 +40,7 @@ public static class ContactMappings
                            Account = new EntityReference(nameof(Account))
                            {
                                Id = ac.AccountId,
-                               Name = ac.Account != null ? ac.Account.AccountName : null,
+                               Name = ac.Account != null ? ac.Account.AccountName : string.Empty,
                            },
                            Role = ac.Role,
                            IsPrimary = ac.IsPrimary,

@@ -43,4 +43,21 @@ export const tokenStorage = {
   getAccessToken(): string | null {
     return localStorage.getItem(STORAGE_KEYS.accessToken);
   },
+
+  /** Access token süresi geçmiş mi? (yoksa "geçmiş" sayılır.) */
+  isAccessTokenExpired(): boolean {
+    const expireAt = localStorage.getItem(STORAGE_KEYS.accessTokenExpireAt);
+    if (!expireAt) return true;
+    return new Date(expireAt).getTime() <= Date.now();
+  },
+
+  /**
+   * Oturum hâlâ canlı mı? Access token kısa ömürlü olabilir; gerçek "giriş yapılmış"
+   * sinyali refresh token'ın süresinin geçmemiş olmasıdır (interceptor access'i yeniler).
+   */
+  hasLiveSession(): boolean {
+    const tokens = this.get();
+    if (!tokens) return false;
+    return new Date(tokens.refreshTokenExpireAt).getTime() > Date.now();
+  },
 };

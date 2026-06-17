@@ -1,24 +1,33 @@
-import { Card as AntCard, type CardProps as AntCardProps } from 'antd';
-import type { ReactNode } from 'react';
+import { Card as AntCard, type CardProps as AntCardProps } from "antd";
+import type { ReactNode } from "react";
 
 export interface CardProps {
   title?: ReactNode;
   extra?: ReactNode;
   children?: ReactNode;
-  bordered?: boolean;
-  size?: 'default' | 'small';
+  variant?: "borderless" | "outlined";
+  size?: "default" | "small";
   className?: string;
   style?: React.CSSProperties;
   /** antd Card slot stilleri (örn. header arka planı). */
-  styles?: AntCardProps['styles'];
+  styles?: AntCardProps["styles"];
 }
 
-export function Card({ title, extra, children, bordered = true, size, className, style, styles }: CardProps) {
+export function Card({
+  title,
+  extra,
+  children,
+  variant = "outlined",
+  size,
+  className,
+  style,
+  styles,
+}: CardProps) {
   return (
     <AntCard
       title={title}
       extra={extra}
-      bordered={bordered}
+      variant={variant}
       size={size}
       className={className}
       style={style}
