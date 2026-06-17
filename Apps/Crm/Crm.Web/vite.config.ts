@@ -20,7 +20,8 @@ export default defineConfig({
     exclude: ['@platform/ui'],
   },
   server: {
-    port: 7180,
+    port: 7200,
+    strictPort: true,
     proxy: {
       '/api': { target: 'http://localhost:7100', changeOrigin: true },
       '/auth': { target: 'http://localhost:7100', changeOrigin: true },

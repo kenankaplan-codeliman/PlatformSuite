@@ -6,7 +6,7 @@
 # context'iyle dahil eder.
 #
 # Host portları (CodePro ile çakışmaz, 80/443 doğrudan kullanılmaz):
-#   nginx 9080 / db 54321 / es 9201 / kibana 5601
+#   nginx-web 7200 / nginx-api 7100 / db 54321 / es 9201 / kibana 5601
 #
 # Kullanım (Apps/Crm/ klasöründen çalıştır):
 #   cd Apps/Crm
@@ -26,7 +26,8 @@ services:
     image: nginx:1.27-alpine
     container_name: crm-nginx
     ports:
-      - "${CRM_NGINX_HOST_PORT:-9080}:80"
+      - "${CRM_WEB_HOST_PORT:-7200}:80"
+      - "${CRM_API_HOST_PORT:-7100}:8080"
     volumes:
       - ./docker/nginx/nginx.conf:/etc/nginx/nginx.conf:ro
       - ./docker/nginx/conf.d:/etc/nginx/conf.d:ro

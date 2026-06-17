@@ -6,7 +6,7 @@ Repo'daki `Platform/*` projeleri kütüphane olarak kullanılır; Dockerfile'lar
 
 > **Port şeması:** CodePro, CRM ile aynı host'ta çakışmasın diye sabit port'lar kullanır. Hiçbir servis 80/443'e doğrudan bind etmez — prod'da harici reverse proxy / load balancer öne konur. Tüm host portları `.env` üzerinden override edilebilir.
 >
-> nginx **9081** / db **54322** / es **9211** / kibana **5611** / api dev **7110/7111** / web dev **7181**
+> nginx web **8200** / nginx api **8100** / db **54322** / es **9211** / kibana **5611** / api dev **8100** (HTTP) / web dev **8200**
 
 ---
 
@@ -131,10 +131,9 @@ psql -h localhost -p 54322 -U <user> -d codepro_db
 
 | Servis | URL |
 |---|---|
-| Frontend (Vite) | http://localhost:7181 |
-| API | http://localhost:7110 |
-| API (HTTPS) | https://localhost:7111 |
-| Swagger | http://localhost:7110/swagger |
+| Frontend (Vite) | http://localhost:8200 |
+| API | http://localhost:8100 |
+| Swagger | http://localhost:8100/swagger |
 | PostgreSQL | localhost:54322 (override) |
 
 > Vite, `/api` ve `/auth` path'lerini API'ye proxy'liyor — browser'dan tek URL yeter.
@@ -143,10 +142,11 @@ psql -h localhost -p 54322 -U <user> -d codepro_db
 
 | Servis | URL |
 |---|---|
-| Web (nginx) | http://localhost:9081 |
-| API (nginx üzerinden) | http://localhost:9081/api |
-| Swagger | http://localhost:9081/api/swagger (override `Development` aktifken) |
-| Kibana | http://localhost:9081/kibana |
+| Web (nginx) | http://localhost:8200 |
+| API (nginx, doğrudan) | http://localhost:8100 |
+| API (web üzerinden, same-origin) | http://localhost:8200/api |
+| Swagger | http://localhost:8200/api/swagger (override `Development` aktifken) |
+| Kibana | http://localhost:8200/kibana |
 | Elasticsearch | http://localhost:9211 |
 | PostgreSQL | localhost:54322 (override) |
 
@@ -154,13 +154,13 @@ psql -h localhost -p 54322 -U <user> -d codepro_db
 
 | Servis | URL |
 |---|---|
-| Web | https://codepro.\<prod-domain\> (harici reverse proxy → http://\<host\>:9081) |
+| Web | https://codepro.\<prod-domain\> (harici reverse proxy → http://\<host\>:8200) |
 | API | https://codepro.\<prod-domain\>/api |
 | Kibana | https://codepro.\<prod-domain\>/kibana (kısıtlı erişim) |
 | Swagger | **Yok** (Production modunda kapalı) |
 | PostgreSQL | Dışarıdan erişim **yok** (internal network) |
 
-> Container nginx 80/443 değil **9081**'i bind eder. SSL termination ve `:80`/`:443` yayını **harici reverse proxy** (haproxy, traefik, sunucu nginx'i, ya da cloud LB) sorumluluğundadır.
+> Container nginx 80/443 değil iç port'ları **80** (web) + **8080** (api) dinler; host'ta **8200** (web) / **8100** (api) port'larına map'lenir. SSL termination ve `:80`/`:443` yayını **harici reverse proxy** (haproxy, traefik, sunucu nginx'i, ya da cloud LB) sorumluluğundadır.
 
 ---
 
@@ -233,8 +233,8 @@ gunzip -c codepro_<tarih>.sql.gz | docker compose exec -T codepro-db psql -U $PO
 | `Connection to localhost:54322 refused` | DB container yok ya da override uygulanmadı → `docker compose up -d --force-recreate codepro-db` |
 | Container'da Swagger 404 | Override yoksa container `Production` modunda; override'ı oluştur, recreate |
 | `port is already allocated` | CRM 54321'i tutmuş olabilir, ya da başka servis 54322'yi (`lsof -i :54322`) → birini kapat ya da `.env`'de port değiştir |
-| Vite 7181 yerine farklı port'ta açılıyor | `vite.config.ts` içindeki `port: 7181` çakışmış → o porttaki process'i kapat |
-| API 7110 yerine 5010'da başlıyor | Eski cache → IDE'yi yeniden başlat, `.vscode/launch.json` ve `launchSettings.json` doğru olduğunu doğrula |
+| Vite 8200 yerine farklı port'ta açılıyor | `vite.config.ts` içindeki `port: 8200` çakışmış → o porttaki process'i kapat |
+| API 8100 yerine farklı port'ta başlıyor | Eski cache → IDE'yi yeniden başlat, `.vscode/launch.json` ve `launchSettings.json` doğru olduğunu doğrula |
 | ES sağlık kontrolü kırmızı | `ES_JAVA_OPTS` belleği yetmiyor → compose'da `-Xmx` artır |
 
 ---

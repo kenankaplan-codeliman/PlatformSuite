@@ -6,7 +6,7 @@ Repo'daki `Platform/*` projeleri kütüphane olarak kullanılır; Dockerfile'lar
 
 > **Port şeması:** CRM, CodePro ile aynı host'ta çakışmasın diye sabit port'lar kullanır. Hiçbir servis 80/443'e doğrudan bind etmez — prod'da harici reverse proxy / load balancer öne konur. Tüm host portları `.env` üzerinden override edilebilir.
 >
-> nginx **9080** / db **54321** / es **9201** / kibana **5601** / api dev **7100/7101** / web dev **7180**
+> nginx web **7200** / nginx api **7100** / db **54321** / es **9201** / kibana **5601** / api dev **7100** (HTTP) / web dev **7200**
 
 ---
 
@@ -129,9 +129,8 @@ psql -h localhost -p 54321 -U <user> -d crm_db
 
 | Servis | URL |
 |---|---|
-| Frontend (Vite) | http://localhost:7180 |
+| Frontend (Vite) | http://localhost:7200 |
 | API | http://localhost:7100 |
-| API (HTTPS) | https://localhost:7101 |
 | Swagger | http://localhost:7100/swagger |
 | PostgreSQL | localhost:54321 (override gerekli) |
 
@@ -141,10 +140,11 @@ psql -h localhost -p 54321 -U <user> -d crm_db
 
 | Servis | URL |
 |---|---|
-| Web (nginx) | http://localhost:9080 |
-| API (nginx üzerinden) | http://localhost:9080/api |
+| Web (nginx) | http://localhost:7200 |
+| API (nginx, doğrudan) | http://localhost:7100 |
+| API (web üzerinden, same-origin) | http://localhost:7200/api |
 | Swagger | **Yok** (container `Production` modunda; override ile `Development` yaparsan açılır) |
-| Kibana | http://localhost:9080/kibana |
+| Kibana | http://localhost:7200/kibana |
 | Elasticsearch | http://localhost:9201 |
 | PostgreSQL | localhost:54321 (override gerekli) |
 
@@ -152,13 +152,13 @@ psql -h localhost -p 54321 -U <user> -d crm_db
 
 | Servis | URL |
 |---|---|
-| Web | https://crm.\<prod-domain\> (harici reverse proxy → http://\<host\>:9080) |
+| Web | https://crm.\<prod-domain\> (harici reverse proxy → http://\<host\>:7200) |
 | API | https://crm.\<prod-domain\>/api |
 | Kibana | https://crm.\<prod-domain\>/kibana (kısıtlı erişim) |
 | Swagger | **Yok** (Production modunda kapalı) |
 | PostgreSQL | Dışarıdan erişim **yok** (internal network) |
 
-> Container nginx 80/443 değil **9080**'i bind eder. SSL termination ve `:80`/`:443` yayını **harici reverse proxy** (haproxy, traefik, sunucu nginx'i, ya da cloud LB) sorumluluğundadır.
+> Container nginx 80/443 değil iç port'ları **80** (web) + **8080** (api) dinler; host'ta **7200** (web) / **7100** (api) port'larına map'lenir. SSL termination ve `:80`/`:443` yayını **harici reverse proxy** (haproxy, traefik, sunucu nginx'i, ya da cloud LB) sorumluluğundadır.
 
 ---
 
@@ -229,7 +229,7 @@ gunzip -c crm_<tarih>.sql.gz | docker compose exec -T crm-db psql -U $POSTGRES_U
 | `Connection to localhost:54321 refused` | DB-only çalıştırdın ama override yok → override'ı oluştur, recreate |
 | Container'da Swagger 404 | Container `Production` modunda; override ile `Development` yap |
 | `port is already allocated` | Başka servis 54321'i tutuyor (`lsof -i :54321`) → kapat veya `.env`'de `CRM_DB_HOST_PORT` değiştir |
-| Vite 7180 yerine farklı port'ta açılıyor | `vite.config.ts` içindeki `port: 7180` çakışmış → o porttaki process'i kapat |
+| Vite 7200 yerine farklı port'ta açılıyor | `vite.config.ts` içindeki `port: 7200` çakışmış → o porttaki process'i kapat |
 | API 7100 yerine 5000'de başlıyor | Eski cache → IDE'yi yeniden başlat, `.vscode/launch.json` ve `launchSettings.json` doğru olduğunu doğrula |
 | ES sağlık kontrolü kırmızı | `ES_JAVA_OPTS` belleği yetmiyor → compose'da `-Xmx` artır |
 

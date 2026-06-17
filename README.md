@@ -151,18 +151,21 @@ Tüm sample organizasyonlar Default Organization (`MAIN`) altında child birim o
 
 | Servis | CRM | CodePro | Platform.Web |
 |---|---|---|---|
-| nginx (prod entrypoint, host) | `9080` | `9081` | — |
-| .NET API dev (HTTP / HTTPS) | `7100` / `7101` | `7110` / `7111` | — |
+| nginx web (host) | `7200` | `8200` | — |
+| nginx api (host) | `7100` | `8100` | — |
+| .NET API dev (HTTP) | `7100` | `8100` | `5100`* |
 | .NET API container (iç ağ) | `8080` | `8080` | — |
-| Vite dev server (UI) | `7180` | `7181` | `7174` |
+| Vite dev server (UI) | `7200` | `8200` | `5200` |
 | PostgreSQL (host) | `54321` | `54322` | — |
 | Elasticsearch (host) | `9201` | `9211` | — |
 | Kibana (host) | `5601` | `5611` | — |
 
 Notlar:
 
-- Tüm host portları `.env` üzerinden override edilebilir: `CRM_NGINX_HOST_PORT`, `CRM_DB_HOST_PORT`, `CRM_ES_HOST_PORT`, `CRM_KIBANA_HOST_PORT` (CodePro için `CODEPRO_*` ön ekiyle). Compose default'ları yukarıdaki değerlerdir.
-- Dev'de Vite, `/api` ve `/auth` path'lerini API'ye proxy'ler (`http://localhost:7100` CRM, `http://localhost:7110` CodePro). Browser tarafında tek URL kullanılır.
+- `*` Platform.Web bağımsız bir API host'una sahip değil; `5100` yalnız dev proxy hedefi olarak rezerve edildi (`Platform.Web/.env` + `vite.config.ts`).
+- nginx container'ı iki port dinler: `listen 80` (web SPA) ve `listen 8080` (doğrudan API). Host tarafında web ve API **aynı şemadaki** port'lara map'lenir (CRM web `7200` / api `7100`, CodePro web `8200` / api `8100`). Bu host portları dev Vite (UI) portlarıyla aynıdır — container stack ile lokal dev aynı anda çalışmaz.
+- Tüm host portları `.env` üzerinden override edilebilir: `CRM_WEB_HOST_PORT`, `CRM_API_HOST_PORT`, `CRM_DB_HOST_PORT`, `CRM_ES_HOST_PORT`, `CRM_KIBANA_HOST_PORT` (CodePro için `CODEPRO_*` ön ekiyle). Compose default'ları yukarıdaki değerlerdir.
+- Dev'de Vite, `/api` ve `/auth` path'lerini API'ye proxy'ler (`http://localhost:7100` CRM, `http://localhost:8100` CodePro, `http://localhost:5100` Platform). Browser tarafında tek URL kullanılır.
 - Dev override (`docker-compose.override.yml`) PostgreSQL'i `127.0.0.1:<host_port>` ile bind eder. `ports: !override` direktifi **zorunlu** — Docker Compose array merge davranışı yüzünden olmazsa iki port birden expose edilir.
 - nginx container içi her zaman `listen 80` (Docker iç port'u); host mapping yukarıdaki değerlerle yapılır.
 - Yeni app eklenecekse bu şemayı **bozmadan** offset paterniyle devam et: CodePro = CRM + 1 ya da CRM + 10 (kibana 5601 → 5611, db 54321 → 54322). Yeni app için sonraki ofset uygun.

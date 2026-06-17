@@ -8,7 +8,8 @@ Bu döküman, CRM projesinin Natro VPS (Ubuntu, 6GB RAM, 100GB HDD, 2 core) üze
 >
 > | Servis | CRM | CodePro |
 > |---|---|---|
-> | nginx (entrypoint) | `9080` | `9081` |
+> | nginx web (entrypoint) | `7200` | `8200` |
+> | nginx api | `7100` | `8100` |
 > | PostgreSQL | `54321` | `54322` |
 > | Elasticsearch | `9201` | `9211` |
 > | Kibana | `5601` | `5611` |
@@ -148,22 +149,23 @@ docker compose logs db    # DB init scripti çalıştı mı?
 
 | URL | Servis |
 |-----|--------|
-| `http://<VPS_IP>:9080/` | Frontend (CRM nginx) |
-| `http://<VPS_IP>:9080/api/swagger/index.html` | Swagger UI |
-| `http://<VPS_IP>:9080/kibana` | Kibana |
+| `http://<VPS_IP>:7200/` | Frontend (CRM nginx web) |
+| `http://<VPS_IP>:7200/api/swagger/index.html` | Swagger UI (web üzerinden) |
+| `http://<VPS_IP>:7100/` | API (CRM nginx api, doğrudan) |
+| `http://<VPS_IP>:7200/kibana` | Kibana |
 
-> Harici reverse proxy çalışıyorsa istemci sadece `https://<domain>/` görür; yukarıdaki `:9080` adresleri proxy'nin upstream'idir.
+> Harici reverse proxy çalışıyorsa istemci sadece `https://<domain>/` görür; yukarıdaki `:7200` (web) / `:7100` (api) adresleri proxy'nin upstream'idir.
 
 ---
 
 ## Bölüm 3: HTTPS — Let's Encrypt + Certbot *(LEGACY)*
 
-> **⚠️ Bu bölüm güncel mimariyle uyumsuz.** Yeni port şemasında container nginx 80/443 değil **9080/9081** bind eder. HTTPS termination'ı **harici reverse proxy** yapar (sunucu nginx'i, traefik, haproxy, cloud LB).
+> **⚠️ Bu bölüm güncel mimariyle uyumsuz.** Yeni port şemasında container nginx 80/443 değil web için **7200/8200**, api için **7100/8100** bind eder. HTTPS termination'ı **harici reverse proxy** yapar (sunucu nginx'i, traefik, haproxy, cloud LB).
 >
 > Önerilen akış:
 > 1. Sunucuda **dış nginx** (Docker dışında) kurulur, `:80`/`:443` bunu dinler.
 > 2. SSL sertifikalarını dış nginx tutar (certbot bu nginx üzerinden yenilenir).
-> 3. Dış nginx, `https://<domain>` isteklerini `proxy_pass http://localhost:9080;` (CRM) ya da `http://localhost:9081;` (CodePro) ile container'a iletir.
+> 3. Dış nginx, `https://<domain>` isteklerini `proxy_pass http://localhost:7200;` (CRM web) ya da `http://localhost:8200;` (CodePro web) ile container'a iletir; API için `:7100` / `:8100`.
 > 4. Container içinde SSL gerekmez; aşağıdaki "container içinde 443 + certbot stop" akışına gerek kalmaz.
 >
 > Aşağıdaki adımlar yalnızca **tek bir uygulama** sunucuda koşacaksa ve external proxy yoksa geçerli. İki uygulamayı (CRM + CodePro) aynı sunucuda paralel çalıştırmak istiyorsanız bu bölüm yetersizdir — external proxy gereklidir.

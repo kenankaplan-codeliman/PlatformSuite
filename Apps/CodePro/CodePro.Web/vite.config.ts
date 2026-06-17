@@ -20,10 +20,11 @@ export default defineConfig({
     exclude: ['@platform/ui'],
   },
   server: {
-    port: 7181,
+    port: 8200,
+    strictPort: true,
     proxy: {
-      '/api': { target: 'http://localhost:7110', changeOrigin: true },
-      '/auth': { target: 'http://localhost:7110', changeOrigin: true },
+      '/api': { target: 'http://localhost:8100', changeOrigin: true },
+      '/auth': { target: 'http://localhost:8100', changeOrigin: true },
     },
   },
 });

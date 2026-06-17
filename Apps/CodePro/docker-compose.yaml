@@ -6,7 +6,7 @@
 # context'iyle dahil eder.
 #
 # Host portları (CRM ile çakışmaz, 80/443 doğrudan kullanılmaz):
-#   nginx 9081 / db 54322 / es 9211 / kibana 5611
+#   nginx-web 8200 / nginx-api 8100 / db 54322 / es 9211 / kibana 5611
 #
 # Kullanım (Apps/CodePro/ klasöründen çalıştır):
 #   cd Apps/CodePro
@@ -26,7 +26,8 @@ services:
     image: nginx:1.27-alpine
     container_name: codepro-nginx
     ports:
-      - "${CODEPRO_NGINX_HOST_PORT:-9081}:80"
+      - "${CODEPRO_WEB_HOST_PORT:-8200}:80"
+      - "${CODEPRO_API_HOST_PORT:-8100}:8080"
     volumes:
       - ./docker/nginx/nginx.conf:/etc/nginx/nginx.conf:ro
       - ./docker/nginx/conf.d:/etc/nginx/conf.d:ro
