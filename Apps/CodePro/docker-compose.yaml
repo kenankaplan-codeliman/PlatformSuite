@@ -63,6 +63,7 @@ services:
       ASPNETCORE_ENVIRONMENT: Production
       ASPNETCORE_HTTP_PORTS: "8080"
       POSTGRES_HOST: codepro-db
+      POSTGRES_PORT: "5432"
       POSTGRES_DB: codepro_db
       Logging__Elastic__Enabled: "true"
       Logging__Elastic__Url: "http://codepro-elasticsearch:9200"
@@ -89,8 +90,9 @@ services:
     environment:
       POSTGRES_DB: codepro_db
       POSTGRES_USER: ${POSTGRES_USER}
-    ports:
-      - "${CODEPRO_DB_HOST_PORT:-54322}:5432"
+    # Not: db host portu base'de publish EDİLMEZ → sunucuda (override yokken)
+    # db yalnız internal network'te, dışarıya tamamen kapalı.
+    # Lokal dev'de docker-compose.override.yml 127.0.0.1:54322'ye publish eder.
     volumes:
       - codepro_postgres_data:/var/lib/postgresql/data
     networks:
