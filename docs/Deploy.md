@@ -84,10 +84,17 @@ cd /opt/crm
 git clone https://github.com/<GITHUB_KULLANICI>/<REPO_ADI>.git .
 ```
 
-> **ÖNEMLİ:** `docker-compose.override.yml` VPS'te OLMAMALI. Bu dosya PostgreSQL portunu dışarıya açar. Varsa sil:
+> **ÖNEMLİ — Production'da override yüklenmemeli.**
+>
+> `docker-compose.override.yml` **lokal geliştirme katmanıdır**: API'yi `Development` moduna alır, web'i development build eder ve PostgreSQL portunu yalnız `127.0.0.1`'e publish eder (lokal DBeaver/VSCode debug için). `docker compose up` bu dosyayı **otomatik yükler**.
+>
+> Sunucuda override'ı yüklememek için tüm komutlara **`-f docker-compose.yaml`** ekle — dosyayı silmene gerek yok:
 > ```bash
-> rm -f docker-compose.override.yml
+> docker compose -f docker-compose.yaml up -d --build
 > ```
+> Böylece API `Production`, web production build çalışır. **db host portu base compose'da hiç publish edilmez** → PostgreSQL ne dışarıdan ne sunucunun localhost'undan erişilebilir; yalnız container'lar arası internal network'te yaşar (API ona `crm-db:5432` ile bağlanır).
+>
+> Dosyayı silmek de işe yarar ama `git pull` onu geri getirir ve git'te silinmiş-dosya kirliliği oluşur; `-f` yöntemi bu derde girmez. Bakım için db'ye erişmen gerekirse port açmadan: `docker compose -f docker-compose.yaml exec crm-db psql -U $POSTGRES_USER -d crm_db`
 
 ### 2.2 — Production `.env` Dosyası Oluştur
 
@@ -134,8 +141,10 @@ openssl rand -base64 32
 
 ```bash
 cd /opt/crm
-docker compose up -d --build
+docker compose -f docker-compose.yaml up -d --build
 ```
+
+> `-f docker-compose.yaml` zorunlu: override'ı (lokal dev katmanı) atlayıp Production + kapalı-db ile başlatır. Bkz. Bölüm 2.1 notu.
 
 İlk başlatmada Elasticsearch ~2–3 dakika bekleyebilir, normaldir.
 
@@ -362,13 +371,15 @@ Frontend artık HTTPS üzerinde çalışacak. Azure Portal'da güncelle:
 
 ### Kod Güncellemesi Deploy Etme
 
+> **Sunucuda tüm `docker compose` komutlarına `-f docker-compose.yaml` ekleyin** (override'ı yüklememek için). Servis adları: `crm-api`, `crm-web`, `crm-nginx`, `crm-db`, `crm-elasticsearch`, `crm-kibana`. (CodePro'da `codepro-*`.)
+
 ```bash
 cd /opt/crm
 git pull origin main
 
-docker compose up -d --build api        # Sadece API
-docker compose up -d --build frontend   # Sadece frontend
-docker compose up -d --build            # Tümünü rebuild
+docker compose -f docker-compose.yaml up -d --build crm-api   # Sadece API
+docker compose -f docker-compose.yaml up -d --build crm-web   # Sadece frontend
+docker compose -f docker-compose.yaml up -d --build           # Tümünü rebuild
 ```
 
 ### Faydalı Komutlar
@@ -402,7 +413,8 @@ docker compose exec elasticsearch \
 
 | Konu | Açıklama |
 |------|----------|
-| `docker-compose.override.yml` | VPS'te OLMAMALI — DB portunu dışarıya açar |
+| `docker-compose.override.yml` | Lokal dev katmanı (Development env + db portu `127.0.0.1`'e publish). Sunucuda **yüklenmemeli** → komutlara `-f docker-compose.yaml` ekle. Base compose db portunu zaten publish etmez (db dışarı tamamen kapalı). |
+| `POSTGRES_PORT` | Container içinde `5432` (compose `environment` ile set edilir). `.env`'deki `54321` yalnız lokal host erişimi içindir; container override eder. |
 | `vm.max_map_count=262144` | Elasticsearch için ZORUNLU kernel ayarı |
 | `.env` | Gitignore'da — VPS'te elle oluşturulmalı |
 | DB init scripti | Sadece ilk başlatmada ve volume boşsa çalışır |

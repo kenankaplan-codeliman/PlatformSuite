@@ -60,7 +60,8 @@ services:
       dockerfile: Apps/Crm/Crm.Api/Dockerfile
     env_file: ./.env
     environment:
-      ASPNETCORE_ENVIRONMENT: Production
+      #ASPNETCORE_ENVIRONMENT: Production
+      ASPNETCORE_ENVIRONMENT: Test
       ASPNETCORE_HTTP_PORTS: "8080"
       POSTGRES_HOST: crm-db
       POSTGRES_PORT: "5432"
@@ -119,7 +120,11 @@ services:
     networks:
       - crm_elk_net
     healthcheck:
-      test: ["CMD-SHELL", "curl -s -u elastic:$$ELASTIC_PASSWORD http://localhost:9200/_cluster/health | grep -qE '\"status\":\"(green|yellow)\"'"]
+      test:
+        [
+          "CMD-SHELL",
+          'curl -s -u elastic:$$ELASTIC_PASSWORD http://localhost:9200/_cluster/health | grep -qE ''"status":"(green|yellow)"''',
+        ]
       interval: 20s
       timeout: 10s
       retries: 10
