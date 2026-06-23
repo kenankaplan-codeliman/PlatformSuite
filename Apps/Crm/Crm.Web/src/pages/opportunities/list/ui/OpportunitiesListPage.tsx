@@ -1,8 +1,8 @@
 import { useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
-import { useNavigate } from 'react-router-dom';
 import {
   ListPageLayout,
+  useReturnNavigate,
   useGeneralParameters,
   useUrlFilters,
   type DataTableColumn,
@@ -32,7 +32,7 @@ export function OpportunitiesListPage() {
   const { t } = useTranslation('page.opportunities-list');
   const { t: tEntity } = useTranslation('entity.opportunity');
   const { getLabel: getStageLabel } = useGeneralParameters('OpportunityStage');
-  const navigate = useNavigate();
+  const navigate = useReturnNavigate();
 
   const { filters, setFilters, clearFilters } = useUrlFilters<OpportunityListFilter>({
     schema: opportunityListFilterSchema,

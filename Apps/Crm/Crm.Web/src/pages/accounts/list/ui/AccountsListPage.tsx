@@ -1,7 +1,6 @@
 import { useMemo } from "react";
 import { useTranslation } from "react-i18next";
-import { useNavigate } from "react-router-dom";
-import { ListPageLayout, useUrlFilters } from "@platform/ui";
+import { ListPageLayout, useUrlFilters, useReturnNavigate } from "@platform/ui";
 import type { DataTableColumn } from "@platform/ui";
 import { useGeneralParameters } from "@platform/ui";
 import { useAccountListQuery } from "../../../../entities/account/api/useAccountQueries";
@@ -21,7 +20,7 @@ export function AccountsListPage() {
   const { t: tEntity } = useTranslation("entity.account");
   const { getLabel: getStatusLabel } = useGeneralParameters("AccountStatus");
   const { getLabel: getTypeLabel } = useGeneralParameters("AccountType");
-  const navigate = useNavigate();
+  const navigate = useReturnNavigate();
 
   const { filters, setFilters, clearFilters } = useUrlFilters<AccountListFilter>({
     schema: accountListFilterSchema,

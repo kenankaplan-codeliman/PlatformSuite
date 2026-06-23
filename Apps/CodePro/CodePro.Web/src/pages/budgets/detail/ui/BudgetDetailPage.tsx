@@ -79,7 +79,7 @@ export function BudgetDetailPage() {
       data={query.data as BudgetFormValues | undefined}
       isLoading={query.isLoading}
       error={query.isError ? query.error : undefined}
-      onSubmit={async (values) => { await upsert.mutateAsync(values); }}
+      onSubmit={async (values) => (await upsert.mutateAsync(values)).id}
       onDelete={id ? async () => { await del.mutateAsync(id); } : undefined}
       afterSaveNavigation={(saved) => RoutePaths.BudgetView(saved.id)}
       tabs={tabs}

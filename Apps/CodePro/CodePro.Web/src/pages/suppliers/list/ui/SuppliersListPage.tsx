@@ -1,7 +1,6 @@
 import { useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
-import { useNavigate } from 'react-router-dom';
-import { ListPageLayout, useGeneralParameters, useUrlFilters } from '@platform/ui';
+import { ListPageLayout, useGeneralParameters, useUrlFilters, useReturnNavigate } from '@platform/ui';
 import type { DataTableColumn } from '@platform/ui';
 import { useSupplierListQuery } from '../../../../entities/supplier/api/useSupplierQueries';
 import type {
@@ -22,7 +21,7 @@ export function SuppliersListPage() {
   const { getLabel: getTypeLabel } = useGeneralParameters('SupplierType');
   const { getLabel: getStatusLabel } = useGeneralParameters('SupplierStatus');
   const { getLabel: getCompanyLabel } = useGeneralParameters('CompanyType');
-  const navigate = useNavigate();
+  const navigate = useReturnNavigate();
 
   const { filters, setFilters, clearFilters } = useUrlFilters<SupplierListFilter>({
     schema: supplierListFilterSchema,

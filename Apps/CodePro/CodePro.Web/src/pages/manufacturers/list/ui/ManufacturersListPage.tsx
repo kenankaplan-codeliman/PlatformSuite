@@ -1,7 +1,6 @@
 import { useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
-import { useNavigate } from 'react-router-dom';
-import { ListPageLayout, useUrlFilters, type DataTableColumn } from '@platform/ui';
+import { ListPageLayout, useUrlFilters, type DataTableColumn, useReturnNavigate } from '@platform/ui';
 import { useManufacturerListQuery } from '../../../../entities/manufacturer/api/useManufacturerQueries';
 import type {
   ManufacturerListFilter,
@@ -17,7 +16,7 @@ import { ManufacturersFilterPanel } from './ManufacturersFilterPanel';
 export function ManufacturersListPage() {
   const { t } = useTranslation('page.manufacturers-list');
   const { t: tEntity } = useTranslation('entity.manufacturer');
-  const navigate = useNavigate();
+  const navigate = useReturnNavigate();
 
   const { filters, setFilters, clearFilters } = useUrlFilters<ManufacturerListFilter>({
     schema: manufacturerListFilterSchema,

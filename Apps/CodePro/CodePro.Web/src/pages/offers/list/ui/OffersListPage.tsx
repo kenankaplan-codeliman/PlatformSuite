@@ -1,8 +1,8 @@
 import { useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
-import { useNavigate } from 'react-router-dom';
 import {
   ListPageLayout,
+  useReturnNavigate,
   useEnumTranslation,
   useUrlFilters,
   type DataTableColumn,
@@ -21,7 +21,7 @@ export function OffersListPage() {
   const { t: tEntity } = useTranslation('entity.offer');
   const tType = useEnumTranslation('offerType');
   const tStatus = useEnumTranslation('offerStatus');
-  const navigate = useNavigate();
+  const navigate = useReturnNavigate();
 
   const { filters, setFilters, clearFilters } = useUrlFilters<OfferListFilter>({
     schema: offerListFilterSchema,

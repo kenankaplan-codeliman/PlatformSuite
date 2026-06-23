@@ -77,7 +77,7 @@ export function OfferDetailPage() {
       data={query.data as OfferFormValues | undefined}
       isLoading={query.isLoading}
       error={query.isError ? query.error : undefined}
-      onSubmit={async (values) => { await upsert.mutateAsync(values); }}
+      onSubmit={async (values) => (await upsert.mutateAsync(values)).id}
       onDelete={id ? async () => { await del.mutateAsync(id); } : undefined}
       afterSaveNavigation={(saved) => RoutePaths.OfferView(saved.id)}
       tabs={tabs}

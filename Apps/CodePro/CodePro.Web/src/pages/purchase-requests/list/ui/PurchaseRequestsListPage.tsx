@@ -1,8 +1,8 @@
 import { useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
-import { useNavigate } from 'react-router-dom';
 import {
   ListPageLayout,
+  useReturnNavigate,
   useEnumTranslation,
   useUrlFilters,
   type DataTableColumn,
@@ -24,7 +24,7 @@ export function PurchaseRequestsListPage() {
   const { t: tEntity } = useTranslation('entity.purchase-request');
   const tStatus = useEnumTranslation('purchaseRequestStatus');
   const tPriority = useEnumTranslation('purchaseRequestPriority');
-  const navigate = useNavigate();
+  const navigate = useReturnNavigate();
 
   const { filters, setFilters, clearFilters } = useUrlFilters<PurchaseRequestListFilter>({
     schema: purchaseRequestListFilterSchema,

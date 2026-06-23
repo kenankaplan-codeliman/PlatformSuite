@@ -1,8 +1,8 @@
 import { useMemo } from "react";
 import { useTranslation } from "react-i18next";
-import { useNavigate } from "react-router-dom";
 import {
   ListPageLayout,
+  useReturnNavigate,
   useGeneralParameters,
   useUrlFilters,
   type DataTableColumn,
@@ -28,7 +28,7 @@ export function ProductsListPage() {
     "ProductUnitOfMeasure",
   );
   const { getLabel: getCurrencyLabel } = useGeneralParameters("CurrencyType");
-  const navigate = useNavigate();
+  const navigate = useReturnNavigate();
 
   const { filters, setFilters, clearFilters } =
     useUrlFilters<ProductListFilter>({

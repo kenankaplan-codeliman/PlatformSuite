@@ -7,7 +7,7 @@ import {
   type FieldValues,
   type Path,
 } from 'react-hook-form';
-import { Link } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useErrorMessage } from '../../../lib/i18n/errorMessage';
 import { useEntityTypeRegistry } from '../../../lib/entity-type/EntityTypeRegistryContext';
@@ -114,6 +114,9 @@ export function EntityLookupField<TValues extends FieldValues>({
   const translateError = useErrorMessage();
   const { t } = useTranslation('common');
   const entityTypeRegistry = useEntityTypeRegistry();
+  // Tag link'inden açılan detail'in geri butonu bu sayfaya dönsün diye mevcut
+  // konumu returnUrl olarak taşırız (DetailPageLayout `location.state`'ten okur).
+  const location = useLocation();
 
   const [modalOpen, setModalOpen] = useState(false);
 
@@ -228,6 +231,7 @@ export function EntityLookupField<TValues extends FieldValues>({
                   <Link
                     key={v.id}
                     to={href}
+                    state={{ returnUrl: location.pathname + location.search }}
                     onClick={(e) => e.stopPropagation()}
                     style={{
                       display: 'inline-flex',

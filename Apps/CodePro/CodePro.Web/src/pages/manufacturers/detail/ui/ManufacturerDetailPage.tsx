@@ -57,9 +57,7 @@ export function ManufacturerDetailPage() {
       data={query.data as ManufacturerFormValues | undefined}
       isLoading={query.isLoading}
       error={query.isError ? query.error : undefined}
-      onSubmit={async (values) => {
-        await upsert.mutateAsync(values);
-      }}
+      onSubmit={async (values) => (await upsert.mutateAsync(values)).id}
       onDelete={
         id
           ? async () => {

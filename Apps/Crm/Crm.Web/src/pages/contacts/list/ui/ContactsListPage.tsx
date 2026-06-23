@@ -1,8 +1,8 @@
 import { useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
-import { useNavigate } from 'react-router-dom';
 import {
   ListPageLayout,
+  useReturnNavigate,
   useGeneralParameters,
   useUrlFilters,
   type DataTableColumn,
@@ -23,7 +23,7 @@ export function ContactsListPage() {
   const { t } = useTranslation('page.contacts-list');
   const { t: tEntity } = useTranslation('entity.contact');
   const { getLabel: getStatusLabel } = useGeneralParameters('ContactStatus');
-  const navigate = useNavigate();
+  const navigate = useReturnNavigate();
 
   const { filters, setFilters, clearFilters } = useUrlFilters<ContactListFilter>({
     schema: contactListFilterSchema,

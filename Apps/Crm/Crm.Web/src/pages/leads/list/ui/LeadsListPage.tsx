@@ -1,8 +1,8 @@
 import { useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
-import { useNavigate } from 'react-router-dom';
 import {
   ListPageLayout,
+  useReturnNavigate,
   useGeneralParameters,
   useUrlFilters,
   type DataTableColumn,
@@ -22,7 +22,7 @@ export function LeadsListPage() {
   const { getLabel: getStatusLabel } = useGeneralParameters('LeadStatus');
   const { getLabel: getSourceLabel } = useGeneralParameters('LeadSource');
   const { getLabel: getRatingLabel } = useGeneralParameters('LeadRating');
-  const navigate = useNavigate();
+  const navigate = useReturnNavigate();
 
   const { filters, setFilters, clearFilters } = useUrlFilters<LeadListFilter>({
     schema: leadListFilterSchema,

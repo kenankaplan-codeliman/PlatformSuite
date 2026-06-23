@@ -62,7 +62,11 @@ export interface DetailPageLayoutProps<TValues extends FieldValues> {
   isLoading?: boolean;
   error?: unknown;
 
-  onSubmit: SubmitHandler<TValues>;
+  /**
+   * Form geçerliyse çağrılır. Yeni kayıtta oluşturulan kaydın id'sini döndürürse
+   * layout `/:newId` view'ına yönlendirir; döndürmezse listeye düşer.
+   */
+  onSubmit: (values: TValues) => void | string | Promise<void | string>;
   onDelete?: () => void | Promise<void>;
 
   /** View modunda Düzenle butonunun solundaki dropdown menüye eklenir (aktif/pasif vb). */
@@ -130,12 +134,30 @@ function DetailPageLayoutInner<TValues extends FieldValues>({
   const entityMeta = useEntityTypeRegistry().get(entityType);
   const entityTypeLabel = entityMeta ? tCommon(entityMeta.label) : null;
   const navigate = useNavigate();
-  const { pathname } = useLocation();
+  const location = useLocation();
+  const { pathname } = location;
   const [searchParams, setSearchParams] = useSearchParams();
+
+  // Navigasyon hedefleri pathname'den türetilir; geçmiş (`navigate(-1)`) kullanılmaz.
+  // `returnUrl` detail'e girerken `location.state` ile taşınır (useReturnNavigate /
+  // EntityLookupField link'i); edit↔view round-trip'inde korunur. Yoksa türetilen
+  // liste yoluna düşülür — refresh/deep-link/yeni sekmede de güvenli.
+  const returnUrl = (location.state as { returnUrl?: string } | null)?.returnUrl;
+  const listPath = pathname.replace(/\/[^/]+$/, "") || "/"; // /x/123 → /x ; /x/new → /x
+  const viewPath = pathname.replace(/\/edit$/, ""); // /x/123/edit → /x/123
+  const editPath = `${pathname}/edit`;
   const attachmentsCollector = useAttachmentsCollector();
   const queryClient = useQueryClient();
 
   const mode: FormMode = modeOverride ?? rawMode;
+
+  const handleBack = () => {
+    if (mode === "edit") {
+      navigate(viewPath, { replace: true, state: { returnUrl } });
+    } else {
+      navigate(returnUrl ?? listPath); // view + new → çıkış
+    }
+  };
 
   const form = useForm<TValues>({
     resolver: zodResolver(schema),
@@ -157,7 +179,7 @@ function DetailPageLayoutInner<TValues extends FieldValues>({
       pending.length > 0
         ? ({ ...values, attachments: pending } as TValues)
         : values;
-    await onSubmit(payload);
+    const savedId = await onSubmit(payload);
     attachmentsCollector?.reset();
     // Kayıt güncellendi → footer'daki ortak metadata (UpdatedAt/By, durum vb.)
     // bayatladı; entity-metadata sorgusunu invalidate ederek tazele. Generic —
@@ -167,8 +189,17 @@ function DetailPageLayoutInner<TValues extends FieldValues>({
         queryKey: entityMetadataKeys.detail(entityType, entityId),
       });
     }
-    if (afterSaveNavigation) {
-      navigate(afterSaveNavigation(payload));
+    // Kayıt sonrası navigasyon — deterministik, `navigate(-1)` kullanılmaz.
+    // edit→view her zaman `replace` (edit geçmişten silinir → ping-pong döngüsü
+    // imkânsız) ve returnUrl ileri taşınır (çıkışta linkleyen sayfaya/listeye döner).
+    // - new : returnUrl ?? oluşturulan kaydın view'ı (`/:newId`); id yoksa listeye
+    // - edit: afterSaveNavigation(payload) ?? view yolu (pathname'den /edit atılır)
+    if (mode === "new") {
+      const dest = returnUrl ?? (savedId ? `${listPath}/${savedId}` : listPath);
+      navigate(dest, { replace: true, state: { returnUrl } });
+    } else {
+      const dest = afterSaveNavigation?.(payload) ?? viewPath;
+      navigate(dest, { replace: true, state: { returnUrl } });
     }
   };
 
@@ -249,7 +280,7 @@ function DetailPageLayoutInner<TValues extends FieldValues>({
           <Button
             type="primary"
             icon={<EditOutlined />}
-            onClick={() => navigate(`${pathname}/edit`)}
+            onClick={() => navigate(editPath, { state: { returnUrl } })}
           >
             {tCommon("actions.edit")}
           </Button>
@@ -259,7 +290,7 @@ function DetailPageLayoutInner<TValues extends FieldValues>({
 
     return (
       <Space size={8}>
-        <Button onClick={() => navigate(-1)}>
+        <Button onClick={handleBack}>
           {tCommon("actions.cancel")}
         </Button>
         <Button
@@ -292,7 +323,7 @@ function DetailPageLayoutInner<TValues extends FieldValues>({
         <Space size={12} align="center">
           <Button
             icon={<ArrowLeftOutlined />}
-            onClick={() => navigate(-1)}
+            onClick={handleBack}
             aria-label={tCommon("actions.back")}
           />
           <Title

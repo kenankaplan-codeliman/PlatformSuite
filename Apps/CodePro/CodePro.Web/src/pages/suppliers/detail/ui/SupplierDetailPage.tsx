@@ -93,9 +93,7 @@ export function SupplierDetailPage() {
       data={query.data as SupplierFormValues | undefined}
       isLoading={query.isLoading}
       error={query.isError ? query.error : undefined}
-      onSubmit={async (values) => {
-        await upsert.mutateAsync(values);
-      }}
+      onSubmit={async (values) => (await upsert.mutateAsync(values)).id}
       onDelete={
         id
           ? async () => {

@@ -1,7 +1,6 @@
 import { useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
-import { useNavigate } from 'react-router-dom';
-import { ListPageLayout, useUrlFilters, type DataTableColumn } from '@platform/ui';
+import { ListPageLayout, useUrlFilters, type DataTableColumn, useReturnNavigate } from '@platform/ui';
 import { useBrandListQuery } from '../../../../entities/brand/api/useBrandQueries';
 import type { BrandListFilter, BrandListItem } from '../../../../entities/brand/model/types';
 import {
@@ -14,7 +13,7 @@ import { BrandsFilterPanel } from './BrandsFilterPanel';
 export function BrandsListPage() {
   const { t } = useTranslation('page.brands-list');
   const { t: tEntity } = useTranslation('entity.brand');
-  const navigate = useNavigate();
+  const navigate = useReturnNavigate();
 
   const { filters, setFilters, clearFilters } = useUrlFilters<BrandListFilter>({
     schema: brandListFilterSchema,

@@ -1,7 +1,6 @@
 import { useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
-import { useNavigate } from 'react-router-dom';
-import { ListPageLayout, useUrlFilters, type DataTableColumn } from '@platform/ui';
+import { ListPageLayout, useUrlFilters, type DataTableColumn, useReturnNavigate } from '@platform/ui';
 import { useProductCatalogListQuery } from '../../../../entities/product-catalog/api/useProductCatalogQueries';
 import type {
   ProductCatalogListFilter,
@@ -17,7 +16,7 @@ import { ProductCatalogsFilterPanel } from './ProductCatalogsFilterPanel';
 export function ProductCatalogsListPage() {
   const { t } = useTranslation('page.product-catalogs-list');
   const { t: tEntity } = useTranslation('entity.product-catalog');
-  const navigate = useNavigate();
+  const navigate = useReturnNavigate();
 
   const { filters, setFilters, clearFilters } = useUrlFilters<ProductCatalogListFilter>({
     schema: productCatalogListFilterSchema,

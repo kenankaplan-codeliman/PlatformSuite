@@ -1,8 +1,8 @@
 import { useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
-import { useNavigate } from 'react-router-dom';
 import {
   ListPageLayout,
+  useReturnNavigate,
   useEnumTranslation,
   useUrlFilters,
   type DataTableColumn,
@@ -23,7 +23,7 @@ export function PurchaseBasketsListPage() {
   const { t } = useTranslation('page.purchase-baskets-list');
   const { t: tEntity } = useTranslation('entity.purchase-basket');
   const tStatus = useEnumTranslation('purchaseBasketStatus');
-  const navigate = useNavigate();
+  const navigate = useReturnNavigate();
 
   const { filters, setFilters, clearFilters } = useUrlFilters<PurchaseBasketListFilter>({
     schema: purchaseBasketListFilterSchema,

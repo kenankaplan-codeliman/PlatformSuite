@@ -1,7 +1,6 @@
 import { useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
-import { useNavigate } from 'react-router-dom';
-import { ListPageLayout, useUrlFilters, type DataTableColumn } from '@platform/ui';
+import { ListPageLayout, useUrlFilters, type DataTableColumn, useReturnNavigate } from '@platform/ui';
 import { useProductPriceListQuery } from '../../../../entities/product-price/api/useProductPriceQueries';
 import type {
   ProductPriceListFilter,
@@ -17,7 +16,7 @@ import { ProductPricesFilterPanel } from './ProductPricesFilterPanel';
 export function ProductPricesListPage() {
   const { t } = useTranslation('page.product-prices-list');
   const { t: tEntity } = useTranslation('entity.product-price');
-  const navigate = useNavigate();
+  const navigate = useReturnNavigate();
 
   const { filters, setFilters, clearFilters } = useUrlFilters<ProductPriceListFilter>({
     schema: productPriceListFilterSchema,

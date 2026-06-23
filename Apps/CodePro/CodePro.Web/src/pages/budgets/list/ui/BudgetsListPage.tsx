@@ -1,8 +1,8 @@
 import { useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
-import { useNavigate } from 'react-router-dom';
 import {
   ListPageLayout,
+  useReturnNavigate,
   useEnumTranslation,
   useUrlFilters,
   type DataTableColumn,
@@ -21,7 +21,7 @@ export function BudgetsListPage() {
   const { t: tEntity } = useTranslation('entity.budget');
   const tStatus = useEnumTranslation('budgetStatus');
   const tPeriod = useEnumTranslation('budgetPeriodType');
-  const navigate = useNavigate();
+  const navigate = useReturnNavigate();
 
   const { filters, setFilters, clearFilters } = useUrlFilters<BudgetListFilter>({
     schema: budgetListFilterSchema,

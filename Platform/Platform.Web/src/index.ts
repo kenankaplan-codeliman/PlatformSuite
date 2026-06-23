@@ -231,6 +231,7 @@ export { activityKeys, authKeys, organizationKeys, appUserKeys, appRoleKeys, att
 
 // ─── Hook'lar ────────────────────────────────────────────────────────────────
 export { useRouteMode } from './shared/hooks/useRouteMode';
+export { useReturnNavigate } from './shared/hooks/useReturnNavigate';
 export { useUrlFilters } from './shared/hooks/useUrlFilters';
 export type { UseUrlFiltersOptions, UseUrlFiltersReturn } from './shared/hooks/useUrlFilters';
 export { useFormMode } from './shared/ui/form/useFormMode';

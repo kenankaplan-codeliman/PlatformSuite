@@ -8,6 +8,7 @@ using Crm.Domain.Entities.Contacts;
 using Crm.Domain.Parameters;
 using Mapster;
 using MediatR;
+using Microsoft.EntityFrameworkCore;
 
 namespace Crm.Application.Features.Contacts.Commands.CreateContact;
 
@@ -55,7 +56,10 @@ public sealed class CreateContactHandler : IRequestHandler<CreateContactCommand,
 
     private async Task<ContactDetailItem> BuildDetailAsync(Guid id, CancellationToken cancellationToken)
     {
-        var saved = await _repository.GetAsync(id, cancellationToken);
+        var saved = await _db.Contact
+            .AsNoTracking()
+            .Include(c => c.AccountContacts).ThenInclude(ac => ac.Account)
+            .FirstOrDefaultAsync(c => c.Id == id, cancellationToken);
         var dto = saved!.Adapt<ContactDetailItem>();
         (dto.Emails, dto.Phones, dto.Addresses) =
             await _db.LoadCommunicationsAsync(nameof(Contact), id, cancellationToken);
