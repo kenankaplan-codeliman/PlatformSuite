@@ -15,6 +15,7 @@ import {
   useSetStateAction,
   type DetailPageAction,
   type DetailPageTab,
+  type QuickCreateRenderProps,
   type SelectOption,
 } from "@platform/ui";
 import { CrmServicePath } from "../../../../shared/api/servicePaths";
@@ -39,8 +40,14 @@ const emptyProduct: ProductFormValues = {
   isActive: true,
 };
 
-export function ProductDetailPage() {
-  const { mode, id } = useRouteMode();
+export function ProductDetailPage({
+  embedded,
+}: {
+  embedded?: QuickCreateRenderProps;
+} = {}) {
+  const route = useRouteMode();
+  const mode = embedded ? "new" : route.mode;
+  const id = embedded ? undefined : route.id;
   const { t: tPage } = useTranslation("page.products-detail");
   const { t: tEntity } = useTranslation("entity.product");
   const { t: tCommon } = useTranslation("common");
@@ -88,7 +95,11 @@ export function ProductDetailPage() {
       mode={mode}
       title={title}
       schema={productSchema}
-      defaultValues={emptyProduct}
+      defaultValues={
+        embedded
+          ? { ...emptyProduct, name: embedded.initialSearchText ?? "" }
+          : emptyProduct
+      }
       data={query.data as ProductFormValues | undefined}
       isLoading={query.isLoading}
       error={query.isError ? query.error : undefined}
@@ -105,6 +116,8 @@ export function ProductDetailPage() {
       entityType="Product"
       entityId={id}
       extraActions={extraActions}
+      embedded={embedded}
+      embeddedReferenceName={(saved) => saved.name}
     >
       <GeneralSection
         categoryOptions={categoryOptions}

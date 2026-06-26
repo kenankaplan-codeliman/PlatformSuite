@@ -18,6 +18,7 @@ import { useSetStateAction } from "@platform/ui";
 import type { DetailPageAction } from "@platform/ui";
 import { useGeneralParameters } from "@platform/ui";
 import { RelatedActivitiesTab, type DetailPageTab } from "@platform/ui";
+import type { QuickCreateRenderProps } from "@platform/ui";
 import { AttachmentsField } from "@platform/ui";
 import { AddressField } from "../../../../widgets/address-field";
 import { EmailField } from "../../../../widgets/email-field";
@@ -56,8 +57,14 @@ const emptyContact: ContactFormValues = {
   isActive: true,
 };
 
-export function ContactDetailPage() {
-  const { mode, id } = useRouteMode();
+export function ContactDetailPage({
+  embedded,
+}: {
+  embedded?: QuickCreateRenderProps;
+} = {}) {
+  const route = useRouteMode();
+  const mode = embedded ? "new" : route.mode;
+  const id = embedded ? undefined : route.id;
   const { t: tPage } = useTranslation("page.contacts-detail");
   const { t: tEntity } = useTranslation("entity.contact");
   const { t: tCommon } = useTranslation("common");
@@ -138,7 +145,11 @@ export function ContactDetailPage() {
       mode={mode}
       title={title}
       schema={contactSchema}
-      defaultValues={emptyContact}
+      defaultValues={
+        embedded
+          ? { ...emptyContact, firstName: embedded.initialSearchText ?? "" }
+          : emptyContact
+      }
       data={query.data as ContactFormValues | undefined}
       isLoading={query.isLoading}
       error={query.isError ? query.error : undefined}
@@ -155,6 +166,10 @@ export function ContactDetailPage() {
       entityType="Contact"
       entityId={id}
       extraActions={extraActions}
+      embedded={embedded}
+      embeddedReferenceName={(saved) =>
+        `${saved.firstName ?? ""} ${saved.lastName ?? ""}`.trim()
+      }
     >
       {ownerAssign.modal}
       <GeneralSection statusOptions={statusOptions} />

@@ -17,11 +17,12 @@ import {
   Tag,
   Typography,
 } from "antd";
-import { CloseOutlined, SearchOutlined } from "@ant-design/icons";
+import { CloseOutlined, PlusOutlined, SearchOutlined } from "@ant-design/icons";
 import { useTranslation } from "react-i18next";
 import { httpClient } from "../../../api/httpClient";
 import { ServicePath } from "../../../api/servicePaths";
 import { useDebouncedValue } from "../../../hooks/useDebouncedValue";
+import { EmptyState } from "../../feedback/EmptyState";
 import { useEntityTypeRegistry } from "../../../lib/entity-type/EntityTypeRegistryContext";
 import { toneToTagColor } from "../../../lib/entity-type/tone";
 import type { EntityReference } from "../../../types/EntityReference";
@@ -128,6 +129,9 @@ export function SearchModal({
   const [selected, setSelected] = useState<EntityReference[]>(
     initialSelected ?? [],
   );
+  // 'search': normal arama görünümü. 'create': aktif tipin inline quick-create
+  // formu (content-swap — ayrı bir Modal açılmaz). Her modal açılışında resetlenir.
+  const [view, setView] = useState<"search" | "create">("search");
   const listRef = useRef<HTMLDivElement | null>(null);
 
   const activeOption = useMemo(
@@ -199,6 +203,7 @@ export function SearchModal({
     setSearchText(initialSearchText);
     setActiveType(entityOptions[0]?.entityType ?? "");
     setSelected(initialSelected ?? []);
+    setView("search");
     /* eslint-enable react-hooks/set-state-in-effect */
   }, [open, initialSearchText, entityOptions, initialSelected]);
 
@@ -280,6 +285,30 @@ export function SearchModal({
 
   const hasMultipleTypes = entityOptions.length > 1;
 
+  // Aktif tipin registry meta'sı; `quickCreate` tanımlıysa empty-state'te inline
+  // kayıt butonu çıkar ve content-swap ile o form gösterilir.
+  const activeMeta = entityTypeRegistry.get(activeOption?.entityType);
+  const canQuickCreate = !!activeMeta?.quickCreate;
+  // "Yeni <entity>" etiketinde entity'nin registry adını kullan (alan etiketi
+  // değil): parentAccount alanında bile buton "Yeni Firma" der, "Yeni Üst Firma" değil.
+  const createTitle = t("actions.createNamed", {
+    name: activeMeta ? t(activeMeta.label) : activeOption?.label,
+  });
+
+  const handleQuickCreated = (ref: EntityReference) => {
+    if (multiple) {
+      // Çoklu: seçime ekle, modal açık kalsın (kullanıcı OK ile onaylar / başka
+      // kayıt ekler). Aramaya dön — yeni kayıt invalidate sonrası listede de görünür.
+      setSelected((prev) =>
+        prev.some((s) => s.id === ref.id) ? prev : [...prev, ref],
+      );
+      setView("search");
+    } else {
+      // Tekli: seç ve modalı kapat (EntityLookupField.handleSingleSelect yapar).
+      onSelect?.(ref);
+    }
+  };
+
   const displayTitle =
     hasMultipleTypes && activeOption
       ? `${activeOption.label} ${t("actions.search")}`
@@ -289,9 +318,9 @@ export function SearchModal({
     <Modal
       open={open}
       onCancel={onClose}
-      title={displayTitle}
+      title={view === "create" ? createTitle : displayTitle}
       footer={
-        multiple ? (
+        view === "create" ? null : multiple ? (
           <Space>
             <Text type="secondary">
               {t("messages.selectedCount", { count: selected.length })}
@@ -304,9 +333,17 @@ export function SearchModal({
           </Space>
         ) : null
       }
-      width={620}
+      width={view === "create" ? 760 : 620}
       destroyOnHidden
     >
+      {view === "create" && activeMeta?.quickCreate ? (
+        activeMeta.quickCreate({
+          initialSearchText: searchText,
+          onCreated: handleQuickCreated,
+          onCancel: () => setView("search"),
+        })
+      ) : (
+        <>
       <Space.Compact style={{ display: "flex", marginBottom: 12 }}>
         {hasMultipleTypes && (
           <Select
@@ -369,7 +406,22 @@ export function SearchModal({
         <List
           dataSource={visibleItems}
           locale={{
-            emptyText: isLoading ? <Spin size="small" /> : t("messages.noData"),
+            emptyText: isLoading ? (
+              <Spin size="small" />
+            ) : (
+              <Space direction="vertical" align="center" size={12}>
+                <EmptyState />
+                {canQuickCreate && (
+                  <Button
+                    type="primary"
+                    icon={<PlusOutlined />}
+                    onClick={() => setView("create")}
+                  >
+                    {createTitle}
+                  </Button>
+                )}
+              </Space>
+            ),
           }}
           renderItem={(item) => {
             const sel = isSelected(item.id);
@@ -414,6 +466,8 @@ export function SearchModal({
           </div>
         )}
       </div>
+        </>
+      )}
     </Modal>
   );
 }

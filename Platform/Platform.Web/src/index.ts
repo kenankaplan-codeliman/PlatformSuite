@@ -79,6 +79,7 @@ export type {
   EntityTypeMeta,
   EntityTone,
   EntityIcon,
+  QuickCreateRenderProps,
 } from './shared/lib/entity-type/types';
 export { toneToTagColor } from './shared/lib/entity-type/tone';
 export { platformEntityTypes } from './shared/lib/entity-type/platformEntityTypes';

@@ -1,4 +1,4 @@
-import { useEffect, useMemo, type ReactNode } from "react";
+import { useEffect, useMemo, useState, type ReactNode } from "react";
 import {
   FormProvider,
   useForm,
@@ -32,6 +32,7 @@ import {
 import { EntityMetadataFooter } from "./EntityMetadataFooter";
 import { entityMetadataKeys } from "../../api/queryKeys";
 import { useEntityTypeRegistry } from "../../lib/entity-type/EntityTypeRegistryContext";
+import type { QuickCreateRenderProps } from "../../lib/entity-type/types";
 
 const { Title } = Typography;
 
@@ -93,6 +94,23 @@ export interface DetailPageLayoutProps<TValues extends FieldValues> {
   entityType?: string;
   entityId?: string;
 
+  /**
+   * Verildiğinde layout "embedded" (modal-içi) modda çalışır: dış chrome (container
+   * + header/back/edit) ve route navigasyonu kapatılır, mode `new`'e sabitlenir,
+   * tab durumu URL yerine local tutulur. Kayıt başarıyla tamamlanınca `navigate`
+   * yerine, `entityType` + `embeddedReferenceName` kullanılarak `EntityReference`
+   * kurulur ve `embedded.onCreated(ref)` çağrılır; İptal `embedded.onCancel`'ı
+   * tetikler. Lookup quick-create akışı (`EntityTypeMeta.quickCreate`) bu modu
+   * kullanır — sayfa, lookup'tan gelen `QuickCreateRenderProps`'u aynen forward eder.
+   */
+  embedded?: QuickCreateRenderProps;
+  /**
+   * Embedded modda kaydedilen değerlerden `EntityReference.name`'i türetir
+   * (entity'ye göre değişir: Account → accountName, Contact → ad soyad, ...).
+   * Verilmezse `title` kullanılır.
+   */
+  embeddedReferenceName?: (saved: TValues) => string;
+
   children: ReactNode;
 }
 
@@ -126,6 +144,8 @@ function DetailPageLayoutInner<TValues extends FieldValues>({
   detailsTabLabel,
   entityType,
   entityId,
+  embedded,
+  embeddedReferenceName,
   children,
 }: DetailPageLayoutProps<TValues>) {
   const { t: tCommon } = useTranslation("common");
@@ -149,7 +169,11 @@ function DetailPageLayoutInner<TValues extends FieldValues>({
   const attachmentsCollector = useAttachmentsCollector();
   const queryClient = useQueryClient();
 
-  const mode: FormMode = modeOverride ?? rawMode;
+  // Embedded modda mode daima `new` (modal içi inline kayıt); aksi halde
+  // modeOverride > rawMode (URL'den türeyen). Tab durumu embedded'da URL'i
+  // kirletmemek için local tutulur.
+  const mode: FormMode = embedded ? "new" : (modeOverride ?? rawMode);
+  const [localTab, setLocalTab] = useState(DETAILS_TAB_KEY);
 
   const handleBack = () => {
     if (mode === "edit") {
@@ -188,6 +212,18 @@ function DetailPageLayoutInner<TValues extends FieldValues>({
       queryClient.invalidateQueries({
         queryKey: entityMetadataKeys.detail(entityType, entityId),
       });
+    }
+    // Embedded (modal-içi) modda navigasyon yok: kaydedilen değerlerden +
+    // entityType'tan EntityReference kurup callback'e geri ver. Lookup quick-create
+    // akışı bu referansı seçili getirir.
+    if (embedded) {
+      const saved = { ...payload, id: savedId } as TValues;
+      embedded.onCreated({
+        id: typeof savedId === "string" ? savedId : String(savedId ?? ""),
+        entityType: entityType ?? "",
+        name: embeddedReferenceName?.(saved) ?? title,
+      });
+      return;
     }
     // Kayıt sonrası navigasyon — deterministik, `navigate(-1)` kullanılmaz.
     // edit→view her zaman `replace` (edit geçmişten silinir → ping-pong döngüsü
@@ -304,6 +340,95 @@ function DetailPageLayoutInner<TValues extends FieldValues>({
     );
   };
 
+  // Tab aktif anahtarı: embedded'da local state, aksi halde `?tab=` query param.
+  const activeTabKey = embedded
+    ? localTab
+    : tabs?.some((tab) => tab.key === searchParams.get(TAB_QUERY_PARAM))
+      ? (searchParams.get(TAB_QUERY_PARAM) as string)
+      : DETAILS_TAB_KEY;
+
+  const handleTabChange = (key: string) => {
+    if (embedded) {
+      setLocalTab(key);
+      return;
+    }
+    const next = new URLSearchParams(searchParams);
+    if (key === DETAILS_TAB_KEY) {
+      next.delete(TAB_QUERY_PARAM);
+    } else {
+      next.set(TAB_QUERY_PARAM, key);
+    }
+    setSearchParams(next, { replace: true });
+  };
+
+  const formContent = (
+    <FormModeProvider
+      mode={mode}
+      isDirty={
+        form.formState.isDirty || (attachmentsCollector?.isDirty ?? false)
+      }
+    >
+      <FormProvider {...form}>
+        {tabs && tabs.length > 0 ? (
+          <Tabs
+            activeKey={activeTabKey}
+            onChange={handleTabChange}
+            items={[
+              {
+                key: DETAILS_TAB_KEY,
+                label: detailsTabLabel ?? tCommon("tabs.details"),
+                children: (
+                  <form
+                    id="detail-page-form"
+                    onSubmit={form.handleSubmit(handleSubmit)}
+                  >
+                    {children}
+                  </form>
+                ),
+              },
+              ...tabs.map((tab) => ({
+                key: tab.key,
+                label: tab.label,
+                children: tab.content,
+              })),
+            ]}
+          />
+        ) : (
+          <form id="detail-page-form" onSubmit={form.handleSubmit(handleSubmit)}>
+            {children}
+          </form>
+        )}
+      </FormProvider>
+    </FormModeProvider>
+  );
+
+  // Embedded: dış chrome yok (modal başlığı/geri butonu çağıran SearchModal'da).
+  // Form + altta İptal/Kaydet; İptal arama görünümüne, Kaydet onSaved'a gider.
+  if (embedded) {
+    return (
+      <>
+        {formContent}
+        <Space
+          size={8}
+          style={{
+            display: "flex",
+            justifyContent: "flex-end",
+            marginTop: 16,
+          }}
+        >
+          <Button onClick={embedded.onCancel}>{tCommon("actions.cancel")}</Button>
+          <Button
+            type="primary"
+            loading={form.formState.isSubmitting}
+            onClick={() => form.handleSubmit(handleSubmit, handleInvalid)()}
+          >
+            {tCommon("actions.save")}
+          </Button>
+        </Space>
+      </>
+    );
+  }
+
   return (
     <div style={{ maxWidth: 1200, margin: "0 auto" }}>
       <div
@@ -354,59 +479,7 @@ function DetailPageLayoutInner<TValues extends FieldValues>({
         {renderActions()}
       </div>
 
-      <FormModeProvider
-        mode={mode}
-        isDirty={
-          form.formState.isDirty || (attachmentsCollector?.isDirty ?? false)
-        }
-      >
-        <FormProvider {...form}>
-          {tabs && tabs.length > 0 ? (
-            <Tabs
-              activeKey={
-                tabs.some((t) => t.key === searchParams.get(TAB_QUERY_PARAM))
-                  ? (searchParams.get(TAB_QUERY_PARAM) as string)
-                  : DETAILS_TAB_KEY
-              }
-              onChange={(key) => {
-                const next = new URLSearchParams(searchParams);
-                if (key === DETAILS_TAB_KEY) {
-                  next.delete(TAB_QUERY_PARAM);
-                } else {
-                  next.set(TAB_QUERY_PARAM, key);
-                }
-                setSearchParams(next, { replace: true });
-              }}
-              items={[
-                {
-                  key: DETAILS_TAB_KEY,
-                  label: detailsTabLabel ?? tCommon("tabs.details"),
-                  children: (
-                    <form
-                      id="detail-page-form"
-                      onSubmit={form.handleSubmit(handleSubmit)}
-                    >
-                      {children}
-                    </form>
-                  ),
-                },
-                ...tabs.map((tab) => ({
-                  key: tab.key,
-                  label: tab.label,
-                  children: tab.content,
-                })),
-              ]}
-            />
-          ) : (
-            <form
-              id="detail-page-form"
-              onSubmit={form.handleSubmit(handleSubmit)}
-            >
-              {children}
-            </form>
-          )}
-        </FormProvider>
-      </FormModeProvider>
+      {formContent}
 
       {mode !== "new" && entityType && entityId && (
         <EntityMetadataFooter entityType={entityType} entityId={entityId} />

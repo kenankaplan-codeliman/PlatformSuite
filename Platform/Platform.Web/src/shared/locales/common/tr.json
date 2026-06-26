@@ -5,6 +5,7 @@
     "delete": "Sil",
     "edit": "Düzenle",
     "create": "Oluştur",
+    "createNamed": "Yeni {{name}}",
     "back": "Geri",
     "close": "Kapat",
     "confirm": "Onayla",

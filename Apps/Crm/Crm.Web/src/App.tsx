@@ -8,10 +8,13 @@ import {
   platformEntityTypes,
 } from "@platform/ui";
 import { router } from "./app/router/routes";
-import { crmEntityTypes } from "./shared/entity-type/crmEntityTypes";
+import { crmEntityTypesWithQuickCreate } from "./app/entity-type/quickCreateRegistry";
 import crmLogo from "./assets/crm-logo.png";
 
-const crmEntityTypeRegistry = [...platformEntityTypes, ...crmEntityTypes];
+const crmEntityTypeRegistry = [
+  ...platformEntityTypes,
+  ...crmEntityTypesWithQuickCreate,
+];
 
 const crmRegardingKeys = ["Account", "Contact", "Lead", "Opportunity"] as const;
 const crmPartyKeys = ["User", "Contact", "Account", "Lead"] as const;

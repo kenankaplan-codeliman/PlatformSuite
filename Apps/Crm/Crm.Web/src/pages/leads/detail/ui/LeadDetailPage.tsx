@@ -19,6 +19,7 @@ import {
   useSetStateAction,
   type DetailPageAction,
   type DetailPageTab,
+  type QuickCreateRenderProps,
   type SelectOption,
 } from "@platform/ui";
 import { CrmServicePath } from "../../../../shared/api/servicePaths";
@@ -60,8 +61,14 @@ const emptyLead: LeadFormValues = {
   isActive: true,
 };
 
-export function LeadDetailPage() {
-  const { mode, id } = useRouteMode();
+export function LeadDetailPage({
+  embedded,
+}: {
+  embedded?: QuickCreateRenderProps;
+} = {}) {
+  const route = useRouteMode();
+  const mode = embedded ? "new" : route.mode;
+  const id = embedded ? undefined : route.id;
   const { t: tPage } = useTranslation("page.leads-detail");
   const { t: tEntity } = useTranslation("entity.lead");
   const { t: tCommon } = useTranslation("common");
@@ -147,7 +154,11 @@ export function LeadDetailPage() {
       mode={mode}
       title={title}
       schema={leadSchema}
-      defaultValues={emptyLead}
+      defaultValues={
+        embedded
+          ? { ...emptyLead, subject: embedded.initialSearchText ?? "" }
+          : emptyLead
+      }
       data={query.data as LeadFormValues | undefined}
       isLoading={query.isLoading}
       error={query.isError ? query.error : undefined}
@@ -164,6 +175,8 @@ export function LeadDetailPage() {
       entityType="Lead"
       entityId={id}
       extraActions={extraActions}
+      embedded={embedded}
+      embeddedReferenceName={(saved) => saved.subject}
     >
       {ownerAssign.modal}
       {convert.modal}

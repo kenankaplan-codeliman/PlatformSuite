@@ -19,6 +19,7 @@ import { useSetStateAction } from "@platform/ui";
 import type { DetailPageAction } from "@platform/ui";
 import { useGeneralParameters } from "@platform/ui";
 import { RelatedActivitiesTab, type DetailPageTab } from "@platform/ui";
+import type { QuickCreateRenderProps } from "@platform/ui";
 import { AttachmentsField } from "@platform/ui";
 import { AddressField } from "../../../../widgets/address-field";
 import { EmailField } from "../../../../widgets/email-field";
@@ -60,8 +61,19 @@ const emptyAccount: AccountFormValues = {
   isActive: true,
 };
 
-export function AccountDetailPage() {
-  const { mode, id } = useRouteMode();
+export function AccountDetailPage({
+  embedded,
+}: {
+  /**
+   * Verildiğinde sayfa, lookup quick-create akışı için modal-içi (embedded) modda
+   * çalışır: route okuması bypass edilir, mode `new`'e sabitlenir, kayıt sonrası
+   * navigasyon yerine `embedded.onCreated` çağrılır.
+   */
+  embedded?: QuickCreateRenderProps;
+} = {}) {
+  const route = useRouteMode();
+  const mode = embedded ? "new" : route.mode;
+  const id = embedded ? undefined : route.id;
   const { t: tPage } = useTranslation("page.accounts-detail");
   const { t: tEntity } = useTranslation("entity.account");
   const { t: tCommon } = useTranslation("common");
@@ -146,7 +158,11 @@ export function AccountDetailPage() {
       mode={mode}
       title={title}
       schema={accountSchema}
-      defaultValues={emptyAccount}
+      defaultValues={
+        embedded
+          ? { ...emptyAccount, accountName: embedded.initialSearchText ?? "" }
+          : emptyAccount
+      }
       data={query.data as AccountFormValues | undefined}
       isLoading={query.isLoading}
       error={query.isError ? query.error : undefined}
@@ -163,6 +179,8 @@ export function AccountDetailPage() {
       entityType="Account"
       entityId={id}
       extraActions={extraActions}
+      embedded={embedded}
+      embeddedReferenceName={(saved) => saved.accountName}
     >
       {ownerAssign.modal}
       <GeneralSection typeOptions={typeOptions} statusOptions={statusOptions} />
@@ -211,6 +229,7 @@ export function AccountDetailPage() {
             name="parentAccount"
             control={form.control}
             servicePath={ServicePath.Account.Search}
+            entityType="Account"
             label={tEntity("fields.parentAccount.label")}
             allowClear
           />

@@ -22,6 +22,7 @@ import {
   useSetStateAction,
   type DetailPageAction,
   type DetailPageTab,
+  type QuickCreateRenderProps,
   type SelectOption,
   type TableFieldColumn,
 } from "@platform/ui";
@@ -191,8 +192,14 @@ const computeOpportunityTotals = (
   };
 };
 
-export function OpportunityDetailPage() {
-  const { mode, id } = useRouteMode();
+export function OpportunityDetailPage({
+  embedded,
+}: {
+  embedded?: QuickCreateRenderProps;
+} = {}) {
+  const route = useRouteMode();
+  const mode = embedded ? "new" : route.mode;
+  const id = embedded ? undefined : route.id;
   const { t: tPage } = useTranslation("page.opportunities-detail");
   const { t: tEntity } = useTranslation("entity.opportunity");
   const { t: tCommon } = useTranslation("common");
@@ -277,7 +284,11 @@ export function OpportunityDetailPage() {
       mode={mode}
       title={title}
       schema={opportunitySchema}
-      defaultValues={emptyOpportunity}
+      defaultValues={
+        embedded
+          ? { ...emptyOpportunity, name: embedded.initialSearchText ?? "" }
+          : emptyOpportunity
+      }
       data={query.data as OpportunityFormValues | undefined}
       isLoading={query.isLoading}
       error={query.isError ? query.error : undefined}
@@ -294,6 +305,8 @@ export function OpportunityDetailPage() {
       entityType="Opportunity"
       entityId={id}
       extraActions={extraActions}
+      embedded={embedded}
+      embeddedReferenceName={(saved) => saved.name}
     >
       {ownerAssign.modal}
       <GeneralSection stageOptions={stageOptions} />
@@ -542,6 +555,7 @@ export function OpportunityDetailPage() {
             name="account"
             control={form.control}
             servicePath={ServicePath.Account.Search}
+            entityType="Account"
             label={tEntity("fields.account.label")}
             required
           />
@@ -549,6 +563,7 @@ export function OpportunityDetailPage() {
             name="primaryContact"
             control={form.control}
             servicePath={ServicePath.Contact.Search}
+            entityType="Contact"
             label={tEntity("fields.primaryContact.label")}
             allowClear
           />
