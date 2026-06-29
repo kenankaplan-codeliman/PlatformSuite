@@ -11,6 +11,7 @@ import { TextAreaField } from "@platform/ui";
 import { EntityLookupField } from "@platform/ui";
 import { CheckboxField } from "@platform/ui";
 import { TableField, type TableFieldColumn } from "@platform/ui";
+import { newId } from "@platform/ui";
 import { ServicePath } from "@platform/ui";
 import { useRouteMode } from "@platform/ui";
 import { useOwnerAssignAction } from "@platform/ui";
@@ -340,7 +341,7 @@ export function ContactDetailPage({
           name="accountContacts"
           columns={columns}
           newRow={() => ({
-            id: crypto.randomUUID(),
+            id: newId(),
             account: null,
             role: null,
             isPrimary: false,

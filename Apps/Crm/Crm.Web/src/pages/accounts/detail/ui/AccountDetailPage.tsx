@@ -12,6 +12,7 @@ import { TextAreaField } from "@platform/ui";
 import { EntityLookupField } from "@platform/ui";
 import { CheckboxField } from "@platform/ui";
 import { TableField, type TableFieldColumn } from "@platform/ui";
+import { newId } from "@platform/ui";
 import { ServicePath } from "@platform/ui";
 import { useRouteMode } from "@platform/ui";
 import { useOwnerAssignAction } from "@platform/ui";
@@ -347,7 +348,7 @@ export function AccountDetailPage({
           name="contacts"
           columns={columns}
           newRow={() => ({
-            id: crypto.randomUUID(),
+            id: newId(),
             contact: null,
             role: null,
             isPrimary: false,

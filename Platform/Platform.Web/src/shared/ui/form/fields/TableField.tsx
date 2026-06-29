@@ -28,9 +28,10 @@ import { EmptyState } from '../../feedback/EmptyState';
  *  - View/edit modu field primitive'leri context'ten (`useFormMode`) okur —
  *    TableField cell'lere mod geçirmez; sadece kendi chrome'unu (delete column,
  *    add button) gizler.
- *  - Yeni satıra `crypto.randomUUID()` (caller'ın `newRow` factory'sinde) atanır;
- *    backend `CollectionSync.Merge` `Guid.Empty` yerine string id'leri yeni
- *    kayıt olarak ekler.
+ *  - Yeni satıra `newId()` (caller'ın `newRow` factory'sinde, `@platform/ui`'dan)
+ *    atanır; backend `CollectionSync.Merge` `Guid.Empty` yerine string id'leri yeni
+ *    kayıt olarak ekler. `crypto.randomUUID()` doğrudan KULLANILMAZ — secure context
+ *    (HTTPS) gerektirir, HTTP dağıtımında patlar; `newId()` güvenli fallback sağlar.
  */
 
 export type TableFieldRenderArgs<
@@ -76,7 +77,7 @@ export interface TableFieldProps<
   /** Form'daki dizi alanı, ör. "products" / "emails". */
   name: ArrayPath<TValues>;
   columns: TableFieldColumn<TValues, TRow>[];
-  /** Yeni satır factory'si. `id: crypto.randomUUID()` içermesi önerilir. */
+  /** Yeni satır factory'si. `id: newId()` (`@platform/ui`) içermesi önerilir. */
   newRow: () => TRow;
   addLabel?: string;
   /** Boş durumda EmptyState'in açıklaması. Verilmezse common:messages.noData. */

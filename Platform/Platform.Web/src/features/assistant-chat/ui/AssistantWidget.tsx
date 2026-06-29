@@ -22,6 +22,7 @@ import { useCurrentUserQuery } from "../../../entities/user/api/useCurrentUserQu
 import { hasPrivilege } from "../../../entities/user/lib/privileges";
 import { assistantDataSource } from "../api/assistantDataSource";
 import { useAssistantChat } from "../api/useAssistantChat";
+import { newId } from "../../../shared/lib/id";
 import type {
   AssistantTurn,
   ChatMessage,
@@ -37,10 +38,6 @@ export interface AssistantWidgetProps {
   title?: string;
 }
 
-const newId = () =>
-  typeof crypto !== "undefined" && "randomUUID" in crypto
-    ? crypto.randomUUID()
-    : `${Date.now()}-${Math.round(Math.random() * 1e6)}`;
 
 export function AssistantWidget({
   resolveLink,

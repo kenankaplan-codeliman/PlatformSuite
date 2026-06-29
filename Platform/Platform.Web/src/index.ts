@@ -82,6 +82,7 @@ export type {
   QuickCreateRenderProps,
 } from './shared/lib/entity-type/types';
 export { toneToTagColor } from './shared/lib/entity-type/tone';
+export { newId } from './shared/lib/id';
 export { platformEntityTypes } from './shared/lib/entity-type/platformEntityTypes';
 export type { EntityLookupOption } from './shared/ui/form/fields/EntityLookupField';
 export {

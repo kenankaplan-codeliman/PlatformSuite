@@ -9,6 +9,7 @@ import {
   EntityLookupField,
   FormRow,
   FormSection,
+  newId,
   NumberField,
   RelatedActivitiesTab,
   SelectField,
@@ -47,12 +48,12 @@ import { RoutePaths } from "../../../../app/router/paths";
 const OPPORTUNITY_ATTACHMENT_ACCEPT =
   ".pdf,.doc,.docx,.xls,.xlsx,.jpg,.jpeg,.png";
 
-// Yeni satır kalemi factory'si — `id: crypto.randomUUID()` ile yeni satırlar
+// Yeni satır kalemi factory'si — `id: newId()` ile yeni satırlar
 // backend `CollectionSync.Merge` tarafından yeni kayıt olarak algılanır.
 // Para birimi yok — parent opportunity.currency line item'ları için ortak.
 // unitCode ürün seçilince Product.UnitOfMeasure'dan prefill edilir (aşağıdaki onRowChange).
 const newProductLine = (): OpportunityProductModal => ({
-  id: crypto.randomUUID(),
+  id: newId(),
   product: null,
   quantity: 1,
   unitPrice: 0,

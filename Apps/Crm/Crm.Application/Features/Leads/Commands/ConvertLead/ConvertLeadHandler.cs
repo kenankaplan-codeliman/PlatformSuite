@@ -45,6 +45,9 @@ public sealed class ConvertLeadHandler : IRequestHandler<ConvertLeadCommand, Res
         var linkExisting = request.AccountId.HasValue;
         var createAccount = request.CreateAccount && !linkExisting;
 
+        var linkExistingContact = request.ContactId.HasValue;
+        var createContact = request.CreateContact && !linkExistingContact;
+
         Guid? accountId = request.AccountId;
         if (linkExisting)
         {
@@ -53,8 +56,15 @@ public sealed class ConvertLeadHandler : IRequestHandler<ConvertLeadCommand, Res
             if (!exists) return LeadErrors.AccountNotFound;
         }
 
+        if (linkExistingContact)
+        {
+            var exists = await _db.Contact.AsNoTracking()
+                .AnyAsync(c => c.Id == request.ContactId!.Value, cancellationToken);
+            if (!exists) return LeadErrors.ContactNotFound;
+        }
+
         // En az bir hedef seçilmeli (yeni/var olan firma ya da kişi).
-        if (accountId is null && !createAccount && !request.CreateContact)
+        if (accountId is null && !createAccount && !createContact && !linkExistingContact)
             return LeadErrors.NothingToConvert;
 
         // Fırsat oluşturmak için firma (yeni ya da bağlı) zorunlu.
@@ -83,7 +93,7 @@ public sealed class ConvertLeadHandler : IRequestHandler<ConvertLeadCommand, Res
 
         // 2) Kişi
         Guid? contactId = null;
-        if (request.CreateContact)
+        if (createContact)
         {
             var contact = new Contact
             {
@@ -97,7 +107,7 @@ public sealed class ConvertLeadHandler : IRequestHandler<ConvertLeadCommand, Res
             await _communications.SyncAsync(nameof(Contact), contact.Id, emails, phones, addresses, cancellationToken);
             contactId = contact.Id;
 
-            // Firma varsa kişiyi birincil olarak ilişkilendir.
+            // Firma varsa yeni kişiyi birincil olarak ilişkilendir.
             if (accountId is not null)
             {
                 _db.AccountContact.Add(new AccountContact
@@ -107,6 +117,27 @@ public sealed class ConvertLeadHandler : IRequestHandler<ConvertLeadCommand, Res
                     IsPrimary = true,
                 });
                 await _db.SaveChangesAsync(cancellationToken);
+            }
+        }
+        else if (linkExistingContact)
+        {
+            contactId = request.ContactId;
+
+            // Firma varsa mevcut kişiyi ilişkilendir (birincil değil; zaten bağlıysa ekleme).
+            if (accountId is not null)
+            {
+                var alreadyLinked = await _db.AccountContact
+                    .AnyAsync(ac => ac.AccountId == accountId.Value && ac.ContactId == contactId.Value, cancellationToken);
+                if (!alreadyLinked)
+                {
+                    _db.AccountContact.Add(new AccountContact
+                    {
+                        AccountId = accountId.Value,
+                        ContactId = contactId.Value,
+                        IsPrimary = false,
+                    });
+                    await _db.SaveChangesAsync(cancellationToken);
+                }
             }
         }
 

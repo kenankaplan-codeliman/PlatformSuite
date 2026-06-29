@@ -5,6 +5,7 @@ import {
 } from 'react-hook-form';
 import {
   CheckboxField,
+  newId,
   SelectField,
   TableField,
   TextField,
@@ -18,7 +19,7 @@ import {
  * `TableField` primitive'i column template'i ile sarılır.
  *
  * Form-state'e bağlıdır (react-hook-form field array); entity command'ı ile
- * aynı transaction'da kaydedilir. Yeni satırlara `crypto.randomUUID()` atanır;
+ * aynı transaction'da kaydedilir. Yeni satırlara `newId()` atanır;
  * backend `CollectionSync.Merge` eşleşmeyen id'leri yeni kayıt olarak ekler.
  */
 
@@ -39,7 +40,7 @@ const emailTypeOptions: SelectOption<string>[] = [
 ];
 
 const newEmail = (): EmailRow => ({
-  id: crypto.randomUUID(),
+  id: newId(),
   email: '',
   type: 'Work',
   isPrimary: false,

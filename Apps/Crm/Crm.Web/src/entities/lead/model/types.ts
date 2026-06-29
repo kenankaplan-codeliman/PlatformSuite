@@ -105,6 +105,8 @@ export interface ConvertLeadInput {
   /** Mevcut firmaya bağlama — doluysa yeni firma oluşturulmaz. */
   accountId?: string | null;
   createContact: boolean;
+  /** Mevcut kişiye bağlama — doluysa yeni kişi oluşturulmaz. */
+  contactId?: string | null;
   createOpportunity: boolean;
 }
 

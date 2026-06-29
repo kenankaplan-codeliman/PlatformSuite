@@ -17,9 +17,11 @@ import { useConvertLead } from '../../../entities/lead/api/useLeadMutations';
 import { RoutePaths } from '../../../app/router/paths';
 
 type AccountMode = 'create' | 'link' | 'none';
+type ContactMode = 'create' | 'link' | 'none';
 
-interface AccountLookupForm {
+interface ConvertLookupForm {
   existingAccount: EntityReference | null;
+  existingContact: EntityReference | null;
 }
 
 export interface ConvertLeadDialogProps {
@@ -40,18 +42,19 @@ export function ConvertLeadDialog({ open, onClose, leadId }: ConvertLeadDialogPr
   const convert = useConvertLead();
 
   const [accountMode, setAccountMode] = useState<AccountMode>('create');
-  const [createContact, setCreateContact] = useState(true);
+  const [contactMode, setContactMode] = useState<ContactMode>('create');
   const [createOpportunity, setCreateOpportunity] = useState(false);
 
-  const { control, reset } = useForm<AccountLookupForm>({
-    defaultValues: { existingAccount: null },
+  const { control, reset } = useForm<ConvertLookupForm>({
+    defaultValues: { existingAccount: null, existingContact: null },
   });
   const existingAccount = useWatch({ control, name: 'existingAccount' });
+  const existingContact = useWatch({ control, name: 'existingContact' });
 
   const close = () => {
-    reset({ existingAccount: null });
+    reset({ existingAccount: null, existingContact: null });
     setAccountMode('create');
-    setCreateContact(true);
+    setContactMode('create');
     setCreateOpportunity(false);
     onClose();
   };
@@ -61,7 +64,11 @@ export function ConvertLeadDialog({ open, onClose, leadId }: ConvertLeadDialogPr
       messageBox.error(t('convert.errors.selectAccount'));
       return;
     }
-    if (accountMode === 'none' && !createContact) {
+    if (contactMode === 'link' && !existingContact) {
+      messageBox.error(t('convert.errors.selectContact'));
+      return;
+    }
+    if (accountMode === 'none' && contactMode === 'none') {
       messageBox.error(t('convert.errors.nothingToConvert'));
       return;
     }
@@ -71,7 +78,8 @@ export function ConvertLeadDialog({ open, onClose, leadId }: ConvertLeadDialogPr
         id: leadId,
         createAccount: accountMode === 'create',
         accountId: accountMode === 'link' ? existingAccount?.id ?? null : null,
-        createContact,
+        createContact: contactMode === 'create',
+        contactId: contactMode === 'link' ? existingContact?.id ?? null : null,
         createOpportunity,
       });
       messageBox.success(t('convert.success'));
@@ -114,7 +122,7 @@ export function ConvertLeadDialog({ open, onClose, leadId }: ConvertLeadDialogPr
           />
           {accountMode === 'link' && (
             <div style={{ marginTop: 8 }}>
-              <EntityLookupField<AccountLookupForm>
+              <EntityLookupField<ConvertLookupForm>
                 name="existingAccount"
                 control={control}
                 servicePath={ServicePath.Account.Search}
@@ -127,9 +135,32 @@ export function ConvertLeadDialog({ open, onClose, leadId }: ConvertLeadDialogPr
           )}
         </div>
 
-        <Checkbox checked={createContact} onChange={setCreateContact}>
-          {t('convert.createContact')}
-        </Checkbox>
+        <div>
+          <Text strong>{t('convert.contactSection')}</Text>
+          <RadioGroup<ContactMode>
+            value={contactMode}
+            onChange={setContactMode}
+            style={{ marginTop: 8 }}
+            options={[
+              { value: 'create', label: t('convert.contact.create') },
+              { value: 'link', label: t('convert.contact.link') },
+              { value: 'none', label: t('convert.contact.none') },
+            ]}
+          />
+          {contactMode === 'link' && (
+            <div style={{ marginTop: 8 }}>
+              <EntityLookupField<ConvertLookupForm>
+                name="existingContact"
+                control={control}
+                servicePath={ServicePath.Contact.Search}
+                entityType="Contact"
+                label={t('convert.contact.lookupLabel')}
+                allowClear
+                force="editable"
+              />
+            </div>
+          )}
+        </div>
 
         <Checkbox
           checked={createOpportunity}

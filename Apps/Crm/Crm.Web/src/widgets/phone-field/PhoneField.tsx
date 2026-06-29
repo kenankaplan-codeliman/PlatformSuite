@@ -5,6 +5,7 @@ import {
 } from 'react-hook-form';
 import {
   CheckboxField,
+  newId,
   SelectField,
   TableField,
   TextField,
@@ -35,7 +36,7 @@ const phoneTypeOptions: SelectOption<string>[] = [
 ];
 
 const newPhone = (): PhoneRow => ({
-  id: crypto.randomUUID(),
+  id: newId(),
   phoneNumber: '',
   type: 'Mobile',
   isPrimary: false,

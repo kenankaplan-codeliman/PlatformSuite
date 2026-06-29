@@ -29,6 +29,9 @@ public static class LeadErrors
     public static readonly Error AccountNotFound =
         new("Lead.AccountNotFound", "Bağlanacak firma bulunamadı.", ErrorType.NotFound);
 
+    public static readonly Error ContactNotFound =
+        new("Lead.ContactNotFound", "Bağlanacak kişi bulunamadı.", ErrorType.NotFound);
+
     public static readonly Error OpportunityRequiresAccount =
         new("Lead.OpportunityRequiresAccount", "Fırsat oluşturmak için bir firma seçilmeli veya oluşturulmalıdır.", ErrorType.Validation);
 }

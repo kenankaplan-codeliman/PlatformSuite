@@ -44,11 +44,18 @@
       "none": "Firma oluşturma",
       "lookupLabel": "Firma seç"
     },
-    "createContact": "Kişi oluştur",
+    "contactSection": "Kişi",
+    "contact": {
+      "create": "Yeni kişi oluştur",
+      "link": "Mevcut kişiye bağla",
+      "none": "Kişi oluşturma",
+      "lookupLabel": "Kişi seç"
+    },
     "createOpportunity": "Fırsat oluştur",
     "success": "Aday başarıyla dönüştürüldü.",
     "errors": {
       "selectAccount": "Lütfen bağlanacak firmayı seçin.",
+      "selectContact": "Lütfen bağlanacak kişiyi seçin.",
       "nothingToConvert": "En az bir hedef (firma veya kişi) seçmelisiniz.",
       "failed": "Dönüştürme sırasında bir hata oluştu."
     }
